@@ -1,2 +1,5 @@
 Example1.m uses pmod to inject real power into bus 3 and bus 2.
-compares non-linear and linear solutions
+
+Compares non-linear and linear solutions
+
+Example1Octage.m does the same thing but is octave specific code
