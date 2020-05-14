@@ -55,6 +55,8 @@
 % Date: February 1997
 % (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997 - All rights reserved
 %
+
+%%
 clear all
 clear global
 
@@ -68,6 +70,8 @@ svc_dc=[];tcsc_dc=[];dcr_dc=[];dci_dc=[];
 disp('non-linear simulation')
 % input data file
 DataFile %Batch name for data file
+
+% left over code from non-batch run
 % [dfile,pathname]=uigetfile('d*.m','Select Data File');
 % if pathname == 0
 %    error(' you must select a valid data file')
@@ -77,7 +81,8 @@ DataFile %Batch name for data file
 %    %dfile = lower(dfile(1:lfile-2));
 %    eval(dfile(1:lfile-2));
 % end
-% check for valid dynamic data file
+
+%% check for valid dynamic data file
 if isempty(mac_con)
    error(' the selected file is not a valid data file')
 end
@@ -85,15 +90,18 @@ if isempty(sw_con)
    error(' the selected file has no switching data')
 end
 
+%% Assume 60 Hz frequency base and 100 MVA Sbase
 sys_freq = 60; %input('enter the base system frequency in Hz - [60]');
 if isempty(sys_freq);sys_freq = 60;end
+
 basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
 basmva = 100; %input('enter system base MVA - [100]');
 if isempty(basmva);basmva =100;end
+
 syn_ref = 0 ;     % synchronous reference frame
 ibus_con = []; % ignore infinite buses in transient simulation
 
-%Make sure bus max/min Q is the same as the pwrmod_con max/min Q 
+%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q 
 if ~isempty(n_pwrmod)
     for kk=1:n_pwrmod
         n = find(pwrmod_con(kk,1)==bus(:,1));
@@ -102,7 +110,8 @@ if ~isempty(n_pwrmod)
     clear kk n
 end
 
-% solve for loadflow - loadflow parameter
+%% solve for loadflow - loadflow parameter
+% left over input from non batch format
 ans = 'y'; %input('Do you want to solve loadflow > (y/n)[y] ','s');
 if isempty(ans);ans='y';end
 if ans=='Y';ans='y';end
@@ -115,10 +124,8 @@ if ans == 'y'
       tol = 1e-9;   % tolerance for convergence
       iter_max = 30; % maximum number of iterations
       acc = 1.0;   % acceleration factor
-      [bus_sol,line,line_flw] = ...
-         loadflow(bus,line,tol,iter_max,acc,'n',2);
-      bus = bus_sol;  % solved loadflow solution needed for
-      % initialization
+      [bus_sol,line,line_flw] = loadflow(bus,line,tol,iter_max,acc,'n',2);
+      bus = bus_sol;  % solved loadflow solution needed for initialization
       save sim_fle bus line 
    else
       [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,dci_dc,dcr_dc);
@@ -128,13 +135,14 @@ if ans == 'y'
 else
    load sim_fle 
 end
-%set indexes
+
+%% set indexes
 % note: dc index set in dc load flow
-f=mac_indx;
-f=exc_indx;
-f=tg_indx;
+f = mac_indx;
+f = exc_indx;
+f = tg_indx;
 f = dpwf_indx;
-f=pss_indx;
+f = pss_indx;
 f = svc_indx(svc_dc);
 f = tcsc_indx(tcsc_dc);
 f = lm_indx;
@@ -147,15 +155,17 @@ if isempty(n_ig); n_ig = 0; end
 ntot = n_mac+n_mot+n_ig;
 ngm = n_mac + n_mot;
 n_pm = n_mac;
+
 disp(' ')
 disp('Performing simulation.')
-%
-% construct simulation switching sequence as defined in sw_con
+
+%% construct simulation switching sequence as defined in sw_con
 tswitch(1) = sw_con(1,1);
 k = 1;kdc=1;
 n_switch = length(sw_con(:,1));
 k_inc = zeros(n_switch-1,1);
 t_switch = zeros(n_switch,1);
+
 for sw_count = 1:n_switch-1
    h(sw_count) = sw_con(sw_count,7);%specified time step
    if h(sw_count)==0, h(sw_count) = 0.01;end % default time step
@@ -169,6 +179,7 @@ for sw_count = 1:n_switch-1
    t_dc(kdc:kdc-1+k_incdc(sw_count)) = t_switch(sw_count):h_dc(sw_count):t_switch(sw_count+1)-h_dc(sw_count);
    k=k+k_inc(sw_count);kdc=kdc+k_incdc(sw_count);
 end
+
 t_dc(kdc)=t_dc(kdc-1)+h_dc(sw_count);
 for kk=1:10;kdc=kdc+1;t_dc(kdc)=t_dc(kdc-1)+h_dc(sw_count);end
 
@@ -177,30 +188,46 @@ k = sum(k_inc)+1; % k is the total number of time steps in the simulation
 t(k) = sw_con(n_switch,1);
 [n dummy]=size(mac_con) ;
 n_bus = length(bus(:,1));
-%
-% create zero matrices for variables to make algorithm more efficient?
+
+%% create zero matrices for variables to make algorithm more efficient?
 z = zeros(n,k);
 z1 = zeros(1,k);
 zm = zeros(1,k);if n_mot>1;zm = zeros(n_mot,k);end
 zig = zeros(1,k);if n_ig>1;zig = zeros(n_ig,k);end
 zdc = zeros(2,kdc);if n_conv>2; zdc = zeros(n_conv,kdc);end
 zdcl = zeros(1,kdc);if n_dcl>1;zdcl=zeros(n_dcl,kdc);end
-% set dc parameters  
+
+%% set dc parameters   (initialize zeros 5/14/20)
 Vdc = zeros(n_conv,kdc);
 i_dc = zdc;  
-P_dc = z; dc_sig = z; cur_ord = z;
+P_dc = z; 
+dc_sig = z; 
+cur_ord = z;
 alpha = zdcl; 
 gamma = zdcl;  
-dc_sig = zeros(n_conv,k);dcr_dsig = zeros(n_dcl,k);dci_dsig=zeros(n_dcl,k);
-i_dcr = zdcl; i_dci = zdcl; v_dcc = zdcl;
-di_dcr = zdcl; di_dci = zdcl; dv_dcc = zdcl;
-v_conr = zdcl; v_coni = zdcl; dv_conr = zdcl; dv_coni = zdcl;
+
+dc_sig = zeros(n_conv,k);
+dcr_dsig = zeros(n_dcl,k);
+dci_dsig=zeros(n_dcl,k);
+
+i_dcr = zdcl; 
+i_dci = zdcl; 
+v_dcc = zdcl;
+di_dcr = zdcl; 
+di_dci = zdcl; 
+dv_dcc = zdcl;
+v_conr = zdcl; 
+v_coni = zdcl; 
+dv_conr = zdcl; 
+dv_coni = zdcl;
+
 if n_conv~=0
    Vdc(r_idx,:) = rec_par(:,2); Vdc(i_idx,:) = inv_par(:,2);
    i_dc(r_idx,:) = line_par; i_dc(i_idx,:) = line_par;
    i_dcr(:,:) = i_dc(r_idx,:); i_dci(:,:) = i_dc(i_idx,:);
    alpha(:,:) = rec_par(:,1)*pi/180;
    gamma(:,:) = inv_par(:,1)*pi/180;
+   
    if ndcr_ud~=0
       for j = 1:ndcr_ud
          sv = get(dcr_dc{j,1});
@@ -243,40 +270,139 @@ else
    xdci_dc = zeros(1,kdc);
    dxdci_dc = zeros(1,kdc);
 end
+
 v_p = z1;
-theta = zeros(n_bus+1,k);bus_v = zeros(n_bus+1,k);
-mac_ang = z; mac_spd = z; dmac_ang = z; dmac_spd = z;
-pmech = z; pelect = z; mac_ref = z1;  sys_ref = z1; 
-edprime = z; eqprime = z; dedprime = z; deqprime = z;
-psikd = z; psikq = z; dpsikd = z; dpsikq = z;
+theta = zeros(n_bus+1,k);
+bus_v = zeros(n_bus+1,k);
+mac_ang = z; 
+mac_spd = z; 
+dmac_ang = z; 
+dmac_spd = z;
+pmech = z; 
+pelect = z; 
+mac_ref = z1;  
+sys_ref = z1; 
+edprime = z; 
+eqprime = z; 
+dedprime = z; 
+deqprime = z;
+psikd = z; 
+psikq = z; 
+dpsikd = z; 
+dpsikq = z;
 pm_sig = z;
-z_tg = zeros(1,k);if n_tg+n_tgh~=0;z_tg = zeros(n_tg+n_tgh,k);end
-tg1 = z_tg; tg2 = z_tg; tg3 = z_tg; tg4 = z_tg; tg5 = z_tg;
-dtg1 = z_tg; dtg2 = z_tg; dtg3 = z_tg;dtg4 = z_tg; dtg5 = z_tg;
+
+z_tg = zeros(1,k);
+if n_tg+n_tgh~=0
+    z_tg = zeros(n_tg+n_tgh,k);
+end
+
+tg1 = z_tg; 
+tg2 = z_tg; 
+tg3 = z_tg; 
+tg4 = z_tg; 
+tg5 = z_tg;
+dtg1 = z_tg; 
+dtg2 = z_tg; 
+dtg3 = z_tg;
+dtg4 = z_tg; 
+dtg5 = z_tg;
 tg_sig = z_tg;
-z_pss = zeros(1,k);if n_pss~=0;z_pss = zeros(n_pss,k);end
-pss1 = z_pss; pss2 = z_pss; pss3 = z_pss;
-dpss1 = z_pss; dpss2 = z_pss; dpss3 = z_pss;
-z_dpw = zeros(1,k);if n_dpw~=0; z_dpw = zeros(n_dpw,k);end
-sdpw1 = z_dpw; sdpw2 = z_dpw; sdpw3 = z_dpw; sdpw4 = z_dpw; sdpw5 = z_dpw; sdpw6 = z_dpw; dpw_out = z_dpw;
-dsdpw1 = z_dpw; dsdpw2 = z_dpw; dsdpw3 = z_dpw; dsdpw4 = z_dpw; dsdpw5 = z_dpw; dsdpw6 = z_dpw;
-curd = z; curq = z; curdg = z; curqg = z; fldcur = z;
-ed = z; eq = z; eterm = z; qelect = z;
-vex = z; cur_re = z; cur_im = z; psi_re = z; psi_im = z;
-ze = zeros(1,k);if n_exc~=0; ze = zeros(n_exc,k);end
-V_B = ze;exc_sig = ze;
-V_TR = ze; V_R = ze; V_A = ze; V_As = ze; Efd = ze; R_f = ze;
-dV_TR = ze; dV_R = ze; dV_As = ze; dEfd = ze; dR_f = ze;
+
+z_pss = zeros(1,k);
+if n_pss~=0
+    z_pss = zeros(n_pss,k);
+end
+
+pss1 = z_pss; 
+pss2 = z_pss; 
+pss3 = z_pss;
+dpss1 = z_pss; 
+dpss2 = z_pss; 
+dpss3 = z_pss;
+
+z_dpw = zeros(1,k);
+if n_dpw~=0
+    z_dpw = zeros(n_dpw,k);
+end
+
+sdpw1 = z_dpw; 
+sdpw2 = z_dpw; 
+sdpw3 = z_dpw; 
+sdpw4 = z_dpw; 
+sdpw5 = z_dpw; 
+sdpw6 = z_dpw; 
+dpw_out = z_dpw;
+dsdpw1 = z_dpw; 
+dsdpw2 = z_dpw; 
+dsdpw3 = z_dpw; 
+dsdpw4 = z_dpw; 
+dsdpw5 = z_dpw; 
+dsdpw6 = z_dpw;
+
+curd = z; 
+curq = z; 
+curdg = z; 
+curqg = z; 
+fldcur = z;
+ed = z; 
+eq = z; 
+eterm = z; 
+qelect = z;
+vex = z; 
+cur_re = z; 
+cur_im = z; 
+psi_re = z; 
+psi_im = z;
+
+ze = zeros(1,k);
+if n_exc~=0
+    ze = zeros(n_exc,k);
+end
+
+V_B = ze;
+exc_sig = ze;
+V_TR = ze; 
+V_R = ze; 
+V_A = ze; 
+V_As = ze; 
+Efd = ze; 
+R_f = ze;
+dV_TR = ze; 
+dV_R = ze; 
+dV_As = ze; 
+dEfd = ze; 
+dR_f = ze;
 pss_out = ze;
-vdp = zm; vqp = zm; slip = zm; 
-dvdp = zm; dvqp = zm; dslip = zm;
-s_mot = zm; p_mot = zm; q_mot = zm;
-vdpig = zig; vqpig = zig; slig = zig; 
-dvdpig = zig; dvqpig = zig; dslig = zig;
-s_igen = zig; pig = zig; qig = zig; tmig = zig;
+
+vdp = zm; 
+vqp = zm; 
+slip = zm; 
+dvdp = zm; 
+dvqp = zm; 
+dslip = zm;
+s_mot = zm; 
+p_mot = zm; 
+q_mot = zm;
+
+vdpig = zig; 
+vqpig = zig; 
+slig = zig; 
+dvdpig = zig; 
+dvqpig = zig; 
+dslig = zig;
+s_igen = zig; 
+pig = zig; 
+qig = zig; 
+tmig = zig;
+
 if n_svc~=0
-   B_cv = zeros(n_svc,k); dB_cv = zeros(n_svc,k);svc_sig = zeros(n_svc,k);svc_dsig=zeros(n_svc,k);
-   B_con = zeros(n_svc,k); dB_con=zeros(n_svc,k);
+   B_cv = zeros(n_svc,k); 
+   dB_cv = zeros(n_svc,k);
+   svc_sig = zeros(n_svc,k);
+   svc_dsig=zeros(n_svc,k);
+   B_con = zeros(n_svc,k); 
+   dB_con=zeros(n_svc,k);
    if n_dcud~=0
       d_sig = zeros(n_dcud,k);
       for j = 1:n_dcud
@@ -294,13 +420,23 @@ if n_svc~=0
       dxsvc_dc = zeros(1,k);
    end
 else
-   B_cv = zeros(1,k);dB_cv = zeros(1,k); svc_sig = zeros(1,k);svc_dsig = zeros(1,k);
-   B_con = zeros(1,k);dB_con=zeros(1,k);
-   xsvc_dc = zeros(1,k);dxsvc_dc = zeros(1,k);
+   B_cv = zeros(1,k);
+   dB_cv = zeros(1,k); 
+   svc_sig = zeros(1,k);
+   svc_dsig = zeros(1,k);
+   B_con = zeros(1,k);
+   dB_con=zeros(1,k);
+   xsvc_dc = zeros(1,k);
+   dxsvc_dc = zeros(1,k);
    d_sig = zeros(1,k);
 end
+
 if n_tcsc~=0
-   B_tcsc = zeros(n_tcsc,k); dB_tcsc = zeros(n_tcsc,k);tcsc_sig = zeros(n_tcsc,k);tcsc_dsig=zeros(n_tcsc,k);
+   B_tcsc = zeros(n_tcsc,k); 
+   dB_tcsc = zeros(n_tcsc,k);
+   tcsc_sig = zeros(n_tcsc,k);
+   tcsc_dsig=zeros(n_tcsc,k);
+
    if n_tcscud~=0
       td_sig = zeros(n_tcscud,k);%input to tcsc damping control
       for j = 1:n_tcscud
@@ -317,33 +453,55 @@ if n_tcsc~=0
       xtcsc_dc = zeros(1,k);
       dxtcsc_dc = zeros(1,k);
    end
+
 else
-   B_tcsc = zeros(1,k);dB_tcsc = zeros(1,k); tcsc_sig = zeros(1,k);tcsc_dsig = zeros(1,k);
-   xtcsc_dc = zeros(1,k);dxtcsc_dc = zeros(1,k);
+   B_tcsc = zeros(1,k);
+   dB_tcsc = zeros(1,k); 
+   tcsc_sig = zeros(1,k);
+   tcsc_dsig = zeros(1,k);
+   xtcsc_dc = zeros(1,k);
+   dxtcsc_dc = zeros(1,k);
    td_sig = zeros(1,k);
 end
 
 if n_lmod ~= 0
-   lmod_st = zeros(n_lmod,k); dlmod_st = lmod_st; lmod_sig = lmod_st;
+   lmod_st = zeros(n_lmod,k); 
+   dlmod_st = lmod_st; 
+   lmod_sig = lmod_st;
 else
-   lmod_st = zeros(1,k); dlmod_st = lmod_st; lmod_sig = lmod_st;
+   lmod_st = zeros(1,k); 
+   dlmod_st = lmod_st; 
+   lmod_sig = lmod_st;
 end
+
 if n_rlmod ~= 0
-   rlmod_st = zeros(n_rlmod,k); drlmod_st = rlmod_st; rlmod_sig = rlmod_st;
+   rlmod_st = zeros(n_rlmod,k); 
+   drlmod_st = rlmod_st; 
+   rlmod_sig = rlmod_st;
 else
-   rlmod_st = zeros(1,k); drlmod_st = rlmod_st; rlmod_sig = rlmod_st;
+   rlmod_st = zeros(1,k); 
+   drlmod_st = rlmod_st; 
+   rlmod_sig = rlmod_st;
 end
 
-%Initialize pwrmod
+%% Initialize pwrmod
 if n_pwrmod ~= 0
-    pwrmod_p_st = zeros(n_pwrmod,k); dpwrmod_p_st = pwrmod_p_st; pwrmod_p_sig = pwrmod_p_st;
-    pwrmod_q_st = zeros(n_pwrmod,k); dpwrmod_q_st = pwrmod_q_st; pwrmod_q_sig = pwrmod_q_st;
+    pwrmod_p_st = zeros(n_pwrmod,k); 
+	dpwrmod_p_st = pwrmod_p_st; 
+	pwrmod_p_sig = pwrmod_p_st;
+    pwrmod_q_st = zeros(n_pwrmod,k); 
+	dpwrmod_q_st = pwrmod_q_st; 
+	pwrmod_q_sig = pwrmod_q_st;
 else
-    pwrmod_p_st = zeros(1,k); dpwrmod_p_st = pwrmod_p_st; pwrmod_p_sig = pwrmod_p_st;
-    pwrmod_q_st = zeros(1,k); dpwrmod_q_st = pwrmod_q_st; pwrmod_q_sig = pwrmod_q_st;
+    pwrmod_p_st = zeros(1,k); 
+	dpwrmod_p_st = pwrmod_p_st; 
+	pwrmod_p_sig = pwrmod_p_st;
+    pwrmod_q_st = zeros(1,k); 
+	dpwrmod_q_st = pwrmod_q_st; 
+	pwrmod_q_sig = pwrmod_q_st;
 end
 
-%Initialize ivmmod sigs
+%% Initialize ivmmod sigs
 if n_ivm ~= 0
     ivmmod_d_sig = zeros(n_ivm,k);
     ivmmod_e_sig = zeros(n_ivm,k);
@@ -354,7 +512,7 @@ end
    
 sys_freq = ones(1,k);
 disp('constructing reduced y matrices')
-% step 1: construct reduced Y matrices 
+%% step 1: construct reduced Y matrices 
 disp('initializing motor,induction generator, svc and dc control models')       
 bus = mac_ind(0,1,bus,0);% initialize induction motor
 bus = mac_igen(0,1,bus,0); % initialize induction generator
@@ -365,7 +523,7 @@ f = dc_cont(0,1,1,bus,0);% initialize dc controls
 
 y_switch % calculates the reduced y matrices for the different switching conditions
 disp('initializing other models')
-% step 2: initialization
+%% step 2: initialization
 theta(1:n_bus,1) = bus(:,3)*pi/180;
 bus_v(1:n_bus,1) = bus(:,2).*exp(jay*theta(1:n_bus,1));
 if n_dcud ~=0
@@ -377,11 +535,23 @@ if n_dcud ~=0
       if svc_bn~=from_bus&svc_bn~=to_bus;error('the svc is not at the end of the specified line');end
       V1 = bus_v(from_bus,1);
       V2 = bus_v(to_bus,1);
-      R = line(l_num,3);X=line(l_num,4);B=line(l_num,5);tap = line(l_num,6);phi = line(l_num,7);
-      [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);l_if0(j)=l_if;l_it0(j)=l_it;
-      if svc_bn == from_bus; d_sig(j,1)=abs(l_if);elseif svc_bn==to_bus;d_sig(j,1)=abs(l_it);end
+      R = line(l_num,3);
+	  X=line(l_num,4);
+	  B=line(l_num,5);
+	  tap = line(l_num,6);
+	  phi = line(l_num,7);
+      [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
+	  l_if0(j)=l_if;
+	  l_it0(j)=l_it;
+
+      if svc_bn == from_bus
+		d_sig(j,1)=abs(l_if);
+	  elseif svc_bn==to_bus;
+		d_sig(j,1)=abs(l_it);
+	  end
    end
 end
+
 if n_tcscud ~=0
    % calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
    for j=1:n_tcscud
@@ -422,12 +592,16 @@ if n_conv~=0
    if ndci_ud~=0
       % calculate the initial value of bus angles inverter user defined control
       for j = 1:ndci_ud
-         b_num1 = dci_dc{j,3};b_num2 = dci_dc{j,4};conv_num = dci_dc{j,2};
+         b_num1 = dci_dc{j,3};
+         b_num2 = dci_dc{j,4};
+         conv_num = dci_dc{j,2};
          angdci(j,:)=theta(bus_int(b_num1),1)-theta(bus_int(b_num2),1);
          dcid_sig(j,:)=angdci(j,:);
       end
    end      
 end
+
+%% Flag = 0
 flag = 0;
 bus_int = bus_intprf;% pre-fault system
 disp('generators')
@@ -445,7 +619,7 @@ f = exc_dc12(0,1,bus,flag);
 f = tg(0,1,bus,flag); 
 f = tg_hydro(0,1,bus,flag);
 
-% initialize ivm modulation control
+%% initialize ivm modulation control
 if n_ivm~=0
     disp('ivm modulation')
     [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],bus,t,1,flag);
@@ -457,47 +631,60 @@ if n_ivm~=0
     divmmod_e_sigst = ivmmod_d_sigst;
     for index=1:n_ivm
         if ((size(Dini{index},2)~=1) || (size(Eini{index},2)~=1)); error('Dimension error in ivmmod_dyn'); end
-        divmmod_d_sigst{index} = zeros(size(Dini{index},1),k); ivmmod_d_sigst{index} = Dini{index}*ones(1,k); 
-        divmmod_e_sigst{index} = zeros(size(Eini{index},1),k); ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
+        divmmod_d_sigst{index} = zeros(size(Dini{index},1),k); 
+        ivmmod_d_sigst{index} = Dini{index}*ones(1,k); 
+        divmmod_e_sigst{index} = zeros(size(Eini{index},1),k); 
+        ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
     end
     clear index Dini Eini
 end
 
-% initialize svc damping controls
+%% initialize svc damping controls
 if n_dcud~=0
    tot_states=0;
    for i = 1:n_dcud
-      ysvcmx = svc_dc{i,4};ysvcmn = svc_dc{i,5};
+      ysvcmx = svc_dc{i,4};
+      ysvcmn = svc_dc{i,5};
       svc_num = svc_dc{i,2};
-      st_state = tot_states+1; svc_states = svc_dc{i,6}; tot_states = tot_states+svc_states; 
+      st_state = tot_states+1; 
+      svc_states = svc_dc{i,6}; 
+      tot_states = tot_states+svc_states; 
       [svc_dsig(svc_num,1),xsvc_dc(st_state:tot_states,1),dxsvc_dc(st_state:tot_states,1)] =...
          svc_sud(i,1,flag,svc_dc{i,1},d_sig(i,1),ysvcmx,ysvcmn);
    end
 end
-% initialize tcsc damping controls
+
+%% initialize tcsc damping controls
 if n_tcscud~=0
    tot_states=0;
    for i = 1:n_tcscud
-      ytcscmx = tcsc_dc{i,4};ytcscmn = tcsc_dc{i,5};
+      ytcscmx = tcsc_dc{i,4};
+      ytcscmn = tcsc_dc{i,5};
       tcsc_num = tcsc_dc{i,2};
-      st_state = tot_states+1; tcsc_states = tcsc_dc{i,6}; tot_states = tot_states+tcsc_states; 
+      st_state = tot_states+1; 
+      tcsc_states = tcsc_dc{i,6}; 
+      tot_states = tot_states+tcsc_states; 
       [tcsc_dsig(tcsc_num,1),xtcsc_dc(st_state:tot_states,1),dxtcsc_dc(st_state:tot_states,1)] =...
          tcsc_sud(i,1,flag,tcsc_dc{i,1},td_sig(i,1),ytcscmx,ytcscmn);
    end
 end
+
+%% initialize rectifier damping controls
 if ndcr_ud~=0
-   % initialize rectifier damping controls
    tot_states=0;
    for i = 1:ndcr_ud
       ydcrmx = dcr_dc{i,5};ydcrmn = dcr_dc{i,6};
       rec_num = dcr_dc{i,2};
-      st_state = tot_states+1; dcr_states = dcr_dc{i,7}; tot_states = tot_states+dcr_states; 
+      st_state = tot_states+1; 
+      dcr_states = dcr_dc{i,7}; 
+      tot_states = tot_states+dcr_states; 
       [dcr_dsig(rec_num,1),xdcr_dc(st_state:tot_states,1),dxdcr_dc(st_state:tot_states,1)] = ...
          dcr_sud(i,1,flag,dcr_dc{i,1},dcrd_sig(i,1),ydcrmx,ydcrmn);
    end
 end
+
+%% initialize inverter damping controls
 if ndci_ud~=0
-   % initialize inverter damping controls
    tot_states=0;
    for i = 1:ndci_ud
       ydcimx = dci_dc{i,5};ydcrmn = dci_dc{i,6};
@@ -508,7 +695,7 @@ if ndci_ud~=0
    end
 end
 
-% initialize load modulation control
+%% initialize load modulation control
 if ~isempty(lmod_con)
    disp('load modulation')
    f = lmod(0,1,bus,flag);
@@ -518,7 +705,7 @@ if ~isempty(rlmod_con)
    f = rlmod(0,1,bus,flag);
 end
 
-% initialize power modulation control
+%% initialize power modulation control
 if n_pwrmod~=0
    disp('power modulation')
    f = pwrmod_p(0,1,bus,flag);
@@ -538,7 +725,7 @@ if n_pwrmod~=0
     clear index dp dq Pini Qini
 end
 
-% initialize non-linear loads
+%% initialize non-linear loads
 if ~isempty(load_con)
    disp('non-linear loads')
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);
@@ -563,7 +750,7 @@ if ~isempty(dcsp_con)
    f = dc_line(0,1,1,bus,flag);  
 end
 H_sum = sum(mac_con(:,16)./mac_pot(:,1));
-% step 3: perform a predictor-corrector integration 
+%% step 3: perform a predictor-corrector integration 
 kt = 0;
 ks = 1;
 k_tot = sum(k_inc);
@@ -573,6 +760,8 @@ bus_sim = bus;
 plot_now = 0;
 mac_trip_flags = false(n_mac,1);
 mac_trip_states = 0;
+
+%% Simulation loop start
 while (kt<=ktmax)
    k_start = kt+1;
    if kt==ktmax
@@ -580,14 +769,17 @@ while (kt<=ktmax)
    else
       k_end = kt + k_inc(ks) + 1;
    end
+
    for k = k_start:k_end
-      % step 3a: network solution
+      %% step 3a: network solution
       % mach_ref(k) = mac_ang(syn_ref,k);
       mach_ref(k) = 0;
       pmech(:,k+1) = pmech(:,k);
       tmig(:,k+1) = tmig(:,k);
       
-      if n_conv~=0;cur_ord(:,k+1) = cur_ord(:,k);end
+      if n_conv~=0
+		cur_ord(:,k+1) = cur_ord(:,k);
+	  end
       
       %Trip gen
       [f,mac_trip_states] = mac_trip_logic(mac_trip_flags,mac_trip_states,t,k);
@@ -604,6 +796,7 @@ while (kt<=ktmax)
       f = mac_ivm(0,k,bus_sim,flag);
       f = mdc_sig(t(k),k);
       f = dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
+
       % Calculate current injections and bus voltages and angles
       if k >= sum(k_inc(1:3))+1
          % fault cleared
@@ -617,7 +810,9 @@ while (kt<=ktmax)
          Vr1 = V_rgpf2; 
          Vr2 = V_rncpf2;
          bo = bopf2;
-         h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);     
+         % i_simu forms the network interface variables
+         h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);  
+         
       elseif k >=sum(k_inc(1:2))+1
          % near bus cleared
          line_sim = line_pf1;
@@ -630,6 +825,7 @@ while (kt<=ktmax)
          Vr1 = V_rgpf1; 
          Vr2 = V_rncpf1;
          bo = bopf1;
+         
       elseif k>=k_inc(1)+1
          % fault applied
          line_sim = line_f;
@@ -642,6 +838,7 @@ while (kt<=ktmax)
          Vr1 = V_rgf; 
          Vr2 = V_rncf;
          bo = bof;
+         
       elseif k<k_inc(1)+1
          % pre fault
          line_sim = line;
@@ -655,6 +852,7 @@ while (kt<=ktmax)
          Vr2 = V_rncprf;
          bo = boprf;
       end
+
       %apply gen trip
       if sum(mac_trip_flags)>0.5
           genBuses = mac_con(mac_trip_flags==1,2);
@@ -669,28 +867,38 @@ while (kt<=ktmax)
       %solve
       h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);  
       
-      % HVDC
+      %% HVDC
       if ndcr_ud~=0
          % calculate the new value of bus angles rectifier user defined control
          tot_states=0;
          for jj = 1:ndcr_ud
-            b_num1 = dcr_dc{jj,3};b_num2 = dcr_dc{jj,4};conv_num = dcr_dc{jj,2};
+            b_num1 = dcr_dc{jj,3};
+			b_num2 = dcr_dc{jj,4};
+			conv_num = dcr_dc{jj,2};
             angdcr(jj,k)=(theta(bus_int(b_num1),k)-theta(bus_int(b_num2),k));
             dcrd_sig(jj,k)=angdcr(jj,k);
-            st_state = tot_states+1; dcr_states = dcr_dc{jj,7}; tot_states = tot_states+dcr_states; 
-            ydcrmx=dcr_dc{jj,5};ydcrmn = dcr_dc{jj,6};
+            st_state = tot_states+1; 
+			dcr_states = dcr_dc{jj,7}; 
+			tot_states = tot_states+dcr_states; 
+            ydcrmx=dcr_dc{jj,5};
+			ydcrmn = dcr_dc{jj,6};
             dcr_dsig(jj,k) = ...
                dcr_sud(jj,k,flag,dcr_dc{jj,1},dcrd_sig(jj,k),ydcrmx,ydcrmn,xdcr_dc(st_state:tot_states,10*(k-1)+1));
          end
       end
+
       if ndci_ud~=0
          % calculate the new value of bus angles inverter user defined control
          for jj = 1:ndci_ud
             tot_states=0;
-            b_num1 = dci_dc{jj,3};b_num2 = dci_dc{jj,4};conv_num = dci_dc{jj,2};
+            b_num1 = dci_dc{jj,3};
+			b_num2 = dci_dc{jj,4};
+			conv_num = dci_dc{jj,2};
             angdci(jj,k)=theta(bus_int(b_num1),k)-theta(bus_int(b_num2),k);
             dcid_sig(jj,k)=(angdci(jj,k)-angdci(jj,k-1))/(t(k)-t(k-1));
-            st_state = tot_states+1; dci_states = dci_dc{jj,7}; tot_states = tot_states+dci_states; 
+            st_state = tot_states+1; 
+			dci_states = dci_dc{jj,7}; 
+			tot_states = tot_states+dci_states; 
             ydcimx=dci_dc{jj,5};ydcimn = dci_dc{jj,6};
             dci_dsig(jj,k) = ...
                dci_sud(jj,k,flag,dci_dc{jj,1},dcid_sig(jj,k),ydcimx,ydcimn,xdci_dc(st_state:tot_states,10*(k-1)+1));
@@ -708,19 +916,27 @@ while (kt<=ktmax)
       f = mtg_sig(t(k),k);
       f = tg(0,k,bus_sim,flag);
       f = tg_hydro(0,k,bus_sim,flag);
+
       if n_dcud~=0
          % set the new line currents
          for jj=1:n_dcud
-            l_num = svc_dc{jj,3};svc_num = svc_dc{jj,2};
-            from_bus = bus_int(line_sim(l_num,1)); to_bus=bus_int(line_sim(l_num,2));
+            l_num = svc_dc{jj,3};
+			svc_num = svc_dc{jj,2};
+            from_bus = bus_int(line_sim(l_num,1)); 
+			to_bus = bus_int(line_sim(l_num,2));
             svc_bn = bus_int(svc_con(svc_num,2));
             V1 = bus_v(from_bus,k);
             V2 = bus_v(to_bus,k);
-            R = line_sim(l_num,3);X=line_sim(l_num,4);B=line_sim(l_num,5);tap = line_sim(l_num,6);phi = line_sim(l_num,7);
+            R = line_sim(l_num,3);
+			X = line_sim(l_num,4);
+			B = line_sim(l_num,5);
+			tap = line_sim(l_num,6);
+			phi = line_sim(l_num,7);
             [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
             if svc_bn == from_bus; d_sig(jj,k)=abs(l_if);elseif svc_bn==to_bus;d_sig(jj,k)=abs(l_it); end
          end
       end
+
       if n_tcscud~=0
          % set the new bus voltages
          for jj=1:n_tcscud
@@ -729,6 +945,7 @@ while (kt<=ktmax)
          end
       end
       
+	  %% live plotting
       i_plot=k-plot_now;
       if i_plot == 10
          plot_now = k;
@@ -740,7 +957,7 @@ while (kt<=ktmax)
          drawnow
      
       end
-      % step 3b: compute dynamics and integrate
+      %% step 3b: compute dynamics and integrate
       flag = 2;
       sys_freq(k) = 1.0;
       f = mpm_sig(t(k),k);
@@ -759,14 +976,18 @@ while (kt<=ktmax)
       f = mtg_sig(t(k),k);
       f = tg(0,k,bus_sim,flag);
       f = tg_hydro(0,k,bus_sim,flag);
+
       if n_svc~=0
          v_svc = abs(bus_v(bus_int(svc_con(:,2)),k));
          if n_dcud~=0
             tot_states=0;
             for jj = 1:n_dcud
-               ysvcmx = svc_dc{jj,4};ysvcmn = svc_dc{jj,5};
+               ysvcmx = svc_dc{jj,4};
+			   ysvcmn = svc_dc{jj,5};
                svc_num = svc_dc{jj,2};
-               st_state = tot_states+1; svc_states = svc_dc{jj,6}; tot_states = tot_states+svc_states; 
+               st_state = tot_states+1; 
+			   svc_states = svc_dc{jj,6}; 
+			   tot_states = tot_states+svc_states; 
                [svc_dsig(svc_num,k),xsvc_dc(st_state:tot_states,k),dxsvc_dc(st_state:tot_states,k)] =...
                   svc_sud(jj,k,flag,svc_dc{jj,1},d_sig(jj,k),ysvcmx,ysvcmn,xsvc_dc(st_state:tot_states,k));
             end
@@ -780,7 +1001,9 @@ while (kt<=ktmax)
             for jj = 1:n_tcscud
                ytcscmx = tcsc_dc{jj,4};ytcscmn = tcsc_dc{jj,5};
                tcsc_num = tcsc_dc{jj,2};
-               st_state = tot_states+1; tcsc_states = tcsc_dc{jj,6}; tot_states = tot_states+tcsc_states; 
+               st_state = tot_states+1; 
+			   tcsc_states = tcsc_dc{jj,6}; 
+			   tot_states = tot_states+tcsc_states; 
                [tcsc_dsig(tcsc_num,k),xtcsc_dc(st_state:tot_states,k),dxtcsc_dc(st_state:tot_states,k)] =...
                   tcsc_sud(jj,k,flag,tcsc_dc{jj,1},td_sig(jj,k),ytcscmx,ytcscmn,xtcsc_dc(st_state:tot_states,k));
             end
@@ -798,7 +1021,7 @@ while (kt<=ktmax)
          f = rlmod(0,k,bus_sim,flag);
       end
     
-      %pwrmod
+      %% pwrmod
       if n_pwrmod~=0
         Pst = cell(n_pwrmod,1);
         Qst = Pst;
@@ -825,7 +1048,7 @@ while (kt<=ktmax)
         clear P Q Pst Qst dp dq index
       end
       
-      %ivm modulation
+      %% ivm modulation
       if n_ivm>0
         dst = cell(n_ivm,1);
         est = dst;
@@ -851,7 +1074,7 @@ while (kt<=ktmax)
         clear d e dd de dst est
       end         
       
-      % integrate dc at ten times rate
+      %% integrate dc at ten times rate (DC Stuff? 5/14/20)
       f = mdc_sig(t(k),k);
       if n_conv~=0
          hdc_sol = h_sol/10;
@@ -867,7 +1090,7 @@ while (kt<=ktmax)
       
       j = k+1;
      
-      % following statements are predictor steps
+      %% following statements are predictor steps
       mac_ang(:,j) = mac_ang(:,k) + h_sol*dmac_ang(:,k); 
       mac_spd(:,j) = mac_spd(:,k) + h_sol*dmac_spd(:,k);
       edprime(:,j) = edprime(:,k) + h_sol*dedprime(:,k);
@@ -908,18 +1131,23 @@ while (kt<=ktmax)
       rlmod_st(:,j) = rlmod_st(:,k)+h_sol*drlmod_st(:,k);
       pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*dpwrmod_p_st(:,k);
       pwrmod_q_st(:,j) = pwrmod_q_st(:,k)+h_sol*dpwrmod_q_st(:,k);
+
+      %% pwrmod
       if n_pwrmod~=0
           for index=1:n_pwrmod
               pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*dpwrmod_p_sigst{index}(:,k);
               pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*dpwrmod_q_sigst{index}(:,k);
           end
       end
+      %% ivmmod
       if n_ivm~=0
           for index=1:n_ivm
               ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*divmmod_d_sigst{index}(:,k);
               ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*divmmod_e_sigst{index}(:,k);
           end
       end
+
+	  %% Flag = 1
       flag = 1;
       % mach_ref(j) = mac_ang(syn_ref,j);
       mach_ref(j) = 0;
@@ -1001,28 +1229,39 @@ while (kt<=ktmax)
       if ndcr_ud~=0
          tot_states=0;
          for jj = 1:ndcr_ud
-            b_num1 = dcr_dc{jj,3};b_num2 = dcr_dc{jj,4};conv_num = dcr_dc{jj,2};
+            b_num1 = dcr_dc{jj,3};
+			b_num2 = dcr_dc{jj,4};
+			conv_num = dcr_dc{jj,2};
             angdcr(jj,j)=theta(bus_int(b_num1),j)-theta(bus_int(b_num2),j);
             dcrd_sig(jj,j)=angdcr(jj,j);
-            st_state = tot_states+1; dcr_states = dcr_dc{jj,7}; tot_states = tot_states+dcr_states; 
-            ydcrmx=dcr_dc{jj,5};ydcrmn = dcr_dc{jj,6};
+            st_state = tot_states+1; 
+			dcr_states = dcr_dc{jj,7}; 
+			tot_states = tot_states+dcr_states; 
+            ydcrmx=dcr_dc{jj,5};
+			ydcrmn = dcr_dc{jj,6};
             dcr_dsig(jj,j) = ...
                dcr_sud(jj,j,flag,dcr_dc{jj,1},dcrd_sig(jj,j),ydcrmx,ydcrmn,xdcr_dc(st_state:tot_states,10*(j-1)+1));
          end
       end
+
       if ndci_ud~=0
          % calculate the new value of bus angles inverter user defined control
          for jj = 1:ndci_ud
             tot_states=0;
-            b_num1 = dci_dc{jj,3};b_num2 = dci_dc{jj,4};conv_num = dci_dc{jj,2};
+            b_num1 = dci_dc{jj,3};
+			b_num2 = dci_dc{jj,4};
+			conv_num = dci_dc{jj,2};
             angdci(jj,j)=theta(bus_int(b_num1),j)-theta(bus_int(b_num2),j);
             dcid_sig(jj,j)=(angdci(jj,j)-angdci(jj,k))/(t(j)-t(k));
-            st_state = tot_states+1; dci_states = dci_dc{jj,7}; tot_states = tot_states+dci_states; 
+            st_state = tot_states+1; 
+			dci_states = dci_dc{jj,7}; 
+			tot_states = tot_states+dci_states; 
             ydcimx=dci_dc{jj,5};ydcimn = dci_dc{jj,6};
             dci_dsig(jj,j) = ...
                dci_sud(jj,j,flag,dci_dc{jj,1},dcid_sig(jj,j),ydcimx,ydcimn,xdci_dc(st_state:tot_states,10*(j-1)+1));
          end
       end 
+
       f = dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
       f = dpwf(0,j,bus_sim,flag);
       f = pss(0,j,bus_sim,flag);
@@ -1033,6 +1272,7 @@ while (kt<=ktmax)
       f = exc_dc12(0,j,bus_sim,flag);
       f = tg(0,j,bus_sim,flag); 
       f = tg_hydro(0,j,bus_sim,flag);
+
       if n_dcud~=0
          % set the new line currents
          for jj=1:n_dcud
@@ -1041,7 +1281,10 @@ while (kt<=ktmax)
             svc_bn = bus_int(svc_con(svc_num,2));
             V1 = bus_v(from_bus,j);
             V2 = bus_v(to_bus,j);
-            R = line_sim(l_num,3);X=line_sim(l_num,4);B=line_sim(l_num,5);tap = line_sim(l_num,6);phi = line_sim(l_num,7);
+            R = line_sim(l_num,3);X=line_sim(l_num,4);
+			B=line_sim(l_num,5);
+			tap = line_sim(l_num,6);
+			phi = line_sim(l_num,7);
             [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
             if svc_bn == from_bus; 
                d_sig(jj,j)=abs(l_if);            
@@ -1050,6 +1293,7 @@ while (kt<=ktmax)
             end
          end
       end
+
       if n_tcscud~=0
          % set the new line currents
          for jj=1:n_tcscud
@@ -1058,14 +1302,14 @@ while (kt<=ktmax)
          end
       end
       
-      
+	  %% Flag = 2
       flag = 2;
       f = mac_ind(0,j,bus_sim,flag);
       f = mac_igen(0,j,bus_sim,flag);
       f = mac_sub(0,j,bus_sim,flag);
       f = mac_tra(0,j,bus_sim,flag);
       f = mac_em(0,j,bus_sim,flag);
-      f - dpwf(0,j,bus_sim,flag);
+      f = dpwf(0,j,bus_sim,flag);
       f = pss(0,j,bus_sim,flag);
       f = mexc_sig(t(j),j);
       f = smpexc(0,j,bus_sim,flag);
@@ -1075,6 +1319,7 @@ while (kt<=ktmax)
       f = mtg_sig(t(j),j);
       f = tg(0,j,bus_sim,flag);
       f = tg_hydro(0,j,bus_sim,flag);
+
       if n_svc~=0
          f = msvc_sig(t(j),j);
          if n_dcud~=0
@@ -1113,6 +1358,7 @@ while (kt<=ktmax)
          f = rml_sig(t,j);
          f = rlmod(0,j,bus_sim,flag);
       end
+      
       if n_pwrmod~=0
         Pst = cell(n_pwrmod,1);
         Qst = Pst;
@@ -1131,13 +1377,16 @@ while (kt<=ktmax)
             dpwrmod_q_sigst{index}(:,j) = dq{index};
         end
         [P,Q,~,~,~,~] = pwrmod_dyn(Pst,Qst,bus,t,j,1,n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
-        if (length(P)~=n_pwrmod) || (length(Q)~=n_pwrmod); error('Dimension error in pwrmod_dyn'); end
+        if (length(P)~=n_pwrmod) || (length(Q)~=n_pwrmod)
+			error('Dimension error in pwrmod_dyn'); 
+		end
         pwrmod_p_sig(:,j) = P;
         pwrmod_q_sig(:,j) = Q;
         f = pwrmod_p(0,j,bus_sim,flag);
         f = pwrmod_q(0,j,bus_sim,flag);
         clear P Q Pst Qst dp dq index
       end
+      
       if n_ivm>0
         dst = cell(n_ivm,1);
         est = dst;
@@ -1174,29 +1423,19 @@ while (kt<=ktmax)
          f = dc_cont(0,j,j,bus_sim,2);
          f = dc_line(0,j,j,bus_sim,2);
       end
-      % following statements are corrector steps
-      mac_ang(:,j) = mac_ang(:,k) +...
-         h_sol*(dmac_ang(:,k)+dmac_ang(:,j))/2.;
-      mac_spd(:,j) = mac_spd(:,k) +...
-         h_sol*(dmac_spd(:,k)+dmac_spd(:,j))/2.;
-      edprime(:,j) = edprime(:,k) +...
-         h_sol*(dedprime(:,k)+dedprime(:,j))/2.;
-      eqprime(:,j) = eqprime(:,k) +...
-         h_sol*(deqprime(:,k)+deqprime(:,j))/2.;
-      psikd(:,j) = psikd(:,k) +...
-         h_sol*(dpsikd(:,k)+dpsikd(:,j))/2.;
-      psikq(:,j) = psikq(:,k) +...
-         h_sol*(dpsikq(:,k)+dpsikq(:,j))/2.;
-      Efd(:,j) = Efd(:,k) +...
-         h_sol*(dEfd(:,k)+dEfd(:,j))/2.;
-      V_R(:,j) = V_R(:,k) +...
-         h_sol*(dV_R(:,k)+dV_R(:,j))/2.;
-      V_As(:,j) = V_As(:,k) +...
-         h_sol*(dV_As(:,k)+dV_As(:,j))/2.;
-      R_f(:,j) = R_f(:,k) +...
-         h_sol*(dR_f(:,k)+dR_f(:,j))/2.;
-      V_TR(:,j) = V_TR(:,k) +...
-         h_sol*(dV_TR(:,k)+dV_TR(:,j))/2.;
+
+      %% following statements are corrector steps
+      mac_ang(:,j) = mac_ang(:,k) + h_sol*(dmac_ang(:,k)+dmac_ang(:,j))/2.;
+      mac_spd(:,j) = mac_spd(:,k) + h_sol*(dmac_spd(:,k)+dmac_spd(:,j))/2.;
+      edprime(:,j) = edprime(:,k) + h_sol*(dedprime(:,k)+dedprime(:,j))/2.;
+      eqprime(:,j) = eqprime(:,k) + h_sol*(deqprime(:,k)+deqprime(:,j))/2.;
+      psikd(:,j) = psikd(:,k) + h_sol*(dpsikd(:,k)+dpsikd(:,j))/2.;
+      psikq(:,j) = psikq(:,k) + h_sol*(dpsikq(:,k)+dpsikq(:,j))/2.;
+      Efd(:,j) = Efd(:,k) + h_sol*(dEfd(:,k)+dEfd(:,j))/2.;
+      V_R(:,j) = V_R(:,k) + h_sol*(dV_R(:,k)+dV_R(:,j))/2.;
+      V_As(:,j) = V_As(:,k) + h_sol*(dV_As(:,k)+dV_As(:,j))/2.;
+      R_f(:,j) = R_f(:,k) + h_sol*(dR_f(:,k)+dR_f(:,j))/2.;
+      V_TR(:,j) = V_TR(:,k) + h_sol*(dV_TR(:,k)+dV_TR(:,j))/2.;
       sdpw11(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
       sdpw12(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
       sdpw13(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
@@ -1239,18 +1478,24 @@ while (kt<=ktmax)
           end
       end
    end
+   % counter increment
    kt = kt + k_inc(ks);
    ks = ks+1; 
-end
+end% end simulation loop
+
+% calculation of line currents post sim
 V1 = bus_v(bus_int(line(:,1)),:);
 V2 = bus_v(bus_int(line(:,2)),:);
 R = line(:,3); X = line(:,4); B = line(:,5);
 tap = line(:,6); phi = line(:,7);
 [ilf,ilt]=line_cur(V1,V2,R,X,B,tap,phi);%line currents
+
+% full sim timing
 et = toc;
 ets = num2str(et);
 disp(['elapsed time = ' ets 's'])
 
+% commented out user input for batch run
 % flag = 0;
 % while(flag == 0)
 %    disp('You can examine the system response')
@@ -1341,6 +1586,8 @@ disp(['elapsed time = ' ets 's'])
 %       error('invalid selection')
 %    end
 % end
+
+%% DC stuff? (5/14/20)
 t_dc=t_dc(1:length(t_dc)-10);
 i_dc=i_dc(:,1:length(t_dc));
 i_dcr=i_dcr(:,1:length(t_dc));
@@ -1361,7 +1608,7 @@ v_dcc= v_dcc(:,1:length(t_dc));
 di_dci= di_dci(:,1:length(t_dc));
 di_dcr=di_dcr(:,1:length(t_dc));
 
-% tidy workspace
+%% 'tidy' workspace....
 clear B H_sum IHT  R  SHT   VLT          
 clear V_rgf V_rgpf1 V_rgpf2 V_rgprf V_rncf V_rncpf1 V_rncpf2 V_rncprf Vdc_ref      
 clear Vr1 Vr2 X Y1 Y2 Y3 Y4           
