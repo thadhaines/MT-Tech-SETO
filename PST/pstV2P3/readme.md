@@ -68,12 +68,12 @@ rlmod - modulates selected reactive loads
 rltf - calculates root locus for transfer function feedback around state space system  
 rml_sig - forms modulation signal for reactive loads  
 rootloc - calculates rootlocus for scalar feedback around state space system  
-s_simu - transient simulation driver  
+s_simu - transient simulation driver (replaced by s_simu_Batch)  
 s_simu_Batch - modified transient simulation driver for batch runs  
 sd_torque - calculates generator synchronizing and damping torques  
 smpexc - simple exciter model  
 stab_d - interactive pss design  
-stab_f - pss frequency response  
+stab_f - pss frequency response (renamed stabf?)  
 statef - frequency response from state space  
 step_res - step response from state space  
 svc - static VAR compensator  
@@ -99,4 +99,21 @@ insimit - simultaneous iteration on inverse A
 ivmmod_dyn - Implement state or output variables to model power injection   
 mac_ivm - Internal Voltage Model type generator   
 mtcsc_sig - modulation signal for tcsc control*   
-
+nm_if - network-machine interface  
+p_dpw - perturb the deltaP/omega filter variables  
+pss_des_gain16 - used to select the PSS gain for the 16 machine system  
+pwrm_indx - determines the relationship between pwrmod and nc loads  
+pwrmod_dyn - Implement state or output variables to model power injection  
+pwrmod_indx - determines the relationship between pwrmod and nc loads (duplicate?)  
+smppi - simple excitation system with pi avr  
+stabf - calculates the phase lag through the exciter and generator (same as stab_f?)  
+svc_Open_Loop - static var system, built from svc?  
+svc_sud - svc user defined damping control  
+svm_mgen_Batch - modified svn_mgen   
+swcap - no comments - useful?  
+switch - switching point generation   
+tcsc - thyristor controlled series capacitor  
+tcsc_indx - determines the relationship between tcsc and nc loads  
+tcsc_sud - tcsc user defined damping control  
+time_stamp - returns parsed time string  
+ybus - build admittance matrix Y from the line data (loadflow function)   
