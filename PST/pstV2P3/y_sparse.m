@@ -80,7 +80,7 @@ end
   C_line = C_from - C_to;
 
 % form Y matrix from primative line ys and connection matrices
-  Y=C_from*chrg*C_from' + C_to*chrg*C_to' ;
+  Y = C_from*chrg*C_from' + C_to*chrg*C_to' ;
   Y = Y + C_line*y*C_line';
   Gb = bus(:,8);     % bus conductance
   Bb = bus(:,9);     % bus susceptance

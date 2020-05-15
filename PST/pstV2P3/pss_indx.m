@@ -17,7 +17,7 @@ if ~isempty(pss_con)
   n_pss = length(pss_idx);
   pss_mb_idx = mac_int(round(pss_con(:,2)));
   for jpss = 1:n_pss
-     pss_exc_idx(jpss) = find(round(pss_con(jpss,2))==round(exc_con(:,2))); 
+     pss_exc_idx(jpss) = find(round(pss_con(jpss,2))== round(exc_con(:,2))); 
      if isempty(pss_exc_idx(jpss));error('you must have an exciter at the same generator as a pss');end  
   end
   if n_pss~=0

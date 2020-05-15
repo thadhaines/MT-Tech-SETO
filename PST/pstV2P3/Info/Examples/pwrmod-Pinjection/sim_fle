@@ -1,4 +1,4 @@
-# Created by Octave 5.2.0, Thu May 14 10:09:44 2020 GMT <unknown@thad-HP>
+# Created by Octave 5.2.0, Thu May 14 17:53:36 2020 GMT <unknown@thad-HP>
 # name: bus
 # type: matrix
 # rows: 6
@@ -21,15 +21,5 @@
  5 3 0 1.5 0 1 0 0 0 0
  2 3 0 1 0 1 0 0 0 0
  1 2 0 5 0 1 0 0 0 0
-
-
-# name: n_conv
-# type: global scalar
-0
-
-
-# name: n_dcl
-# type: global scalar
-0
 
 

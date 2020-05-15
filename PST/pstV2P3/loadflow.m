@@ -52,6 +52,7 @@ global Qg bus_type g_bno PQV_no PQ_no ang_red volt_red
 global Q Ql
 global gen_chg_idx
 global ac_line n_dcl
+
 tt = clock;     % start the total time clock
 jay = sqrt(-1);
 load_bus = 3;
@@ -67,7 +68,7 @@ if isempty(iter_max);iter_max = 30;end
 if isempty(acc);acc = 1.0; end;
 if isempty(display);display = 'n';end;
 
-if flag <1 | flag > 2
+if flag <1 || flag > 2
    error('LOADFLOW: flag not recognized')
 end
 [nline nlc] = size(line);    % number of lines and no of line cols
@@ -76,11 +77,16 @@ end
 % bus data defaults
 if ncol<15
    % set generator var limits
+   
    if ncol<12
       bus(:,11) = 9999*ones(nbus,1);
       bus(:,12) = -9999*ones(nbus,1);
    end 
-   if ncol<13;bus(:,13) = ones(nbus,1);end
+   
+   if ncol<13
+       bus(:,13) = ones(nbus,1);
+   end
+   
    bus(:,14) = 1.5*ones(nbus,1);
    bus(:,15) = 0.5*ones(nbus,1);
    volt_min = bus(:,15);
@@ -89,20 +95,36 @@ else
    volt_min = bus(:,15);
    volt_max = bus(:,14);
 end
+
 no_vmin_idx = find(volt_min==0);
+
 if ~isempty(no_vmin_idx)
    volt_min(no_vmin_idx) = 0.5*ones(length(no_vmin_idx),1);
 end
+
 no_vmax_idx = find(volt_max==0);
+
 if ~isempty(no_vmax_idx)
    volt_max(no_vmax_idx) = 1.5*ones(length(no_vmax_idx),1);
 end
+
 no_mxv = find(bus(:,11)==0);
 no_mnv = find(bus(:,12)==0);
-if ~isempty(no_mxv);bus(no_mxv,11)=9999*ones(length(no_mxv),1);end
-if ~isempty(no_mnv);bus(no_mnv,12) = -9999*ones(length(no_mnv),1);end
+
+if ~isempty(no_mxv)
+    bus(no_mxv,11)=9999*ones(length(no_mxv),1);
+end
+
+if ~isempty(no_mnv)
+    bus(no_mnv,12) = -9999*ones(length(no_mnv),1);
+end
+
 no_vrate = find(bus(:,13)==0);
-if ~isempty(no_vrate);bus(no_vrate,13) = ones(length(no_vrate),1);end
+
+if ~isempty(no_vrate)
+    bus(no_vrate,13) = ones(length(no_vrate),1);
+end
+
 tap_it = 0;
 tap_it_max = 10;
 no_taps = 0;
@@ -116,7 +138,7 @@ end
 % outer loop for on-load tap changers
 
 mm_chk=1;
-while (tap_it<tap_it_max&mm_chk)
+while (tap_it < tap_it_max && mm_chk)
    tap_it = tap_it+1;
    % build admittance matrix Y
    [Y,nSW,nPV,nPQ,SB] = y_sparse(bus,line);
@@ -164,10 +186,9 @@ while (tap_it<tap_it_max&mm_chk)
    [delP,delQ,P,Q,conv_flag] =...
       calc(nbus,V,ang,Y,Pg,Qg,Pl,Ql,sw_bno,g_bno,tol);
    
-   
    st = clock;     % start the iteration time clock
    %% start iteration process for main Newton_Raphson solution
-   while (conv_flag == 1 & iter < iter_max)
+   while (conv_flag == 1 && iter < iter_max)
       iter = iter + 1;
       % Form the Jacobean matrix
       clear Jac
@@ -232,11 +253,13 @@ if ~isempty(vmn_idx)
    bus(vmn_idx,1)' 
    disp('are at the min limit');
 end 
+
 gen_index=find(bus_type==2);
 load_index = find(bus_type==3);
 Pg(gen_index) = P(gen_index) + Pl(gen_index);
 Qg(gen_index) = Q(gen_index) + Ql(gen_index);
 gend_idx = find((bus(:,10)==2)&(bus_type~=2));
+
 if ~isempty(gend_idx)
    disp('the following generators are at their var limits')
    disp('    bus#    Qg')
@@ -245,6 +268,7 @@ if ~isempty(gend_idx)
    Qg(gend_idx)=Qg(gend_idx)-Qlg;% restore the generator vars
    Ql(gend_idx)=bus(gend_idx,7);% restore the original load vars
 end
+
 Pl(load_index) = Pg(load_index) - P(load_index);
 Ql(load_index) = Qg(load_index) - Q(load_index);
 
@@ -266,23 +290,24 @@ chrg = line(:,5);
 z = r + jay*rx;
 y = ones(nline,1)./z;
 
-
 MW_s = VV(from_int).*conj((VV(from_int) - tps.*VV(to_int)).*y ...
    + VV(from_int).*(jay*chrg/2))./(tps.*conj(tps));
-P_s = real(MW_s);     % active power sent out by from_bus
-% to to_bus
-Q_s = imag(MW_s);     % reactive power sent out by 
-% from_bus to to_bus
+
+P_s = real(MW_s);     % active power sent out by from_bus to to_bus
+
+Q_s = imag(MW_s);     % reactive power sent out by from_bus to to_bus 
+
 MW_r = VV(to_int).*conj((VV(to_int) ...
    - VV(from_int)./tps).*y ...
    + VV(to_int).*(jay*chrg/2));
-P_r = real(MW_r);     % active power received by to_bus 
-% from from_bus
-Q_r = imag(MW_r);     % reactive power received by 
-% to_bus from from_bus
+
+P_r = real(MW_r);     % active power received by to_bus from from_bus
+Q_r = imag(MW_r);     % reactive power received by to_bus from from_bus
+
 iline = [1:1:nline]';
 line_ffrom = [iline from_bus to_bus P_s Q_s];
 line_fto   = [iline to_bus from_bus P_r Q_r];
+
 % keyboard
 P_loss = sum(P_s) + sum(P_r) ;
 Q_loss = sum(Q_s) + sum(Q_r) ;
