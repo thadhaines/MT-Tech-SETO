@@ -37,6 +37,12 @@ delete([PSTpath 'ivmmod_dyn.m']); copyfile('ivmmod_dyn_Example1.m',[PSTpath 'ivm
 s_simu_Batch %Run PST
 save('Exmaple1_NonlinearSim'); %Save
 
+%% clean up
+delete('PSTpath') % generated in this script
+delete('PSTpath.mat') % generated in this script
+delete('sim_fle') % generated from PST...
+delete('sim_fle.mat') % generated from PST...
+
 %% Plot results from earlier sim
 % load trip on bus 6, gen 2 = ivm, gen1 hydrogov , 
 figure

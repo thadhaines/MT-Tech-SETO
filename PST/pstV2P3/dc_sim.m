@@ -18,10 +18,6 @@ global dv_conr
 global v_coni
 global dv_coni 
 
-
-
-
-
 % predictor
 kdc = 10*(k-1)+ kk; jdc=kdc+1;
 if n_conv~=0
