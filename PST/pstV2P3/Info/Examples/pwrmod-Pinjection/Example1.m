@@ -19,7 +19,7 @@ addpath(PSTpath)
 save PSTpath PSTpath
 
 %% Run nonlinear simulation and store results
-clear all; close all; clc
+clear all;
 load PSTpath
 delete([PSTpath 'DataFile.m']); % clear previous system settings (if applicable)
 copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); % Place new system data file
@@ -30,7 +30,7 @@ save('Exmaple1_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t a
 
 %% Build linear model, simulate, and store results
 %Build linear model
-clear all; clc; close all
+clear all;
 load PSTpath
 delete([PSTpath 'DataFile.m']); % clear previous system settings (if applicable)
 copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
@@ -74,7 +74,7 @@ tL = tL';
 save('Exmaple1_LinearSim','tL','bus_vL'); %Save linear results
 
 %% Plot Nonlinear vs Linear
-clear all; clc
+clear all;
 load('Exmaple1_NonlinearSim','t','bus_v');
 load('Exmaple1_LinearSim','tL','bus_vL');
 figure(2)

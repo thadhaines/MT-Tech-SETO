@@ -5,6 +5,7 @@
 % https://wiki.octave.org/Differences_between_Octave_and_Matlab
 warning('off', 'Octave:possible-matlab-short-circuit-operator'); # supress warning about | and & usage vs || and &&
 pkg load control % for ss functionality
+
 % Tested with octave 5.2.0
 % requires stepfun for linear model - this function is recreated from matlab function
 % file saving / loading requires explicit .mat specification - sometimes?

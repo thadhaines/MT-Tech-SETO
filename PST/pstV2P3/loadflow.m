@@ -237,7 +237,7 @@ if tap_it >= tap_it_max
    titstr = int2str(tap_it_max);
    disp(['tap iteration failed to converge after',titstr,' iterations'])
 else
-   disp(' tap iterations ')
+   disp('tap iterations ')
    disp(tap_it)
 end   
 ste = clock;     % end the iteration time clock

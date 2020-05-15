@@ -66,11 +66,12 @@
 % Copyright - Joe Chow/Cherry Tree Scientific Software 1991-1997
 %
 
-clear all; clc
+clear all
 clear global
 close all %graphics windows
 % set up global variables
 pst_var
+tic % set timer
 
 jay = sqrt(-1);
 %
@@ -95,6 +96,8 @@ eval('DataFile');
 if isempty(mac_con)
    error(' the selected file is not a valid data file')
 end
+
+% assume 60 Hz and 100 MVA base
 sys_freq = 60;%input('enter the base system frequency in Hz - [60]');
 if isempty(sys_freq);sys_freq = 60;end
 basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
@@ -330,8 +333,9 @@ f = dc_cont(0,1,1,bus,0); % initialize the dc controls - sets up data for red_yb
 v = ones(length(bus(:,1)),2);
 bus_v=v;
 theta = zeros(length(bus(:,1)),2);
-disp(' ')
-disp('Performing linearization')
+
+
+disp('*** Performing linearization')
 % set line parameters
 if ~isempty(lmon_con)
   R = line(lmon_con,3); X = line(lmon_con,4); B = line(lmon_con,5);
@@ -537,13 +541,13 @@ f = mac_sub(0,1,bus,flag);
 f = mac_ib(0,1,bus,flag);
 %calculate initial electrical torque
 psi = psi_re(:,1)+jay*psi_im(:,1);
-if n_mot~=0&n_ig==0
+if n_mot~=0 && n_ig==0
    vmp = vdp(:,1) + jay*vqp(:,1);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
-elseif n_mot==0&n_ig~=0
+elseif n_mot==0 && n_ig~=0
    vmpig = vdpig(:,1) + jay*vqpig(:,1);
    int_volt = [psi; vmpig]; % int volt of synch and ind generators
-elseif n_mot~=0&n_ig~=0
+elseif n_mot~=0 && n_ig~=0
    vmp = vdp(:,1) + jay*vqp(:,1);
    vmpig = vdpig(:,1) + jay*vqpig(:,1);
    int_volt = [psi; vmp; vmpig];   
@@ -667,14 +671,14 @@ if n_dpw~=0
    sdpw6(:,2)=sdpw6(:,1);
 end
 %turbine governor
-if n_tg~=0|n_tgh~=0
+if n_tg~=0 || n_tgh~=0
    tg1(:,2)=tg1(:,1);
    tg2(:,2)=tg2(:,1);
    tg3(:,2)=tg3(:,1);
    tg4(:,2)=tg4(:,1);
    tg5(:,2)=tg5(:,1);
 end
-telect(:,2) =telect(:,1);
+telect(:,2) = telect(:,1);
 if n_mot~=0
    vdp(:,2) = vdp(:,1);
    vqp(:,2) = vqp(:,1);
@@ -851,7 +855,12 @@ else
    damp(nz_eig,1) = -real(l(nz_eig))./abs(l(nz_eig));
 end
 
-
+% full sim timing
+et = toc;
+ets = num2str(et);
+disp(['elapsed time = ' ets 's'])
+disp('*** End linearization')
+disp(' ')
 
 % disp(' the a matrix is contained in a_mat')
 % disp(' l is the vector of eigenvalues')

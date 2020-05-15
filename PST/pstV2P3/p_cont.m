@@ -11,7 +11,7 @@
 vr_input = 0;
 pr_input = 0;
 c_state = 0;
-p_ratio = 1e-5
+p_ratio = 1e-5; % suppressed...
 for k = 1:n_mac
    not_ib = 1;
    if ~isempty(mac_ib_idx);
@@ -110,7 +110,7 @@ for k = 1:n_mac
          end
       end
       
-      if n_tg ~=0|n_tgh~=0
+      if n_tg ~=0 || n_tgh~=0
          c_state = 2;
          tg_number = find(mac_tg == k);
          if isempty(tg_number)

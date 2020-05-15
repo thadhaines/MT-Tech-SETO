@@ -187,7 +187,7 @@ if n_sub~=0
   % end of interface
   end
 
-  if flag == 2 | flag == 3 % generator dynamics calculation
+  if flag == 2 || flag == 3 % generator dynamics calculation
     % vectorized computation
       
       psiqpp = mac_pot(mac_sub_idx,14).*edprime(mac_sub_idx,k) + ...

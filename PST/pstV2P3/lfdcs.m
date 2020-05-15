@@ -36,7 +36,7 @@ global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
 global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tsepr tsepi
 global  Vdc
-disp(' load flow with HVDC')
+disp('load flow with HVDC')
 
 jay = sqrt(-1);
 % perform load flow iterations
