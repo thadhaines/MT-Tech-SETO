@@ -117,6 +117,7 @@ exclusive use of global variables
 switching of fault status via replacing Y matricies requires further study
 batch run assumes 60 Hz, 100 MVA base
 no identifier for multiple lines connecting to same bus
+no area definitions (will be required for AGC)
 no string identifier for any object
 no running log of bus load powers
 seperation of data from object identifier -> labeling/identification requires cross referencing
