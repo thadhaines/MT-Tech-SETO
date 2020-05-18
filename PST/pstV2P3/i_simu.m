@@ -25,6 +25,7 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 % Author:   Graham Rogers
 % Copyright (c) Joe Chow All Rights Reserved
 
+global DEBUG 
 global bus_v  theta bus_int
 
 global psi_re psi_im  n_mac 
@@ -79,10 +80,14 @@ kdc=10*(k-1)+1;
  end 
  % note: the dc bus voltages are the equivalent HT bus voltages
  %       and not the LT bus voltages
+ if DEBUG ==1
+    warning('*** Log Bus Phasors and Generator currents')
+ end
  bus_v(bus_int(bus_sim(:,1)),k) = b_v;
  theta(bus_int(bus_sim(:,1)),k) = angle(b_v);     
  cur_re(:,k) = real(cur(1:n_mac));
  cur_im(:,k) = imag(cur(1:n_mac)); % generator currents
+ 
  if n_mot~=0
     idmot(:,k) = -real(cur(n_mac+1:ngm));%induction motor currents
     iqmot(:,k) = -imag(cur(n_mac+1:ngm));%current out of network

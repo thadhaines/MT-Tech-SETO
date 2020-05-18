@@ -54,6 +54,10 @@
 % Author:   Joe H. Chow
 % Date:     January 1991
 
+warning('*** Declare Global Variables')
+% debug variables
+global DEBUG
+
 % system variables
 global  basmva basrad syn_ref mach_ref sys_freq
 global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int

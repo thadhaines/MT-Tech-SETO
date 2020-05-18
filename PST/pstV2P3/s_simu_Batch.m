@@ -63,6 +63,7 @@
 %%
 clear all
 clear global
+warning('*** s_simu_Batch Start')
 
 close % close graphics windows
 tic % set timer
@@ -113,6 +114,7 @@ end
 
 %% solve for loadflow - loadflow parameter
 % aways solve loadflow
+warning('*** Solve initial loadflow')
 if isempty(dcsp_con)
     n_conv = 0;
     n_dcl = 0;
@@ -131,6 +133,7 @@ else
 end
 
 %% set indexes
+warning('*** Create dynamic indicies')
 % note: dc index set in dc load flow
 % note: f = simply removed as it was not needed
 mac_indx;
@@ -153,9 +156,9 @@ ngm = n_mac + n_mot;
 n_pm = n_mac;
 
 
-disp('*** Performing simulation.')
 
 %% construct simulation switching sequence as defined in sw_con
+warning('*** Initialize time and switching variables')
 tswitch(1) = sw_con(1,1);
 k = 1;kdc=1;
 n_switch = length(sw_con(:,1));
@@ -194,6 +197,7 @@ t(k) = sw_con(n_switch,1);
 n_bus = length(bus(:,1));
 
 %% create zero matrices for variables to make algorithm more efficient?
+warning('*** Initialize zero matricies...')
 z = zeros(n,k);
 z1 = zeros(1,k);
 
@@ -536,6 +540,8 @@ end
 sys_freq = ones(1,k);
 
 %% step 1: construct reduced Y matrices
+warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
+
 disp('constructing reduced y matrices')
 disp('initializing motor,induction generator, svc and dc control models')
 bus = mac_ind(0,1,bus,0);% initialize induction motor
@@ -551,8 +557,9 @@ disp('initializing other models')
 %% step 2: initialization
 theta(1:n_bus,1) = bus(:,3)*pi/180;
 bus_v(1:n_bus,1) = bus(:,2).*exp(jay*theta(1:n_bus,1));
+
 if n_dcud ~=0
-    % calculate the initial magnitude of line current for svc damping controls
+    %% calculate the initial magnitude of line current for svc damping controls
     for j=1:n_dcud
         l_num = svc_dc{j,3};
         svc_num = svc_dc{j,2};
@@ -584,7 +591,7 @@ if n_dcud ~=0
 end
 
 if n_tcscud ~=0
-    % calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
+    %% calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
     for j=1:n_tcscud
         b_num = tcsc_dc{j,3};
         tcsc_num = tcsc_dc{j,2};
@@ -615,7 +622,7 @@ if n_conv~=0
     bus(ac_bus,7) = imag(SHT);
     
     if ndcr_ud~=0
-        % calculate the initial value of bus angles rectifier user defined control
+        %% calculate the initial value of bus angles rectifier user defined control
         for j = 1:ndcr_ud
             b_num1 = dcr_dc{j,3};
             b_num2 = dcr_dc{j,4};
@@ -625,7 +632,7 @@ if n_conv~=0
         end
     end
     if ndci_ud ~= 0
-        % calculate the initial value of bus angles inverter user defined control
+        %% calculate the initial value of bus angles inverter user defined control
         for j = 1:ndci_ud
             b_num1 = dci_dc{j,3};
             b_num2 = dci_dc{j,4};
@@ -637,6 +644,7 @@ if n_conv~=0
 end
 
 %% Flag = 0 == Initialization
+warning('*** Dynamic model initialization via functions')
 flag = 0;
 bus_int = bus_intprf;% pre-fault system
 
@@ -799,6 +807,9 @@ if ~isempty(dcsp_con)
     Vr1 = V_rgprf;
     Vr2 = V_rncprf;
     bo = boprf;
+    if k == 50 % DEBUG - showing of networ solution call
+        warning('*** Performing network solution via i_simu')
+    end
     h_sol = i_simu(1,1,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     % reinitialize dc controls
     mdc_sig(0,1);
@@ -808,8 +819,12 @@ if ~isempty(dcsp_con)
 end
 H_sum = sum(mac_con(:,16)./mac_pot(:,1));
 %% step 3: perform a predictor-corrector integration
+%
+% This doesn't seem to be very predictor correctory.... 5/15/20
+% more to do with time/data point increment
 kt = 0;
 ks = 1;
+
 k_tot = sum(k_inc);
 lswitch = length(k_inc);
 ktmax = k_tot-k_inc(lswitch);
@@ -819,6 +834,7 @@ mac_trip_flags = false(n_mac,1);
 mac_trip_states = 0;
 
 %% Simulation loop start
+warning('*** Simulation Loop Start')
 while (kt <= ktmax)
     k_start = kt+1;
     
@@ -830,6 +846,11 @@ while (kt <= ktmax)
     
     for k = k_start:k_end
         %% step 3a: network solution
+        
+        % display k and t at k_inc and every ...th step
+        if ( mod(k,50)==0 ) || k == 1 || k == k_end
+            fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,t(k)) % DEBUG
+        end
         % mach_ref(k) = mac_ang(syn_ref,k);
         mach_ref(k) = 0;
         pmech(:,k+1) = pmech(:,k);
@@ -839,7 +860,7 @@ while (kt <= ktmax)
             cur_ord(:,k+1) = cur_ord(:,k);
         end
         
-        %Trip gen
+        % Trip gen
         [f,mac_trip_states] = mac_trip_logic(mac_trip_flags,mac_trip_states,t,k);
         mac_trip_flags = mac_trip_flags | f;
         
@@ -856,9 +877,9 @@ while (kt <= ktmax)
         mdc_sig(t(k),k);
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
         
-        % Calculate current injections and bus voltages and angles
+        %% Calculate current injections and bus voltages and angles
         if k >= sum(k_inc(1:3))+1
-            % fault cleared
+            %% fault cleared
             line_sim = line_pf2;
             bus_sim = bus_pf2;
             bus_int = bus_intpf2;
@@ -870,11 +891,14 @@ while (kt <= ktmax)
             Vr2 = V_rncpf2;
             bo = bopf2;
             % i_simu forms the network interface variables
+            if k == 50 % DEBUG - showing of networ solution call
+                warning('*** Performing network solution via i_simu')
+            end
             h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo); % duplicate call?
             % h_sol calculated after this if block...
             
         elseif k >=sum(k_inc(1:2))+1
-            % near bus cleared
+            %% near bus cleared
             line_sim = line_pf1;
             bus_sim = bus_pf1;
             bus_int = bus_intpf1;
@@ -887,7 +911,7 @@ while (kt <= ktmax)
             bo = bopf1;
             
         elseif k>=k_inc(1)+1
-            % fault applied
+            %% fault applied
             line_sim = line_f;
             bus_sim = bus_f;
             bus_int = bus_intf;
@@ -900,7 +924,7 @@ while (kt <= ktmax)
             bo = bof;
             
         elseif k<k_inc(1)+1
-            % pre fault
+            %% pre fault
             line_sim = line;
             bus_sim = bus;
             bus_int = bus_intprf;
@@ -913,7 +937,7 @@ while (kt <= ktmax)
             bo = boprf;
         end
         
-        %apply gen trip
+        %% apply gen trip
         if sum(mac_trip_flags)>0.5
             genBuses = mac_con(mac_trip_flags==1,2);
             for kB=1:length(genBuses)
@@ -926,6 +950,9 @@ while (kt <= ktmax)
         end
         
         %% solve
+        if k == 50 % DEBUG - showing of networ solution call
+            warning('*** Performing network solution via i_simu')
+        end
         h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         %% HVDC
@@ -966,7 +993,7 @@ while (kt <= ktmax)
             end
         end
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
-        % network interface for control models
+        %% network interface for control models
         dpwf(0,k,bus_sim,flag);
         pss(0,k,bus_sim,flag);
         mexc_sig(t(k),k);
@@ -979,7 +1006,7 @@ while (kt <= ktmax)
         tg_hydro(0,k,bus_sim,flag);
         
         if n_dcud~=0
-            % set the new line currents
+            %% set the new line currents
             for jj=1:n_dcud
                 l_num = svc_dc{jj,3};
                 svc_num = svc_dc{jj,2};
@@ -1313,6 +1340,9 @@ while (kt <= ktmax)
             clear nL kB genBuses
         end
         %% solve
+        if k == 50 % DEBUG - showing of networ solution call
+            warning('*** Performing network solution via i_simu')
+        end
         h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         vex(:,j)=vex(:,k);
