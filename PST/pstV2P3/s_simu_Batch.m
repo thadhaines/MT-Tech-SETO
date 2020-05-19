@@ -1631,9 +1631,14 @@ end% end simulation loop
 % calculation of line currents post sim
 V1 = bus_v(bus_int(line(:,1)),:);
 V2 = bus_v(bus_int(line(:,2)),:);
-R = line(:,3); X = line(:,4); B = line(:,5);
-tap = line(:,6); phi = line(:,7);
+R = line(:,3); 
+X = line(:,4); 
+B = line(:,5);
+tap = line(:,6); 
+phi = line(:,7);
+
 [ilf,ilt]=line_cur(V1,V2,R,X,B,tap,phi);%line currents
+[sInjF,sInjT]=line_pq(V1,V2,R,X,B,tap,phi);% 'line flows' - complex power injection at bus
 
 % full sim timing
 et = toc;
