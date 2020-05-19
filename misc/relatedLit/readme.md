@@ -35,23 +35,23 @@ Github code source: https://github.com/thadhaines/PSLTDSim
 Master thesis location: https://github.com/thadhaines/Thesis-Release/blob/master/200501-haines-thesis.pdf  
 Summary: Uses time sequence power flow, combined system frequency, governors, and AGC to model long-term power system dynamics in Python.  
 Relies on PSLF for system dynamic and topographic information, as well load flow solver algorithm.  
-Does not focus on transients / sub second system responses.
-Relevance:  Long-term simulation of power system dynamics.  
+Does not focus on transients / sub second system responses.   
+Relevance:  Long-term simulation of power system dynamics.   
 Shows that time-sequenced power flow can be used to model primary and secondary frequency response.  
 
 POWER SYSTEM SIMULATION USING AN ADAPTIVE MODELING FRAMEWORK  
 https://digitalcommons.mtech.edu/grad_rsch/76/  
 Summary: Masters thesis describing software that switches between classical transient simulation and long-term time sequenced power flow simulation.  
-Relevance: Possible approach/idea to consider for long-term simulation if variable time step/ multi-step integration proves not so great.  
+Relevance: Possible approach/idea to consider for long-term simulation if variable time step/ multi-step integration proves unsatisfactory.  
 
 Fast Frequency Response Concepts and Bulk Power System Reliability Needs  
 NERC Inverter-Based Resource Performance Task Force  
 https://www.nerc.com/comm/PC/InverterBased%20Resource%20Performance%20Task%20Force%20IRPT/Fast_Frequency_Response_Concepts_and_BPS_Reliability_Needs_White_Paper.pdf   
 Summary: Provides background into basic frequency response and control, factors in rate of change of frequency (ROCOF), inertia effects, technology-specific FFR capabilities (wind turbine, solar, and battery...).   
 Relevance: Provides information and illustrations of system impacts due to fast frequency response from various sources.  
-Models of these technologies may be useful in considering for this project.  
+Models of these technologies may be useful to consider for this project.  
 
-The following slide decks may not provide much 'substantive' information, but do provide references to with detail of things that may prove to be of interest.
+The following slide decks may not provide much 'substantive' information, but do provide references with more detail of topics that may prove to be of interest.
 
 Integrating High Levels of Variable Renewable Energy into Electric Power Systems  
 68349 - NREL  
