@@ -13,3 +13,6 @@
 *.aux
 *.log
 *.gz
+/misc/previousCodeAttempts/stajcar/PSTN2.mat
+/misc/previousCodeAttempts/trudnowski/delmePST.mat
+/misc/previousCodeAttempts/trudnowski/sim_fle.mat

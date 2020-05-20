@@ -15,6 +15,20 @@
 % SEE TimeSequenceBlockDiagram3.jpg
 clear all; close all; clc
 
+
+%% generate relative PST path generically
+folderDepth = 3; % depth of current directory from main PST directory
+
+pathParts = strsplit(pwd, filesep);
+PSTpath = pathParts(1);
+
+for pNdx = 2:max(size(pathParts))-folderDepth
+    PSTpath = [char(PSTpath), filesep, char(pathParts(pNdx))];
+end
+PSTpath = [char(PSTpath), filesep, 'PST',filesep, 'pstV2P3', filesep];
+
+clear folderDepth pathParts pNdx
+
 %% Settings
 wbase = 2*pi*60;
 Sbase = 100;
@@ -125,61 +139,67 @@ ModelSwap.lim.PslackTol = 0.001;
 ModelSwap.nGen = 1; %Reference generator (must switch if that gen is tripped)
 
 %% Run PST for comparison
-% addpath('C:\Users\dtrudnowski\Documents\2013_14\EELE5550\LabHandouts\pstV2')
-% bus = [ ...
-% % num volt angle p_gen     q_gen p_load  q_load G_shunt B_shunt type q_max q_min v_rated v_max v_min
-%   1   1.1  0.0   0.6*Pload 0     0       0      0       0       2    100   -100  20      1.5   0.5;
-%   2   1.0  0.0   0.4*Pload 0     0       0      0       0       1    100   -100  20      1.5   0.5;
-%   3   1.0  0.0   0         0     Pload/2 0      0       0       3    0     0     20      1.5   0.5;
-%   4   1.0  0.0   0         0     Pload/2 0      0       0       3    0     0     20      1.5   0.5];
-% 
-% line = [ ...
-% % bus bus r    x         y    tapratio tapphase tapmax tapmin tapsize
-%   1   3   0    xLine(1)        0.0  1.0      0        0      0      0;
-%   2   3   0    xLine(2)        0.0  1.0      0        0      0      0;
-%   3   4   0    0.01*min(xLine) 0.0  1.0      0        0      0      0;];
-% mac_con = zeros(length(Gen),19);
-% for k=1:length(Gen)
-%     if strcmpi(Gen(k).param.type,'Classical')
-%         g = Gen(k).param;
-%         mac_con(k,:) = [...
-%             % num bus   base  x_l  r_a  x_d x'_d  x"_d  T'_do T"_do x_q  x'_q  x"_q  T'_qo T"_qo H   d_0  d_1  bus
-%               k   g.bus 100   0    0    0   g.xdp 0     0     0     0    0     0     0     0     g.H g.D  0    g.bus];
-%     elseif strcmpi(Gen(k).param.type,'Sub_PSTN2')
-%         g = Gen(k).param;
-%         mac_con(k,:) = [...
-%             % num bus   base  x_l  r_a  x_d  x'_d  x"_d   T'_do  T"_do   x_q  x'_q  x"_q   T'_qo  T"_qo   H   d_0 d_1  bus
-%               k   g.bus 100   g.xl g.ra g.xd g.xdp g.xdpp g.Td0p g.Td0pp g.xq g.xqp g.xqpp g.Tq0p g.Tq0pp g.H g.D 0    g.bus];
-%     else
-%         error(' ')
-%     end
-% end
-% 
-% if exist('Gov','var')
-%     tg_con = zeros(length(Gov),10);
-%     for k=1:length(Gov)
-%         g = Gov(k).param;
-%         tg_con(k,:) = [...
-%             % type mach   wf 1/R   Tmax   Ts   Tc   T3   T4     T5
-%               1    g.nGen 1  1/g.R g.Vmax g.T1 0.01 0    g.T2   g.T3]; %Must have non-zero time constants for T's
-%     end
-% end
-% 
-% if exist('Exc','var')
-%     exc_con = zeros(length(Exc),9);
-%     for k=1:length(Gov)
-%         g = Exc(k).param;
-%         exc_con(k,:) = [...
-%             %  type mach   T_R  K_A T_A  T_B  T_C  Vmax     Vmin
-%                 0   g.nGen 0   g.KA g.TA g.TB g.TC g.Efdmax g.Efdmin];
-%     end
-% end
-% 
-% sw_con = [...
-% 0               0    0    0    0    0    1/600;%sets intitial time step
-% Time.FaultStart 3    0    0    0    5    1/600; %loss of load
-% Time.FaultEnd   0    0    0    0    0    1/600; %clear near end of fault
-% Time.End              0    0    0    0    0    1/600]; % end simulation
+bus = [ ...
+% num volt angle p_gen     q_gen p_load  q_load G_shunt B_shunt type q_max q_min v_rated v_max v_min
+  1   1.1  0.0   0.6*Pload 0     0       0      0       0       2    100   -100  20      1.5   0.5;
+  2   1.0  0.0   0.4*Pload 0     0       0      0       0       1    100   -100  20      1.5   0.5;
+  3   1.0  0.0   0         0     Pload/2 0      0       0       3    0     0     20      1.5   0.5;
+  4   1.0  0.0   0         0     Pload/2 0      0       0       3    0     0     20      1.5   0.5];
+
+line = [ ...
+% bus bus r    x         y    tapratio tapphase tapmax tapmin tapsize
+  1   3   0    xLine(1)        0.0  1.0      0        0      0      0;
+  2   3   0    xLine(2)        0.0  1.0      0        0      0      0;
+  3   4   0    0.01*min(xLine) 0.0  1.0      0        0      0      0;];
+
+% create empty machine control array
+mac_con = zeros(length(Gen),19);
+% populat mac_con from earlier params
+for k=1:length(Gen)
+    if strcmpi(Gen(k).param.type,'Classical')
+        g = Gen(k).param;
+        mac_con(k,:) = [...
+            % num bus   base  x_l  r_a  x_d x'_d  x"_d  T'_do T"_do x_q  x'_q  x"_q  T'_qo T"_qo H   d_0  d_1  bus
+              k   g.bus 100   0    0    0   g.xdp 0     0     0     0    0     0     0     0     g.H g.D  0    g.bus];
+    elseif strcmpi(Gen(k).param.type,'Sub_PSTN2')
+        g = Gen(k).param;
+        mac_con(k,:) = [...
+            % num bus   base  x_l  r_a  x_d  x'_d  x"_d   T'_do  T"_do   x_q  x'_q  x"_q   T'_qo  T"_qo   H   d_0 d_1  bus
+              k   g.bus 100   g.xl g.ra g.xd g.xdp g.xdpp g.Td0p g.Td0pp g.xq g.xqp g.xqpp g.Tq0p g.Tq0pp g.H g.D 0    g.bus];
+    else
+        error(' ')
+    end
+end
+
+if exist('Gov','var')
+    tg_con = zeros(length(Gov),10);
+    for k=1:length(Gov)
+        g = Gov(k).param;
+        tg_con(k,:) = [...
+            % type mach   wf 1/R   Tmax   Ts   Tc   T3   T4     T5
+              1    g.nGen 1  1/g.R g.Vmax g.T1 0.01 0    g.T2   g.T3]; %Must have non-zero time constants for T's
+    end
+end
+
+if exist('Exc','var')
+    exc_con = zeros(length(Exc),9);
+    for k=1:length(Gov)
+        g = Exc(k).param;
+        exc_con(k,:) = [...
+            %  type mach   T_R  K_A T_A  T_B  T_C  Vmax     Vmin
+                0   g.nGen 0   g.KA g.TA g.TB g.TC g.Efdmax g.Efdmin];
+    end
+end
+
+sw_con = [...
+0               0    0    0    0    0    1/600;%sets intitial time step
+Time.FaultStart 3    0    0    0    5    1/600; %loss of load
+Time.FaultEnd   0    0    0    0    0    1/600; %clear near end of fault
+Time.End        0    0    0    0    0    1/600]; % end simulation
+
+% this seemed extra.... 5/20/20
+
+
 % if exist('Gov','var') && exist('Exc','var'); save delme Time Gov Gen xLine wbase Pload Exc
 % elseif exist('Gov','var'); save delme Time Gov Gen xLine wbase Pload
 % elseif exist('Exc','var'); save delme Time Exc Gen xLine wbase Pload
@@ -190,17 +210,20 @@ ModelSwap.nGen = 1; %Reference generator (must switch if that gen is tripped)
 % elseif exist('exc_con','var'); save DataFile bus line mac_con sw_con exc_con
 % else save DataFile bus line mac_con sw_con
 % end
-% s_simu_Batch2
+
+addpath(PSTpath)
+% delete Datafile so previously devined arrays are used in s_simu...
+delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
+s_simu_Batch
+%%
+rmpath(PSTpath)
+% 
 % clear Time Gov Gen xLine wbase Pload Exc
-% save delmePST
-% clear all; close all; clc
-% load delme
-% delete delme.mat
-% delete DataFile.mat
-% rmpath('C:\Users\dtrudnowski\Documents\2013_14\EELE5550\LabHandouts\pstV2')
+save delmePST
+clear all;
 
 %% Power flow
-addpath('C:\Users\dtrudnowski\Documents\2013_14\EELE5550\LabHandouts\pstV2')
+load delmePST
 bus = [ ...
 % num volt angle p_gen     q_gen p_load q_load G_shunt B_shunt type q_max q_min v_rated v_max v_min
   1   1.1  0.0   0.6*Pload 0     0      0      0       0       2    100   -100  20      1.5   0.5;
@@ -210,11 +233,16 @@ line = [ ...
 % bus bus r    x         y    tapratio tapphase tapmax tapmin tapsize
   1   3   0    xLine(1)        0.0  1.0      0        0      0      0;
   2   3   0    xLine(2)        0.0  1.0      0        0      0      0];
+
+
+addpath(PSTpath)
 Bus = loadflow(bus,line,1e-10,10,1,'n',1);
+rmpath(PSTpath)
+
 BusV0 = Bus(:,2).*exp(1i*Bus(:,3).*(pi/180));
 Yload = (Bus(3,6) - 1i*Bus(3,7))/(Bus(3,2)^2); %Load admittance
 Ig0 = (Bus(1:2,4)-1i*Bus(1:2,5))./conj(BusV0(1:2)); %Initial generator currents
-rmpath('C:\Users\dtrudnowski\Documents\2013_14\EELE5550\LabHandouts\pstV2')
+
 clear bus
 
 %% Set up Admittance matrices
@@ -269,7 +297,7 @@ for k=1:nGens
     Gen(k).wdot = [0;NaN(N-1,1)];
     Gen(k).delta = NaN(N,1);
     Gen(k).deltadot = [0;NaN(N-1,1)];
-    p = (Bus(k,4) + Gen(k).param.ra*abs(Gen(k).IT(1))^2);
+    p = (Bus(k,4) + Gen(k).param.ra*abs(Gen(k).IT(1))^2); %unused?
     Gen(k).Pmech = [p;p;NaN(N-2,1)];
     Gen(k).Pe = [Bus(k,4);NaN(N-1,1)];
     Gen(k).Te = [p;NaN(N-1,1)];
@@ -631,7 +659,7 @@ tOut = tOut(1:iTime);
 N = length(tOut);
 
 %% Plot results
-load delmePST t mac_spd pmech bus_v pelect bus_v
+%load delmePST t mac_spd pmech bus_v pelect bus_v
 
 figure
 plot(t,mac_spd(1,:)-mac_spd(2,:),'k','LineWidth',2)
@@ -704,7 +732,28 @@ for k=1:2
     xlabel('Time (sec.)')
 end
     
+%% End Comments
 
+%{
+Simulation Runs.
+PST takes a long time as ts = 1/600.
+Model switching works based on relative speed between generators.
+This is more appropriate than gen wdot being zero as it allows for switching 
+when generators may be drifting. 
+Additionally, the largest assumption when using one generator model is that 
+frequency (generator speed) is the same for all generators.
+
+As issues with 'reinitializing' were mentioned - it seems that if the same
+threshold used to swap simplified models in was used to swap them out for 
+higher detailed models, the system could just step back one, or two, steps,
+and start from there...
+
+Of couse, since there is only one frequency there would be no difference 
+between frequecny... Therefore, some other metric that does change in the
+simplified/combined system would be required....
+Change in P? I? 
+
+%}
 
 
 

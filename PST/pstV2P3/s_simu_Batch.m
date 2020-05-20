@@ -61,8 +61,10 @@
 %
 
 %%
-clear all
-clear global
+%clear all
+%clear global 
+% these clears were removed to allow for running w/o running DataFile.m 5/20/20
+
 warning('*** s_simu_Batch Start')
 
 close % close graphics windows
@@ -74,17 +76,26 @@ svc_dc=[];
 tcsc_dc=[];
 dcr_dc=[];
 dci_dc=[];
-% load input data from m.file
+
+% load input data from m.file (if applicable)
 disp('non-linear simulation')
+
 % input data file
-DataFile %Batch name for data file
+% account for non-existant DataFile (assumes required arrays created other ways...)
+try
+   DataFile %Batch name for data file
+catch ME
+   fprintf('Caught ERROR: %s\n',ME.message)
+end 
+
+
 
 %% check for valid dynamic data file
 if isempty(mac_con)
-    error(' the selected file is not a valid data file')
+    error('mac_con is Empty - the selected file is not a valid data file')
 end
 if isempty(sw_con)
-    error(' the selected file has no switching data')
+    error('sw_con is Empty - the selected file has no switching data')
 end
 
 %% Assume 60 Hz frequency base and 100 MVA Sbase
