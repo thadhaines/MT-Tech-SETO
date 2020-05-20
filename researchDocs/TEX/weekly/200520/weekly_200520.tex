@@ -1,0 +1,108 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble, other reusable files
+\input{../../thad_preamble.tex}
+\input{../../thad_cmds.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Research Update \\ Week of May 19th, 2020}
+\lhead{Research \\ }
+
+
+\begin{document}
+\begin{multicols}{2}
+\raggedright
+
+\paragraph{Recent Progress:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Office keys acquired
+		\item Lit review send to Dave
+		\item PST not included with Graham's book 
+		\item Joe Chow has PST and user manual available for download from his site.
+		\\ i.e. PST seems pretty free.
+		\item PST folder `cleaned up'
+		\item s\_simu\_Batch `cleaned up'
+		\item Running PST comments are being collected in Examples folder readme. \\ (for now)
+		\item Example cases verified as working:
+		\begin{itemize}
+			\item EELE 5550 machine comparisons
+			\item One machine infinite Bus line trip
+			\item PST user manual system with 3 phase fault
+			\item Power mod using both Current and Power injection plus linearizion.
+			\item IVM mod example
+		\end{itemize}
+		\item IVM mod example verified as working in GNU Octave
+		\item Reached out to Sam for PST examples
+		\item GitHub created and updated:\\
+	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
+	\end{enumerate}
+	
+\vfill\null
+\columnbreak
+	
+\paragraph{Current Tasks:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Work on understanding PST
+		\item Document findings of PST functionality
+		\item Think of ways to `objectify' PST
+		\item Create modulation case \\ ramp/step/noise 
+		\item Add logging of loads
+		\item Continue to work on data plots 
+		\item Continue to collect example cases
+\end{enumerate}
+
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+		\item Minimum requirements for system case?
+		\begin{itemize}
+			\item Machine models
+			\item Governor model
+			\item Exciter models
+			\item pwrmod models
+			\item ivmmod model
+			\item load modulation model
+			\item ...
+		\end{itemize}
+		\item PST modeling of transformers?
+		\item PST modeling of faults? \\
+		Uses alternate Y matrices? \\
+		Creates fault bus?
+	\end{enumerate}
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.		
+	\end{enumerate}
+
+\vfill\null
+\end{multicols}
+
+
+
+\begin{comment}
+% Unused categories
+\paragraph{Future Tasks:} %(Little to No Progress since last time / Things coming down the pipe)
+	\begin{enumerate}
+		\item none		
+	\end{enumerate}
+	
+\paragraph{Future Work: (not by me)}
+	\begin{itemize}
+		\item none
+	\end{itemize}
+
+\paragraph{Requests:}
+	\begin{enumerate}
+			\item none
+	\end{enumerate}
+\end{comment}
+
+
+
+\end{document}

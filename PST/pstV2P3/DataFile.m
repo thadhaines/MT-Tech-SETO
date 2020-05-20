@@ -1,245 +1,112 @@
-%% Two Area Test Case defined in pstV3 user manual
-% sub transient generators with static exciters, turbine/governors
-% with power system stabilizers
-% 3 phase fault on 3-101
+% 2-machine PST simulation with ivmmod 
+% D. Trudnowski, Sp. 2015
 
-disp('*** d_exampleSystem3pFault.m')
-disp('    Two-area test case with subtransient generator models')
-disp('    Static exciters and power system stabilizers')
-disp('    turbine/governors')
-%% Handle optional debug Flag
-%global DEBUG
-%DEBUG = 1; % used to show logging of voltage...
+% load trip on bus 6, hydro gov on gen 1, gen 1 and 4 have Fast static
+% exciter, with TGR and PSS, gen 2 is IVM
+% not really sure why load 5 has all zeros...
 
-%% bus data format
-% bus:
-% col1 number
-% col2 voltage magnitude(pu)
-% col3 voltage angle(degree)
-% col4 p_gen(pu)
-% col5 q_gen(pu),
-% col6 p_load(pu)
-% col7 q_load(pu)
-% col8 G shunt(pu)
-% col9 B shunt(pu)
-% col10 bus_type
-%     bus_type  - 1, swing bus
-%               - 2, generator bus (PV bus)
-%               - 3, load bus (PQ bus)
-% col11 q_gen_max(pu)
-% col12 q_gen_min(pu)
-% col13 v_rated (kV)
-% col14 v_max pu
-% col15 v_min pu
-bus = [...
-  % 1       2       3       4       5       6       7       8       9       10  11      12      13      14      15      
-    1     1.03      18.5    7.00    1.61    0.00    0.00    0.00    0.00    1	5.0     -1.0    22.0    1.1     .9;
-    2     1.01      8.80    7.00    1.76    0.00    0.00    0.00    0.00    2	5.0     -1.0    22.0    1.1     .9;
-    3     0.9781  	-6.1    0.00    0.00    0.00    0.00  	0.00    3.00    3	0.0     0.0     230.0   1.5     .5;
-    4     0.95      -10     0.00    0.00    9.76    1.00    0.00    0.00    3   0.0     0.0     115.0	1.05	.95;
-    10    1.0103    12.1    0.00    0.00    0.00    0.00    0.00    0.00    3   0.0     0.0     230.0  	1.5     .5;
-    11    1.03      -6.8    7.16	1.49    0.00    0.00    0.00    0.00    2	5.0     -1.0  	22.0    1.1     .9;
-    12    1.01      -16.9   7.00    1.39	0.00    0.00    0.00    0.00    2	5.0     -1.0  	22.0    1.1     .9;
-    13    0.9899    -31.8   0.00    0.00    0.00    0.00    0.00    5.00    3	0.0     0.0     230.0  	1.5     .5;
-    14    0.95      -35     0.00    0.00    17.65	1.00    0.00    0.00    3	0.0     0.0   	115.0   1.05    .95;
-    20    0.9876    2.1     0.00    0.00    0.00    0.00    0.00    0.00	3	0.0     0.0     230.0  	1.5     .5;
-    101   1.00      -19.3   0.00    0.00    0.00    0.00    0.00    2.00    3   2.0     0.0     500.0   1.5     .5;
-    110   1.0125    -13.4   0.00    0.00    0.00    0.00    0.00	0.00    3   0.0     0.0    	230.0   1.5     .5;
-    120   0.9938    -23.6   0.00    0.00    0.00    0.00    0.00	0.00    3	0.0     0.0     230.0   1.5     .5;
-    ];
+bus = [ ...
+% num volt  angle p_gen q_gen p_load q_load G_shunt B_shunt type q_max q_min v_rated v_max v_min
+  1   1.1   0.0   0.12  0     0      0      0       0       1    100   -100  20      1.5   0.5;
+  2   1.1   0.0   0.005 0.001 0      0      0       0       2    100   -100  20      1.5   0.5; %ivm gen
+  3   0.97  0.0   0     0     0      0      0       0       3    0     0     20      1.5   0.5;
+  4   1.1   0.0   0.15  0     0      0      0       0       2    100   -100  20      1.5   0.5
+  5   1.0   0.0   0     0     0.250  0.15   0       0.1     3    0     0     20      1.5   0.5;
+  6   1.0   0.0   0     0     0.025  0.05   0       0       3    0     0     20      1.5   0.5];
 
-%% line data format
-% line:
-% col1 from bus
-% col2 to bus
-% col3 resistance(pu)
-% col4 reactance(pu)
-% col5 line charging(pu)
-% col6 tap ratio
-% col7 tap phase
-% col8 tapmax
-% col9 tapmin
-% col10 tapsize
-line = [...
-   %  fb  tb    R       X       lineCh  T-rati  tPh tMx tMn     tSz
-   %  1   2     3       4       5       6       7   8   9       10
-      1   10    0.0     0.0167  0.00    1.0     0.  0.	0.      0.;
-      2   20    0.0     0.0167  0.00    1.0     0.  0.  0.      0.;
-      3   4     0.0     0.005   0.00    1.0     0.	1.2	0.8     0.02; % tap
-      3   20    0.001   0.0100	0.0175 	1.0     0.  0.  0.      0.;
-      3   101   0.011   0.110   0.1925	1.0     0.  0.  0.      0.;
-      3   101   0.011   0.110   0.1925	1.0     0.  0.  0.      0.;
-      10  20    0.0025  0.025   0.0437	1.0     0.	0.  0.      0.;
-      11  110   0.0     0.0167	0.0     1.0     0.	0.  0.      0.;
-      12  120   0.0     0.0167	0.0     1.0     0.  0.  0.      0.;
-      13  101   0.011   0.11    0.1925 	1.0     0.  0.  0.      0.;
-      13  101   0.011   0.11    0.1925	1.0     0.  0.  0.      0.;
-      13  14    0.0     0.005   0.00    1.0     0.  1.2 0.8     0.02; % tap
-      13  120   0.001   0.01    0.0175	1.0     0.  0.  0.      0.;
-      110 120   0.0025  0.025	0.0437  1.0     0.  0. 	0.      0.;
-    ];
+line = [ ...
+% bus bus r    x    y    tapratio tapphase tapmax tapmin tapsize
+  4   3   0.0  0.1  0.0  1.0      0        0      0      0; %transformer
+  1   6   0.0  0.75 0.0  1.0      0        0      0      0; %line
+  5   6   0.0  0.75 0.0  1.0      0        0      0      0; %line
+  5   3   0.0  1.5  0.0  1.0      0        0      0      0; %line
+  2   3   0.0  1.0  0.0  1.0      0        0      0      0; %line
+  1   2   0.0  5.0  0.0  1.0      0        0      0      0]; %line
 
-%% Machine data format
-% 1. machine number,
-% 2. bus number,
-% 3. base mva,
-% 4. leakage reactance x_l(pu),
-% 5. resistance r_a(pu),
-% 6. d-axis sychronous reactance x_d(pu),
-% 7. d-axis transient reactance x'_d(pu),
-% 8. d-axis subtransient reactance x"_d(pu),
-% 9. d-axis open-circuit time constant T'_do(sec),
-% 10. d-axis open-circuit subtransient time constant T"_do(sec),
-% 11. q-axis sychronous reactance x_q(pu),
-% 12. q-axis transient reactance x'_q(pu),
-% 13. q-axis subtransient reactance x"_q(pu),
-% 14. q-axis open-circuit time constant T'_qo(sec),
-% 15. q-axis open circuit subtransient time constant T"_qo(sec)
-% 16. inertia constant H(sec),
-% 17. damping coefficient d_o(pu),
-% 18. dampling coefficient d_1(pu),
-% 19. bus number
-%
-
-% 20, 21? Active and reactive power fraction? 5/18/20
-
-% note: all the following machines use sub-transient model
+%Generators 1 and 2 parameters are from the example machine in chap 4 of
+%Anderson and Fouad with a salient pole assumption.
+%This model is a sub-transient model.
+%From eqn (4.289), T"_qo=T'_qo if it is a 2-axis transient model.
 mac_con = [ ...
-  % 1 2  3   4     5    6   7    8    9    10   11  12   13   14  15   16  17 18 19 20     21
-    1 1  900 0.200 0.00 1.8 0.30 0.25 8.00 0.03 1.7 0.55 0.24 0.4 0.05 6.5 0  0  1  0.0654 0.5743;
-    2 2  900 0.200 0.00 1.8 0.30 0.25 8.00 0.03 1.7 0.55 0.25 0.4 0.05 6.5 0  0  2  0.0654 0.5743;
-    3 11 900 0.200 0.00 1.8 0.30 0.25 8.00 0.03 1.7 0.55 0.24 0.4 0.05 6.5 0  0  3  0.0654 0.5743;
-    4 12 900 0.200 0.00 1.8 0.30 0.25 8.00 0.03 1.7 0.55 0.25 0.4 0.05 6.5 0  0  4  0.0654 0.5743;
-    ];
-
-%% simple exciter model, type 0; there are three exciter models
+% num bus base  x_l  r_a    x_d x'_d   x"_d  T'_do T"_do x_q   x'_q  x"_q  T'_qo T"_qo H      d_0  
+   1   1  100   0.15 0.0011 1.7 0.245  0.185 5.9   0.03  1.64  1.64  0.185 0.082 0.082 2.37   0   0   1;
+   2   4  100   0.15 0.0011 1.7 0.245  0.185 5.9   0.03  1.64  1.64  0.185 0.082 0.082 2.37   0   0   4;
+% 1   2   3     4   5       6  7       8     9     10    11    12    13   14     15   16      17
+% num bus base  NA  r_a    NA  x'_d  NA      Td    Tv    NA    NA    NA    NA    NA    0      NA  
+   3   2  100   0    0     0   0.1   0       0.05  0.05  0     0     0     0     0     0      0   0   2]; %ivm gen
+  
+%Exciter
+%From p. 1137 of Kundur
 exc_con = [...
-    0 1 0.01 200.0 0.05 0 0 5.0 -5.0 0 0 0 0 0 0 0 0 0 0 0;
-    0 2 0.01 200.0 0.05 0 0 5.0 -5.0 0 0 0 0 0 0 0 0 0 0 0;
-    0 3 0.01 200.0 0.05 0 0 5.0 -5.0 0 0 0 0 0 0 0 0 0 0 0;
-    0 4 0.01 200.0 0.05 0 0 5.0 -5.0 0 0 0 0 0 0 0 0 0 0 0;
-    ];
+%  type mach  T_R   K_A   T_A   T_B   T_C   Vmax  Vmin
+    0    1    0     212   0.01  12    1     7.5   -6.0; %Fast static exciter, with TGR
+    0    2    0     212   0.01  12    1     7.5   -6.0]; %Fast static exciter, with TGR
 
-%% power system stabilizer model
-% col1 type 1 speed input; 2 power input
-% col2 generator number
-% col3 pssgain*washout time constant
-% col4 washout time constant
-% col5 first lead time constant
-% col6 first lag time constant
-% col7 second lead time constant
-% col8 second lag time constant
-% col9 maximum output limit
-% col10 minimum output limit
-pss_con = [...
-    1 1 100 10 0.05 0.015 0.08 0.01 0.2 -0.05;
-    1 2 100 10 0.05 0.015 0.08 0.01 0.2 -0.05;
-    1 3 100 10 0.05 0.015 0.08 0.01 0.2 -0.05;
-    1 4 100 10 0.05 0.015 0.08 0.01 0.2 -0.05;
-    ];
+%PSS
+%Designed using the "large-inertia, infinite-bus" method in Roger's book and
+%Kundur's book.
+%type gen# K  Tw T1  T2   T3  T4   max min
+pss_con = [ ...
+  1   1    80 10 0.4 0.04 0.4 0.06 0.1 -0.1;
+  1   2    80 10 0.4 0.04 0.4 0.06 0.1 -0.1];
 
-%% governor model
-% tg_con matrix format
-% column data unit
-% 1 turbine model number (=1)
-% 2 machine number
-% 3 speed set point wf pu
-% 4 steady state gain 1/R pu
-% 5 maximum power order Tmax pu on generator base
-% 6 servo time constant Ts sec
-% 7 governor time constant Tc sec
-% 8 transient gain time constant T3 sec
-% 9 HP section time constant T4 sec
-% 10 reheater time constant T5 sec
 tg_con = [...
-    1 1 1 25.0 1.0 0.1 0.5 0.0 1.25 5.0;
-    %1 2 1 25.0 1.0 0.1 0.5 0.0 1.25 5.0; % governor removed 
-    1 3 1 25.0 1.0 0.1 0.5 0.0 1.25 5.0;
-    1 4 1 25.0 1.0 0.1 0.5 0.0 1.25 5.0;
-    ];
+%     mach wf 1/R     Tmax   Ts     Tc     T3     T4     T5
+   1   1   1  20.0    1.00   0.40   75.0   10.0  -2.4    1.2];%hydro
 
-%% induction motor data
-% 1. Motor Number
-% 2. Bus Number
-% 3. Motor MVA Base
-% 4. rs pu
-% 5. xs pu - stator leakage reactance
-% 6. Xm pu - magnetizing reactance
-% 7. rr pu
-% 8. xr pu - rotor leakage reactance
-% 9. H s - motor plus load inertia constant
-% 10. rr1 pu - second cage resistance
-% 11. xr1 pu - intercage reactance
-% 12. dbf - deepbar factor
-% 13. isat pu - saturation current
-% 15. fraction of bus power drawn by motor ( if zero motor statrts at t=0)
-ind_con = [];
-
-%% Motor Load Data
-% format for motor load data - mld_con
-% 1 motor number
-% 2 bus number
-% 3 stiction load pu on motor base (f1)
-% 4 stiction load coefficient (i1)
-% 5 external load pu on motor base(f2)
-% 6 external load coefficient (i2)
-% load has the form
-% tload = f1*slip^i1 + f2*(1-slip)^i2
-mld_con = [];
-
-%% Load classification
-% col1 bus number
-% col2 proportion of constant active power load
-% col3 proportion of constant reactive power load
-% col4 proportion of constant active current load
-% col5 proportion of constant reactive current load
+% non-conforming load
+% col 1       bus number
+% col 2       fraction const active power load
+% col 3       fraction const reactive power load
+% col 4       fraction const active current load
+% col 5       fraction const reactive current load
 load_con = [...
-    4 0 0 0 0; %constant impedance
-    14 0 0 0 0; % if 14 1 1 0 0 -> power flow solution does not converge
-    ];
+%bus Pcont Qconst P_Icont Q_Iconst
+%   2   0     0     1       1;  %Modulation bus
+%   3   0     0     1       1;  %Modulation bus
+  5   0     0       0     0]; %Load bus
 
-%% active and reactive load modulation
-% col1 load number
-% col2 bus number
-% col3 MVA rating
-% col4 maximum output limit pu
-% col4 minimum output limit pu
-% col6 Time constant
-lmod_con = [];
-rlmod_con = [];
+% Power modulation data (sets up modulation of real and reac power injection)
+% col 1       bus number
+% col 2       real-power time constant (Tp)
+% col 3       max real-power modulation (pu on system base)
+% col 4       min real-power modulation (pu on system base)
+% col 5       reac-power time constant (Tq)
+% col 6       max reac-power modulation (pu on system base)
+% col 7       min reac-power modulation (pu on system base)
+% NOTE: This creates b_pwrmod_p and b_pwrmod_q for the linear analysis.
+%       b_pwrmod_*(:,j) corresponds to row j of pwrmod_con.
+% pwrmod_con=[...
+%bus  T    Pmax Pmin  Tq   Qmax  Qmin
+%   2   0.05 1    -1    0.05  1     -1; 
+%   3   0.05 1    -1    0.05  1     -1];
 
-%% Switching file defines the simulation control
-% row 1 col1 simulation start time (s) (cols 2 to 6 zeros)
-%       col7 initial time step (s)
-% row 2 col1 fault application time (s)
-%       col2 bus number at which fault is applied
-%       col3 bus number defining far end of faulted line
-%       col4 zero sequence impedance in pu on system base
-%       col5 negative sequence impedance in pu on system base
-%       col6 type of fault - 0 three phase
-%           - 1 line to ground
-%           - 2 line-to-line to ground
-%           - 3 line-to-line
-%           - 4 loss of line with no fault
-%           - 5 loss of load at bus
-%           - 6 no action
-%       col7 time step for fault period (s)
-% row 3 col1 near end fault clearing time (s) (cols 2 to 6 zeros)
-%       col7 time step for second part of fault (s)
-% row 4 col1 far end fault clearing time (s) (cols 2 to 6 zeros)
-%       col7 time step for fault cleared simulation (s)
-% row 5 col1 time to change step length (s)
-%       col7 time step (s)
-%
-% row n col1 finishing time (s) (n indicates that intermediate rows may be inserted)
-ts = .25/60; % quarter cycle
-
+% Switching
+%Switching file defines the simulation control
+% row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
+%     col7  initial time step (s)
+% row 2 col1  fault application time (s)
+%     col2  bus number at which fault is applied
+%     col3  bus number defining far end of faulted line
+%     col4  zero sequence impedance in pu on system base
+%     col5  negative sequence impedance in pu on system base
+%     col6  type of fault  - 0 three phase
+%                  - 1 line to ground
+%                  - 2 line-to-line to ground
+%                  - 3 line-to-line
+%                  - 4 loss of line with no fault
+%                  - 5 loss of load at bus
+%     col7  time step for fault period (s)
+% row 3 col1  near end fault clearing time (s) (cols 2 to 6 zeros)
+%     col7  time step for second part of fault (s)
+% row 4 col1  far end fault clearing time (s) (cols 2 to 6 zeros)
+%     col7  time step for fault cleared simulation (s)
+% row 5 col1  time to change step length (s)
+%     col7  time step (s)
 sw_con = [...
-  % 1           2   3   4 5 6 7
-    0           0   0   0 0 0 ts*4;%sets intitial time step
-    1.0         3   101 0 0 0 ts/2; % 3 ph fault at bus 3
-    1.0+1/60    0   0   0 0 0 ts/2; %clear near end
-    1.0+2/60    0   0   0 0 0 ts/2; %clear remote end
-    2           0   0   0 0 0 ts*4; % increase time step
-    %7          0   0   0 0 0 ts*5; % increasing time step - simulation goes unstable
-    10.0        0   0   0 0 0 0]; % end simulation
+0        0    0    0    0    0    1/120;%sets intitial time step
+5.0      6    1    0    0    5    1/120; %no fault, trip load at bus 6
+5+1/60   0    0    0    0    0    1/120; %clear near end of fault
+5+2/60   0    0    0    0    0    1/120; %clear far end of fault
+5.1      0    0    0    0    0    1/120; % increase time step
+20       0    0    0    0    0    1/120]; % end simulation

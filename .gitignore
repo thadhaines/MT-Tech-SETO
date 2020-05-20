@@ -10,3 +10,6 @@
 /PST/pstV2P3/Info/Examples/pwrmod-Pinjection/octave-workspace
 /PST/pstV2P3/Info/Examples/EELE5550/OneMachInfBus/OneMacInfBus01.mat
 /PST/pstV2P3/Info/Examples/PSTmanualSystem/exampleSystem01.mat
+*.aux
+*.log
+*.gz
