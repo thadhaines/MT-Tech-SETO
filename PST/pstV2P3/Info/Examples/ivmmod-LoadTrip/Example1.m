@@ -26,16 +26,13 @@ PSTpath = [char(PSTpath), filesep];
 addpath(PSTpath)
 save PSTpath PSTpath
 
-%% octave warning suppression - not for MATLAB
-% warning('off', 'Octave:possible-matlab-short-circuit-operator');
-
 %% Run nonlinear simulation and store results
 clear all; %close all; clc
 load PSTpath
 delete([PSTpath 'DataFile.m']); copyfile('d2m_ivmmod1.m',[PSTpath 'DataFile.m']); %System data file
 delete([PSTpath 'ivmmod_dyn.m']); copyfile('ivmmod_dyn_Example1.m',[PSTpath 'ivmmod_dyn.m']); %Modulation file
 s_simu_Batch %Run PST
-save('Exmaple1_NonlinearSim'); %Save
+save('Exmaple1_NonlinearSim.mat'); %Save
 
 %% clean up
 delete('PSTpath') % generated in this script

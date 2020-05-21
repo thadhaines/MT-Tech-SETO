@@ -1,9 +1,11 @@
 % Example of one machine infinite bus line trip using d_OneMacInfBus
 % smaller system used to more easily study inner workings of PST 
+% Include work arounds for Octave by running octaveComp (saved in PST main directory)
+% tested as working with octave 5.2.0 on 5/21/20
 
 clear all; close all; clc
 
-%% Add pst path to MATLAB
+%% Add pst path to current directory
 % generate relative path generically
 folderDepth = 4; % depth of current directory from main PST directory
 
@@ -41,7 +43,7 @@ end
 clear varNames vName zeroTest
 
 %% Save cleaned output data
-save('OneMacInfBus01'); %Save simulation outputs
+save('OneMacInfBus01Oct.mat'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
@@ -49,6 +51,6 @@ delete('sim_fle.mat')
 
 %% Plotting init and function call
 clear all % ensure only saved data is plotted
-load('OneMacInfBus01.mat')
+load('OneMacInfBus01Oct.mat')
 
 pstMegaPlot

@@ -1,0 +1,127 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble, other reusable files
+\input{../../thad_preamble.tex}
+\input{../../thad_cmds.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Research Update \\ Week of May 25th, 2020}
+\lhead{Research \\ }
+
+
+\begin{document}
+\begin{multicols}{2}
+\raggedright
+
+\paragraph{Recent Progress:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Stajcar and Trudnowski code acquired. \\ 
+		Modified to run from repository folders
+		\item New example cases verified as working:
+		\begin{itemize}
+			\item nothing new...
+		\end{itemize}
+		\item octaveComp created - Automatically runs from s\_simu\_Batch if Octave is detected. Handles execution of compatibility commands and package loadings.
+		
+		\item Cases verified as working in Octave:
+				\begin{itemize}
+					\itemsep0em 
+					\footnotesize
+					\item OneMacInfBus fault
+					\item genModelTest
+					\item PSTexample system line fault
+					\item pwrmod-Pinjection (Example1)
+					\item pwrmod-Iinjection (Example2)
+					\item ivmmod- (Example1)
+				\end{itemize}
+		
+		\item GitHub created and updated:\\
+	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
+	\end{enumerate}
+	
+\paragraph{Coding Thoughts:} 
+	\begin{enumerate}
+		\item Condense $\approx$340 globals into $\approx$18 based on category
+		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+		This would probably entail more thought on passing data by reference using handles.
+		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+		\item Rework how switching/perturbance events are handled into a more flexible and general format.
+		\item Generate something similar to unit test cases to verify functional changes don't break everything during refactor.
+		\item Generate comparison scripts to verify simulated results match after code changes.
+	\end{enumerate}
+	
+\vfill\null
+\columnbreak
+	
+\paragraph{Current Tasks:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Look at Trudnowski code for `structured array, functionalized' approach.
+		\item Look at Stajcar code for basic transient stability simulation flow.
+		\item Work on understanding PST
+		\item Document findings of PST functionality
+		\item Investigate Octave compatibility
+		\item Create modulation case \\ ramp/step/noise 
+		\item Add logging of loads
+		\item Continue to work on data plots 
+		\item Continue to collect example cases
+\end{enumerate}
+
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+		\item Minimum requirements for system case?
+		\begin{itemize}
+		\footnotesize
+			\item Load flow solver
+			\item Network solver
+			\item Machine models
+			\item Governor model
+			\item Exciter models
+			\item pwrmod models
+			\item ivmmod model
+			\item load modulation models
+			\item ...
+		\end{itemize}
+		\item PST modeling of transformers?
+		\item PST modeling of faults? \\
+		Uses alternate Y matrices? \\
+		Creates fault bus?
+	\end{enumerate}
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		\item See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines.	
+	\end{enumerate}
+
+\vfill\null
+\end{multicols}
+
+
+
+\begin{comment}
+% Unused categories
+\paragraph{Future Tasks:} %(Little to No Progress since last time / Things coming down the pipe)
+	\begin{enumerate}
+		\item none		
+	\end{enumerate}
+	
+\paragraph{Future Work: (not by me)}
+	\begin{itemize}
+		\item none
+	\end{itemize}
+
+\paragraph{Requests:}
+	\begin{enumerate}
+			\item none
+	\end{enumerate}
+\end{comment}
+
+
+
+\end{document}

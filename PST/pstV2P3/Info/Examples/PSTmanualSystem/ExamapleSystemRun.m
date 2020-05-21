@@ -1,5 +1,5 @@
 % Example of 2 cycle 3 phase line fault using system defined in PSTV3 manual.
-
+% Tested as working in Octave 5.2.0 5/21/20
 clear all; close all; clc
 
 %% Add pst path to MATLAB

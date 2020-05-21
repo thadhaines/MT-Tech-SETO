@@ -25,7 +25,7 @@ load PSTpath
 delete([PSTpath 'DataFile.m']); copyfile('d2m_pwrmod2.m',[PSTpath 'DataFile.m']); %System data file
 delete([PSTpath 'pwrmod_dyn.m']); copyfile('pwrmod_dyn_Example2.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-save('Exmaple2_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t and bus_v results
+save('Exmaple2_NonlinearSim.mat','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t and bus_v results
 
 %% Build Linear model, simulate, and store results
 %Build PST linear model with real-power input and voltage mag and angle
@@ -58,18 +58,18 @@ clear Gsolar Gpst GopenLoop
 tL = [0:1/120:10]';
 N = length(tL);
 Pref = [-0.0001*(stepfun(tL,1)-stepfun(tL,1.5)) zeros(N,1) 0.0002*(stepfun(tL,4)-stepfun(tL,4.5)) zeros(N,1) ]; %Pref pulses
-load('Exmaple2_NonlinearSim','t','bus_v');
+load('Exmaple2_NonlinearSim.mat','t','bus_v');
 y = lsim(G,Pref,tL);
 v = y(:,1:2) + ones(N,1)*abs(bus_v([2 3],1))';
 a = y(:,3:4) + ones(N,1)*angle(bus_v([2 3],1))';
 bus_vL = transpose(v.*exp(1i*a));
 tL = tL';
-save('Exmaple2_LinearSim','tL','bus_vL'); %Save linear results
+save('Exmaple2_LinearSim.mat','tL','bus_vL'); %Save linear results
 
 %% Plot linear vs nonlinear
 clear all; close all; clc
-load('Exmaple2_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st');
-load('Exmaple2_LinearSim','tL','bus_vL');
+load('Exmaple2_NonlinearSim.mat','t','bus_v','pwrmod_p_st','pwrmod_q_st');
+load('Exmaple2_LinearSim.mat','tL','bus_vL');
 figure
 subplot(411)
 nb = 2; %Bus to plot

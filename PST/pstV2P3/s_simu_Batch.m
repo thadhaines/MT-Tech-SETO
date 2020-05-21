@@ -63,7 +63,8 @@
 %%
 %clear all
 %clear global 
-% these clears were removed to allow for running w/o running DataFile.m 5/20/20
+% the above clears were removed to allow for running w/o running DataFile.m 5/20/20
+% assumes required arrays created before this script runs and DataFile is delted
 
 warning('*** s_simu_Batch Start')
 
@@ -81,36 +82,57 @@ dci_dc=[];
 disp('non-linear simulation')
 
 % input data file
+%% 05/20 Edits
+% Check for Octave, automatically load compatibility scripe
+% Assumes license of Octave will be 'GNU ...'
+dataCheck = license;
+if all(dataCheck(1:3)=='GNU')
+   fprintf('*** Octave detected, loading compatiblity commands and packages...\n')
+  octaveComp
+else
+  fprintf('*** MATLAB detected.\n')
+end
+clear dataCheck
+
 % account for non-existant DataFile (assumes required arrays created other ways...)
 try
    DataFile %Batch name for data file
 catch ME
-   fprintf('Caught ERROR: %s\n',ME.message)
+   fprintf('*** Caught ERROR: %s\n',ME.message)
+   fprintf('*** Continuing with simulation...\n')
 end 
-
-
 
 %% check for valid dynamic data file
 if isempty(mac_con)
-    error('mac_con is Empty - the selected file is not a valid data file')
+    error('mac_con is Empty - invalid/incomplete input data.')
 end
 if isempty(sw_con)
-    error('sw_con is Empty - the selected file has no switching data')
+    error('sw_con is Empty - simulation has no switching data.')
 end
 
-%% Assume 60 Hz frequency base and 100 MVA Sbase
-sys_freq = 60; %input('enter the base system frequency in Hz - [60]');
-if isempty(sys_freq)
+%% Handle varaible input system frequency
+% assumes fBase defined in DataFile or earlier, sys_freq is defined as global in pst_var.
+if ~exist('Fbase','var')
+    fprintf('*** Fbase Not defined - assuming 60 Hz base.\n')
     sys_freq = 60;
+elseif isnumeric(Fbase)
+    fprintf('*** Fbase found - Frequency base is set to %3.3f Hz\n', Fbase) 
+    sys_freq = Fbase;
 end
 
-basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
-basmva = 100; %input('enter system base MVA - [100]');
-
-if isempty(basmva)
+%% Handle variable input base MVA
+% assumes Sbase defined in DataFile or earlier, basmva is defined as global in pst_var.
+if ~exist('Sbase','var')
+    fprintf('*** Sbase Not defined - assuming 100 MVA base.\n')
     basmva = 100;
+elseif isnumeric(Sbase)
+    fprintf('*** Sbase found - Power base is set to %3.3f MVA\n', Sbase) 
+    basmva = Sbase;
 end
 
+
+%% other init operations
+basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
 syn_ref = 0 ;     % synchronous reference frame
 ibus_con = []; % ignore infinite buses in transient simulation
 
@@ -124,9 +146,9 @@ if ~isempty(n_pwrmod)
 end
 
 %% solve for loadflow - loadflow parameter
-% aways solve loadflow
 warning('*** Solve initial loadflow')
 if isempty(dcsp_con)
+    % AC power flow
     n_conv = 0;
     n_dcl = 0;
     ndcr_ud=0;
@@ -138,6 +160,7 @@ if isempty(dcsp_con)
     bus = bus_sol;  % solved loadflow solution needed for initialization
     save sim_fle bus line
 else
+    % Has HVDC, use DC load flow
     [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,dci_dc,dcr_dc);
     bus = bus_sol;
     save sim_fle bus line rec_par  inv_par line_par
@@ -548,7 +571,7 @@ else
     ivmmod_e_sig = zeros(1,k);
 end
 
-sys_freq = ones(1,k);
+sys_freq = ones(1,k); % replaces variable for base frequency input... 5/21/20
 
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
@@ -961,8 +984,8 @@ while (kt <= ktmax)
         end
         
         %% solve
-        if k == 50 % DEBUG - showing of networ solution call
-            warning('*** Performing network solution via i_simu')
+        if k == 50 % DEBUG - showing of network solution call
+            warning('*** k == 50; Performing network solution via i_simu')
         end
         h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
@@ -1062,7 +1085,7 @@ while (kt <= ktmax)
         end
         %% step 3b: compute dynamics and integrate
         flag = 2;
-        sys_freq(k) = 1.0;
+        sys_freq(k) = 1.0; % why?... 5/21/20
         mpm_sig(t(k),k);
         mac_ind(0,k,bus_sim,flag);
         mac_igen(0,k,bus_sim,flag);
@@ -1351,8 +1374,8 @@ while (kt <= ktmax)
             clear nL kB genBuses
         end
         %% solve
-        if k == 50 % DEBUG - showing of networ solution call
-            warning('*** Performing network solution via i_simu')
+        if k == 50 % DEBUG - showing of network solution call
+            warning('*** k == 50; Performing network solution via i_simu')
         end
         h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
@@ -1435,7 +1458,7 @@ while (kt <= ktmax)
             end
         end
         
-        %% Flag = 2
+        %% Flag = 2, for 'corrector step' d's
         flag = 2;
         mac_ind(0,j,bus_sim,flag);
         mac_igen(0,j,bus_sim,flag);
@@ -1619,6 +1642,7 @@ while (kt <= ktmax)
         xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;
         lmod_st(:,j) = lmod_st(:,k) + h_sol*(dlmod_st(:,j) + dlmod_st(:,k))/2.;
         rlmod_st(:,j) = rlmod_st(:,k) + h_sol*(drlmod_st(:,j) + drlmod_st(:,k))/2.;
+        
         pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*(dpwrmod_p_st(:,j) + dpwrmod_p_st(:,k))/2;
         pwrmod_q_st(:,j) = pwrmod_q_st(:,k)+h_sol*(dpwrmod_q_st(:,j) + dpwrmod_q_st(:,k))/2;
         if n_pwrmod~=0
@@ -1633,6 +1657,7 @@ while (kt <= ktmax)
                 ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
             end
         end
+        
     end
     % counter increment
     kt = kt + k_inc(ks);
@@ -1679,7 +1704,7 @@ v_dcc= v_dcc(:,1:length(t_dc));
 di_dci= di_dci(:,1:length(t_dc));
 di_dcr=di_dcr(:,1:length(t_dc));
 
-%% 'tidy' workspace....
+%% 'tidy' workspace.... Oh, were more than 340 globals were a bad idea?
 clear B H_sum IHT  R  SHT   VLT
 clear V_rgf V_rgpf1 V_rgpf2 V_rgprf V_rncf V_rncpf1 V_rncpf2 V_rncprf Vdc_ref
 clear Vr1 Vr2 X Y1 Y2 Y3 Y4

@@ -55,15 +55,15 @@
 % Date:     January 1991
 
 warning('*** Declare Global Variables')
-% debug variables
+%% debug variables
 global DEBUG
 
-% system variables
+%% system variables
 global  basmva basrad syn_ref mach_ref sys_freq
 global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
 global lmon_con
 
-% synchronous machine variables
+%% synchronous machine variables
 global  mac_con mac_pot mac_int ibus_con
 global  mac_ang mac_spd eqprime edprime psikd psikq
 global  curd curq curdg curqg fldcur
@@ -74,10 +74,10 @@ global  n_mac n_em n_tra n_sub n_ib
 global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx 
 global mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
   
-% ivm variables
+%% ivm variables
 global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
 
-% excitation system variables
+%% excitation system variables
 global  exc_con exc_pot n_exc
 global  Efd V_R V_A V_As R_f V_FB V_TR V_B
 global  dEfd dV_R dV_As dR_f dV_TR
@@ -92,10 +92,10 @@ global dc_TF dc_TF_idx dc_TR dc_TR_idx;
 global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
 global st3_TR st3_TR_idx st3_noTR_idx;
 
-% non-conforming load variables
+%% non-conforming load variables
 global  load_con load_pot nload
 
-% induction motor variables
+%% induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
 global  motbus ind_int mld_con n_mot
 % states
@@ -103,7 +103,7 @@ global  vdp vqp slip
 % dstates
 global dvdp dvqp dslip 
 
-% induction genertaor variables
+%% induction genertaor variables
 global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
 global  igen_int igbus n_ig
 %states
@@ -111,7 +111,7 @@ global  vdpig vqpig slig
 %dstates
 global dvdpig dvqpig dslig
 
-% svc variables
+%% svc variables
 global  svc_con n_svc svc_idx svc_pot svcll_idx
 global  svc_sig
 % svc user defined damping controls
@@ -121,13 +121,13 @@ global B_cv B_con
 %dstates
 global dB_cv dB_con
 
-% tcsc variables
+%% tcsc variables
 global  tcsc_con n_tcsc tcsvf_idx tcsct_idx 
 global  B_tcsc dB_tcsc 
 global  tcsc_sig tcsc_dsig
 global  n_tcscud dtcscud_idx  %user defined damping controls
 
-% load modulation variables
+%% load modulation variables
 global  lmod_con n_lmod lmod_idx
 global  lmod_pot lmod_st dlmod_st
 global  lmod_sig lmod_data
@@ -136,30 +136,30 @@ global  rlmod_con n_rlmod rlmod_idx
 global  rlmod_pot rlmod_st drlmod_st
 global  rlmod_sig
 
-% power injection variables
+%% power injection variables
 global  pwrmod_con n_pwrmod pwrmod_idx
 global  pwrmod_p_st dpwrmod_p_st
 global  pwrmod_q_st dpwrmod_q_st
 global  pwrmod_p_sig pwrmod_q_sig
 global  pwrmod_data
 
-% pss variables
+%% pss variables
 global  pss_con pss_pot pss_mb_idx pss_exc_idx
 global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
 global  pss_idx n_pss pss_sp_idx pss_p_idx;
 global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
 
-% DeltaP/omega filter variables
+%% DeltaP/omega filter variables
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
 
-% turbine-governor variables
+%% turbine-governor variables
 global  tg_con tg_pot 
 global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
 global  tg_idx  n_tg tg_sig tgh_idx n_tgh
 
-%HVDC link variables
+%% HVDC link variables
 global  dcsp_con  dcl_con  dcc_con
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
@@ -168,7 +168,6 @@ global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig d
 global  ric_idx  rpc_idx Vdc_ref dcc_pot 
 global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
 global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-
 
 % States
 %line
@@ -180,9 +179,8 @@ global v_conr dv_conr
 global v_coni dv_coni
 
 
-
-% simulation control
+%% simulation control
 global sw_con  scr_con
 
-% pss design
+%% pss design
 global netg_con  stab_con

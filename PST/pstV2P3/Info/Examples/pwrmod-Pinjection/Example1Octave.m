@@ -1,11 +1,5 @@
 % Example of how to use pwrmod_dyn.m to modulate the power into a bus.
 % Data file = d2m_pwrmod1.m
-
-%% Octave specific
-% https://wiki.octave.org/Differences_between_Octave_and_Matlab
-warning('off', 'Octave:possible-matlab-short-circuit-operator'); # supress warning about | and & usage vs || and &&
-pkg load control % for ss functionality
-
 % Tested with octave 5.2.0
 % requires stepfun for linear model - this function is recreated from matlab function
 % file saving / loading requires explicit .mat specification - sometimes?
@@ -35,12 +29,16 @@ delete([PSTpath 'DataFile.m']); % clear previous system settings (if applicable)
 copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); % Place new system data file
 delete([PSTpath 'pwrmod_dyn.m']); % clear previous pwrmod settings (if applicable)
 copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); % Place new modulation file
+
+% Octave compatibility
+octaveComp
+
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 save('Exmaple1_NonlinearSim.mat','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t and bus_v results
 
 %% Build linear model, simulate, and store results
 %Build linear model
-clear all; clc;
+clear all; %clc;
 load PSTpath
 delete([PSTpath 'DataFile.m']); % clear previous system settings (if applicable)
 copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file

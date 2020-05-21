@@ -7,6 +7,11 @@
 %   03/20/18    21:12   init
 %   03/20/18    21:19   copied from base, added a DC exciter (type 1)
 %   05/19/20    10:26   Modified for use in exploring PST operation
+%   05/21/20    08:24   Added optional Fbase and Sbase variables
+
+%% Optional System data, else assumed 60 Hz, 100 MVA
+%Fbase = 50; % Hz
+%Sbase = 50; % MW
 
 %% bus data 
 % bus array format:

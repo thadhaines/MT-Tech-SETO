@@ -36,7 +36,7 @@ grid on; hold on
 plot(A_t,A_p,'LineWidth',lt, 'color',cm(1,:))
 plot(B_t,B_p,'LineWidth',lt, 'color',cm(2,:))
 plot(C_t,C_p,'LineWidth',lt, 'color',cm(3,:))
-legend({A,B,C},'location',loc,'fontsize',bfz)
+legend({A,B,C},'location',loc)
 ylabel('P_E [pu]','fontsize',bfz);
 xlabel('Time [sec]','fontsize',bfz);
 xlim([0, plot_end])
@@ -51,7 +51,7 @@ plot(A_t,A_s,'LineWidth',lt, 'color',cm(1,:))
 plot(B_t,B_s,'LineWidth',lt, 'color',cm(2,:))
 plot(C_t,C_s,'LineWidth',lt, 'color',cm(3,:))
 xlim([0 plot_end])
-legend({A,B,C},'location','northeast','fontsize',bfz)
+legend({A,B,C},'location','northeast')
 ylabel('Speed [pu]','fontsize',bfz);
 xlabel('Time [sec]','fontsize',bfz);
 set(gca,'fontsize',bfz)
