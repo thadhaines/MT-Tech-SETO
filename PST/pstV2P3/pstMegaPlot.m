@@ -99,3 +99,15 @@ plot(t, imag(sInjT))
 title([{'imag(sInjT)'}; {'reactive power line flow'}])
 xlabel('Time [sec]')
 ylabel('MVAR [PU]?')
+
+%% Modulated real power loads
+
+if exist('lmod_con','var')
+    % plot lmod_st + bus P for loads listed in lmod_con...
+    figure
+    plot(t, bus(find(bus(:,1)==lmod_con(:,2)),6)+lmod_st)
+    title([{'Modified real power loads'}; {'bus(find(bus(:,1)==lmod\_con(:,2)),6)+lmod\_st'}])
+    xlabel('Time [sec]')
+    ylabel('MW [PU]')
+end
+

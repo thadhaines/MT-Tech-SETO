@@ -1,7 +1,7 @@
 function f = lmod(i,k,bus,flag)
 % Syntax: f = lmod(i,k,bus,flag)
 % 4:58 PM 15/08/97
-% Purpose: load modulation model 
+% Purpose: load modulation model
 %          with vectorized computation option
 %          NOTE - load modulation bus must be declared as a
 %                 non-conforming load bus
@@ -14,8 +14,7 @@ function f = lmod(i,k,bus,flag)
 %               2 - generator dynamics computation
 %
 % Output: f is a dummy variable
-%                    
-
+%
 
 % (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
 
@@ -35,63 +34,62 @@ global  lmod_sig
 
 f = 0;% dummy variable
 
-
 jay = sqrt(-1);
 if ~isempty(lmod_con)
-   if flag == 0; % initialization
-      if i~=0
-         lmod_pot(i,1) = lmod_con(i,4)*lmod_con(i,3)/basmva;
-         % max modulation on system base
-         lmod_pot(i,2) = lmod_con(i,5)*lmod_con(i,3)/basmva;
-         % min modulation on system base
-         lmod_st(i,1) = 0;
-      else % vectorized calculation
-         lmod_pot(:,1) = lmod_con(:,4).*lmod_con(:,3)/basmva;
-         % max modulation on system base
-         lmod_pot(:,2) = lmod_con(:,5).*lmod_con(:,3)/basmva;
-         % min modulation on system base
-         lmod_st(:,1) = zeros(n_lmod,1);
-      end
-   end
-   if flag == 1 % network interface computation
-      % no interface calculation required - done in nc_load
-   end
-   
-   if flag == 2 %  dynamics calculation
-      % for linearization with operating condition at limits,
-      % additional code will be needed
-      if i ~= 0
-         dlmod_st(i,k) = (-lmod_st(i,k)+lmod_con(i,6)*lmod_sig(i,k))/lmod_con(i,7);
-         % anti-windup reset
-         if lmod_st(i,k) > lmod_pot(i,1)
-            if dlmod_st(i,k)>0
-               dlmod_st(i,k) = 0;
+    if flag == 0; % initialization
+        if i~=0
+            lmod_pot(i,1) = lmod_con(i,4)*lmod_con(i,3)/basmva;
+            % max modulation on system base
+            lmod_pot(i,2) = lmod_con(i,5)*lmod_con(i,3)/basmva;
+            % min modulation on system base
+            lmod_st(i,1) = 0;
+        else % vectorized calculation
+            lmod_pot(:,1) = lmod_con(:,4).*lmod_con(:,3)/basmva;
+            % max modulation on system base
+            lmod_pot(:,2) = lmod_con(:,5).*lmod_con(:,3)/basmva;
+            % min modulation on system base
+            lmod_st(:,1) = zeros(n_lmod,1);
+        end
+    end
+    if flag == 1 % network interface computation
+        % no interface calculation required - done in nc_load
+    end
+    
+    if flag == 2 %  dynamics calculation
+        % for linearization with operating condition at limits,
+        % additional code will be needed
+        if i ~= 0
+            dlmod_st(i,k) = (-lmod_st(i,k)+lmod_con(i,6)*lmod_sig(i,k))/lmod_con(i,7);
+            % anti-windup reset
+            if lmod_st(i,k) > lmod_pot(i,1)
+                if dlmod_st(i,k)>0
+                    dlmod_st(i,k) = 0;
+                end
             end
-         end
-         if lmod_st(i,k) < lmod_pot(i,2)
-            if dlmod_st(i,k)<0
-               dmod_st(i,k) = 0;
+            if lmod_st(i,k) < lmod_pot(i,2)
+                if dlmod_st(i,k)<0
+                    dmod_st(i,k) = 0;
+                end
             end
-         end
-      else %vectorized computation
-         dlmod_st(:,k) = (-lmod_st(:,k)+lmod_con(:,6).*lmod_sig(:,k))./lmod_con(:,7);
-         % anti-windup reset
-         indmx =find( lmod_st(:,k) > lmod_pot(:,1));
-         if ~isempty(indmx)
-            indrate = find(dlmod_st(indmx,k)>0);
-            if ~isempty(indrate)
-               % set rate to zero
-               dlmod_st(indmx(indrate),k) = zeros(length(indrate),1);
+        else %vectorized computation
+            dlmod_st(:,k) = (-lmod_st(:,k)+lmod_con(:,6).*lmod_sig(:,k))./lmod_con(:,7);
+            % anti-windup reset
+            indmx =find( lmod_st(:,k) > lmod_pot(:,1));
+            if ~isempty(indmx)
+                indrate = find(dlmod_st(indmx,k)>0);
+                if ~isempty(indrate)
+                    % set rate to zero
+                    dlmod_st(indmx(indrate),k) = zeros(length(indrate),1);
+                end
             end
-         end
-         indmn = find(lmod_st(:,k) < lmod_pot(:,2));
-         if ~isempty(indmn)
-            indrate = find(dlmod_st(indmn)<0);
-            if ~isempty(indrate)
-               % set rate to zero
-               dlmod_st(indmn(indrate),k) = zeros(length(indrate),1);
+            indmn = find(lmod_st(:,k) < lmod_pot(:,2));
+            if ~isempty(indmn)
+                indrate = find(dlmod_st(indmn)<0);
+                if ~isempty(indrate)
+                    % set rate to zero
+                    dlmod_st(indmn(indrate),k) = zeros(length(indrate),1);
+                end
             end
-         end
-      end
-   end
+        end
+    end
 end

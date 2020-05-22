@@ -60,6 +60,8 @@
 % (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997 - All rights reserved
 %
 
+
+
 %%
 %clear all
 %clear global 
@@ -72,7 +74,141 @@ close % close graphics windows
 tic % set timer
 plot_now=0;
 jay = sqrt(-1);
-pst_var % set up global variables (very many)
+%% Contents of pst_var copied into this section so that globals highlight - thad
+%pst_var % set up global variables (very many)
+
+    warning('*** Declare Global Variables')
+    %% debug variables
+    global DEBUG
+
+    %% system variables
+    global  basmva basrad syn_ref mach_ref sys_freq
+    global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
+    global lmon_con
+
+    %% synchronous machine variables
+    global  mac_con mac_pot mac_int ibus_con
+    global  mac_ang mac_spd eqprime edprime psikd psikq
+    global  curd curq curdg curqg fldcur
+    global  psidpp psiqpp vex eterm theta ed eq 
+    global  pmech pelect qelect
+    global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+    global  n_mac n_em n_tra n_sub n_ib 
+    global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx 
+    global mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+
+    %% ivm variables
+    global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
+
+    %% excitation system variables
+    global  exc_con exc_pot n_exc
+    global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+    global  dEfd dV_R dV_As dR_f dV_TR
+    global  exc_sig pm_sig n_pm
+    global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+    global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+    global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+    global smp_TR smp_TR_idx smp_no_TR_idx ;
+    global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+    global dc_TE  dc_TE_idx dc_noTE_idx;
+    global dc_TF dc_TF_idx dc_TR dc_TR_idx;
+    global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+    global st3_TR st3_TR_idx st3_noTR_idx;
+
+    %% non-conforming load variables
+    global  load_con load_pot nload
+
+    %% induction motor variables
+    global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
+    global  motbus ind_int mld_con n_mot
+    % states
+    global  vdp vqp slip 
+    % dstates
+    global dvdp dvqp dslip 
+
+    %% induction genertaor variables
+    global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+    global  igen_int igbus n_ig
+    %states
+    global  vdpig vqpig slig 
+    %dstates
+    global dvdpig dvqpig dslig
+
+    %% svc variables
+    global  svc_con n_svc svc_idx svc_pot svcll_idx
+    global  svc_sig
+    % svc user defined damping controls
+    global n_dcud dcud_idx svc_dsig
+    %states
+    global B_cv B_con
+    %dstates
+    global dB_cv dB_con
+
+    %% tcsc variables
+    global  tcsc_con n_tcsc tcsvf_idx tcsct_idx 
+    global  B_tcsc dB_tcsc 
+    global  tcsc_sig tcsc_dsig
+    global  n_tcscud dtcscud_idx  %user defined damping controls
+
+    %% load modulation variables
+    global  lmod_con n_lmod lmod_idx
+    global  lmod_pot lmod_st dlmod_st
+    global  lmod_sig lmod_data
+    % reactive load modulation variables
+    global  rlmod_con n_rlmod rlmod_idx
+    global  rlmod_pot rlmod_st drlmod_st
+    global  rlmod_sig
+
+    %% power injection variables
+    global  pwrmod_con n_pwrmod pwrmod_idx
+    global  pwrmod_p_st dpwrmod_p_st
+    global  pwrmod_q_st dpwrmod_q_st
+    global  pwrmod_p_sig pwrmod_q_sig
+    global  pwrmod_data
+
+    %% pss variables
+    global  pss_con pss_pot pss_mb_idx pss_exc_idx
+    global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
+    global  pss_idx n_pss pss_sp_idx pss_p_idx;
+    global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+
+    %% DeltaP/omega filter variables
+    global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
+    global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
+    global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
+
+    %% turbine-governor variables
+    global  tg_con tg_pot 
+    global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+    global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+
+    %% HVDC link variables
+    global  dcsp_con  dcl_con  dcc_con
+    global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+    global  inv_ac_line  rec_ac_line ac_line dcli_idx
+    global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+    global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
+    global  ric_idx  rpc_idx Vdc_ref dcc_pot 
+    global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+    global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+
+    % States
+    %line
+    global i_dcr i_dci  v_dcc 
+    global di_dcr  di_dci  dv_dcc 
+    %rectifier
+    global v_conr dv_conr  
+    %inverter
+    global v_coni dv_coni
+
+
+    %% simulation control
+    global sw_con  scr_con
+
+    %% pss design
+    global netg_con  stab_con
+
+%%
 svc_dc=[];
 tcsc_dc=[];
 dcr_dc=[];
@@ -82,7 +218,7 @@ dci_dc=[];
 disp('non-linear simulation')
 
 % input data file
-%% 05/20 Edits
+%% 05/20 Edits - thad
 % Check for Octave, automatically load compatibility scripe
 % Assumes license of Octave will be 'GNU ...'
 dataCheck = license;
@@ -102,7 +238,7 @@ catch ME
    fprintf('*** Continuing with simulation...\n')
 end 
 
-%% check for valid dynamic data file
+% check for valid dynamic data file
 if isempty(mac_con)
     error('mac_con is Empty - invalid/incomplete input data.')
 end
@@ -110,7 +246,7 @@ if isempty(sw_con)
     error('sw_con is Empty - simulation has no switching data.')
 end
 
-%% Handle varaible input system frequency
+% Handle varaible input system frequency
 % assumes fBase defined in DataFile or earlier, sys_freq is defined as global in pst_var.
 if ~exist('Fbase','var')
     fprintf('*** Fbase Not defined - assuming 60 Hz base.\n')
@@ -120,7 +256,7 @@ elseif isnumeric(Fbase)
     sys_freq = Fbase;
 end
 
-%% Handle variable input base MVA
+% Handle variable input base MVA
 % assumes Sbase defined in DataFile or earlier, basmva is defined as global in pst_var.
 if ~exist('Sbase','var')
     fprintf('*** Sbase Not defined - assuming 100 MVA base.\n')
@@ -158,12 +294,12 @@ if isempty(dcsp_con)
     acc = 1.0;   % acceleration factor
     [bus_sol,line,line_flw] = loadflow(bus,line,tol,iter_max,acc,'n',2);
     bus = bus_sol;  % solved loadflow solution needed for initialization
-    save sim_fle bus line
+    save sim_fle.mat bus line
 else
     % Has HVDC, use DC load flow
     [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,dci_dc,dcr_dc);
     bus = bus_sol;
-    save sim_fle bus line rec_par  inv_par line_par
+    save sim_fle.mat bus line rec_par  inv_par line_par
 end
 
 %% set indexes
@@ -188,8 +324,6 @@ if isempty(n_ig); n_ig = 0; end
 ntot = n_mac+n_mot+n_ig;
 ngm = n_mac + n_mot;
 n_pm = n_mac;
-
-
 
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
@@ -252,10 +386,10 @@ end
 
 zdcl = zeros(1,kdc);
 if n_dcl>1
-    zdcl=zeros(n_dcl,kdc);
+    zdcl = zeros(n_dcl,kdc);
 end
 
-%% set dc parameters   (initialize zeros 5/14/20)
+%% set dc parameters   (initialize zeros? 5/14/20)
 Vdc = zeros(n_conv,kdc);
 i_dc = zdc;
 P_dc = z;
@@ -678,7 +812,7 @@ if n_conv~=0
 end
 
 %% Flag = 0 == Initialization
-warning('*** Dynamic model initialization via functions')
+warning('*** Dynamic model initialization via functions:')
 flag = 0;
 bus_int = bus_intprf;% pre-fault system
 
@@ -729,6 +863,7 @@ end
 
 %% initialize svc damping controls
 if n_dcud~=0
+    disp('svc damping controls')
     tot_states=0;
     for i = 1:n_dcud
         ysvcmx = svc_dc{i,4};
@@ -744,6 +879,7 @@ end
 
 %% initialize tcsc damping controls
 if n_tcscud~=0
+    disp('tcsc damping controls')
     tot_states=0;
     for i = 1:n_tcscud
         ytcscmx = tcsc_dc{i,4};
@@ -759,6 +895,7 @@ end
 
 %% initialize rectifier damping controls
 if ndcr_ud~=0
+    disp('rectifier damping controls')
     tot_states=0;
     for i = 1:ndcr_ud
         ydcrmx = dcr_dc{i,5};
@@ -774,6 +911,7 @@ end
 
 %% initialize inverter damping controls
 if ndci_ud~=0
+    disp('inverter damping controls')
     tot_states=0;
     for i = 1:ndci_ud
         ydcimx = dci_dc{i,5};
@@ -831,7 +969,11 @@ if ~isempty(load_con)
 else
     nload = 0;
 end
+
+%% DC Stuff ? (5/22/20)
 if ~isempty(dcsp_con)
+    disp('dc converter specification')
+    
     bus_sim = bus;
     bus_int = bus_intprf;
     Y1 = Y_gprf;
@@ -851,6 +993,7 @@ if ~isempty(dcsp_con)
     % initialize dc line
     dc_line(0,1,1,bus,flag);
 end
+
 H_sum = sum(mac_con(:,16)./mac_pot(:,1));
 %% step 3: perform a predictor-corrector integration
 %
@@ -1072,16 +1215,59 @@ while (kt <= ktmax)
             end
         end
         
-        %% live plotting
-        i_plot=k-plot_now;
-        if i_plot == 10
-            plot_now = k;
+        %% fancier live plotting ~~ (1x = no plot) (1.17x if % 50) (1.37x if & 10) SLOWER -thad
+        livePlot = 1; % for possible fugure sim flags
+        if (mod(k,10)==0) && livePlot
+            if ~isempty(lmod_con) || ~isempty(pwrmod_con)
+                nPlt = 3;
+            else
+                nPlt = 2;
+            end
+            
+            % format bus voltage for plot
             v_p(1:k)=abs(bus_v(bus_idx(1),1:k));
             % plot the voltage of the faulted bus
+            subplot(nPlt,1,1)
             plot(t(1:k),v_p(1:k),'r')
             title('Voltage Magnitude at Fault Bus');
-            xlabel('time (s)');
-            drawnow
+            xlabel('Time [sec]');
+            ylabel('Volatge [PU]');
+            
+            % plot generator info 
+            subplot(nPlt,1,2)  
+            Lcolor = lines(size(mac_spd,1));
+            for pltGen = 1:size(mac_spd,1)
+                plot(t(1:k),mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
+                hold on
+            end
+            title('System Generator Speed');
+            xlabel('Time [sec]');
+            ylabel('Speed [PU]');
+            
+            % plot load moduation (if present)
+            if ~isempty(lmod_con)
+                subplot(nPlt,1,3)
+                plot(t(1:k),lmod_st(1:k))
+                title('System Real Load Modulation');
+                xlabel('Time [sec]');
+                ylabel('MW [PU]');
+            end
+            
+            % Plot Powermod injection if present
+            if ~isempty(pwrmod_con)
+                subplot(nPlt,1,3)
+                Lcolor = lines(size(pwrmod_p_st,1));
+                for pltData = 1:size(pwrmod_p_st,1)
+                    plot(t(1:k),pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
+                    hold on
+                end
+                title('Power Modulation');
+                xlabel('Time [sec]');
+                ylabel('MW [PU]');
+            end
+            
+            
+            drawnow     
         end
         %% step 3b: compute dynamics and integrate
         flag = 2;
@@ -1723,7 +1909,7 @@ clear i_idx i_plot ibus_con idig idmot igbus igen_con igen_int igen_pot ind_con
 clear ind_int ind_pot inv_ac_bus inv_ac_line inv_par iqig iqmot
 clear j jay jj k k_end k_inc k_start k_tot ks kt
 clear ktmax l_cap l_no_cap lfile line_f line_flw line_par line_pf1 line_pf2 line_sim
-clear lmod_con lmod_idx lmod_pot lmon_con  load_con load_pot lswitch lt mac_con mac_em_idx
+clear lmod_idx lmod_pot lmon_con  load_con load_pot lswitch lt mac_con mac_em_idx %lmod_con
 clear pwrmod_con pwrmod_idx
 clear mac_ib_em mac_ib_idx mac_ib_sub mac_ib_tra mac_int  mac_pot mac_sub_idx mac_tra_idx
 clear mld_con motbus n n_bus n_conv n_dc n_dc2 n_dcl n_dcud n_dpw n_em n_exc n_ib n_ib_em
