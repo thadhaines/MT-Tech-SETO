@@ -105,3 +105,6 @@ ylabel(['bus ' num2str(nb) ' (mHz)'])
 legend({'Non-Linear','Linear'},'location','best')
 
 %set(gcf,'Position',[360 202 560 720]);
+%% temp file clean up
+delete('PSTpath.mat')
+delete('sim_fle.mat')

@@ -68,7 +68,7 @@
 
 clear all
 clear global
-close all %graphics windows
+%close all %graphics windows
 % set up global variables
 pst_var
 tic % set timer
