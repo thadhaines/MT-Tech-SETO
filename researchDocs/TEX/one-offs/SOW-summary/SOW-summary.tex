@@ -1,0 +1,36 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Statement of Work Summayr/Interpetation \\ }
+\lhead{Research \\ 5/26/20}
+
+
+\begin{document}
+\paragraph{Official Project Title} \ \\
+Enabling Extended-Term Simulation of Power Systems with High PV Penetration
+\paragraph{Statement of Work `Summary'} \ \\
+Significantly Improve extended-term power system simulation tools by implementing numerical algorithms that better simulate both fast and slow dynamics involved with systems that have high penetration of inverter based resources, variable solar irradiance, and low inertia.
+\begin{itemize}
+
+\item  Focus on a `mixed-mode' simulation framework.
+\item  Implement fast time scale solvers.
+\item  Conduct simulation studies of realistic grid models with high PV penetration and variable solar irradiance.
+\item Demonstrate performance improvements relative to prior state-of-the-art.
+
+\end{itemize}
+\subparagraph{Deliverables and Due Dates}
+\begin{enumerate}
+\item Develop mixed mode simulation framework and up to three different simulation test cases (models plus datasets) along with a matrix of numerical results comparing to the baseline solver method (RK-2 method).
+This is due no later than \textbf{6/30/2020}.
+\item Implement the new mixed-mode simulation framework developed in Milestone 1 into PST/Matlab using variable irradiance PV models and data.
+This is due no later than   \textbf{1/31/2021}.
+\item Provide written contributions to a final report, covering framework development and simulation results.
+This is due no later than  \textbf{2/28/2021}.
+\end{enumerate}
+\end{document}
