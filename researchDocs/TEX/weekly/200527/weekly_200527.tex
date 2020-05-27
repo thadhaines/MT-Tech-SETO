@@ -22,7 +22,7 @@
 		Modified to run from repository folders
 		\item New example cases verified as working:
 		\begin{itemize}
-			\item nothing new...
+			\item Load step using lmod
 		\end{itemize}
 		\item octaveComp created - Automatically runs from s\_simu\_Batch if Octave is detected. Handles execution of compatibility commands and package loadings.
 		
@@ -42,39 +42,56 @@
 	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
 	\end{enumerate}
 	
-\paragraph{Coding Thoughts:} 
-	\begin{enumerate}
-		\item Condense $\approx$340 globals into $\approx$18 based on category
-		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
-		This would probably entail more thought on passing data by reference using handles.
-		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
-		\item Rework how switching/perturbance events are handled into a more flexible and general format.
-		\item Generate something similar to unit test cases to verify functional changes don't break everything during refactor.
-		\item Generate comparison scripts to verify simulated results match after code changes.
-	\end{enumerate}
-	
-\vfill\null
-\columnbreak
+
 	
 \paragraph{Current Tasks:}
 	\begin{enumerate}
-		\itemsep0em 
+		\itemsep 0em 
 		\item Look at Trudnowski code for `structured array, functionalized' approach.
 		\item Look at Stajcar code for basic transient stability simulation flow.
 		\item Work on understanding PST
 		\item Document findings of PST functionality
 		\item Investigate Octave compatibility
-		\item Create modulation case \\ ramp/step/noise 
-		\item Add logging of loads
-		\item Continue to work on data plots 
+		\item Create modulation case: ramp/noise 
 		\item Continue to collect example cases
+		\item Continue to work on data plots 
 \end{enumerate}
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		\item See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
+	\end{enumerate}
+
+\vfill\null
+\columnbreak
+
+\paragraph{Coding Thoughts:} 
+	\begin{enumerate}
+
+		\itemsep 0em 
+		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations.
+		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+		This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+		Possibly employ \verb|feval| for a more dynamic calculation routine.
+		\item Rework how switching/perturbance events are handled into a more flexible and general format.
+		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+		\item Generate comparison scripts to verify simulated results match after code changes.
+	\end{enumerate}
+	
+
 
 \paragraph{Current Questions:}
 	\begin{enumerate}
 	\itemsep0em 
+\item Which version of PST to start with?
+\item How closely does actual work follow TWP?
 		\item Minimum requirements for system case?
+\begin{minipage}{\linewidth}
+\begin{multicols}{2}
 		\begin{itemize}
+\itemsep0em 
 		\footnotesize
 			\item Load flow solver
 			\item Network solver
@@ -86,17 +103,16 @@
 			\item load modulation models
 			\item ...
 		\end{itemize}
+\end{multicols}
+\end{minipage}
+
 		\item PST modeling of transformers?
-		\item PST modeling of faults? \\
+		\item PST modeling of faults: \\
 		Uses alternate Y matrices? \\
 		Creates fault bus?
 	\end{enumerate}
 
-\paragraph{Possible Future Tasks:} % Maybe good ideas?
-	\begin{enumerate}
-		\item Investigate Sandia integrator stability methods.	
-		\item See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines.	
-	\end{enumerate}
+
 
 \vfill\null
 \end{multicols}

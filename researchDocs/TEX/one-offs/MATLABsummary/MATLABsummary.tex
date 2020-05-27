@@ -1,0 +1,69 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Relavant MATLAB information \\ }
+\lhead{Research \\ 5/27/20}
+
+
+\begin{document}
+Work in progress notes of interest from \emph{MATLAB programming with Applications for Engineers} by Stephen J. Chapman 2013.
+
+\paragraph{Chapter 6 \& 7} \ \\
+MATLAB passes by value, i.e. copies are made of input arguments to functions. 
+Apparently, there is some mechanism in place that detects if an input variable is changed; and if not, then pass by reference is used.
+The exact operation this process was not exactly explained in detail and feels pretty sketchy to rely on an automatic process that may largely affect a programs operation.
+
+\subparagraph{Function Notes}
+Functions have specific commands that may be useful:
+\begin{itemize}
+\item nargin
+\item nargout
+\item inputname
+\item nargchk
+\end{itemize}
+
+MATLAB allows for \verb|persistent| variables to be declared in a function.
+These variables are not cleared at the completion of a funciton and instead remain in the the functions local workspace.
+
+\subparagraph{Function Functions} \ \\
+MATLABs `function functions' are functions that accept other functions as input.
+Some useful function functions are:
+\begin{itemize}
+\item eval('some string') : evaluates input string as if it were typed into the command window.
+\item feval('someFunc', vals) : evaluates given named function with input values.
+\end{itemize}
+
+\subparagraph{Function Search Order}
+\begin{enumerate}
+\item Sub functions (functions defined inside a named function)
+\item Private functions (functions defined inside a folder named \verb|private| in the current directory)
+\item Current directory functions (functions defined in current folder)
+\item MATLAB path
+\end{enumerate}
+
+\subparagraph{Function Handles} \ \\
+Function handles can be used to `rename' a function.
+
+\begin{verbatim}
+fHandle = @funcName; % creates handle fHandle that would act the same as funcName
+fHandle = str2func('funcName'); % same operation as above.
+\end{verbatim}
+
+\subparagraph{Anonymous Functions} \ \\
+One line functions without a name. 
+Returns a function handle that accepts defined input arguments.
+\begin{verbatim}
+>> aFunc = @(x) x^2;
+>> aFunc(4)
+ans =
+    16
+\end{verbatim}
+
+
+\end{document}
