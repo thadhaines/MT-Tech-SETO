@@ -1,0 +1,134 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of lmod using global g\\ }
+\lhead{Research \\ 5/28/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable \verb|lmod| PST to use the structured global variable \verb|g| and other `clean up' actions taken.
+Each paragraph describes the required changes the PST file that has anything to do with load modulation.
+
+Initial globals:
+\begin{verbatim}
+%% load modulation variables
+global lmod_con % defined by user
+global n_lmod lmod_idx % initialized and created in lm_indx
+global lmod_sig lmod_st dlmod_st % initialized in s_simu
+global lmod_pot  % created/initialized in lmod.m 
+% g.lmod.lmod_pot(:,1) = max, g.lmod.lmod_pot(:,2) = min
+global lmod_data % added by Trudnowski - doesn't appear to be used?
+% maybe in new models?
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+
+%===============================================================================
+\paragraph{User Input Data File}
+The `d\_xxx' file should now define \verb|lmod_con| as \verb|g.lmod.lmod_con|.
+This is because in the `standard' PST method of operations, \verb|lmod_con| is defined as a global before the user data file is executed.
+This effectively means that the user defined arrays in the data file are actually defining global arrays (who knew?).
+
+%===============================================================================
+\paragraph{ml\_sig.m}
+User created file that defines signal(s) to load modulation.
+Should include \verb|global g| and only receive index variable \verb|k|.
+Utilize global time array located in \verb|g.sys.t|.
+
+%===============================================================================
+\paragraph{lm\_indx.m} % completed 
+\ \\
+Notes from file:
+\begin{verbatim}
+% syntax: f = lm_indx
+% 5:02 PM 15/08/97
+% determines the relationship between lmod and nc loads
+% checks for lmod
+% determines number of modulated loads
+\end{verbatim}
+Comments should be redone in a similar fashion as lmod.m
+
+\begin{itemize}
+\item Prepended \verb|g.lmod.| to appropriate globals:
+\begin{enumerate}
+\item \verb|n_lmod|
+\item \verb|lmod_idx|
+\end{enumerate}
+\item Added comments for each code line.
+\item Added check for \verb|lmod_con| field in \verb|g.lmod|. If not found, creates empty array and displays a message.
+(empty array created as there may be other checks to see if \verb|lmod_con| is empty)
+\end{itemize}
+
+%===============================================================================
+\paragraph{lmod.m}
+This function calculates the initial state, and states of the lmod model.
+
+\begin{itemize}
+\item The beginning comments and function info was modified to more closely follow recommended function documentation as provided in the S.J. Chapman MATLAB book.
+
+\item The function was modified to be a VOID function (i.e. return nothing).
+
+\item \verb|bus| was removed from input parameters as it is not used.
+
+\item Prepended all lmod related globals with \verb|g.lmod.|
+
+\end{itemize}
+
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+\begin{itemize}
+\item Added \verb|g.lmod.| to zero initializations of
+	\begin{itemize}
+		\item \verb|lmod_st|
+		\item \verb|dlmod_st|
+		\item \verb|lmod_sig|
+	\end{itemize}
+\item Added \verb|g.lmod.| to initialization call to lmod function 
+\item Added \verb|g.lmod.| to check for live plot
+
+
+\item Added \verb|g.lmod.| to integrations of 
+	\begin{itemize}
+		\item \verb|lmod_st| using \verb|dlmod_st|
+	\end{itemize}
+
+\item Added time array \verb|t| to \verb|g.sys.t|
+
+\item Removed sending of \verb|bus| to lmod
+\end{itemize}
+
+%===============================================================================
+\paragraph{nc\_load.m}
+Adds load modulation to Y array.
+\begin{itemize}
+\item Added \verb|g.lmod.| to calls to \verb|lmod_idx| and \verb|lmod_st|.
+\end{itemize}
+
+%===============================================================================
+\paragraph{svm\_mgen\_Batch.m} \ \\
+Not modified as there were no example cases to test functionality of changes.
+
+%===============================================================================
+\paragraph{ns\_file.m} \ \\
+Called from \verb|svm_mgen| $\therefore$ not modified.
+
+%===============================================================================
+\paragraph{p\_cont.m} \ \\
+Invoked during linearization of system $\therefore$ not modified.
+
+%===============================================================================
+\paragraph{p\_file.m} \ \\
+Associated file with svm\_mgen - i.e. state space model stuff $\therefore$ not modified.
+
+
+
+\end{document}

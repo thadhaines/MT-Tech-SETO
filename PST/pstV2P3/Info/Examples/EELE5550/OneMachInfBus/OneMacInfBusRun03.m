@@ -46,11 +46,17 @@ varNames = who()'; % all variable names in workspace
 clearedVars = {}; % cell to hold names of deleted 'all zero' variables
 
 for vName = varNames
+    try
     zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
     if zeroTest
         eval(sprintf('clear %s',vName{1}) ); % clear variable
         clearedVars{end+1} = vName{1}; % add name to cell for reference
     end
+    catch ME
+        disp(ME.message)
+        disp(vName)
+    end
+
 end
 clear varNames vName zeroTest
 
@@ -66,3 +72,4 @@ clear all % ensure only saved data is plotted
 load('OneMacInfBus03.mat')
 
 %spstMegaPlot
+disp('fin')

@@ -16,12 +16,12 @@ end
 PSTpath = [char(PSTpath), filesep];
 
 addpath(PSTpath)
-save PSTpath PSTpath
+save PSTpath.mat PSTpath
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
 clear all; close all; clc
-load PSTpath
+load PSTpath.mat
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d_OneMacInfBus.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
@@ -32,11 +32,17 @@ varNames = who()'; % all variable names in workspace
 clearedVars = {}; % cell to hold names of deleted 'all zero' variables
 
 for vName = varNames
+    try
     zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
     if zeroTest
         eval(sprintf('clear %s',vName{1}) ); % clear variable
         clearedVars{end+1} = vName{1}; % add name to cell for reference
     end
+    catch ME
+        disp(ME.message)
+        disp(vName)
+    end
+
 end
 clear varNames vName zeroTest
 
@@ -52,3 +58,4 @@ clear all % ensure only saved data is plotted
 load('OneMacInfBus01.mat')
 
 pstMegaPlot
+disp('fin')
