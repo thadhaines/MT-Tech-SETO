@@ -1,1 +1,0 @@
-Downloaded from Joe Chow's page on 5/26/2020

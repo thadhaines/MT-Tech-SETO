@@ -1,0 +1,1 @@
+Simple one machine infinite bus system used to test load modulation
