@@ -10,6 +10,7 @@
 \chead{Relavant MATLAB information \\ }
 \lhead{Research \\ 5/27/20}
 
+\usepackage{minted}
 
 \begin{document}
 Work in progress notes of interest from \emph{MATLAB programming with Applications for Engineers} by Stephen J. Chapman 2013.
@@ -19,9 +20,10 @@ MATLAB passes by value, i.e. copies are made of input arguments to functions.
 Apparently, there is some mechanism in place that detects if an input variable is changed; and if not, then pass by reference is used.
 The exact operation this process was not exactly explained in detail and feels pretty sketchy to rely on an automatic process that may largely affect a programs operation.
 
-\subparagraph{Function Notes}
+\subparagraph{Function Notes} \ \\
 Functions have specific commands that may be useful:
 \begin{itemize}
+\itemsep 0em
 \item nargin
 \item nargout
 \item inputname
@@ -35,8 +37,8 @@ These variables are not cleared at the completion of a funciton and instead rema
 MATLABs `function functions' are functions that accept other functions as input.
 Some useful function functions are:
 \begin{itemize}
-\item eval('some string') : evaluates input string as if it were typed into the command window.
-\item feval('someFunc', vals) : evaluates given named function with input values.
+\item eval('some string') \% evaluates input string as if it were typed into the command window.
+\item feval('someFunc', vals) \% evaluates given named function with input values.
 \end{itemize}
 
 \subparagraph{Function Search Order}
@@ -50,10 +52,18 @@ Some useful function functions are:
 \subparagraph{Function Handles} \ \\
 Function handles can be used to `rename' a function.
 
-\begin{verbatim}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 fHandle = @funcName; % creates handle fHandle that would act the same as funcName
 fHandle = str2func('funcName'); % same operation as above.
-\end{verbatim}
+\end{minted}
 
 \subparagraph{Anonymous Functions} \ \\
 One line functions without a name. 
@@ -65,5 +75,64 @@ ans =
     16
 \end{verbatim}
 
+\pagebreak
+\paragraph{Chapter 9} \ \\
+While MATLAB is focused on using of matrices, or arrays, more advanced structures exist that aid in the manipulation of data.
+
+\subparagraph{Cell Arrays} \ \\
+Cell Arrays contain data structures. 
+They are often used for collection of strings as each entry can be a different length.
+Parenthesis are used to return data structure information in a cell.
+Indexing using braces \{\} returns data.
+Further indexing of data can then be performed by parenthesis ().
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+% Cell Creation
+a{1,1} = rand(2,3)
+a{2,1} = magic(4)
+a{2,2} = 'This is a cell'
+
+% Cell indexing examples
+a(1,1) % Display data strucuture information from ROW 1, COL 1
+a{1,1} % Display all data in cell ROW 1, COL 1
+a{2,1}(2,2) % Display data entered in ROW 2, COL 2 from item in cell ROW 2, COL 1
+
+% Cell specific functions
+celldisp(a) % Display cell data strucuture information
+cellplot(a) % plot visual representation of cell 
+\end{minted}
+
+\subparagraph{Structured Array} \ \\
+A structured array is based on the idea of objects and fields.
+All objects in a structured array contain identical field names, but unique data.
+As a result, each field may contain different types of data.
+Some useful structured array specific functions include:
+\begin{itemize}
+\item getfield(struct, fieldName)
+\item setfield(struct, fieldName, data)
+\item fieldnames(struct)
+\end{itemize}
+While the get and set field functions are easy to use, MATLAB will often recommend using \emph{Dynamic Field Names}.
+The below code provides examples of these functions and slight explanations.
+
+\pagebreak
+
+\inputminted[
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines]{matlab}{structuredArrayExamples.m		}
+
+% It may be good to explore MATLAB class strucutres as well.
 
 \end{document}
