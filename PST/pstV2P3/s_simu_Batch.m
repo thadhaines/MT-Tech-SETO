@@ -153,7 +153,7 @@ jay = sqrt(-1);
     global  tcsc_sig tcsc_dsig
     global  n_tcscud dtcscud_idx  %user defined damping controls
 
-    %% load modulation variables % replaced with g.lmod.xxx
+    %% load modulation variables % replaced with g.lmod.xxx -thad
     %global  lmod_con n_lmod lmod_idx
     %global  lmod_pot lmod_st dlmod_st
     %global  lmod_sig lmod_data
@@ -248,6 +248,12 @@ if isempty(mac_con)
 end
 if isempty(sw_con)
     error('sw_con is Empty - simulation has no switching data.')
+end
+
+% Handle legacy d_files
+if exist('lmod_con','var')
+    g.lmod.lmod_con = lmod_con;
+    clear lmod_con
 end
 
 % Handle varaible input system frequency

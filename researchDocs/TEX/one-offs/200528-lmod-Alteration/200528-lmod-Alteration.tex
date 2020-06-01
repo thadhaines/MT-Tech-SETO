@@ -38,6 +38,9 @@ The `d\_xxx' file should now define \verb|lmod_con| as \verb|g.lmod.lmod_con|.
 This is because in the `standard' PST method of operations, \verb|lmod_con| is defined as a global before the user data file is executed.
 This effectively means that the user defined arrays in the data file are actually defining global arrays (who knew?).
 
+Code has been added to handle if \verb|lmod_con| is not prepended with \verb|g.lmod|.
+This approach may be simpler for backwards compatibility with `legacy' data sets.
+
 %===============================================================================
 \paragraph{ml\_sig.m}
 User created file that defines signal(s) to load modulation.
