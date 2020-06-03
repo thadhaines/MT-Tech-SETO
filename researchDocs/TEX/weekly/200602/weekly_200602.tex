@@ -18,34 +18,47 @@
 \paragraph{Recent Progress:}
 	\begin{enumerate}
 		\itemsep0em 
-		\item Newest Version of PST chosen
-		\item v2p3 work on global `g' for lmod
-		\item RK2 (Heun's) routine explored
+		\item Newest Base Version of PST chosen
+		\item Test work on global `g' for lmod v2p3
+		\item RK2 (Heun's) routine explored \\
+			(It's the method currently used by PST)
 		\item New Branch created for pwrmod addition attempt
 		\item GitHub updated:\\
 	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
 	\end{enumerate}
 	
 
+\paragraph{Sandia Action Items:}
+	\begin{itemize}
+		\itemsep 0em 
+		\item Find more lit review items related to:
+			\begin{itemize}
+			\itemsep 0em 
+			\item modeling fidelity of ...
+			\item power electronics-based models
+			\item AGC
+			\end{itemize}
+		\item Work on converter-based resource models (pwermod, ivmmod)
+	\end{itemize}
+
 	
 \paragraph{Current Tasks:}
 	\begin{enumerate}
 		\itemsep 0em 
-		\item Sandia Telecon action items...
-		\item Look at Trudnowski code for `structured array, functionalized' approach.
-		\item Look at Stajcar code for basic transient stability simulation flow.
-		\item Work on understanding PST
+		\item Explore v3 example cases
+		\item Reference Trudnowski code for `structured array, functionalized' approach.
+		\item Reference Stajcar code for basic transient stability simulation flow.
+		\item Work on understanding PST operation
 		\item Document findings of PST functionality
 		\item Investigate Octave compatibility
 		\item Create modulation case: ramp/noise 
-		\item Continue to collect example cases
 		\item Continue to work on data plots 
 \end{enumerate}
 
 \paragraph{Possible Future Tasks:} % Maybe good ideas?
 	\begin{enumerate}
 		\item Investigate Sandia integrator stability methods.	
-		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
+		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	(Contact Ryan?)
 	\end{enumerate}
 
 \vfill\null
@@ -55,12 +68,13 @@
 	\begin{enumerate}
 
 		\itemsep 0em 
-		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations.
+		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations. ex: \verb|g.lmod.lmod_con|, \verb|g.sys.t|
 		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
 		This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+		Would enable addition of area definitions to models.
 		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
 		Possibly employ \verb|feval| for a more dynamic calculation routine.
-		\item Rework how switching/perturbance events are handled into a more flexible and general format.
+		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (use flags)
 		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
 		\item Generate comparison scripts to verify simulated results match after code changes.
 	\end{enumerate}
@@ -70,20 +84,20 @@
 \paragraph{Current Questions:}
 	\begin{enumerate}
 	\itemsep0em 
-\item Thoughts on Dan's notes for pwrmod/ivmmod
+\item Matt thoughts on Dan's documentation for pwrmod/ivmmod
 		\item Minimum requirements for system case?
 \begin{minipage}{\linewidth}
 \begin{multicols}{2}
 		\begin{itemize}
 \itemsep0em 
 		\footnotesize
+			\item system model
 			\item Load flow solver
 			\item Network solver
 			\item Machine models
 			\item Governor model
 			\item Exciter models
-			\item pwrmod models
-			\item ivmmod model
+			\item converter models
 			\item load modulation models
 			\item ...
 		\end{itemize}
