@@ -1,0 +1,126 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Research Update \\ Week of June 1st, 2020}
+\lhead{Research \\ }
+
+
+\begin{document}
+\begin{multicols}{2}
+\raggedright
+
+\paragraph{Recent Progress:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Newest Version of PST chosen
+		\item v2p3 work on global `g' for lmod
+		\item RK2 (Heun's) routine explored
+		\item New Branch created for pwrmod addition attempt
+		\item GitHub updated:\\
+	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
+	\end{enumerate}
+	
+
+	
+\paragraph{Current Tasks:}
+	\begin{enumerate}
+		\itemsep 0em 
+		\item Sandia Telecon action items...
+		\item Look at Trudnowski code for `structured array, functionalized' approach.
+		\item Look at Stajcar code for basic transient stability simulation flow.
+		\item Work on understanding PST
+		\item Document findings of PST functionality
+		\item Investigate Octave compatibility
+		\item Create modulation case: ramp/noise 
+		\item Continue to collect example cases
+		\item Continue to work on data plots 
+\end{enumerate}
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
+	\end{enumerate}
+
+\vfill\null
+\columnbreak
+
+\paragraph{Coding Thoughts:} 
+	\begin{enumerate}
+
+		\itemsep 0em 
+		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations.
+		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+		This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+		Possibly employ \verb|feval| for a more dynamic calculation routine.
+		\item Rework how switching/perturbance events are handled into a more flexible and general format.
+		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+		\item Generate comparison scripts to verify simulated results match after code changes.
+	\end{enumerate}
+	
+
+
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+\item Thoughts on Dan's notes for pwrmod/ivmmod
+		\item Minimum requirements for system case?
+\begin{minipage}{\linewidth}
+\begin{multicols}{2}
+		\begin{itemize}
+\itemsep0em 
+		\footnotesize
+			\item Load flow solver
+			\item Network solver
+			\item Machine models
+			\item Governor model
+			\item Exciter models
+			\item pwrmod models
+			\item ivmmod model
+			\item load modulation models
+			\item ...
+		\end{itemize}
+\end{multicols}
+\end{minipage}
+
+		\item PST modeling of transformers?
+		\item PST modeling of faults: \\
+		Uses alternate Y matrices? \\
+		Creates fault bus?
+	\end{enumerate}
+
+
+
+\vfill\null
+\end{multicols}
+
+
+
+\begin{comment}
+% Unused categories
+\paragraph{Future Tasks:} %(Little to No Progress since last time / Things coming down the pipe)
+	\begin{enumerate}
+		\item none		
+	\end{enumerate}
+	
+\paragraph{Future Work: (not by me)}
+	\begin{itemize}
+		\item none
+	\end{itemize}
+
+\paragraph{Requests:}
+	\begin{enumerate}
+			\item none
+	\end{enumerate}
+\end{comment}
+
+
+
+\end{document}
