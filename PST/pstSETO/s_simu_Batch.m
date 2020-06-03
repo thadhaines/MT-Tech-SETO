@@ -12,7 +12,7 @@
 % Author: Thad Haines
 % June 01, 2020
 % Modified from PSTv3 to accomodate batch style running
-% pwrmod, ivmmod, and gen trip sections from 2.3 copied
+% pwrmod, ivmmod, and gen trip sections from 2.3 copied - untested
 
 % version 1.8
 % Author: Rui
