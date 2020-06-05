@@ -123,14 +123,14 @@ if ~isempty(load_con)
          Y22(j,j)=Y22(j,j) + jay*diag(B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - jay*diag(B_tcsc(:,k));
          Y22(jj,j)=Y22(jj,j) - jay*diag(B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + jay*diag(B_tcsc(:,k));
       end
-%       if n_lmod ~=0 % original code - thad
-%          j = lmod_idx;
-%          Y22(j,j) = Y22(j,j) + diag(lmod_st(:,k));
-%       end
-      if g.lmod.n_lmod ~=0
-         j = g.lmod.lmod_idx;
-         Y22(j,j) = Y22(j,j) + diag(g.lmod.lmod_st(:,k));
+      if n_lmod ~=0 % original code - thad
+         j = lmod_idx;
+         Y22(j,j) = Y22(j,j) + diag(lmod_st(:,k));
       end
+%       if g.lmod.n_lmod ~=0 - modified code - thad 06/03/20
+%          j = g.lmod.lmod_idx;
+%          Y22(j,j) = Y22(j,j) + diag(g.lmod.lmod_st(:,k));
+%       end
       if n_rlmod ~=0
          j = rlmod_idx;
          Y22(j,j) = Y22(j,j) + jay*diag(rlmod_st(:,k));

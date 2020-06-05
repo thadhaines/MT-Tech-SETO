@@ -378,6 +378,7 @@ for sw_count = 1:n_switch-1
     kdc = kdc+k_incdc(sw_count);
 end
 
+% time for dc - multi-rate...
 t_dc(kdc)=t_dc(kdc-1)+h_dc(sw_count);
 for kk=1:10
     kdc=kdc+1;
@@ -618,7 +619,7 @@ slip = zm;
 dvdp = zm; 
 dvqp = zm; 
 dslip = zm;
-s_mot = zm; 
+s_mot = zm; % supposed to be global? - thad 06/03/20
 p_mot = zm; 
 q_mot = zm;
 
@@ -628,7 +629,7 @@ slig = zig;
 dvdpig = zig; 
 dvqpig = zig; 
 dslig = zig;
-s_igen = zig; 
+s_igen = zig; % supposed to be global? - thad 06/03/20
 pig = zig; 
 qig = zig; 
 tmig = zig;
@@ -663,9 +664,9 @@ else
     svc_dsig = zeros(1,k);
     B_con = zeros(1,k);
     dB_con=zeros(1,k);
-    xsvc_dc = zeros(1,k);
-    dxsvc_dc = zeros(1,k);
-    d_sig = zeros(1,k);
+    xsvc_dc = zeros(1,k);   % supposed to be global? - thad 06/03/20
+    dxsvc_dc = zeros(1,k);  % supposed to be global? - thad 06/03/20
+    d_sig = zeros(1,k);     % supposed to be global? - thad 06/03/20
 end
 
 if n_tcsc~=0
@@ -805,7 +806,7 @@ if n_dcud ~=0
         
         if svc_bn == from_bus
             d_sig(j,1)=abs(l_if);
-        elseif svc_bn==to_bus;
+        elseif svc_bn==to_bus
             d_sig(j,1)=abs(l_it);
         end
     end
@@ -1062,7 +1063,6 @@ k_tot = sum(k_inc);
 lswitch = length(k_inc);
 ktmax = k_tot-k_inc(lswitch);
 bus_sim = bus;
-plot_now = 0;
 
 % added from v2.3 06/01/20 - thad
 mac_trip_flags = false(n_mac,1);
