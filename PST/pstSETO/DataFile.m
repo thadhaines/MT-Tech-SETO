@@ -172,38 +172,11 @@ tg_con = [ ...
 sw_con = [ ...
 %   1                   2   3   4   5   6   7   
     0                   0   0   0   0   0   1/(60);     % time start, ts set
-    1                   3   2   0   0   6   1/(60*10);  % No Action
-    1+(2/60)            0   0   0   0   0   1/(60*10);  % 
-    1+(2/60)+(1/600)    0   0   0   0   0   1/(60*5);   % 
-    3                   0   0   0   0   0   1/(60*2);   % change time step
-    5                   0   0   0   0   0   1/(60);     % change time step
-    20                   0   0   0   0   0   1/(60);     % end
+    1                   3   2   0   0   4   1/(60*10);  % trip line
+    1+(2/60)            0   0   0   0   0   1/(60*10);  % clear near end
+    1+(2/60)+(1/600)    0   0   0   0   0   1/(60*5);  % clear far end
+    3                   0   0   0   0   0   1/(60*2);   % increase time step
+    5                   0   0   0   0   0   1/(60);     % increase time step
+    15                  0   0   0   0   0   1/(60)
 ];    % end
   
-%% Load Modulation
-
-% load_con format
-% Defines `non-conforming` loads
-% col   1 bus number
-% col   2 proportion of constant active power load
-% col   3 proportion of constant reactive power load
-% col   4 proportion of constant active current load
-% col   5 proportion of constant reactive current load
-load_con = [...
-    %   1   2       3       4       5
-        2   0       0       0       0;]; %constant impedance
-
-% lmod_con format
-% sets up model for load modulation
-% col	variable  						unit
-% 1  	load modulation number 
-% 2  	bus number 
-% 3  	modulation base MVA  			MVA
-% 4  	maximum conductance lmod_max 	pu
-% 5  	minimum conductance lmod_min 	pu
-% 6  	regulator gain K  				pu
-% 7  	regulator time constant T_R  	sec
-lmod_con = [ ...
-  % 1   2   3       4       5       6       7
-    1   2   100     1.0     0.0     1.0     1.0;];
-

@@ -150,10 +150,13 @@ warning('*** Declare Global Variables')
     global  n_tcscud dtcscud_idx  %user defined damping controls
 
     %% load modulation variables
-    global  lmod_con n_lmod lmod_idx
-    global  lmod_pot lmod_st dlmod_st
-    global  lmod_sig
-    
+    %global lmod_con % defined by user
+    %global n_lmod lmod_idx % initialized and created in lm_indx
+    %global lmod_sig lmod_st dlmod_st % initialized in s_simu
+    %global lmod_pot % created/initialized in lmod.m
+    % g.lmod.lmod_pot(:,1) = max, g.lmod.lmod_pot(:,2) = min
+    %global lmod_data % added by Trudnowski - doesn't appear to be used? maybe in new models?
+
     % reactive load modulation variables
     global  rlmod_con n_rlmod rlmod_idx
     global  rlmod_pot rlmod_st drlmod_st
@@ -250,11 +253,9 @@ if isempty(sw_con)
     error('sw_con is Empty - simulation has no switching data.')
 end
 
-% Handle legacy d_files % UNUSED 06/01/20 - thad
-if exist('lmod_con','var')
-    g.lmod.lmod_con = lmod_con;
-    %clear lmod_con % to allow for non-g use
-end
+%% run script to handle legacy input to new global g approach
+handleNewGlobals
+
 
 %% Allow Fbase and Sbase to be defined in batch runs
 % Handle varaible input system frequency
@@ -701,27 +702,27 @@ else
     td_sig = zeros(1,k);
 end
 
-if n_lmod ~= 0
-    lmod_st = zeros(n_lmod,k); 
-    dlmod_st = lmod_st; 
-    lmod_sig = lmod_st;
-else
-    lmod_st = zeros(1,k); 
-    dlmod_st = lmod_st; 
-    lmod_sig = lmod_st;
-end
-
-% if g.lmod.n_lmod ~= 0 % future g.x code 06/01/20 -thad
-%     % initialize zeros for all states and signals associated with lmod
-%     g.lmod.lmod_st = zeros(g.lmod.n_lmod,k);
-%     g.lmod.dlmod_st = g.lmod.lmod_st;
-%     g.lmod.lmod_sig = g.lmod.lmod_st;
+% if n_lmod ~= 0
+%     lmod_st = zeros(n_lmod,k); 
+%     dlmod_st = lmod_st; 
+%     lmod_sig = lmod_st;
 % else
-%     % initialize single row of zeros ( may be un necessary) - thad
-%     g.lmod.lmod_st = zeros(1,k);
-%     g.lmod.dlmod_st = g.lmod.lmod_st;
-%     g.lmod.lmod_sig = g.lmod.lmod_st;
+%     lmod_st = zeros(1,k); 
+%     dlmod_st = lmod_st; 
+%     lmod_sig = lmod_st;
 % end
+
+if g.lmod.n_lmod ~= 0 % future g.x code 06/01/20 -thad
+    % initialize zeros for all states and signals associated with lmod
+    g.lmod.lmod_st = zeros(g.lmod.n_lmod,k);
+    g.lmod.dlmod_st = g.lmod.lmod_st;
+    g.lmod.lmod_sig = g.lmod.lmod_st;
+else
+    % initialize single row of zeros ( may be un necessary) - thad
+    g.lmod.lmod_st = zeros(1,k);
+    g.lmod.dlmod_st = g.lmod.lmod_st;
+    g.lmod.lmod_sig = g.lmod.lmod_st;
+end
 
 if n_rlmod ~= 0
     rlmod_st = zeros(n_rlmod,k); 
@@ -979,9 +980,10 @@ if ndci_ud~=0
 end
 
 %% initialize load modulation control
-if ~isempty(lmod_con) % this has been adjusted in v2.3 for g global -thad 06/01/20
+%if ~isempty(lmod_con) % original line - thad
+if ~isempty(g.lmod.lmod_con)
     disp('load modulation')
-    lmod(0,1,bus,flag);
+    lmod(0,1,flag); % removed bus - thad
 end
 if ~isempty(rlmod_con)
     disp('reactive load modulation')
@@ -1280,60 +1282,10 @@ while (kt<=ktmax)
             end
         end
         
-  %% fancier live plotting ~~ (1x = no plot) (1.17x if % 50) (1.37x if & 10) SLOWER -thad
-  % should really be a seperate optional, user defined function... 06/01/20
-        livePlot = 1; % for possible fugure sim flags
-        if (mod(k,10)==0) && livePlot
-            if ~isempty(g.lmod.lmod_con) || ~isempty(pwrmod_con)
-                nPlt = 3;
-            else
-                nPlt = 2;
-            end
-            
-            % format bus voltage for plot
-            v_p(1:k)=abs(bus_v(bus_idx(1),1:k));
-            % plot the voltage of the faulted bus
-            subplot(nPlt,1,1)
-            plot(t(1:k),v_p(1:k),'r')
-            title('Voltage Magnitude at Fault Bus');
-            xlabel('Time [sec]');
-            ylabel('Volatge [PU]');
-            
-            % plot generator info 
-            subplot(nPlt,1,2)  
-            Lcolor = lines(size(mac_spd,1));
-            for pltGen = 1:size(mac_spd,1)
-                plot(t(1:k),mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
-                hold on
-            end
-            title('System Generator Speed');
-            xlabel('Time [sec]');
-            ylabel('Speed [PU]');
-            
-            % plot load moduation (if present)
-            if ~isempty(lmod_con) %~isempty(g.lmod.lmod_con)
-                subplot(nPlt,1,3)
-                %plot(t(1:k),g.lmod.lmod_st(1:k))
-                plot(t(1:k),lmod_st(1:k))
-                title('System Real Load Modulation');
-                xlabel('Time [sec]');
-                ylabel('MW [PU]');
-            end
-            
-            % Plot Powermod injection if present
-            if ~isempty(pwrmod_con)
-                subplot(nPlt,1,3)
-                Lcolor = lines(size(pwrmod_p_st,1));
-                for pltData = 1:size(pwrmod_p_st,1)
-                    plot(t(1:k),pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
-                    hold on
-                end
-                title('Power Modulation');
-                xlabel('Time [sec]');
-                ylabel('MW [PU]');
-            end
-            
-            drawnow     
+        %% Live plot call
+        livePlotFlag = 1; % for possible fugure sim flags
+        if livePlotFlag
+           livePlot
         end
         
         %% step 3b: compute dynamics and integrate
@@ -1393,10 +1345,11 @@ while (kt<=ktmax)
         end
         
         % modified in v2.3 - thad 06/01/20
-        if n_lmod~=0
-            ml_sig(k); % modified to use global t
-            lmod(0,k,bus_sim,flag);
+        if g.lmod.n_lmod~=0
+            ml_sig(k); % removed t - thad
+            lmod(0,k,flag); % removed bus input - thad
         end
+        
         if n_rlmod~=0
             rml_sig(t(k),k);
             rlmod(0,k,bus_sim,flag);
@@ -1532,7 +1485,10 @@ while (kt<=ktmax)
         xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol* dxsvc_dc(:,k);
         B_tcsc(:,j) = B_tcsc(:,k) + h_sol*dB_tcsc(:,k);
         xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol* dxtcsc_dc(:,k);
-        lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k);
+        
+        %lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k); % original line - thad
+        g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
+        
         rlmod_st(:,j) = rlmod_st(:,k)+h_sol*drlmod_st(:,k);
         
         %% Copied from v2.3 - 06/01/20 - thad
@@ -1776,9 +1732,9 @@ while (kt<=ktmax)
         end
         
         % already modified to handle g in v2.3 - thad 06/01/20
-        if n_lmod~=0
-            ml_sig(j); % modified to use only g.sys.t
-            lmod(0,j,bus_sim,flag);
+        if g.lmod.n_lmod~=0
+            ml_sig(j); % removed t - thad
+            lmod(0,j,flag); % removed bus - thad
         end
         if n_rlmod~=0
             rml_sig(t(j),j);
@@ -1911,8 +1867,11 @@ while (kt<=ktmax)
         B_con(:,j) = B_con(:,k) + h_sol*(dB_con(:,j) + dB_con(:,k))/2.;
         xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol*(dxsvc_dc(:,j) + dxsvc_dc(:,k))/2.;
         B_tcsc(:,j) = B_tcsc(:,k) + h_sol*(dB_tcsc(:,j) + dB_tcsc(:,k))/2.;
-        xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;
-        lmod_st(:,j) = lmod_st(:,k) + h_sol*(dlmod_st(:,j) + dlmod_st(:,k))/2.;
+        xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;  
+        
+        %lmod_st(:,j) = lmod_st(:,k) + h_sol*(dlmod_st(:,j) + dlmod_st(:,k))/2.; % original line -thad
+        g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
+        
         rlmod_st(:,j) = rlmod_st(:,k) + h_sol*(drlmod_st(:,j) + drlmod_st(:,k))/2.;
         
         % Copied from v2.3 - 06/01/20 - thad

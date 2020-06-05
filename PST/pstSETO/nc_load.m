@@ -70,7 +70,8 @@ global svc_con svc_idx n_svc svc_pot B_cv
 % tcsc wariables
 global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
 % load modulation variables
-global  lmod_con n_lmod lmod_idx lmod_pot lmod_st 
+%global  lmod_con n_lmod lmod_idx lmod_st 
+global g % added g - thad
 % reactive load modulation variables
 global  rlmod_con n_rlmod rlmod_idx rlmod_pot rlmod_st 
 
@@ -116,9 +117,13 @@ if ~isempty(load_con)
          Y22(j,j)=Y22(j,j) + jay*diag(B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - jay*diag(B_tcsc(:,k));
          Y22(jj,j)=Y22(jj,j) - jay*diag(B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + jay*diag(B_tcsc(:,k));
       end
-      if n_lmod ~=0
-         j = lmod_idx;
-         Y22(j,j) = Y22(j,j) + diag(lmod_st(:,k));
+%       if n_lmod ~=0 % original code - thad
+%          j = lmod_idx;
+%          Y22(j,j) = Y22(j,j) + diag(lmod_st(:,k));
+%       end
+      if g.lmod.n_lmod ~=0 % modified code - thad 06/03/20
+         j = g.lmod.lmod_idx;
+         Y22(j,j) = Y22(j,j) + diag(g.lmod.lmod_st(:,k));
       end
       if n_rlmod ~=0
          j = rlmod_idx;
