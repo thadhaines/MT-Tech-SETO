@@ -184,9 +184,9 @@ warning('*** Declare Global Variables')
     global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
 
     %% turbine-governor variables
-    global  tg_con tg_pot
-    global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
-    global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+    %global  tg_con tg_pot
+    %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+    %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
 
     %% HVDC link variables
     global  dcsp_con  dcl_con  dcc_con
@@ -319,7 +319,7 @@ end
 % note: dc index set in dc load flow
 mac_indx;
 exc_indx;
-tg_indx;
+tg_indx(); % functionalized 06/05/20 - thad
 dpwf_indx;
 pss_indx;
 svc_indx(svc_dc);
@@ -531,22 +531,27 @@ dpsikd = z;
 dpsikq = z;
 pm_sig = z;
 
-z_tg = zeros(1,k);
-if n_tg+n_tgh~=0
-    z_tg = zeros(n_tg+n_tgh,k);
+% modified to use global g - thad 06/05/20
+totGovs = g.tg.n_tg + g.tg.n_tgh;
+if totGovs ~= 0
+    z_tg = zeros(totGovs,k);
+else
+    z_tg = zeros(1,k);
 end
-
-tg1 = z_tg; 
-tg2 = z_tg; 
-tg3 = z_tg; 
-tg4 = z_tg; 
-tg5 = z_tg;
-dtg1 = z_tg; 
-dtg2 = z_tg; 
-dtg3 = z_tg;
-dtg4 = z_tg; 
-dtg5 = z_tg;
-tg_sig = z_tg;
+% seems unrequired to create these zeros if totGovs == 0... -thad
+g.tg.tg1 = z_tg; 
+g.tg.tg2 = z_tg; 
+g.tg.tg3 = z_tg; 
+g.tg.tg4 = z_tg; 
+g.tg.tg5 = z_tg;
+g.tg.dtg1 = z_tg; 
+g.tg.dtg2 = z_tg; 
+g.tg.dtg3 = z_tg;
+g.tg.dtg4 = z_tg; 
+g.tg.dtg5 = z_tg;
+g.tg.tg_sig = z_tg;
+clear totGovs z_tg
+%
 
 z_pss = zeros(1,k);
 if n_pss~=0
@@ -883,7 +888,9 @@ smpexc(0,1,bus,flag);
 smppi(0,1,bus,flag);
 exc_st3(0,1,bus,flag);
 exc_dc12(0,1,bus,flag);
-tg(0,1,bus,flag);
+
+tg(0,1,flag); % modified 06/05/20 to global g
+
 tg_hydro(0,1,bus,flag);
 
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
@@ -1245,8 +1252,8 @@ while (kt<=ktmax)
         smppi(0,k,bus_sim,flag);
         exc_st3(0,k,bus_sim,flag);
         exc_dc12(0,k,bus_sim,flag);
-        mtg_sig(t(k),k);
-        tg(0,k,bus_sim,flag);
+        mtg_sig(k);
+        tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
         
         if n_dcud~=0
@@ -1304,8 +1311,8 @@ while (kt<=ktmax)
         smppi(0,k,bus_sim,flag);
         exc_st3(0,k,bus_sim,flag);
         exc_dc12(0,k,bus_sim,flag);
-        mtg_sig(t(k),k);
-        tg(0,k,bus_sim,flag);
+        mtg_sig(k);
+        tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
         
         if n_svc~=0
@@ -1469,11 +1476,14 @@ while (kt<=ktmax)
         pss1(:,j) = pss1(:,k) + h_sol*dpss1(:,k);
         pss2(:,j) = pss2(:,k) + h_sol*dpss2(:,k);
         pss3(:,j) = pss3(:,k) + h_sol*dpss3(:,k);
-        tg1(:,j) = tg1(:,k) + h_sol*dtg1(:,k);
-        tg2(:,j) = tg2(:,k) + h_sol*dtg2(:,k);
-        tg3(:,j) = tg3(:,k) + h_sol*dtg3(:,k);
-        tg4(:,j) = tg4(:,k) + h_sol*dtg4(:,k);
-        tg5(:,j) = tg5(:,k) + h_sol*dtg5(:,k);
+        
+        % modified to g - thad
+        g.tg.tg1(:,j) = g.tg.tg1(:,k) + h_sol*g.tg.dtg1(:,k);
+        g.tg.tg2(:,j) = g.tg.tg2(:,k) + h_sol*g.tg.dtg2(:,k);
+        g.tg.tg3(:,j) = g.tg.tg3(:,k) + h_sol*g.tg.dtg3(:,k);
+        g.tg.tg4(:,j) = g.tg.tg4(:,k) + h_sol*g.tg.dtg4(:,k);
+        g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*g.tg.dtg5(:,k);
+        
         vdp(:,j) = vdp(:,k) + h_sol*dvdp(:,k);
         vqp(:,j) = vqp(:,k) + h_sol*dvqp(:,k);
         slip(:,j) = slip(:,k) + h_sol*dslip(:,k);
@@ -1642,7 +1652,7 @@ while (kt<=ktmax)
         smppi(0,j,bus_sim,flag);
         exc_st3(0,j,bus_sim,flag);
         exc_dc12(0,j,bus_sim,flag);
-        tg(0,j,bus_sim,flag);
+        tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
         if n_dcud~=0
@@ -1690,8 +1700,8 @@ while (kt<=ktmax)
         smppi(0,j,bus_sim,flag);
         exc_st3(0,j,bus_sim,flag);
         exc_dc12(0,j,bus_sim,flag);
-        mtg_sig(t(j),j);
-        tg(0,j,bus_sim,flag);
+        mtg_sig(j);
+        tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
         if n_svc~=0
@@ -1852,11 +1862,14 @@ while (kt<=ktmax)
         pss1(:,j) = pss1(:,k) +h_sol*(dpss1(:,k)+dpss1(:,j))/2.;
         pss2(:,j) = pss2(:,k) +h_sol*(dpss2(:,k)+dpss2(:,j))/2.;
         pss3(:,j) = pss3(:,k) +h_sol*(dpss3(:,k)+dpss3(:,j))/2.;
-        tg1(:,j) = tg1(:,k) + h_sol*(dtg1(:,k) + dtg1(:,j))/2.;
-        tg2(:,j) = tg2(:,k) + h_sol*(dtg2(:,k) + dtg2(:,j))/2.;
-        tg3(:,j) = tg3(:,k) + h_sol*(dtg3(:,k) + dtg3(:,j))/2.;
-        tg4(:,j) = tg4(:,k) + h_sol*(dtg4(:,k) + dtg4(:,j))/2.;
-        tg5(:,j) = tg5(:,k) + h_sol*(dtg5(:,k) + dtg5(:,j))/2.;
+        
+        % modified to g
+        g.tg.tg1(:,j) = g.tg.tg1(:,k) + h_sol*(g.tg.dtg1(:,k) + g.tg.dtg1(:,j))/2.;
+        g.tg.tg2(:,j) = g.tg.tg2(:,k) + h_sol*(g.tg.dtg2(:,k) + g.tg.dtg2(:,j))/2.;
+        g.tg.tg3(:,j) = g.tg.tg3(:,k) + h_sol*(g.tg.dtg3(:,k) + g.tg.dtg3(:,j))/2.;
+        g.tg.tg4(:,j) = g.tg.tg4(:,k) + h_sol*(g.tg.dtg4(:,k) + g.tg.dtg4(:,j))/2.;
+        g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*(g.tg.dtg5(:,k) + g.tg.dtg5(:,j))/2.;
+        
         vdp(:,j) = vdp(:,k) + h_sol*(dvdp(:,j) + dvdp(:,k))/2.;
         vqp(:,j) = vqp(:,k) + h_sol*(dvqp(:,j) + dvqp(:,k))/2.;
         slip(:,j) = slip(:,k) + h_sol*(dslip(:,j) + dslip(:,k))/2.;
@@ -1869,7 +1882,7 @@ while (kt<=ktmax)
         B_tcsc(:,j) = B_tcsc(:,k) + h_sol*(dB_tcsc(:,j) + dB_tcsc(:,k))/2.;
         xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;  
         
-        %lmod_st(:,j) = lmod_st(:,k) + h_sol*(dlmod_st(:,j) + dlmod_st(:,k))/2.; % original line -thad
+        % modified to g
         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
         
         rlmod_st(:,j) = rlmod_st(:,k) + h_sol*(drlmod_st(:,j) + drlmod_st(:,k))/2.;

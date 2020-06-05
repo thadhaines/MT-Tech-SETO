@@ -1,0 +1,83 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of tg using global g\\ }
+\lhead{Research \\ 6/5/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable \verb|tg| PST models to use the structured global variable \verb|g| and other `clean up' actions taken.
+Each paragraph describes the required changes the PST file that has anything to do with load modulation.
+
+Initial globals:
+\begin{verbatim}
+%% turbine-governor variables
+    global  tg_con tg_pot
+    global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+    global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+
+%===============================================================================
+\paragraph{tg\_indx}
+	\begin{itemize}
+		\item properly funtionalized
+		\item rename of function to match file name (from gov\_indx)
+		\item addition of `new standard' comments
+		\item prepend \verb|tg| globals with \verb|g.tg.|
+	\end{itemize}
+
+
+%===============================================================================
+\paragraph{handNewGlobals.m}
+	\begin{itemize}
+		\item Addition of if statement to properly handle legacy data inputs
+	\end{itemize}
+
+
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+	\begin{itemize}
+		\item prepened tg globals to create proper variables for zero init
+		\item prepened g.tg. to predictor corrector integration
+	\end{itemize}
+
+%===============================================================================
+\paragraph{tg.m}
+	\begin{itemize}
+		\item removed bus from function input (not used)
+		\item clean up of comments
+		\item addition of g.tg. to globals...
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mtg\_sig.m}
+	\begin{itemize}
+		\item Commented out, but added g.tg to proper places
+	\end{itemize}
+
+%===============================================================================
+\paragraph{Not Called from s\_simu\_Batch } \ \\
+Since not called from working example, references to tg not corrected to g
+	\begin{itemize}
+		\item p\_cont
+		\item p\_tgt
+		\item p\_file
+		\item nm\_if
+		\item ns\_file
+		\item svm\_mgen\_Batch
+	\end{itemize}
+
+
+\end{document}
