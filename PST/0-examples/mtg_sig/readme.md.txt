@@ -1,0 +1,3 @@
+Test of stepping governor mod signal 
+i.g. step pref to counter load step.
+Demonstrates possible way of AGC...

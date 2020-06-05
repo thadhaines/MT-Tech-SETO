@@ -9,13 +9,14 @@ function mtg_sig(k)
 %   in, no dummy varibale f passed out. Default behavior commented out.
 %
 
-%global g
+global g
 
 %fprintf('%4.4f \t %d\n', t(k), k); % DEBUG
 
-%if g.sys.t(k) > 4
-    % Pref step
+if g.sys.t(k) > 10
+    
     %g.lmod.lmod_sig(1,k) = 0.25; % modify first load only
-    %g.tg.tg_sig(1,k) = 0.25; % to counter lmod above...
-%end
+    % Pref step
+    g.tg.tg_sig(1,k) = 0.25; % to counter lmod above...
+end
 return
