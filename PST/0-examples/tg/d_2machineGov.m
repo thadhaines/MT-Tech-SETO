@@ -138,12 +138,12 @@ exc_con = [ ...
 %  9    HP section time constant   T4   sec
 % 10    reheater time constant    T5    se
 
-% tg_con = [ ...
-% %   1   2   3   4       5       6       7       8       9       A
-% %               1/R     Tmax    Ts      Tc      T3      T4      T5
-% %   1   1   1   1/0.05  1.00    0.4     45.00   5.00    -1.00   0.5 % hydro Gov using model 1
-%     1   2   1   1/0.05  1.00    0.04    0.20    0.0     1.50    5.00 %steam Gov
-% ];
+tg_con = [ ...
+%   1   2   3   4       5       6       7       8       9       A
+%               1/R     Tmax    Ts      Tc      T3      T4      T5
+%   1   1   1   1/0.05  1.00    0.4     45.00   5.00    -1.00   0.5 % hydro Gov using model 1
+    1   2   1   1/0.05  1.00    0.04    0.20    0.0     1.50    5.00 %steam Gov
+];
 
 %% Switching file 
 % row 1 col1 simulation start time (s) (cols 2 to 6 zeros)

@@ -1,21 +1,41 @@
-%governor indexes
-function f=gov_indx
+function tg_indx()
+%TG_INDX function to create turbine govenor indexes
+%
+%   Syntax:
+%   tg_indx()
+%
+%   Inputs:
+%   NONE
+%
+%   Output:
+%   VOID
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   08/15/97    16:58   Graham Rogers   Version 1
+%   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
+%   06/05/20    09:49   Thad Haines     Revised format of globals and internal function documentation
+
 %set global variables
-global  tg_con  
-global  tg_idx n_tg tgh_idx n_tgh
-f=0;
-n_tg=0; n_tgh=0;
-if length(tg_con)~=0
-   tg_idx = find(tg_con(:,1)==1);
-   if ~isempty(tg_idx)
-      n_tg = length(tg_idx);
-   else
-      n_tg = 0;
-   end 
-   tgh_idx = find(tg_con(:,1)==2);
-   if ~isempty(tgh_idx)
-      n_tgh = length(tgh_idx);
-   else
-      n_tgh=0;
-   end
+%global  tg_con
+%global  tg_idx n_tg tgh_idx n_tgh
+global g
+
+% initalize with no governos
+g.tg.n_tg=0;
+g.tg.n_tgh=0;
+
+if ~isempty(g.tg.tg_con)
+    
+    % Find number of model 1 governors
+    g.tg.tg_idx = find(g.tg.tg_con(:,1)==1);
+    if ~isempty(g.tg.tg_idx)
+        g.tg.n_tg = length(g.tg.tg_idx);
+    end
+    
+    % Find number of model 2 governors (hydro)
+    g.tg.tgh_idx = find(g.tg.tg_con(:,1)==2);
+    if ~isempty(g.tg.tgh_idx)
+        g.tg.n_tgh = length(g.tg.tgh_idx);
+    end
 end
