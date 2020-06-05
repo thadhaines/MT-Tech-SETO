@@ -1741,7 +1741,7 @@ while (kt<=ktmax)
             tcsc(0,j,bus_sim,flag);
         end
         
-        % already modified to handle g in v2.3 - thad 06/01/20
+        % modified to handle g - thad 06/01/20
         if g.lmod.n_lmod~=0
             ml_sig(j); % removed t - thad
             lmod(0,j,flag); % removed bus - thad
