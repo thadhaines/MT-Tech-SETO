@@ -1,0 +1,101 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{MATLAB Class Example \\ }
+\lhead{Research \\ 6/5/20}
+
+\usepackage{minted}
+
+\begin{document}
+The purpose of this document is to provide a simple MATLAB class for possible use with PST.
+Main themes behind this class involve multiple objects accessing certain data in a global structure based on a known index number and field.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+% assumes a global g has been declared with data in a g.data.list array
+classdef TestClass3 < handle %inherit from handle class
+    properties
+        dataNdx = 0; % placeholder
+    end
+    methods
+        function r = getData(obj, varargin)
+            %% getData(k) returns kth data point, if k not provided return all datas
+            if obj.dataNdx ~= 0
+                global g
+                if nargin == 1
+                    r = g.data.list(obj.dataNdx,:);
+                elseif nargin > 1
+                    r = g.data.list(obj.dataNdx,varargin{1});
+                end
+            else
+                disp('dataNdx not defined')
+            end
+        end% end getData
+        
+        function setData(obj, k , data)
+            %% setData(k, newData) sets kth data to new data
+            if obj.dataNdx ~= 0
+                global g
+                g.data.list(obj.dataNdx,k) = data;
+            else
+                disp('dataNdx not defined')
+            end
+        end% end setData
+        
+    end% end methods
+end % end class def
+\end{minted}
+
+\pagebreak
+An example of some operations using the class are shown below:
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+%% Test class 3
+clear; close all; clc; format compact
+% make some global with data that will be updated
+global g
+g.data.list = zeros(5,4);
+g.data.list(3,:) = 3;
+
+% create test class object and initialize with ndx
+a = TestClass3();
+a.dataNdx = 3;
+
+% use class functions
+a.getData()
+ans =
+     3     3     3     3
+
+% modifiy data
+a.setData(1:4,[2,3,2,4]);
+
+a.getData(4)
+ans =
+     4
+
+b = a.getData()
+b =
+     2     3     2     4
+
+\end{minted}
+\end{document}
