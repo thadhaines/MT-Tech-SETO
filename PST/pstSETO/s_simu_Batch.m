@@ -215,16 +215,13 @@ warning('*** Declare Global Variables')
 
 %pst_var % set up global variables
 
-%%
+%% meant to be dc globals? 06/08/20 - thad
 svc_dc=[];
 tcsc_dc=[];
 dcr_dc=[];
 dci_dc=[];
 
-% load input data from m.file
-disp('non-linear simulation')
-
-% input data file
+% input data file from m.file
 %% 05/20 Edits - thad
 % Check for Octave, automatically load compatibility scripe
 % Assumes license of Octave will be 'GNU ...'
@@ -255,7 +252,6 @@ end
 
 %% run script to handle legacy input to new global g approach
 handleNewGlobals
-
 
 %% Allow Fbase and Sbase to be defined in batch runs
 % Handle varaible input system frequency
@@ -341,9 +337,6 @@ ntot = n_mac+n_mot+n_ig;
 ngm = n_mac + n_mot;
 n_pm = n_mac;
 
-disp(' ')
-disp('Performing simulation.')
-%
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
 tswitch(1) = sw_con(1,1);
@@ -780,13 +773,14 @@ dc_cont(0,1,1,bus,0);% initialize dc controls
 % initialization alters the bus matrix and dc parameters are required
 
 y_switch % calculates the reduced y matrices for the different switching conditions
-disp('initializing other models')
+
+disp('initializing other models...')
 
 %% step 2: initialization
 theta(1:n_bus,1) = bus(:,3)*pi/180;
 bus_v(1:n_bus,1) = bus(:,2).*exp(jay*theta(1:n_bus,1));
 
-if n_dcud ~=0
+if n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of line current for svc damping controls
     for j=1:n_dcud
         l_num = svc_dc{j,3};
@@ -817,7 +811,7 @@ if n_dcud ~=0
         end
     end
 end
-if n_tcscud ~=0
+if n_tcscud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
     for j=1:n_tcscud
         b_num = tcsc_dc{j,3};
@@ -826,7 +820,7 @@ if n_tcscud ~=0
     end
 end
 
-if n_conv~=0
+if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% change dc buses from LT to HT
     Pr = bus(rec_ac_bus,6);
     Pi = bus(inv_ac_bus,6);
@@ -848,7 +842,7 @@ if n_conv~=0
     bus(ac_bus,6) = real(SHT);
     bus(ac_bus,7) = imag(SHT);
     
-    if ndcr_ud~=0
+    if ndcr_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
         %% calculate the initial value of bus angles rectifier user defined control
         for j = 1:ndcr_ud
             b_num1 = dcr_dc{j,3};
@@ -858,7 +852,7 @@ if n_conv~=0
             dcrd_sig(j,:)=angdcr(j,:);
         end
     end
-    if ndci_ud~=0
+    if ndci_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
         %% calculate the initial value of bus angles inverter user defined control
         for j = 1:ndci_ud
             b_num1 = dci_dc{j,3};
@@ -871,7 +865,7 @@ if n_conv~=0
 end
 
 %% Flag = 0 == Initialization
-warning('*** Dynamic model initialization via functions:')
+warning('*** Dynamic model initialization via functions/scripts:')
 flag = 0;
 bus_int = bus_intprf;% pre-fault system
 
@@ -894,6 +888,7 @@ tg(0,1,flag); % modified 06/05/20 to global g
 tg_hydro(0,1,bus,flag);
 
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
+% Seems like this should be put in a seperate script - thad 06/08/20
 if n_ivm~=0
     disp('ivm modulation')
     [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],bus,t,1,flag);
@@ -923,6 +918,7 @@ if n_ivm~=0
 end
 
 %% initialize svc damping controls
+% Seems like this should be put in a seperate script - thad 06/08/20
 if n_dcud~=0
     disp('svc damping controls')
     tot_states=0;
@@ -939,6 +935,7 @@ if n_dcud~=0
 end
 
 %% initialize tcsc damping controls
+% Seems like this should be put in a seperate script - thad 06/08/20
 if n_tcscud~=0
     disp('tcsc damping controls')
     tot_states=0;
@@ -955,6 +952,7 @@ if n_tcscud~=0
 end
 
 %% initialize rectifier damping controls
+% Seems like this should be put in a seperate script - thad 06/08/20
 if ndcr_ud~=0
     disp('rectifier damping controls')
     tot_states=0;
@@ -971,6 +969,7 @@ if ndcr_ud~=0
 end
 
 %% initialize inverter damping controls
+% Seems like this should be put in a seperate script - thad 06/08/20
 if ndci_ud~=0
     disp('inverter damping controls')
     tot_states = 0;
@@ -988,6 +987,7 @@ end
 
 %% initialize load modulation control
 %if ~isempty(lmod_con) % original line - thad
+% if statement redundant - used in script... - thad 06/08/20
 if ~isempty(g.lmod.lmod_con)
     disp('load modulation')
     lmod(0,1,flag); % removed bus - thad
@@ -998,6 +998,7 @@ if ~isempty(rlmod_con)
 end
 
 %% initialize power modulation control - copied from v2.3 06/01/20 -thad
+% Seems like this should be put in a seperate script - thad 06/08/20
 if n_pwrmod~=0
     disp('power modulation')
     pwrmod_p(0,1,bus,flag);
@@ -1026,6 +1027,7 @@ if n_pwrmod~=0
 end
 
 %% initialize non-linear loads
+% if statement redundant - used in script... - thad 06/08/20
 if ~isempty(load_con)
     disp('non-linear loads')
     vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);
@@ -1035,6 +1037,7 @@ end
 
 %% DC Stuff ? (5/22/20)
 if ~isempty(dcsp_con)
+% Seems like this should be put in a seperate script - thad 06/08/20
     disp('dc converter specification')
     
     bus_sim = bus;

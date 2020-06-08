@@ -1,0 +1,138 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Research Update \\ Week of June 8th, 2020}
+\lhead{Research \\ }
+
+
+\begin{document}
+\begin{multicols}{2}
+\raggedright
+
+\paragraph{Recent Progress:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item global g added for \verb|lmod| and \verb|tg| models.
+		\item ML vs OCTAVE speed test
+		\item 2.x $\longrightarrow$ 3.x Models assigned to Dan
+		\item GitHub updated:\\
+	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
+	\end{enumerate}
+	
+
+\paragraph{Sandia Action Items:}
+	\begin{itemize}
+		\itemsep 0em 
+		\item Find more lit review items related to:
+			\begin{itemize}
+			\itemsep 0em 
+			\item modeling fidelity of ...
+			\item power electronics-based models
+			\item AGC
+			\end{itemize}
+		\item Work on converter-based resource models (pwermod, ivmmod)
+	\end{itemize}
+
+	
+\paragraph{Current Tasks:}
+	\begin{enumerate}
+		\itemsep 0em 
+		\item Explore v3 example cases
+		\item Reference Trudnowski code for `structured array, functionalized' approach.
+		\item Reference Stajcar code for basic transient stability simulation flow.
+		\item Work on understanding PST operation
+		\item Document findings of PST functionality
+		\item Investigate Octave compatibility
+		\item Create modulation case: ramp/noise 
+		\item Continue to work on data plots 
+\end{enumerate}
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	(Contact Ryan?)
+	\end{enumerate}
+
+\vfill\null
+\columnbreak
+
+\paragraph{Coding Thoughts:} 
+	\begin{enumerate}
+
+		\itemsep 0em 
+		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations. ex: \verb|g.lmod.lmod_con|, \verb|g.sys.t|
+		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+		This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+		Would enable addition of area definitions to models.
+		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+		Possibly employ \verb|feval| for a more dynamic calculation routine.
+		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (use flags)
+		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+		\item Generate comparison scripts to verify simulated results match after code changes.
+	\end{enumerate}
+	
+
+
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+\item Matt thoughts on Dan's documentation for pwrmod/ivmmod
+		\item Minimum requirements for system case?
+\begin{minipage}{\linewidth}
+\begin{multicols}{2}
+		\begin{itemize}
+\itemsep0em 
+		\footnotesize
+			\item system model
+			\item Load flow solver
+			\item Network solver
+			\item Machine models
+			\item Governor model
+			\item Exciter models
+			\item converter models
+			\item load modulation models
+			\item ...
+		\end{itemize}
+\end{multicols}
+\end{minipage}
+
+		\item PST modeling of transformers?
+		\item PST modeling of faults: \\
+		Uses alternate Y matrices? \\
+		Creates fault bus?
+	\end{enumerate}
+
+
+
+\vfill\null
+\end{multicols}
+
+
+
+\begin{comment}
+% Unused categories
+\paragraph{Future Tasks:} %(Little to No Progress since last time / Things coming down the pipe)
+	\begin{enumerate}
+		\item none		
+	\end{enumerate}
+	
+\paragraph{Future Work: (not by me)}
+	\begin{itemize}
+		\item none
+	\end{itemize}
+
+\paragraph{Requests:}
+	\begin{enumerate}
+			\item none
+	\end{enumerate}
+\end{comment}
+
+
+
+\end{document}

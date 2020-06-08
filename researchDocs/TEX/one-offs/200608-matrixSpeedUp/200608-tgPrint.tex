@@ -1,3 +1,31 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{tg Function Print \\ }
+\lhead{Research \\ 6/8/20}
+
+\usepackage{minted}
+
+\begin{document}
+%\begin{landscape}
+
+
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
 function tg(i,k,flag)
 %TG simple turbine governor model init, network and differential solns
 % Syntax: f = tg(i,k,flag)
@@ -147,10 +175,14 @@ if flag == 2 % turbine governor dynamics calculation
             %
             g.tg.dtg2(g.tg.tg_idx,k) = ( g.tg.tg1(g.tg.tg_idx,k).*g.tg.tg_pot(g.tg.tg_idx,2) - g.tg.tg2(g.tg.tg_idx,k))./g.tg.tg_con(g.tg.tg_idx,7);
             %
-            g.tg.dtg3(g.tg.tg_idx,k) = ((g.tg.tg2(g.tg.tg_idx,k)+g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k)).*g.tg.tg_pot(g.tg.tg_idx,4) - g.tg.tg3(g.tg.tg_idx,k))./g.tg.tg_con(g.tg.tg_idx,10);
+            g.tg.dtg3(g.tg.tg_idx,k) = ((g.tg.tg2(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k)).*g.tg.tg_pot(g.tg.tg_idx,4) - g.tg.tg3(g.tg.tg_idx,k))./g.tg.tg_con(g.tg.tg_idx,10);
             
             pmech(n,k) = g.tg.tg3(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,3).*(g.tg.tg2(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k));
         end
     end
 end
 
+
+\end{minted}
+%\end{landscape}
+\end{document}
