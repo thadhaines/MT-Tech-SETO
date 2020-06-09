@@ -49,15 +49,15 @@
 
 \node (initPF) [subprocess, below of = pwrModInitCheck] {Solve power flow via \verb|loadflow|};
 \node (createModelIndicies) [subprocess, below of = initPF] {Create dynamic model indicies};
-\node (createTimeVectors) [subprocess, below of = createModelIndicies] {Create time vector(s)};
-\node (initializeZeros) [subprocess, below of = createTimeVectors, yshift=-.5cm] {Initialize zeros for \textbf{all} global variables for entire length of simulation};
+\node (createTimeVectors) [subprocess, below of = createModelIndicies, text width = 5 cm] {Create time vector(s) and switching indicies};
+\node (initializeZeros) [subprocess, below of = createTimeVectors, text width = 7 cm] {Initialize zeros for \textbf{all} global variables for entire length of simulation};
 
-\node (initInd) [subprocess, below of = initializeZeros, yshift=-.5cm] {Initialize Induction motors and generators};
+\node (initInd) [subprocess, below of = initializeZeros, text width = 5 cm] {Initialize Induction motors and generators};
 \node (initSVCandDC) [subprocess, below of = initInd] {Initialize SVC and DC controls};
-\node (createYswitch) [subprocess, below of = initSVCandDC] {Create Y-matricies for switching events via \verb|y_switch|};
-\node (initDynamicModels) [subprocess, below of = createYswitch, yshift=-.5cm] {Initialize all dynamic models (if appropriate)};
+\node (createYswitch) [subprocess, below of = initSVCandDC, text width = 6 cm] {Create Y-matricies for switching events via \verb|y_switch|};
+\node (initDynamicModels) [subprocess, below of = createYswitch, text width  = 5cm] {Initialize \textbf{all} dynamic models (if appropriate)};
 
-\node (startSimLoop) [subprocess, below of = initDynamicModels, yshift=-.5cm] {Enter Simulation Loop};
+\node (startSimLoop) [subprocess, below of = initDynamicModels] {Enter Simulation Loop};
 
 % Drawing of Lines of main chart
 \draw [arrow] (start) -- (createGlobals);
@@ -84,6 +84,8 @@
 \draw [arrow] (checkProg) --  node[anchor=west] {True} (loadData);
 
 %% Note nodes AND edges
+\node [left of= start, node distance = 7 cm](title){{\Large System Initialization}};
+
 \node [note, right of=start, node distance =5cm](note1){Assumes Data file is provided};
 \draw [arrow,dotted] (note1) -- (start);
 
@@ -93,21 +95,21 @@
 \node [note, right of=initPF, node distance =5cm](note3){If HVDC is present: use \verb|lfdcs|};
 \draw [arrow,dotted] (note3) -- (initPF);
 
-\node [note, left of=createModelIndicies, node distance =5cm](note4){Each model has a different function routine};
+\node [note, left of=createModelIndicies, node distance =8cm, text width = 5 cm](note4){Each model has a different function or scripted routine};
 \draw [arrow,dotted] (note4) -- (createModelIndicies);
 
-\node [note, right of=createTimeVectors, node distance =7cm,text width=5cm](note5){Accounts for multirate models and time step switching events};
+\node [note, right of=createTimeVectors, node distance = 7cm,text width=4cm](note5){Accounts for multirate models and time step switching events};
 \draw [arrow,dotted] (note5) -- (createTimeVectors);
 
-\node [note, right of=initSVCandDC, node distance =8cm,text width=7cm](note6){``this has to be done before \verb|red_ybus| is used since the motor and svc
+\node [note, right of=initInd, node distance = 7.5 cm, text width= 5 cm](note6){``this has to be done before \verb|red_ybus| is used since the motor and svc
 initialization alters the bus matrix and dc parameters are required"};
-\draw [arrow,dotted] (note6) -- (initSVCandDC);
 \draw [arrow,dotted] (note6) -- (initInd);
+\draw [arrow,dotted] (note6) -- (initSVCandDC);
 
-\node [note, left of=createYswitch, node distance =5cm](note7){Calls \verb|red_ybus|};
+\node [note, left of=createYswitch, node distance =7cm](note7){Calls \verb|red_ybus|};
 \draw [arrow,dotted] (note7) -- (createYswitch);
 
-\node [note, right of=initDynamicModels, node distance =5cm](note8){Some of this is functionalized, some isn't\ldots};
+\node [note, right of=initDynamicModels, node distance =7cm, text width = 4cm](note8){Some of this is functionalized, some isn't\ldots};
 \draw [arrow,dotted] (note8) -- (initDynamicModels);
 
 \end{tikzpicture}
