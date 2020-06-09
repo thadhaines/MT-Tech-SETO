@@ -36,79 +36,50 @@
 \begin{document}
 \begin{tikzpicture}[node distance=1.75cm, font=\large] 
 % Placement of flowcart nodes
-\node (start) [terminal] {Run s\_simu\_Batch};
-\node (createGlobals) [process, below of = start] {Create empty Global Variables};
-% matlab decision block
-\node (checkProg) [decision, below of=createGlobals, yshift=-.75cm, text width=3cm] {MATLAB?};
-\node (octaveComp) [process, right = 1 cm of checkProg] {Execute Octave compatibility script};
+\node (simLoopStart) [terminal] {Simulation Loop Start};
+\node (whileKT) [decision, below of=simLoopStart, yshift=-.5cm, text width=3cm] {\verb|kt <= ktmax|?};
+\node (KTindex) [process, below of = whileKT, yshift=-.5cm] {Handle \verb|kt| indexing};
+\node (forKlength) [process, below of = KTindex, text width = 5cm] {\verb|for k = k_start:k_end|};
 
-\node (loadData) [process, below of = checkProg, yshift=-.75cm] {Load User System Data};
-\node (checkUserData) [process, below of = loadData] {Check for Valid System Data};
-\node (handleNewGlobals) [process, below of = checkUserData] {Handle new gloabls and `legacy' data};
-\node (pwrModInitCheck) [process, below of = handleNewGlobals] {Set bus powers to \verb|pwrmod| values};
+\node (setPmech) [process, below of = forKlength, text width = 7cm] {Set \verb|pmech(:,k+1) = pmech(:,k)|};
+\node (tripGen1) [process, below of = setPmech] {Set machine trip states};
+\node (setFlagONE1) [process, below of = tripGen1] {Set \verb|flag = 1|};
+\node (machineInterface1) [process, below of = setFlagONE1, text width = 5cm] {Execute network-machine interface functions};
 
-\node (initPF) [subprocess, below of = pwrModInitCheck] {Solve power flow via \verb|loadflow|};
-\node (createModelIndicies) [subprocess, below of = initPF] {Create dynamic model indicies};
-\node (createTimeVectors) [subprocess, below of = createModelIndicies] {Create time vector(s)};
-\node (initializeZeros) [subprocess, below of = createTimeVectors, yshift=-.5cm] {Initialize zeros for \textbf{all} global variables for entire length of simulation};
-
-\node (initInd) [subprocess, below of = initializeZeros, yshift=-.5cm] {Initialize Induction motors and generators};
-\node (initSVCandDC) [subprocess, below of = initInd] {Initialize SVC and DC controls};
-\node (createYswitch) [subprocess, below of = initSVCandDC] {Create Y-matricies for switching events via \verb|y_switch|};
-\node (initDynamicModels) [subprocess, below of = createYswitch, yshift=-.5cm] {Initialize all dynamic models (if appropriate)};
-
-\node (startSimLoop) [subprocess, below of = initDynamicModels, yshift=-.5cm] {Enter Simulation Loop};
+\node (dcCTRLS1) [process, below of = machineInterface1, text width = 5cm] {Execute network-dc control interface functions};
+\node (selectSYS1) [subprocess, below of = dcCTRLS1, text width = 5cm] {Select Y-matrix and system status created by \verb|y_switch|};
+\node (applyGenTrip) [subprocess, below of = selectSYS1] {Apply generator trip};
+\node (solveNetwork1) [subprocess, below of = applyGenTrip] {Solve network by calling \verb|i_simu|};
+%line 1212
 
 % Drawing of Lines of main chart
-\draw [arrow] (start) -- (createGlobals);
-\draw [arrow] (createGlobals) -- (checkProg);
-\draw [arrow] (octaveComp) |- (loadData);
+\draw [arrow] (simLoopStart) -- (whileKT);
+\draw [arrow] (KTindex) -- (forKlength);
+\draw [arrow] (forKlength) -- (setPmech);
 
-\draw [arrow] (loadData) -- (checkUserData);
-\draw [arrow] (checkUserData) -- (handleNewGlobals);
-\draw [arrow] (handleNewGlobals) -- (pwrModInitCheck);
-\draw [arrow] (pwrModInitCheck) -- (initPF);
+\draw [arrow] (setPmech) -- (tripGen1);
+\draw [arrow] (tripGen1) -- (setFlagONE1);
+\draw [arrow] (setFlagONE1) -- (machineInterface1);
+\draw [arrow] (machineInterface1) -- (dcCTRLS1);
 
-\draw [arrow] (initPF) -- (createModelIndicies);
-\draw [arrow] (createModelIndicies) -- (createTimeVectors);
-\draw [arrow] (createTimeVectors) -- (initializeZeros);
-\draw [arrow] (initializeZeros) -- (initInd);
-
-\draw [arrow] (initInd) -- (initSVCandDC);
-\draw [arrow] (initSVCandDC) -- (createYswitch);
-\draw [arrow] (createYswitch) -- (initDynamicModels);
-\draw [arrow] (initDynamicModels) -- (startSimLoop);
+\draw [arrow] (dcCTRLS1) -- (selectSYS1);
+\draw [arrow] (selectSYS1) -- (applyGenTrip);
+\draw [arrow] (applyGenTrip) -- (solveNetwork1);
 
 % Draw Decision Lines
-\draw [arrow] (checkProg) --  node[anchor=south] {False} (octaveComp);
-\draw [arrow] (checkProg) --  node[anchor=west] {True} (loadData);
+\draw [arrow] (whileKT) --  node[anchor=west] {True} (KTindex);
+%\draw [arrow] (checkProg) --  node[anchor=west] {True} (loadData);
 
 %% Note nodes AND edges
-\node [note, right of=start, node distance =5cm](note1){Assumes Data file is provided};
-\draw [arrow,dotted] (note1) -- (start);
+\node [note, right of=KTindex, node distance =5cm](note1){Set \verb|k_start| and \verb|k_end|};
+\draw [arrow,dotted] (note1) -- (KTindex);
 
-\node [note, right of=checkUserData, node distance =5cm](note2){Also set system $F_{Base}$ and $S_{Base}$};
-\draw [arrow,dotted] (note2) -- (checkUserData);
+\node [note, right of=setFlagONE1, node distance =7cm, text width = 5cm](note2){Execute Network functions of Dynamic Models};
+\draw [arrow,dotted] (note2) -- (setFlagONE1);
 
-\node [note, right of=initPF, node distance =5cm](note3){If HVDC is present: use \verb|lfdcs|};
-\draw [arrow,dotted] (note3) -- (initPF);
-
-\node [note, left of=createModelIndicies, node distance =5cm](note4){Each model has a different function routine};
-\draw [arrow,dotted] (note4) -- (createModelIndicies);
-
-\node [note, right of=createTimeVectors, node distance =7cm,text width=5cm](note5){Accounts for multirate models and time step switching events};
-\draw [arrow,dotted] (note5) -- (createTimeVectors);
-
-\node [note, right of=initSVCandDC, node distance =8cm,text width=7cm](note6){``this has to be done before \verb|red_ybus| is used since the motor and svc
-initialization alters the bus matrix and dc parameters are required"};
-\draw [arrow,dotted] (note6) -- (initSVCandDC);
-\draw [arrow,dotted] (note6) -- (initInd);
-
-\node [note, left of=createYswitch, node distance =5cm](note7){Calls \verb|red_ybus|};
-\draw [arrow,dotted] (note7) -- (createYswitch);
-
-\node [note, right of=initDynamicModels, node distance =5cm](note8){Some of this is functionalized, some isn't\ldots};
-\draw [arrow,dotted] (note8) -- (initDynamicModels);
+\node [note, right of=solveNetwork1, node distance =9cm, text width = 8cm](note3){Calls \verb|nc_load| that ``computes the complex voltage V at the non-conforming load buses
+the SVC buses and the HVDC HT buses using a Newton-Raphson algorithm"};
+\draw [arrow,dotted] (note3) -- (solveNetwork1);
 
 \end{tikzpicture}
 

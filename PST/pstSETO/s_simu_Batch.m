@@ -811,6 +811,7 @@ if n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/
         end
     end
 end
+
 if n_tcscud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
     for j=1:n_tcscud
@@ -843,7 +844,7 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
     bus(ac_bus,7) = imag(SHT);
     
     if ndcr_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-        %% calculate the initial value of bus angles rectifier user defined control
+        % calculate the initial value of bus angles rectifier user defined control
         for j = 1:ndcr_ud
             b_num1 = dcr_dc{j,3};
             b_num2 = dcr_dc{j,4};
@@ -853,7 +854,7 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
         end
     end
     if ndci_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-        %% calculate the initial value of bus angles inverter user defined control
+        % calculate the initial value of bus angles inverter user defined control
         for j = 1:ndci_ud
             b_num1 = dci_dc{j,3};
             b_num2 = dci_dc{j,4};
@@ -1248,6 +1249,7 @@ while (kt<=ktmax)
         end
         
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
+        
         %% network interface for control models
         dpwf(0,k,bus_sim,flag);
         mexc_sig(t(k),k);

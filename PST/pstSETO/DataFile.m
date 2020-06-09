@@ -8,6 +8,7 @@
 %   03/20/18    21:19   copied from base, added a DC exciter (type 1)
 %   05/19/20    10:26   Modified for use in exploring PST operation
 %   05/21/20    08:24   Added optional Fbase and Sbase variables
+%   06/02/20    09:37   Alteration to have one governor
 
 %% Optional System data, else assumed 60 Hz, 100 MVA
 %Fbase = 50; % Hz
@@ -88,10 +89,9 @@ line = [ ...
 mac_con = [ ...
 %   1   2   3 [MVA] 4       5       6       7       8       9       A       B       C       D       E       F       16      17      18      19
 % Mac_# b_# Sbase   x_l     r_a     x_d     x'_d    x"_d    T'_do   T"_do   x_q     x'_q    x"_q	T'_qo   T"_qo   H       d_o     d_1     b_#
-    1   1   100     0       0       0       0.0005  0       0       0       0       0       0       0       0       2370    0       0       1;  %infinite bus
+    1   1   100     0.15    0.0011  1.7     0.245   0.185   5.9     0.03    1.64    1.64    0.185   0.082   0.082   5.0    0       0       1;  % G1 - double size
     2   4   100     0.15    0.0011  1.7     0.245   0.185   5.9     0.03    1.64    1.64    0.185   0.082   0.082   2.37    0       0       4];   % G2
-                                            % infinite bus really small x'_d
-                                            % if x'_d = zero -> crash?
+                                            
                                             
 %% Exciter data
 % exc_con format:
@@ -141,6 +141,7 @@ exc_con = [ ...
 tg_con = [ ...
 %   1   2   3   4       5       6       7       8       9       A
 %               1/R     Tmax    Ts      Tc      T3      T4      T5
+%   1   1   1   1/0.05  1.00    0.4     45.00   5.00    -1.00   0.5 % hydro Gov using model 1
     1   2   1   1/0.05  1.00    0.04    0.20    0.0     1.50    5.00 %steam Gov
 ];
 
@@ -177,7 +178,9 @@ sw_con = [ ...
     1+(2/60)+(1/600)    0   0   0   0   0   1/(60*5);   % 
     3                   0   0   0   0   0   1/(60*2);   % change time step
     5                   0   0   0   0   0   1/(60);     % change time step
-    20                   0   0   0   0   0   1/(60);     % end
+    10                   0   0   0   0   0   1/(60*2);     % change time step
+    15                   0   0   0   0   0   1/(60);     % change time step
+    25                   0   0   0   0   0   1/(60);     % end
 ];    % end
   
 %% Load Modulation
@@ -205,5 +208,5 @@ load_con = [...
 % 7  	regulator time constant T_R  	sec
 lmod_con = [ ...
   % 1   2   3       4       5       6       7
-    1   2   100     1.0     0.0     1.0     1.0;];
+    1   2   100     1.0     0.0     1.0     0.1;];
 
