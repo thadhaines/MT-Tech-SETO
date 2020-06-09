@@ -1115,15 +1115,16 @@ while (kt<=ktmax)
         
         %% Flag = 1    
         flag = 1;
-        timestep = int2str(k);
+        timestep = int2str(k); % not used? 06/09/20
         % network-machine interface
         mac_ind(0,k,bus_sim,flag);
         mac_igen(0,k,bus_sim,flag);
         mac_sub(0,k,bus_sim,flag);
         mac_tra(0,k,bus_sim,flag);
         mac_em(0,k,bus_sim,flag);
-        mdc_sig(t(k),k);
-        dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
+        
+        mdc_sig(t(k),k); % dc controls mod signals
+        dc_cont(0,k,10*(k-1)+1,bus_sim,flag); % Models the action of HVDC link pole controllers
         
         %% Calculate current injections and bus voltages and angles
         if k >= sum(k_inc(1:3))+1
@@ -1263,6 +1264,8 @@ while (kt<=ktmax)
         
         if n_dcud~=0
             %% set the new line currents
+            % SVC damping control...
+            % Static Var Compensator
             for jj=1:n_dcud
                 l_num = svc_dc{jj,3};
                 svc_num = svc_dc{jj,2};
@@ -1288,6 +1291,8 @@ while (kt<=ktmax)
         
         if n_tcscud~=0
             % set the new bus voltages
+            % tcsc damping controls
+            % Thyristor Controlled Series compensator
             for jj=1:n_tcscud
                 b_num = tcsc_dc{jj,3};tcsc_num = tcsc_dc{jj,2};
                 td_sig(jj,k)=abs(bus_v(bus_int(b_num),k));
@@ -1303,6 +1308,7 @@ while (kt<=ktmax)
         %% step 3b: compute dynamics and integrate
         flag = 2;
         sys_freq(k) = 1.0; % why?... 5/21/20
+        
         mpm_sig(t(k),k);
         mac_ind(0,k,bus_sim,flag);
         mac_igen(0,k,bus_sim,flag);
@@ -1526,6 +1532,7 @@ while (kt<=ktmax)
         
         
         %% Flag = 1
+        % begining of solutions as j 
         flag = 1;
         % mach_ref(j) = mac_ang(syn_ref,j);
         mach_ref(j) = 0;
@@ -1649,6 +1656,7 @@ while (kt<=ktmax)
             end
         end
         
+        %% network interface for control models - 'corrector' step
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
         dpwf(0,j,bus_sim,flag);
         pss(0,j,bus_sim,flag);
@@ -1834,6 +1842,7 @@ while (kt<=ktmax)
         end
         % end copied from...
         
+        %%integrate dc at ten times rate (DC Stuff? 6/09/20)
         if n_conv~=0
             hdc_sol = h_sol/10;
             for kk = 1:10
@@ -1846,7 +1855,7 @@ while (kt<=ktmax)
             dc_line(0,j,j,bus_sim,2);
         end
         
-        %% following statements are corrector steps
+        %% following statements are corrector steps (Actual RK2 computation)
         mac_ang(:,j) = mac_ang(:,k) + h_sol*(dmac_ang(:,k)+dmac_ang(:,j))/2.;
         mac_spd(:,j) = mac_spd(:,k) + h_sol*(dmac_spd(:,k)+dmac_spd(:,j))/2.;
         edprime(:,j) = edprime(:,k) + h_sol*(dedprime(:,k)+dedprime(:,j))/2.;

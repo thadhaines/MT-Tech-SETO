@@ -35,10 +35,12 @@
 
 \begin{document}
 \begin{tikzpicture}[node distance=1.75cm, font=\large] 
+%================================================================================================
 % Placement of flowcart nodes
 \node (simLoopStart) [terminal] {Simulation Loop Start};
 \node (whileKT) [decision, below of=simLoopStart, yshift=-.5cm, text width=3cm] {\verb|kt <= ktmax|?};
 \node (KTindex) [process, below of = whileKT, yshift=-.5cm] {Handle \verb|kt| indexing};
+\node (simLoopEnd) [terminal, right of = whileKT, node distance = 5 cm] {Simulation Loop End};
 \node (forKlength) [process, below of = KTindex, text width = 5cm] {\verb|for k = k_start:k_end|};
 
 \node (setPmech) [process, below of = forKlength, text width = 7cm] {Set \verb|pmech(:,k+1) = pmech(:,k)|};
@@ -47,11 +49,60 @@
 \node (machineInterface1) [process, below of = setFlagONE1, text width = 5cm] {Execute network-machine interface functions};
 
 \node (dcCTRLS1) [process, below of = machineInterface1, text width = 5cm] {Execute network-dc control interface functions};
-\node (selectSYS1) [subprocess, below of = dcCTRLS1, text width = 5cm] {Select Y-matrix and system status created by \verb|y_switch|};
-\node (applyGenTrip) [subprocess, below of = selectSYS1] {Apply generator trip};
+\node (selectSYS1) [subprocess, below of = dcCTRLS1, text width = 7cm] {Select Y-matrix and system status created by \verb|y_switch| based on \verb|k|};
+\node (applyGenTrip) [subprocess, below of = selectSYS1, text width = 4cm] {Apply generator trip based on \verb|k|};
 \node (solveNetwork1) [subprocess, below of = applyGenTrip] {Solve network by calling \verb|i_simu|};
 %line 1212
 
+\node (HVDC1) [subprocess, below of = solveNetwork1, text width = 5 cm] {Calculate HVDC rectifier and inverter angles};
+\node (ctrlNetwork1) [subprocess, below of = HVDC1, text width = 5 cm] {Execute network interface for control models};
+\node (Isvc1) [subprocess, below of = ctrlNetwork1] {Set new line currents from SVC};
+\node (Vtcsc) [subprocess, below of = Isvc1] {Set new bus voltages from TCSC};
+
+\node (LivePlot) [subprocess, below of = Vtcsc] {Do Live Plotting};
+\node (setFlagTWO1) [process, below of = LivePlot] {Set \verb|flag = 2|};
+\node (dynamics1) [subprocess, below of = setFlagTWO1, text width = 6 cm] {Compute dynamic model states and outputs};
+\node (mystery1) [subprocess, below of = dynamics1, text width = 6 cm] {Something with SVC and TCSC...? (line $\approx$1329)};
+
+
+\node (lmod1) [subprocess, below of = mystery1] {Exectute Load Modulation};
+\node (pwrmod1) [subprocess, below of = lmod1] {Exectute \verb|pwrmod| Models};
+\node (ivmmod1) [subprocess, below of = pwrmod1] {Exectute \verb|ivmmod| Models};
+\node (HVDCint1) [subprocess, below of = ivmmod1] {Exectute DC models at 10xRate};
+
+\node (setJ) [process, below of = HVDCint1] {Set \verb|j = k +1|};
+\node (fwdEuler1) [subprocess, below of = setJ, text width = 7cm] {Predict next states via FWD Euler $x(:,\ j) = x(:,\ k)+ h\_sol*dx(:,\ k)$};
+
+%--------------------------------------------------------------------------------------------------
+% begining of next solution (i.e. 'corrector')
+
+\node (setFlagONE2) [process, below of = fwdEuler1] {Set \verb|flag = 1|};
+\node (machineInterface2) [process, below of = setFlagONE2, text width = 5cm] {Execute network-machine interface functions};
+
+\node (dcCTRLS2) [process, below of = machineInterface2, text width = 5cm] {Execute network-dc control interface functions};
+\node (selectSYS2) [subprocess, below of = dcCTRLS2, text width = 7cm] {Select Y-matrix and system status created by \verb|y_switch| based on \verb|j|};
+\node (applyGenTrip2) [subprocess, below of = selectSYS2, text width = 4cm] {Apply generator trip based on \verb|j|};
+\node (solveNetwork2) [subprocess, below of = applyGenTrip2] {Solve network by calling \verb|i_simu|};
+
+\node (HVDC2) [subprocess, below of = solveNetwork2, text width = 5 cm] {Calculate HVDC rectifier and inverter angles};
+\node (ctrlNetwork2) [subprocess, below of = HVDC2, text width = 5 cm] {Execute network interface for control models};
+\node (Isvc2) [subprocess, below of = ctrlNetwork2] {Set new line currents from SVC};
+\node (Vtcsc2) [subprocess, below of = Isvc2] {Set new bus voltages from TCSC};
+
+\node (setFlagTWO2) [process, below of = Vtcsc2] {Set \verb|flag = 2|};
+\node (dynamics2) [subprocess, below of = setFlagTWO2, text width = 6 cm] {Compute dynamic model states and outputs};
+\node (mystery2) [subprocess, below of = dynamics2, text width = 6 cm] {Something with SVC and TCSC...? (line $\approx$1720)};
+
+\node (lmod2) [subprocess, below of = mystery2] {Exectute Load Modulation};
+\node (pwrmod2) [subprocess, below of = lmod2] {Exectute \verb|pwrmod| Models};
+\node (ivmmod2) [subprocess, below of = pwrmod2] {Exectute \verb|ivmmod| Models};
+\node (HVDCint2) [subprocess, below of = ivmmod2] {Exectute DC models at 10xRate};
+
+\node (RK2) [subprocess, below of = HVDCint2, text width = 10cm] {Calculate next states and outputs via RK2 $x(:,\ j) = x(:,\ k)+ \frac{ h\_sol}{2} \left(dx(:,\ k) + dx(:,\ j) \right)$};
+\node (forOver) [decision, below of=RK2, yshift=-.5cm, text width=3cm] {\verb|k == k_end|?};
+\node (counterInc) [process, below of = forOver, yshift=-.5cm] {Increment \verb|kt| and \verb|kt|};
+
+%================================================================================================
 % Drawing of Lines of main chart
 \draw [arrow] (simLoopStart) -- (whileKT);
 \draw [arrow] (KTindex) -- (forKlength);
@@ -65,11 +116,59 @@
 \draw [arrow] (dcCTRLS1) -- (selectSYS1);
 \draw [arrow] (selectSYS1) -- (applyGenTrip);
 \draw [arrow] (applyGenTrip) -- (solveNetwork1);
+\draw [arrow] (solveNetwork1) -- (HVDC1);
 
+\draw [arrow] (HVDC1) -- (ctrlNetwork1);
+\draw [arrow] (ctrlNetwork1) -- (Isvc1);
+\draw [arrow] (Isvc1) -- (Vtcsc);
+\draw [arrow] (Vtcsc) -- (LivePlot);
+
+\draw [arrow] (LivePlot) -- (setFlagTWO1);
+\draw [arrow] (setFlagTWO1) -- (dynamics1);
+\draw [arrow] (dynamics1) -- (mystery1);
+\draw [arrow] (mystery1) -- (lmod1);
+
+\draw [arrow] (lmod1) -- (pwrmod1);
+\draw [arrow] (pwrmod1) -- (ivmmod1);
+\draw [arrow] (ivmmod1) -- (HVDCint1);
+\draw [arrow] (HVDCint1) -- (setJ);
+
+\draw [arrow] (setJ) -- (fwdEuler1);
+% begining of next solution (i.e. 'corrector')
+\draw [arrow] (fwdEuler1) -- (setFlagONE2);
+\draw [arrow] (setFlagONE2) -- (machineInterface2);
+\draw [arrow] (machineInterface2) -- (dcCTRLS2);
+
+\draw [arrow] (dcCTRLS2) -- (selectSYS2);
+\draw [arrow] (selectSYS2) -- (applyGenTrip2);
+\draw [arrow] (applyGenTrip2) -- (solveNetwork2);
+\draw [arrow] (solveNetwork2) -- (HVDC2);
+
+\draw [arrow] (HVDC2) -- (ctrlNetwork2);
+\draw [arrow] (ctrlNetwork2) -- (Isvc2);
+\draw [arrow] (Isvc2) -- (Vtcsc2);
+\draw [arrow] (Vtcsc2) -- (setFlagTWO2);
+
+\draw [arrow] (setFlagTWO2) -- (dynamics2);
+\draw [arrow] (dynamics2) -- (mystery2);
+\draw [arrow] (mystery2) -- (lmod2);
+
+\draw [arrow] (lmod2) -- (pwrmod2);
+\draw [arrow] (pwrmod2) -- (ivmmod2);
+\draw [arrow] (ivmmod2) -- (HVDCint2);
+\draw [arrow] (HVDCint2) -- (RK2);
+
+\draw [arrow] (RK2) -- (forOver);
+\draw [arrow] (counterInc) --  +(-7,0) |- (whileKT);
+
+%================================================================================================
 % Draw Decision Lines
 \draw [arrow] (whileKT) --  node[anchor=west] {True} (KTindex);
-%\draw [arrow] (checkProg) --  node[anchor=west] {True} (loadData);
+\draw [arrow] (whileKT) --  node[anchor=south] {False} (simLoopEnd);
 
+\draw [arrow] (forOver) --  node[anchor=west] {True} (counterInc);
+\draw [arrow] (forOver) -- node[anchor=south, midway] {False} +(-6,0) |- (forKlength);
+%================================================================================================
 %% Note nodes AND edges
 \node [note, right of=KTindex, node distance =5cm](note1){Set \verb|k_start| and \verb|k_end|};
 \draw [arrow,dotted] (note1) -- (KTindex);
@@ -78,9 +177,17 @@
 \draw [arrow,dotted] (note2) -- (setFlagONE1);
 
 \node [note, right of=solveNetwork1, node distance =7cm, text width = 5cm](note3){Calls \verb|nc_load| that ``computes the complex voltage V at the non-conforming load buses
-the SVC buses and the HVDC HT buses using a Newton-Raphson algorithm"};
+the SVC buses and the HVDC HT buses using a Newton-Raphson algorithm". Returns \verb|h_sol|};
 \draw [arrow,dotted] (note3) -- (solveNetwork1);
 
+\node [note, right of=Isvc1, node distance =7cm, ](note4){Static Var Compensator};
+\draw [arrow,dotted] (note4) -- (Isvc1);
+
+\node [note, right of=Vtcsc, node distance =7cm, text width = 5 cm ](note5){Thyristor Controlled Series Compensator};
+\draw [arrow,dotted] (note5) -- (Vtcsc);
+
+\node [note, right of=fwdEuler1, node distance =8cm, text width = 5 cm ](note5){\verb|h_sol = |Current Time step}; % $\approx$Line 1468
+\draw [arrow,dotted] (note5) -- (fwdEuler1);
 \end{tikzpicture}
 
 \begin{comment}
