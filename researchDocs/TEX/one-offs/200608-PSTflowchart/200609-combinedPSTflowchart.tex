@@ -300,7 +300,7 @@ the SVC buses and the HVDC HT buses using a Newton-Raphson algorithm". Returns \
 \node (HVDCint1) [subprocess, below of = ivmmod1] {Execute DC models at 10xRate};
 
 \node (setJ) [process, below of = HVDCint1] {Set \verb|j = k +1|};
-\node (fwdEuler1) [subprocess, below of = setJ, text width = 7cm] {Predict next states via FWD Euler \verb|x(:,j) = x(:,k)+ h_sol*dx(:,k)|}; % unsure why math environment doesn't work...
+\node (fwdEuler1) [subprocess, below of = setJ, text width = 9cm] {Predict next states and outputs via FWD Euler \verb|x(:,j) = x(:,k)+ h_sol*dx(:,k)|}; % unsure why math environment doesn't work...
 \node (page4End) [pageconD, below of = fwdEuler1 ] {\Large D};
 
 %----------------------------------------------------------------------------
@@ -321,9 +321,10 @@ the SVC buses and the HVDC HT buses using a Newton-Raphson algorithm". Returns \
 
 %----------------------------------------------------------------------------
 % Notes
-\node [note, right of=fwdEuler1, node distance =8cm, text width = 5 cm ](note5){\verb|h_sol = |Current Time step}; % $\approx$Line 1468
+\node [note, right of=fwdEuler1, node distance =9cm, text width = 5 cm ](note5){\verb|h_sol = |Current Time step}; % $\approx$Line 1468
 \draw [arrow,dotted] (note5) -- (fwdEuler1);
-
+\node [note, right of=mystery1, node distance =8cm, text width = 5 cm ](note6){Probably just dynamic calculations, but some indexing is also executed }; % $\approx$Line 1468
+\draw [arrow,dotted] (note6) -- (mystery1);
 \end{tikzpicture}
 \pagebreak
 
