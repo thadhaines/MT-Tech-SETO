@@ -265,7 +265,7 @@ else
    n_tcsc = 0;
 end
 if ~isempty(lmod_con)~=0
-   f = lm_indx; % identifies load modulation buses
+   lm_indx; % identifies load modulation buses
 else
    n_lmod = 0;
 end
@@ -611,7 +611,7 @@ f = tcsc(0,1,bus,0);
 
 if ~isempty(lmod_con)
    disp('load modulation')
-   f = lmod(0,1,bus,flag);
+   lmod(0,1,flag);
 end
 if ~isempty(rlmod_con)
    disp('reactive load modulation')

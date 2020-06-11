@@ -11,16 +11,16 @@ global g
 %lmod_sig(:,k) = zeros(size(lmod_sig(:,k))); %Initialized in s_simu
 
 %fprintf('%4.4f \t %d\n', t(k), k); % DEBUG
-if g.lmod.n_lmod~=0
-    if g.sys.t(k) > 1
-        % load step
-        g.lmod.lmod_sig(1,k) = 0.25; % modify first load only
-    end
+% if g.lmod.n_lmod~=0
+%     if g.sys.t(k) > 1
+%         % load step
+%         g.lmod.lmod_sig(1,k) = 0.25; % modify first load only
+%     end
     
 %     if (t(k) > 12) && (t(k) < 18)
 %         % random noise
 %         lmod_sig(1,k) = 0.25+ 0.1*rand();
 %     end
         
-end
+%end
 return
