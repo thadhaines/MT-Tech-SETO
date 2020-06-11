@@ -31,7 +31,6 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d_OneMacInfBus04.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % Handle load modulation file placement etc...
-copyfile([PSTpath 'ml_sig.m'],[PSTpath 'ml_sig_ORIG_TMP.m']); % save copy of original ml_sig file
 delete([PSTpath 'ml_sig.m']); % ensure ml_sig file is empty
 copyfile('ml_sig_OMIB3.m',[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
 
@@ -39,8 +38,7 @@ s_simu_Batch %Run PST <- this is the main file to look at for simulation working
 
 %% Clean up load modulation file alterations...
 delete([PSTpath 'ml_sig.m']); % remove simulation specific ml_sig file
-copyfile([PSTpath 'ml_sig_ORIG_TMP.m'],[PSTpath 'ml_sig.m']); % Replace original file
-delete([PSTpath 'ml_sig_ORIG_TMP.m']); % delete temporary file
+copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % Replace original file
 
 %% Simulation variable cleanup
 % Clear any varables that contain only zeros

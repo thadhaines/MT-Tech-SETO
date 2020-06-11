@@ -13,18 +13,27 @@ if exist('lmod_con','var')
     g.lmod.lmod_con = lmod_con;
     clear lmod_con 
 end
-if ~isfield(g,'lmod.lmod_con')
+if isfield(g,'lmod')
+    if ~isfield(g.lmod,'lmod_con')
     g.lmod.lmod_con = [];
-    g.lmod.n_lmod=0;
+    g.lmod.n_lmod = 0;
+    end
+else %seems like there should be a better solution...
+     g.lmod.lmod_con = [];
+    g.lmod.n_lmod = 0;   
 end
 
 % tg
 if exist('tg_con','var')
     % legacy defined
     g.tg.tg_con = tg_con;
-    clear tg_con 
+    clear tg_con
 end
-if ~isfield(g,'tg.tg_con')
+if isfield(g, 'tg') % check for tg field
+    if ~isfield(g.tg, 'tg_con') % check for tg.tg_con field
     % create empty tg_con if not defined
+    g.tg.tg_con = [];
+    end
+else
     g.tg.tg_con = [];
 end

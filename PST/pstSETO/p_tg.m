@@ -5,26 +5,26 @@
 k_tg = find(mac_tg==k);
 if ~isempty(k_tg)
    disp('disturb turbine governor')
-   gh = tg_idx(k_tg);
+   gh = g.tg.tg_idx(k_tg);
    j=j+1;
-   pert = 0.0001*abs(tg1(gh,1));   
+   pert = 0.0001*abs(g.tg.tg1(gh,1));   
    pert = max(pert,0.0001);
-   tg1(gh,2) = tg1(gh,1) + pert;
+   g.tg.tg1(gh,2) = g.tg.tg1(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j) = 21;
    
    j = j + 1;
-   pert = 0.0001*abs(tg2(gh,1));   
+   pert = 0.0001*abs(g.tg.tg2(gh,1));   
    pert = max(pert,0.0001);
-   tg2(gh,2) = tg2(gh,1) + pert;
+   g.tg.tg2(gh,2) = g.tg.tg2(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j)=22;
    
    
    j=j+1;
-   pert = 0.0001*abs(tg3(gh,1));   
+   pert = 0.0001*abs(g.tg.tg3(gh,1));   
    pert = max(pert,0.0001);
-   tg3(gh,2) = tg3(gh,1) + pert;
+   g.tg.tg3(gh,2) = g.tg.tg3(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j) = 23;
 end
@@ -32,40 +32,40 @@ k_tgh = find(mac_tgh==k);
 if ~isempty(k_tgh)
    disp('disturb hydraulic turbine governor')
    j=j+1;
-   gh = tgh_idx(k_tgh)
-   pert = 0.0001*abs(tg1(gh,1));   
+   gh = g.tg.tgh_idx(k_tgh)
+   pert = 0.0001*abs(g.tg.tg1(gh,1));   
    pert = max(pert,0.0001);
-   tg1(gh,2) = tg1(gh,1) + pert;
+   g.tg.tg1(gh,2) = g.tg.tg1(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j) = 21;
    
    j = j + 1;
-   pert = 0.0001*abs(tg2(gh,1));   
+   pert = 0.0001*abs(g.tg.tg2(gh,1));   
    pert = max(pert,0.0001);
-   tg2(gh,2) = tg2(gh,1) + pert;
+   g.tg.tg2(gh,2) = g.tg.tg2(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j)=22;
    
    
    j=j+1;
-   pert = 0.0001*abs(tg3(gh,1));   
+   pert = 0.0001*abs(g.tg.tg3(gh,1));   
    pert = max(pert,0.0001);
-   tg3(gh,2) = tg3(gh,1) + pert;
+   g.tg.tg3(gh,2) = g.tg.tg3(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j) = 23;
    
    j=j+1;
-   pert = 0.0001*abs(tg4(gh,1));   
+   pert = 0.0001*abs(g.tg.tg4(gh,1));   
    pert = max(pert,0.0001);
-   tg4(gh,2) = tg4(gh,1) + pert;
+   g.tg.tg4(gh,2) = g.tg.tg4(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j) = 24;
    
    j=j+1;
-   pert = 0.0001*abs(tg5(gh,1));   
+   pert = 0.0001*abs(g.tg.tg5(gh,1));   
    pert = max(pert,0.0001);
    
-   tg5(gh,2) = tg5(gh,1) + pert;
+   g.tg.tg5(gh,2) = g.tg.tg5(gh,1) + pert;
    p_file   % m file of perturbations
    st_name(k,j) = 25;
    

@@ -138,14 +138,14 @@ for k = 1:n_mac
          k_tg = find(mac_tg == k);
          if ~isempty(k_tg)
             tg_count = tg_count + 1;
-            k_ctg = k_col + tg_idx(k_tg);
+            k_ctg = k_col + g.tg.tg_idx(k_tg);
             if tg_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
-               k_ctg = k_ctg + n_tg+n_tgh;
+               k_ctg = k_ctg + g.tg.n_tg+g.tg.n_tgh;
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
-               k_ctg = k_ctg + n_tg+n_tgh;
+               k_ctg = k_ctg + g.tg.n_tg+g.tg.n_tgh;
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
             end
@@ -155,7 +155,7 @@ for k = 1:n_mac
          k_tgh = find(mac_tgh==k);
          if ~isempty(k_tgh)
             tg_count = tg_count + 1;
-            k_ctg = k_col + tgh_idx(k_tgh);
+            k_ctg = k_col + g.tg.tgh_idx(k_tgh);
             if tgh_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
@@ -179,7 +179,7 @@ end
 
 % p_mat for induction motors
 
-k_colg = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw+5*(n_tg+n_tgh);
+k_colg = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw+5*(g.tg.n_tg + g.tg.n_tgh);
 k_col = k_colg;
 if n_mot~=0
    for k=1:n_mot
@@ -248,8 +248,8 @@ end
 
 % p_mat for lmod
 k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc;
-if n_lmod ~=0
-   for k = 1:n_lmod
+if g.lmod.n_lmod ~=0
+   for k = 1:g.lmod.n_lmod
       k_row = k_row + 1;
       k_col = k_col + k;
       p_mat(k_row,k_col)=1;
@@ -258,40 +258,40 @@ if n_lmod ~=0
 end
 
 % p_mat for rlmod
-k_col = k_colg+3*n_ig+2*n_svc+n_tcsc+n_lmod;
+k_col = k_colg+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod;
 if n_rlmod ~=0
    for k = 1:n_rlmod
       k_row = k_row + 1;
       k_col = k_col + k;
       p_mat(k_row,k_col)=1;
-      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod;
+      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod;
    end
 end  
 
 % p_mat for pwrmod_p
-k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod;
+k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod;
 if n_pwrmod ~=0
    for k = 1:n_pwrmod
       k_row = k_row + 1;
       k_col = k_col + k;
       p_mat(k_row,k_col)=1;
-      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod;
+      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod;
    end
 end
 
 % p_mat for pwrmod_q
-k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod+n_pwrmod;
+k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+n_pwrmod;
 if n_pwrmod ~=0
    for k = 1:n_pwrmod
       k_row = k_row + 1;
       k_col = k_col + k;
       p_mat(k_row,k_col)=1;
-      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod+n_pwrmod;
+      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+n_pwrmod;
    end
 end
 
 % p_mat for hvdc links
-k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod+2*n_pwrmod;
+k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+2*n_pwrmod;
 if n_conv~=0
    for k = 1:n_dcl
       %  converter controls 
@@ -316,7 +316,7 @@ if n_conv~=0
             p_mat(k_row, k_col) = 1;
          end
       end
-      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod+2*n_pwrmod;
+      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+2*n_pwrmod;
    end
 end 
 

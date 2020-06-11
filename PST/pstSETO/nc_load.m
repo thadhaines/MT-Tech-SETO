@@ -76,7 +76,7 @@ global svc_con svc_idx n_svc svc_pot B_cv
 global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
 % load modulation variables
 %global  lmod_con n_lmod lmod_idx lmod_st 
-global lmod_pot lmod_st 
+%global lmod_pot lmod_st 
 global g % added g - thad
 % reactive load modulation variables
 global  rlmod_con n_rlmod rlmod_idx rlmod_pot rlmod_st 

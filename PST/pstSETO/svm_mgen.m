@@ -145,7 +145,9 @@ n_tg = 0;
 n_tgh = 0;
 n_svc = 0;
 n_tcsc = 0;
-n_lmod = 0;
+
+g.lmod.n_lmod = 0;
+
 n_rlmod = 0;
 n_pwrmod = 0;
 % note dc_indx called in load flow
@@ -261,11 +263,11 @@ if ~isempty(tcsc_con)
 else
    n_tcsc = 0;
 end
-if ~isempty(lmod_con)~=0
+if ~isempty(g.lmod.lmod_con)~=0
    lm_indx; % identifies load modulation buses 
             % line flow monitoring buses? (Chow, 02/28/2016)
 else
-   n_lmod = 0;
+   g.lmod.n_lmod = 0;
 end
 if ~isempty(rlmod_con)~=0
    rlm_indx; % identifies load modulation buses
@@ -359,9 +361,9 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+n_lmod+n_rlmod+2*n_pwrmod+n_dcl,1);
+state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+2*n_pwrmod+n_dcl,1);
 max_state = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw...
-            +5*n_tg+5*n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod +n_rlmod+2*n_pwrmod+5*n_dcl;
+            +5*n_tg+5*n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod +n_rlmod+2*n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 theta(:,1) = bus(:,3)*pi/180;
@@ -403,10 +405,10 @@ if n_tcsc ~=0
 else
    tcsc_sig = zeros(1,2);
 end
-if n_lmod ~= 0
-   lmod_sig = zeros(n_lmod,2);
+if g.lmod.n_lmod ~= 0
+   g.lmod.lmod_sig = zeros(g.lmod.n_lmod,2);
 else
-   lmod_sig = zeros(1,2);
+   g.lmod.lmod_sig = zeros(1,2);
 end
 if n_rlmod ~= 0
    rlmod_sig = zeros(n_rlmod,2);
@@ -494,9 +496,9 @@ if n_tg~=0||n_tgh~=0
    dtg4 = zeros(n_tg+n_tgh,2);
    dtg5 = zeros(n_tg+n_tgh,2);
 end
-if n_lmod~=0
-   lmod_st = zeros(n_lmod,2);
-   dlmod_st = zeros(n_lmod,2);
+if g.lmod.n_lmod~=0
+   g.lmod.lmod_st = zeros(g.lmod.n_lmod,2);
+   g.lmod.dlmod_st = zeros(g.lmod.n_lmod,2);
 end
 if n_rlmod~=0
    rlmod_st = zeros(n_rlmod,2);
@@ -606,9 +608,9 @@ if n_tcsc ~=0
 end
 tcsc(0,1,bus,0);
 
-if ~isempty(lmod_con)
+if ~isempty(g.lmod.lmod_con)
    disp('load modulation')
-   lmod(0,1,bus,flag);
+   lmod(0,1,flag);
 end
 if ~isempty(rlmod_con)
    disp('reactive load modulation')
@@ -694,8 +696,8 @@ end
 if n_tcsc ~= 0
    B_tcsc(:,2) = B_tcsc(:,1);
 end
-if n_lmod ~=0
-   lmod_st(:,2) = lmod_st(:,1);
+if g.lmod.n_lmod ~=0
+   g.lmod.lmod_st(:,2) = g.lmod.lmod_st(:,1);
 end
 if n_rlmod ~=0
    rlmod_st(:,2) = rlmod_st(:,1);
@@ -721,7 +723,7 @@ exc_sig(:,2) = exc_sig(:,1);
 tg_sig(:,2) = tg_sig(:,1);
 svc_sig(:,2) = svc_sig(:,1);
 tcsc_sig(:,2) = tcsc_sig(:,1);
-lmod_sig(:,2) = lmod_sig(:,1);
+g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 rlmod_sig(:,2) = rlmod_sig(:,1);
 if n_pwrmod ~=0
     pwrmod_p_sig(:,1) = pwrmod_p_st(:,1);
@@ -802,7 +804,7 @@ if isempty(ibus_con)
       if n_exc~=0;b_vr = p_ang*b_vr;end
       if n_svc~=0;b_svc = p_ang*b_svc;end
       if n_tcsc~=0;b_tcsc = p_ang*b_tcsc;end
-      if n_lmod~=0;b_lmod = p_ang*b_lmod;end
+      if g.lmod.n_lmod~=0;b_lmod = p_ang*b_lmod;end
       if n_rlmod~=0;b_rlmod = p_ang*b_rlmod;end
       if n_pwrmod~=0;b_pwrmod_p = p_ang*b_pwrmod_p; end
       if n_pwrmod~=0;b_pwrmod_q = p_ang*b_pwrmod_q; end

@@ -1,20 +1,25 @@
 function ml_sig(k)
-% ML_SIG Defines modulation signal for lmod control
-% Syntax: f = ml_sig(k)
-%
-%   History:
-%   Date        Time    Engineer        Description
-%   08/15/97    16:40   Graham Rogers   Version 1
-%   06/05/20    09:02   Thad Haines     V2 - using global g, no t passed
-%   in, no dummy varibale f passed out. Default behavior commented out.
-%
-
-%global g
-
+% Syntax: f = ml_sig(t,k)
+%4:40 PM 15/08/97
+% defines modulation signal for lmod control
+%global lmod_sig n_lmod
+global g
+%f=0; %dummy variable
+%% Function to modulate load - meant to replace ml_sig in main PST dir
+% lmod_con must be specified in the data file
+% and the load bus must be in the nonconforming load list.
 %fprintf('%4.4f \t %d\n', t(k), k); % DEBUG
 
-%if g.sys.t(k) > 1
-    % load step
-    %g.lmod.lmod_sig(1,k) = 0.25; % modify first load only
-%end
+if g.lmod.n_lmod~=0
+    if g.sys.t(k) >= 1
+        % load step
+        g.lmod.lmod_sig(1,k) = 0.25; % modify first load only
+    end
+    
+%     if (t(k) > 12) && (t(k) < 18)
+%         % random noise
+%         lmod_sig(1,k) = 0.25 + 0.1*rand();
+%     end
+        
 end
+return

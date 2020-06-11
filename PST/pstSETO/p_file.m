@@ -101,8 +101,8 @@ end
 if n_tcsc~=0
    tcsc(0,2,bus,flag);
 end
-if n_lmod~=0 
-   lmod(0,2,bus,flag);
+if g.lmod.n_lmod~=0 
+   lmod(0,2,flag);
 end
 if n_rlmod~=0 
    rlmod(0,2,bus,flag);
@@ -151,54 +151,54 @@ if n_dpw~=0
    d_vector(pss_state+5*n_dpw+1:pss_state+6*n_dpw) = dsdpw6(:,2);
 end
 
-if n_tg~=0||n_tgh~=0
-   ngt = n_tg+n_tgh;
-   d_vector(dpw_state+1:dpw_state+ngt) = dtg1(:,2);
-   d_vector(dpw_state+ngt+1:dpw_state+2*ngt) = dtg2(:,2);
-   d_vector(dpw_state+2*ngt+1:dpw_state+3*ngt) = dtg3(:,2);
-   d_vector(dpw_state+3*ngt+1:dpw_state+4*ngt) = dtg4(:,2);
-   d_vector(dpw_state+4*ngt+1:dpw_state+5*ngt) = dtg5(:,2);
+if g.tg.n_tg~=0 || g.tg.n_tgh~=0
+   ngt = g.tg.n_tg + g.tg.n_tgh;
+   d_vector(dpw_state+1:dpw_state+ngt) = g.tg.dtg1(:,2);
+   d_vector(dpw_state+ngt+1:dpw_state+2*ngt) = g.tg.dtg2(:,2);
+   d_vector(dpw_state+2*ngt+1:dpw_state+3*ngt) = g.tg.dtg3(:,2);
+   d_vector(dpw_state+3*ngt+1:dpw_state+4*ngt) = g.tg.dtg4(:,2);
+   d_vector(dpw_state+4*ngt+1:dpw_state+5*ngt) = g.tg.dtg5(:,2);
 end
 if n_mot~=0
-   mot_start = dpw_state+5*(n_tg+n_tgh);
+   mot_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh); % times turbine number? 06/11/20 -thad
    d_vector(mot_start+1:mot_start+n_mot) = dvdp(:,2);
    d_vector(mot_start+n_mot+1:mot_start+2*n_mot) = dvqp(:,2);
    d_vector(mot_start+2*n_mot+1:mot_start+3*n_mot) = dslip(:,2);
 end
 if n_ig~=0
-   ig_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot;
+   ig_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot;
    d_vector(ig_start+1:ig_start+n_ig) = dvdpig(:,2);
    d_vector(ig_start+n_ig+1:ig_start+2*n_ig) = dvqpig(:,2);
    d_vector(ig_start+2*n_ig+1:ig_start+3*n_ig) = dslig(:,2);
 end
 
 if n_svc ~= 0
-   svc_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig;
+   svc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig;
    d_vector(svc_start+1:svc_start+n_svc) = dB_cv(:,2);
    d_vector(svc_start+n_svc+1:svc_start+2*n_svc) = dB_con(:,2);
 end
 
 if n_tcsc~=0
-   tcsc_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc;
+   tcsc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc;
    d_vector(tcsc_start+1:tcsc_start+n_tcsc)=dB_tcsc(:,2);
 end
-if n_lmod ~= 0
-   lmod_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc;
-   d_vector(lmod_start+1:lmod_start+n_lmod) = dlmod_st(:,2);
+if g.lmod.n_lmod ~= 0
+   lmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc;
+   d_vector(lmod_start+1:lmod_start+g.lmod.n_lmod) = g.lmod.dlmod_st(:,2);
 end
 if n_rlmod ~= 0
-   rlmod_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod;
+   rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod;
    d_vector(rlmod_start+1:rlmod_start+n_rlmod) = drlmod_st(:,2);
 end
 if n_pwrmod ~= 0
-   pwrmod_p_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod;
+   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod;
    d_vector(pwrmod_p_start+1:pwrmod_p_start+n_pwrmod) = dpwrmod_p_st(:,2);
-   pwrmod_q_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod+n_pwrmod;
+   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+n_pwrmod;
    d_vector(pwrmod_q_start+1:pwrmod_q_start+n_pwrmod) = dpwrmod_q_st(:,2);
 end
 
 if n_conv~=0
-   dc_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ n_lmod+n_rlmod+2*n_pwrmod;
+   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ g.lmod.n_lmod+n_rlmod+2*n_pwrmod;
    d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
    d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
    d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
@@ -416,17 +416,17 @@ if n_dpw~=0
 
 end
 
-if n_tg~=0||n_tgh~=0
-   tg1(:,2)=tg1(:,1);
-   tg2(:,2)=tg2(:,1);
-   tg3(:,2)=tg3(:,1);
-   tg4(:,2)=tg4(:,1);
-   tg5(:,2)=tg5(:,1);
-   dtg1(:,2)=dtg1(:,1);
-   dtg2(:,2)=dtg2(:,1);
-   dtg3(:,2)=dtg3(:,1);
-   dtg4(:,2)=dtg4(:,1);
-   dtg5(:,2)=dtg5(:,1);
+if g.tg.n_tg ~=0 || g.tg.n_tgh ~= 0
+   g.tg.tg1(:,2)= g.tg.tg1(:,1);
+   g.tg.tg2(:,2)= g.tg.tg2(:,1);
+   g.tg.tg3(:,2)= g.tg.tg3(:,1);
+   g.tg.tg4(:,2)= g.tg.tg4(:,1);
+   g.tg.tg5(:,2)= g.tg.tg5(:,1);
+   g.tg.dtg1(:,2)= g.tg.dtg1(:,1);
+   g.tg.dtg2(:,2)= g.tg.dtg2(:,1);
+   g.tg.dtg3(:,2)= g.tg.dtg3(:,1);
+   g.tg.dtg4(:,2)= g.tg.dtg4(:,1);
+   g.tg.dtg5(:,2)= g.tg.dtg5(:,1);
 end
 if n_mot~=0
    vdp(:,2) = vdp(:,1);
@@ -456,10 +456,10 @@ if n_tcsc~=0
    dB_tcsc(:,2)=dB_tcsc(:,1);
    tcsc_sig(:,2)=tcsc_sig(:,1);
 end
-if n_lmod ~=0
-   lmod_st(:,2) = lmod_st(:,1);
-   dlmod_st(:,2) = dlmod_st(:,1);
-   lmod_sig(:,2) = lmod_sig(:,1);
+if g.lmod.n_lmod ~=0
+   g.lmod.lmod_st(:,2) = g.lmod.lmod_st(:,1);
+   g.lmod.dlmod_st(:,2) = g.lmod.dlmod_st(:,1);
+   g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 end
 if n_rlmod ~=0
    rlmod_st(:,2) = rlmod_st(:,1);

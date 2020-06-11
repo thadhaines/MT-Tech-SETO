@@ -68,15 +68,22 @@ global g
 	\end{itemize}
 
 %===============================================================================
+\paragraph{svm\_mgen\_Batch.m}
+	\begin{itemize}
+		\item added pst\_var globals to main script for global highlighting
+		\item Prepended \verb| g.tg.| where appropriate
+	\end{itemize}
+
+
+%===============================================================================
 \paragraph{Not Called from s\_simu\_Batch } \ \\
-Since not called from working example, references to tg not corrected to g
+Linearization work: (06/11/20)
 	\begin{itemize}
 		\item p\_cont
-		\item p\_tgt
+		\item p\_tg - added g.tg. to all pertrubations of states
 		\item p\_file
-		\item nm\_if
-		\item ns\_file
-		\item svm\_mgen\_Batch
+		\item nm\_if - added global g to top
+		\item ns\_file - added g.tg to on if on line 127
 	\end{itemize}
 
 

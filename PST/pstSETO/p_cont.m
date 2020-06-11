@@ -90,7 +90,7 @@ for k = 1:n_mac
          p_dpw
       end
       % turbine/governor
-      if ~isempty(tg_con)
+      if ~isempty(g.tg.tg_con)
          p_tg
       end
       
@@ -110,7 +110,7 @@ for k = 1:n_mac
          end
       end
       
-      if n_tg ~=0||n_tgh~=0
+      if g.tg.n_tg ~=0 || g.tg.n_tgh~=0
          c_state = 2;
          tg_number = find(mac_tg == k);
          if isempty(tg_number)
@@ -119,12 +119,12 @@ for k = 1:n_mac
          if ~isempty(tg_number)
             disp('disturb P_ref')
             pr_input = pr_input + 1;
-            pert = p_ratio*abs(tg_pot(tg_number,5));
+            pert = p_ratio*abs(g.tg.tg_pot(tg_number,5));
             pert = max(pert,p_ratio);
-            nominal = tg_pot(tg_number,5);
-            tg_pot(tg_number,5) = tg_pot(tg_number,5) + pert;
+            nominal = g.tg.tg_pot(tg_number,5);
+            g.tg.tg_pot(tg_number,5) = g.tg.tg_pot(tg_number,5) + pert;
             p_file
-            tg_pot(tg_number,5) = nominal;
+            g.tg.tg_pot(tg_number,5) = nominal;
          end
       end
       c_state = 0;           
@@ -249,16 +249,16 @@ if n_tcsc~=0
    c_state = 0;
 end
 
-ntl = ntf + n_lmod;
+ntl = ntf + g.lmod.n_lmod;
 % disturb lmod states
-if n_lmod~=0
+if g.lmod.n_lmod~=0
    disp('disturbing load modulation')
    for k = ntf+1:ntl
       j=1;
       k_lmod = k - ntf;
-      pert = p_ratio*abs(lmod_st(k_lmod,1));   
+      pert = p_ratio*abs(g.lmod.lmod_st(k_lmod,1));   
       pert = max(pert,p_ratio);
-      lmod_st(k_lmod,2) = lmod_st(k_lmod,1) + pert;
+      g.lmod.lmod_st(k_lmod,2) = g.lmod.lmod_st(k_lmod,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 35;
       % disturb the input variable
@@ -267,9 +267,9 @@ if n_lmod~=0
       lmod_input = k_lmod;
       pert = p_ratio;
       nominal = 0.0;
-      lmod_sig(k_lmod,2) = lmod_sig(k_lmod,2) + pert;
+      lmod_sig(k_lmod,2) = g.lmod.lmod_sig(k_lmod,2) + pert;
       p_file
-      lmod_sig(k_lmod,2) = nominal;  
+      g.lmod.lmod_sig(k_lmod,2) = nominal;  
       c_state = 0;
    end
 end

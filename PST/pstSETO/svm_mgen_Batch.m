@@ -68,9 +68,131 @@
 
 clear 
 clear global
-close %graphics windows
+%close %graphics windows
 % set up global variables
-pst_var
+
+%pst_var
+% copied from pst_var for global highlighs 06/11/20 -thad
+% system variables
+global  basmva basrad syn_ref mach_ref sys_freq
+global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
+global  lmon_con
+
+% synchronous machine variables
+global  mac_con mac_pot mac_int ibus_con
+global  mac_ang mac_spd eqprime edprime psikd psikq
+global  curd curq curdg curqg fldcur
+global  psidpp psiqpp vex eterm theta ed eq 
+global  pmech pelect qelect
+global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+global  n_mac n_em n_tra n_sub n_ib
+global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+  
+
+% excitation system variables
+global  exc_con exc_pot n_exc
+global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+global  dEfd dV_R dV_As dR_f dV_TR
+global  exc_sig pm_sig n_pm
+global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+global smp_TR smp_TR_idx smp_no_TR_idx ;
+global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+global dc_TE  dc_TE_idx dc_noTE_idx;
+global dc_TF dc_TF_idx dc_TR dc_TR_idx 
+global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+global st3_TR st3_TR_idx st3_noTR_idx;
+
+% non-conforming load variables
+global  load_con load_pot nload
+
+% induction motor variables
+global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
+global  motbus ind_int mld_con n_mot t_mot
+% states
+global  vdp vqp slip 
+% dstates
+global dvdp dvqp dslip 
+
+% induction genertaor variables
+global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+global  igen_int igbus n_ig
+%states
+global  vdpig vqpig slig 
+%dstates
+global dvdpig dvqpig dslig
+
+% svc variables
+global  svc_con n_svc svc_idx svc_pot svcll_idx
+global  svc_sig
+% svc user defined damping controls
+global n_dcud dcud_idx svc_dsig
+%states
+global B_cv B_con
+%dstates
+global dB_cv dB_con
+
+% tcsc variables
+global  tcsc_con n_tcsc tcsvf_idx tcsct_idx 
+global  B_tcsc dB_tcsc 
+global  tcsc_sig tcsc_dsig
+global  n_tcscud dtcscud_idx  %user defined damping controls
+
+% load modulation variables
+%global  lmod_con n_lmod lmod_idx
+%global  lmod_pot lmod_st dlmod_st
+%global  lmod_sig
+% reactive load modulation variables
+global  rlmod_con n_rlmod rlmod_idx
+global  rlmod_pot rlmod_st drlmod_st
+global  rlmod_sig
+
+% pss variables
+global  pss_con pss_pot pss_mb_idx pss_exc_idx
+global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
+global  pss_idx n_pss pss_sp_idx pss_p_idx;
+global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+
+% DeltaP/omega filter variables
+global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
+global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
+global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
+
+% turbine-governor variables
+%global  tg_con tg_pot 
+%global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+%global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+
+%HVDC link variables
+global  dcsp_con  dcl_con  dcc_con
+global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+global  inv_ac_line  rec_ac_line ac_line dcli_idx
+global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
+global  ric_idx  rpc_idx Vdc_ref dcc_pot 
+global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+
+
+% States
+%line
+global i_dcr i_dci  v_dcc 
+global di_dcr  di_dci  dv_dcc 
+%rectifier
+global v_conr dv_conr  
+%inverter
+global v_coni dv_coni
+
+% simulation control
+global sw_con  scr_con
+
+% pss design
+global ibus_con  netg_con  stab_con
+
+% end copied from pst_far
+
 % additional globals for pwrmod, ivmmod
 global load_con bus_int
 
@@ -88,7 +210,7 @@ global  pwrmod_data
 % begning of global strucutred g
 global g
 
-handleNewGlobals
+
 
 jay = sqrt(-1);
 %
@@ -114,6 +236,9 @@ eval(dfile);
 if isempty(mac_con)
    error(' the selected file is not a valid data file')
 end
+
+handleNewGlobals
+
 %basdat = inputdlg({'Base MVA:','Base Frequency Hz:'},'Input Base Data',1,{'100','60'}); 
 basdat = {'100';'60'};
 sys_freq = str2double(basdat{2});
@@ -162,11 +287,15 @@ n_smp = 0;
 n_st3 = 0;
 n_pss= 0;
 n_dpw = 0;
-n_tg = 0;
-n_tgh = 0;
+
+g.tg.n_tg = 0;
+g.tg.n_tgh = 0;
+
 n_svc = 0;
 n_tcsc = 0;
-n_lmod = 0;
+
+g.lmod.n_lmod = 0;
+
 n_rlmod = 0;
 n_pwrmod = 0;
 % note dc_indx called in load flow
@@ -224,18 +353,20 @@ if n_ib~=0
       end
    end
    % remove turbine/governos
-   if ~isempty(tg_con)
-      n_tg = length(tg_con(:,1));
-      net_idx= zeros(n_tg,1);
+   if ~isempty(g.tg.tg_con)
+      g.tg.n_tg = length(g.tg.tg_con(:,1));
+      net_idx= zeros(g.tg.n_tg,1);
       for j=1:n_ib
-         net_idx =net_idx| tg_con(:,2) == mac_con(mac_ib_idx(j),1);
+         net_idx =net_idx| g.tg.tg_con(:,2) == mac_con(mac_ib_idx(j),1);
       end
       if length(net_idx)==1
-         if net_idx==1;tg_con = [];end
+         if net_idx==1
+             g.tg.tg_con = [];
+         end
       else
          perm = diag(~net_idx);
          perm = perm(~net_idx,:);
-         tg_con = perm*tg_con;
+         g.tg.tg_con = perm*g.tg.tg_con;
       end
    end
 end
@@ -262,13 +393,13 @@ else
 end
 
 mac_tg=0;mac_tgh=0;
-if ~isempty(tg_con)
+if ~isempty(g.tg.tg_con)
    tg_indx;%identifies turbine/governor
-   mac_tg = mac_int(tg_con(tg_idx,2));
-   mac_tgh = mac_int(tg_con(tgh_idx,2));
+   mac_tg = mac_int(g.tg.tg_con(g.tg.tg_idx,2));
+   mac_tgh = mac_int(g.tg.tg_con(g.tg.tgh_idx,2));
 else
-   n_tg =0;
-   n_tgh = 0;
+   g.tg.n_tg =0;
+   g.tg.n_tgh = 0;
 end
 if ~isempty(svc_con)~=0
    svc_dc=[];
@@ -282,11 +413,11 @@ if ~isempty(tcsc_con)
 else
    n_tcsc = 0;
 end
-if ~isempty(g.lmod.lmod_con)~=0
+if ~isempty(g.lmod.lmod_con)
    lm_indx; % identifies load modulation buses 
             % line flow monitoring buses? (Chow, 02/28/2016)
 else
-   n_lmod = 0;
+   g.lmod.n_lmod = 0;
 end
 if ~isempty(rlmod_con)~=0
    rlm_indx; % identifies load modulation buses
@@ -380,9 +511,9 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+n_lmod+n_rlmod+2*n_pwrmod+n_dcl,1);
+state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+2*n_pwrmod+n_dcl,1);
 max_state = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw...
-            +5*n_tg+5*n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod +n_rlmod+2*n_pwrmod+5*n_dcl;
+            +5*g.tg.n_tg+5*g.tg.n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod +n_rlmod+2*n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 theta(:,1) = bus(:,3)*pi/180;
@@ -409,10 +540,10 @@ ns_file
 NumStates = sum(state);
 exc_sig = zeros(n_mac,2);
 if n_dpw~=0; dpw_out = zeros(n_dpw,2);else dpw_out = zeros(1,2);end
-if n_tg ~=0||n_tgh ~= 0
-   tg_sig = zeros(n_tg+n_tgh,2);
+if g.tg.n_tg ~=0||g.tg.n_tgh ~= 0
+   g.tg.tg_sig = zeros(g.tg.n_tg+g.tg.n_tgh,2);
 else
-   tg_sig = zeros(1,2);
+   g.tg.tg_sig = zeros(1,2);
 end
 if n_svc ~=0
    svc_sig = zeros(n_svc,2);
@@ -424,10 +555,10 @@ if n_tcsc ~=0
 else
    tcsc_sig = zeros(1,2);
 end
-if n_lmod ~= 0
-   lmod_sig = zeros(n_lmod,2);
+if g.lmod.n_lmod ~= 0
+   g.lmod.lmod_sig = zeros(n_lmod,2);
 else
-   lmod_sig = zeros(1,2);
+   g.lmod.lmod_sig = zeros(1,2);
 end
 if n_rlmod ~= 0
    rlmod_sig = zeros(n_rlmod,2);
@@ -503,21 +634,23 @@ if n_dpw~=0
    dsdpw5 = zeros(n_dpw,2);
    dsdpw6 = zeros(n_dpw,2);
 end
-if n_tg~=0||n_tgh~=0
-   tg1 = zeros(n_tg+n_tgh,2);
-   tg2 = zeros(n_tg+n_tgh,2);
-   tg3 = zeros(n_tg+n_tgh,2);
-   tg4 = zeros(n_tg+n_tgh,2);
-   tg5 = zeros(n_tg+n_tgh,2);
-   dtg1 =zeros(n_tg+n_tgh,2);
-   dtg2 = zeros(n_tg+n_tgh,2);
-   dtg3 = zeros(n_tg+n_tgh,2);
-   dtg4 = zeros(n_tg+n_tgh,2);
-   dtg5 = zeros(n_tg+n_tgh,2);
+if g.tg.n_tg~=0 || g.tg.n_tgh~=0
+    tgZeros = zeros(g.tg.n_tg+g.tg.n_tgh,2);
+   g.tg.tg1 = tgZeros;
+   g.tg.tg2 = tgZeros;
+   g.tg.tg3 = tgZeros;
+   g.tg.tg4 = tgZeros;
+   g.tg.tg5 = tgZeros;
+   g.tg.dtg1 = tgZeros;
+   g.tg.dtg2 = tgZeros;
+   g.tg.dtg3 = tgZeros;
+   g.tg.dtg4 = tgZeros;
+   g.tg.dtg5 = tgZeros;
+   clear tgZeros
 end
-if n_lmod~=0
-   lmod_st = zeros(n_lmod,2);
-   dlmod_st = zeros(n_lmod,2);
+if g.lmod.n_lmod~=0
+   g.lmod.lmod_st = zeros(g.lmod.n_lmod,2);
+   g.lmod.dlmod_st = zeros(g.lmod.n_lmod,2);
 end
 if n_rlmod~=0
    rlmod_st = zeros(n_rlmod,2);
@@ -689,12 +822,12 @@ if n_dpw~=0
    sdpw6(:,2)=sdpw6(:,1);
 end
 %turbine governor
-if n_tg~=0||n_tgh~=0
-   tg1(:,2)=tg1(:,1);
-   tg2(:,2)=tg2(:,1);
-   tg3(:,2)=tg3(:,1);
-   tg4(:,2)=tg4(:,1);
-   tg5(:,2)=tg5(:,1);
+if g.tg.n_tg~=0 || g.tg.n_tgh~=0
+   g.tg.tg1(:,2) = g.tg.tg1(:,1);
+   g.tg.tg2(:,2) = g.tg.tg2(:,1);
+   g.tg.tg3(:,2) = g.tg.tg3(:,1);
+   g.tg.tg4(:,2) = g.tg.tg4(:,1);
+   g.tg.tg5(:,2) = g.tg.tg5(:,1);
 end
 telect(:,2) =telect(:,1);
 if n_mot~=0
@@ -715,8 +848,8 @@ end
 if n_tcsc ~= 0
    B_tcsc(:,2) = B_tcsc(:,1);
 end
-if n_lmod ~=0
-   lmod_st(:,2) = lmod_st(:,1);
+if g.lmod.n_lmod ~=0
+   g.lmod.lmod_st(:,2) = g.lmod.lmod_st(:,1);
 end
 if n_rlmod ~=0
    rlmod_st(:,2) = rlmod_st(:,1);
@@ -739,10 +872,10 @@ eterm(:,2) = eterm(:,1);
 pmech(:,2) = pmech(:,1);
 vex(:,2) = vex(:,1);
 exc_sig(:,2) = exc_sig(:,1);
-tg_sig(:,2) = tg_sig(:,1);
+g.tg.tg_sig(:,2) = g.tg.tg_sig(:,1);
 svc_sig(:,2) = svc_sig(:,1);
 tcsc_sig(:,2) = tcsc_sig(:,1);
-lmod_sig(:,2) = lmod_sig(:,1);
+g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 rlmod_sig(:,2) = rlmod_sig(:,1);
 if n_pwrmod ~=0
     pwrmod_p_sig(:,1) = pwrmod_p_st(:,1);
@@ -819,11 +952,11 @@ if isempty(ibus_con)
       end
       %transform the b matrices
       b_pm = p_ang*b_pm; 
-      if n_tg~=0;b_pr = p_ang*b_pr;end
+      if g.tg.n_tg~=0;b_pr = p_ang*b_pr;end
       if n_exc~=0;b_vr = p_ang*b_vr;end
       if n_svc~=0;b_svc = p_ang*b_svc;end
       if n_tcsc~=0;b_tcsc = p_ang*b_tcsc;end
-      if n_lmod~=0;b_lmod = p_ang*b_lmod;end
+      if g.lmod.n_lmod~=0;b_lmod = p_ang*b_lmod;end
       if n_rlmod~=0;b_rlmod = p_ang*b_rlmod;end
       if n_pwrmod~=0;b_pwrmod_p = p_ang*b_pwrmod_p; end
       if n_pwrmod~=0;b_pwrmod_q = p_ang*b_pwrmod_q; end
