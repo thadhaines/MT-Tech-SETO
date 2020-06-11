@@ -322,6 +322,7 @@ svc_indx(svc_dc);
 tcsc_indx(tcsc_dc);
 lm_indx;
 rlm_indx;
+pwrmod_indx(bus); 
 
 n_mot = size(ind_con,1);
 n_ig = size(igen_con,1);
@@ -874,7 +875,7 @@ disp('generators')
 mac_sub(0,1,bus,flag);
 mac_tra(0,1,bus,flag);
 mac_em(0,1,bus,flag);
-%mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
+mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
 
 disp('generator controls')
 dpwf(0,1,bus,flag);
@@ -1122,6 +1123,7 @@ while (kt<=ktmax)
         mac_sub(0,k,bus_sim,flag);
         mac_tra(0,k,bus_sim,flag);
         mac_em(0,k,bus_sim,flag);
+        mac_ivm(0,k,bus_sim,flag); 
         
         mdc_sig(t(k),k); % dc controls mod signals
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag); % Models the action of HVDC link pole controllers
@@ -1543,6 +1545,8 @@ while (kt<=ktmax)
         mac_sub(0,j,bus_sim,flag);
         mac_tra(0,j,bus_sim,flag);
         mac_em(0,j,bus_sim,flag);
+        mac_ivm(0,j,bus_sim,flag); 
+        
         % assume Vdc remains unchanged for first pass through dc controls interface
         mdc_sig(t(j),j);
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);

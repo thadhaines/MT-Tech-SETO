@@ -1,5 +1,6 @@
 %perturbation control file  
 % 5:40 pm 29/12/1996
+% modified to include pwrmod, D. Trudnowski, 2015
 % modified to include induction generators
 % modified to include load modulation
 % input disturbance modulation added to svc and lmod
@@ -296,30 +297,79 @@ if n_rlmod~=0
       c_state = 0;
    end
 end
-ntdc = ntrl + n_dcl;
+% disturb pwrmod_p states
+ntpwr_p = ntrl + n_pwrmod;
+if n_pwrmod~=0
+   disp('disturbing real power modulation')
+   for k = ntrl+1:ntpwr_p
+      j=1;
+      k_pwrmod_p = k - ntrl;
+      pert = p_ratio*abs(pwrmod_p_st(k_pwrmod_p,1));   
+      pert = max(pert,p_ratio);
+      pwrmod_p_st(k_pwrmod_p,2) = pwrmod_p_st(k_pwrmod_p,1) + pert;
+      p_file   % m file of perturbations
+      st_name(k,j) = 37;
+      % disturb the input variable
+      disp('disturbing pwrmod_p_sig') 
+      c_state = 7; 
+      pwrmod_p_input = k_pwrmod_p;
+      pert = p_ratio;
+%       nominal = 0.0;
+      pwrmod_p_sig(k_pwrmod_p,2) = pwrmod_p_sig(k_pwrmod_p,2) + pert;
+      p_file
+%       pwrmod_p_sig(k_pwrmod_p,2) = nominal;  
+      c_state = 0;
+   end
+end
+% disturb pwrmod_q states
+ntpwr_q = ntpwr_p + n_pwrmod;
+if n_pwrmod~=0
+   disp('disturbing reac power modulation')
+   for k = ntpwr_p+1:ntpwr_q
+      j=1;
+      k_pwrmod_q = k - ntpwr_p;
+      pert = p_ratio*abs(pwrmod_q_st(k_pwrmod_q,1));   
+      pert = max(pert,p_ratio);
+      pwrmod_q_st(k_pwrmod_q,2) = pwrmod_q_st(k_pwrmod_q,1) + pert;
+      p_file   % m file of perturbations
+      st_name(k,j) = 38;
+      % disturb the input variable
+      disp('disturbing pwrmod_q_sig') 
+      c_state = 8; 
+      pwrmod_q_input = k_pwrmod_q;
+      pert = p_ratio;
+%       nominal = 0.0;
+      pwrmod_q_sig(k_pwrmod_q,2) = pwrmod_q_sig(k_pwrmod_q,2) + pert;
+      p_file
+%       pwrmod_q_sig(k_pwrmod_q,2) = nominal;  
+      c_state = 0;
+   end
+end
+
+ntdc = ntpwr_q + n_dcl;
 % disturb the HVDC states
 if n_conv~=0
    disp('disturbing HVDC')
-   for k = ntrl+1:ntdc
+   for k = ntpwr_q+1:ntdc
       j = 1;
-      k_hvdc = k - ntrl;
+      k_hvdc = k - ntpwr_q;
       pert = p_ratio*abs(v_conr(k_hvdc,1));
       pert = max(pert,p_ratio);
       v_conr(k_hvdc,2) = v_conr(k_hvdc,1) + pert;
       p_file;
-      st_name(k,j) = 37;
+      st_name(k,j) = 39;
       j = j + 1;
       pert = p_ratio*abs(v_coni(k_hvdc,1));
       pert = max(pert,p_ratio);
       v_coni(k_hvdc,2) = v_coni(k_hvdc,1) + pert;
       p_file;
-      st_name(k,j) = 38;
+      st_name(k,j) = 40;
       j= j+1;
       pert = p_ratio*abs(i_dcr(k_hvdc,1));
       pert = max(pert,p_ratio);
       i_dcr(k_hvdc,2) = i_dcr(k_hvdc,1) + pert;
       p_file;
-      st_name(k,j) = 39;
+      st_name(k,j) = 41;
       if ~isempty(cap_idx)
          k_cap_idx = find(cap_idx == k_hvdc);
          if ~isempty(k_cap_idx)
@@ -327,17 +377,17 @@ if n_conv~=0
             pert = max(pert,p_ratio);
             i_dci(k_hvdc,2) = i_dci(k_hvdc,1) + pert;
             p_file;
-            st_name(k,j) = 40;
+            st_name(k,j) = 42;
             j = j + 1;
             pert = p_ratio*abs(v_dcc(k_hvdc,1));
             pert = max(pert,p_ratio);
             v_dcc(k_hvdc,2) = v_dcc(k_hvdc,1) + pert;
             p_file;
-            st_name(k,j) = 41;
+            st_name(k,j) = 43;
          end
       end
       disp('disturbing rectifier dc_sig') 
-      c_state = 7; 
+      c_state = 9; 
       dcmod_input = k_hvdc;
       pert = p_ratio;
       nominal = 0.0;
@@ -346,7 +396,7 @@ if n_conv~=0
       dc_sig(r_idx(k_hvdc),2) = nominal;  
       c_state = 0;
       disp('disturbing inverter dc_sig') 
-      c_state = 8; 
+      c_state = 10; 
       dcmod_input = k_hvdc;
       pert = p_ratio;
       nominal = 0.0;

@@ -4,8 +4,8 @@
 bus = [ ...
 % num volt  angle p_gen q_gen p_load q_load G_shunt B_shunt type q_max q_min v_rated v_max v_min
   1   1.0   0.0   0.12  0     0      0      0       0       1    100   -100  20      1.5   0.5;
-  2   0.98  0.0   0.005 0.001 0      0      0       0       2    1     -1    20      1.5   0.5; %Solar gen
-  3   0.97  0.0   0.05  0.01  0      0       0      0       2    1     -1    20      1.5   0.5; %Solar gen
+  2   0.98  0.0   0.005 0.001 0      0      0       0       2    0     0     20      1.5   0.5; %Solar gen
+  3   0.97  0.0   0.05  0.01  0      0      0       0       2    0     0     20      1.5   0.5; %Solar gen
   4   1.0   0.0   0.15  0     0      0      0       0       2    100   -100  20      1.5   0.5
   5   1.0   0.0   0     0     0.275  0.2    0       0       3    0     0     20      1.5   0.5;
   6   1.0   0.0   0     0     0      0      0       0       3    0     0     20      1.5   0.5];
@@ -55,8 +55,8 @@ tg_con = [...
 % col 5       fraction const reactive current load
 load_con = [...
 %bus Pcont Qconst P_Icont Q_Iconst
-  2   1     1     0       0;  %Modulation bus
-  3   1     1     0       0;  %Modulation bus
+  2   0     0     1       1;  %Modulation bus
+  3   0     0     1       1;  %Modulation bus
   5   0     0     0.1     0]; %Load bus
 
 % Power modulation data (sets up modulation of real and reac power injection)

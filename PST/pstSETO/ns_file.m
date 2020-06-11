@@ -2,6 +2,7 @@
 % total number of states for each device
 % Called from svm_mgen
 % 5:39 pm 29/12/98
+% Added pwrmod, D. Trudnowski, 2015
 % Author: Graham Rogers
 % Modified: December 1998
 % tcsc model added
@@ -191,6 +192,18 @@ if n_rlmod~=0
    n_rlmod1 = ntot+n_svc+n_tcsc+n_lmod;
    state(n_rlmod1+1:n_rlmod1+n_rlmod) = ones(n_rlmod,1);
 end;
+% pwrmod
+n_pwrmod_states = 0;
+if n_pwrmod~=0
+   state_p_pwrmod(1:n_pwrmod) = ones(n_pwrmod,1);
+   n_pwrmod_p_states = sum(state_p_pwrmod);
+   n_pwrmod_p1 = ntot+n_svc+n_tcsc+n_lmod+n_rlmod;
+   state(n_pwrmod_p1+1:n_pwrmod_p1+n_pwrmod) = ones(n_pwrmod,1);
+   state_q_pwrmod(1:n_pwrmod) = ones(n_pwrmod,1);
+   n_pwrmod_q_states = sum(state_q_pwrmod);
+   n_pwrmod_q1 = ntot+n_svc+n_tcsc+n_lmod+n_rlmod+n_pwrmod;
+   state(n_pwrmod_q1+1:n_pwrmod_q1+n_pwrmod) = ones(n_pwrmod,1);
+end;
 
 % HVDC
 n_hvdc_states = 0;
@@ -200,6 +213,6 @@ if n_conv~= 0
       state_hvdc(cap_idx) =state_hvdc(cap_idx) + 2*ones(l_cap,1);
    end
    n_hvdc_states = sum(state_hvdc);
-   n_hvdc1 = ntot +n_svc + n_tcsc+ n_lmod+n_rlmod;
+   n_hvdc1 = ntot +n_svc + n_tcsc+ n_lmod+n_rlmod+2*n_pwrmod;
    state(n_hvdc1+1:n_hvdc1+n_dcl) = (3 + 2*l_cap)*ones(n_dcl,1);
 end

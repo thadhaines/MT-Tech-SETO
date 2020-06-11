@@ -71,6 +71,24 @@ clear global
 close %graphics windows
 % set up global variables
 pst_var
+% additional globals for pwrmod, ivmmod
+global load_con bus_int
+
+global  lmod_sig lmod_data 
+% ivmmod
+global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig  
+
+% power injection variables
+global  pwrmod_con n_pwrmod pwrmod_idx
+global  pwrmod_p_st dpwrmod_p_st
+global  pwrmod_q_st dpwrmod_q_st
+global  pwrmod_p_sig pwrmod_q_sig
+global  pwrmod_data
+
+% begning of global strucutred g
+global g
+
+handleNewGlobals
 
 jay = sqrt(-1);
 %
@@ -81,37 +99,40 @@ disp('linearized model development by perturbation of the non-linear model')
 svc_dc = [];
 dci_dc=[]; dcr_dc=[];
 % input data file
-[dfile,pathname]=uigetfile('d*.m','Select Data File');
-if pathname == 0
-   error(' you must select a valid data file')
-else
-   lfile =length(dfile);
-   % strip off .m and convert to lower case
-   dfile = lower(dfile(1:lfile-2));
-   eval(dfile);
-end
+% [dfile,pathname]=uigetfile('d*.m','Select Data File');
+% if pathname == 0
+%    error(' you must select a valid data file')
+% else
+%    lfile =length(dfile);
+%    % strip off .m and convert to lower case
+%    dfile = lower(dfile(1:lfile-2));
+%    eval(dfile);
+% end
+dfile = 'DataFile';
+eval(dfile);
 % check for valid dynamic data file
 if isempty(mac_con)
    error(' the selected file is not a valid data file')
 end
-basdat = inputdlg({'Base MVA:','Base Frequency Hz:'},'Input Base Data',1,{'100','60'}); 
+%basdat = inputdlg({'Base MVA:','Base Frequency Hz:'},'Input Base Data',1,{'100','60'}); 
+basdat = {'100';'60'};
 sys_freq = str2double(basdat{2});
 basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
 basmva = str2double(basdat{1});
 syn_ref = 0 ;     % synchronous reference frame
 
-disp(' ')
-lfpf = inputdlg('do you wish to perform a post fault load flow?Y/N[N]','s');
-if isempty(lfpf{1}); lfpf{1} = 'N';end
-if lfpf{1} =='y'; lfpf{1} = 'Y'; end
-if lfpf{1} == 'Y'
-   disp('enter the changes to bus and line required to give the post fault condition')
-   disp('when you have finished, type return and press enter')
-   keyboard
-end
+% disp(' ')
+% lfpf = inputdlg('do you wish to perform a post fault load flow?Y/N[N]','s');
+% if isempty(lfpf{1}); lfpf{1} = 'N';end
+% if lfpf{1} =='y'; lfpf{1} = 'Y'; end
+% if lfpf{1} == 'Y'
+%    disp('enter the changes to bus and line required to give the post fault condition')
+%    disp('when you have finished, type return and press enter')
+%    keyboard
+% end
 
 % solve for loadflow - loadflow parameter
-lfs = inputdlg('Do you want to solve loadflow > (y/n)[y] ','s');
+lfs{1} = 'y'; %inputdlg('Do you want to solve loadflow > (y/n)[y] ','s');
 if isempty(lfs{1});lfs{1}='y';end
 if lfs{1}=='Y';lfs{1}='y';end
 if lfs{1} == 'y'
@@ -261,7 +282,7 @@ if ~isempty(tcsc_con)
 else
    n_tcsc = 0;
 end
-if ~isempty(lmod_con)~=0
+if ~isempty(g.lmod.lmod_con)~=0
    lm_indx; % identifies load modulation buses 
             % line flow monitoring buses? (Chow, 02/28/2016)
 else
@@ -592,7 +613,7 @@ smppi(0,1,bus,flag);
 exc_dc12(0,1,bus,flag);
 exc_st3(0,1,bus,flag);
 % turbine governors
-tg(0,1,bus,flag);
+tg(0,1,flag);
 tg_hydro(0,1,bus,flag);
 %initialize tcsc
 if n_tcsc ~=0
@@ -606,9 +627,9 @@ if n_tcsc ~=0
 end
 tcsc(0,1,bus,0);
 
-if ~isempty(lmod_con)
+if ~isempty(g.lmod.lmod_con)
    disp('load modulation')
-   lmod(0,1,bus,flag);
+   lmod(0,1,flag);
 end
 if ~isempty(rlmod_con)
    disp('reactive load modulation')
@@ -763,7 +784,7 @@ b_pm = zeros(NumStates,n_mac-n_ib);b_pm(ang_idx+1,:)=diag(0.5./mac_con(not_ib_id
 % Use generator 1 as reference
 % check for infinite buses
 if isempty(ibus_con)
-   ref_gen = questdlg('Set gen 1 as reference');
+   ref_gen = 'N';%questdlg('Set gen 1 as reference');
    if strcmp(ref_gen,'Yes')
       p_ang = eye(NumStates);
       p_ang(ang_idx,1) = -ones(length(ang_idx),1);

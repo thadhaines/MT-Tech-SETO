@@ -5,8 +5,8 @@ function f = mac_indx
 %          with different generator types
 % f is a dummy variable  
 f=0;
-global mac_pot mac_con mac_int ibus_con n_mac n_em n_tra n_sub n_ib
-global mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+global mac_pot mac_con mac_int ibus_con n_mac n_em n_tra n_sub n_ib n_ivm
+global mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx mac_ivm_idx
 global mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
 global ind_int ind_con n_mot
 global igen_int igen_con n_ig
@@ -58,25 +58,32 @@ if ~isempty(ibus_con)
    n_ib = length(mac_ib_idx);
 end
 %em has no xd or xq
-mac_em_idx = find(mac_con(:,6)==0);
+mac_em_idx = find((mac_con(:,6)==0) & (mac_con(:,16)~=0));
 if ~isempty(mac_em_idx)
    n_em = length(mac_em_idx);
 else
    n_em = 0;
 end
 %tra has no xdpp
-mac_tra_idx = find((mac_con(:,6)~=0)&(mac_con(:,8)==0));
+mac_tra_idx = find((mac_con(:,6)~=0) & (mac_con(:,8)==0) & (mac_con(:,16)~=0));
 if ~isempty(mac_tra_idx)
    n_tra = length(mac_tra_idx);
 else
    n_tra = 0;
 end
 %sub has xdpp
-mac_sub_idx = find(mac_con(:,8)~=0);
+mac_sub_idx = find((mac_con(:,8)~=0) & (mac_con(:,16)~=0));
 if ~isempty(mac_sub_idx)
    n_sub = length(mac_sub_idx);
 else
    n_sub = 0;
+end
+%IVM generators
+mac_ivm_idx = find(mac_con(:,16)==0);
+if ~isempty(mac_ivm_idx)
+   n_ivm = length(mac_ivm_idx);
+else
+   n_ivm = 0;
 end
 if n_ib~=0
    ib_em = find(mac_con(mac_ib_idx,6)==0);
