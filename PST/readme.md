@@ -5,6 +5,8 @@ pstV2P3 = modified PST2 version by MT Tech with additional simplified inverter m
 PSTv3 = 'Newest' PST version 3 meant to act as 'state-of-the-art' benchmark for scheduled improvements.  Included other folders: AGGREG_new, EQUIV, and pdata.  
 pdata contains many d_files of systems and test cases, the other folders have to do with....?  
 
+PSTV3p1 = Version 3 of PST with added pwrmod, ivm generators, and gen tripping.
+
 pstSETO = Place for future developement of PST for SETO project.  
 
 literature = PST user manuals and related handouts   
