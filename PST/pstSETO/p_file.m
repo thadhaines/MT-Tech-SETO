@@ -4,6 +4,7 @@
 % forms state space model of system
 % Author Graham Rogers
 % (c) Copyright Joe Chow/ Cherry Tree Scientific Software  1991-1997
+% Added code for pwrmod, D. Trudnowski, 2015
 % All Rights Reserved
 % step 3a: network solution
 flag = 1;
@@ -76,7 +77,7 @@ smppi(0,2,bus,flag);
 exc_dc12(0,2,bus,flag);
 exc_st3(0,2,bus,flag);
 % turbine/governor
-tg(0,2,bus,flag);
+tg(0,2,flag);
 tg_hydro(0,2,bus,flag);
 % calculate rates of change
 flag = 2;
@@ -91,7 +92,7 @@ smpexc(0,2,bus,flag);
 smppi(0,2,bus,flag);
 exc_dc12(0,2,bus,flag);
 exc_st3(0,2,bus,flag);
-tg(0,2,bus,flag);
+tg(0,2,flag);
 tg_hydro(0,2,bus,flag);
 if n_svc~=0 
    v_svc = abs(v(bus_int(svc_con(:,2)),2));
@@ -105,6 +106,10 @@ if n_lmod~=0
 end
 if n_rlmod~=0 
    rlmod(0,2,bus,flag);
+end
+if n_pwrmod~=0 
+   pwrmod_p(0,2,bus,flag);
+   pwrmod_q(0,2,bus,flag);
 end
 
 if n_conv ~=0
@@ -185,9 +190,15 @@ if n_rlmod ~= 0
    rlmod_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod;
    d_vector(rlmod_start+1:rlmod_start+n_rlmod) = drlmod_st(:,2);
 end
+if n_pwrmod ~= 0
+   pwrmod_p_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod;
+   d_vector(pwrmod_p_start+1:pwrmod_p_start+n_pwrmod) = dpwrmod_p_st(:,2);
+   pwrmod_q_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+n_lmod+n_rlmod+n_pwrmod;
+   d_vector(pwrmod_q_start+1:pwrmod_q_start+n_pwrmod) = dpwrmod_q_st(:,2);
+end
 
 if n_conv~=0
-   dc_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ n_lmod+n_rlmod;
+   dc_start = dpw_state+5*(n_tg+n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ n_lmod+n_rlmod+2*n_pwrmod;
    d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
    d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
    d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
@@ -277,6 +288,12 @@ else
       b_rlmod(:,rlmod_input) = p_mat*d_vector/pert;
       % note: d_lmod is zero because of the time constant
    elseif c_state == 7
+      b_pwrmod_p(:,pwrmod_p_input) = p_mat*d_vector/pert;
+      % note: d_pwrmod is zero because of the time constant
+   elseif c_state == 8
+      b_pwrmod_q(:,pwrmod_q_input) = p_mat*d_vector/pert;
+      % note: d_pwrmod is zero because of the time constant
+   elseif c_state == 9
       b_dcr(:,dcmod_input) = p_mat*d_vector/pert;
       d_pdcr(:,dcmod_input) = (pelect(:,2)-pelect(:,1)).*mac_pot(:,1)/pert;
       d_vdcr(:,dcmod_input) = abs(v(:,2) - v(:,1))/pert;
@@ -307,7 +324,7 @@ else
          d_ilrtdcr(:,dcmod_input) = real(l_it2-l_it1)/pert;
          d_ilitdcr(:,dcmod_input) = imag(l_it2-l_it1)/pert;
       end      
-   elseif c_state == 8
+   elseif c_state == 10
       b_dci(:,dcmod_input) = p_mat*d_vector/pert;
       d_pdci(:,dcmod_input) = (pelect(:,2)-pelect(:,1)).*mac_pot(:,1)/pert;
       d_vdci(:,dcmod_input) = abs(v(:,2) - v(:,1))/pert;
@@ -448,6 +465,14 @@ if n_rlmod ~=0
    rlmod_st(:,2) = rlmod_st(:,1);
    drlmod_st(:,2) = drlmod_st(:,1);
    rlmod_sig(:,2) = rlmod_sig(:,1);
+end
+if n_pwrmod ~=0
+   pwrmod_p_st(:,2) = pwrmod_p_st(:,1);
+   dpwrmod_p_st(:,2) = dpwrmod_p_st(:,1);
+   pwrmod_p_sig(:,2) = pwrmod_p_sig(:,1);
+   pwrmod_q_st(:,2) = pwrmod_q_st(:,1);
+   dpwrmod_q_st(:,2) = dpwrmod_q_st(:,1);
+   pwrmod_q_sig(:,2) = pwrmod_q_sig(:,1);
 end
 
 if n_conv~=0

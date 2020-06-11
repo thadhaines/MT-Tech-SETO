@@ -40,6 +40,11 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 
 % History (in reverse chronological order)
 %
+% Version:      2.3   
+% Date:         Feb 2015  
+% Author:       D. Trudnowski  
+% Purpose:      Add power modulation 
+%  
 % Version:      2.2
 % Date:         August 1997
 % Author:       Graham Rogers
@@ -71,13 +76,17 @@ global svc_con svc_idx n_svc svc_pot B_cv
 global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
 % load modulation variables
 %global  lmod_con n_lmod lmod_idx lmod_st 
+global lmod_pot lmod_st 
 global g % added g - thad
 % reactive load modulation variables
 global  rlmod_con n_rlmod rlmod_idx rlmod_pot rlmod_st 
+% power modulation variables
+global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st
 
 if ~isempty(load_con)
    jay = sqrt(-1);
    if flag == 0; % initialization
+       
       %nload = size(load_con,1);
       %  set up constant power and current load components in 
       %    load_pot
@@ -130,13 +139,29 @@ if ~isempty(load_con)
          Y22(j,j) = Y22(j,j) + jay*diag(rlmod_st(:,k));
       end
       
+      %pwrmod % added 06/11/20
+      load_pot_mod = load_pot;
+      if n_pwrmod~=0
+          for index=1:n_pwrmod
+            if (load_con(pwrmod_idx(index),2)==1 && load_con(pwrmod_idx(index),3)==1)
+                load_pot_mod(pwrmod_idx(index),1) = - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k)); %power modulation
+%                 load_pot_mod(pwrmod_idx(index),3) = ...
+%                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/(V_nc(index)*conj(V_nc(index))); %power modulation with v<0.5 - maybe disable?
+            elseif (load_con(pwrmod_idx(index),4)==1 && load_con(pwrmod_idx(index),5)==1); 
+                load_pot_mod(pwrmod_idx(index),2) = - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k)); %current modulation
+%                 load_pot_mod(pwrmod_idx(index),4) = ...
+%                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/abs(V_nc(index)); %current modulation with v<.5 - maybe disable?
+            end
+          end
+      end
+      
       lv_idx = find(abs(V_nc)<=0.5);
       
       hv_idx = find(abs(V_nc) > 0.5);
       curr_mis = zeros(nload,1);
       curr_load = Y21*psi + Y22*V_nc;
       if ~isempty(hv_idx)
-         curr_nc = -conj((load_pot(hv_idx,1)+load_pot(hv_idx,2)...
+         curr_nc = -conj((load_pot_mod(hv_idx,1)+load_pot_mod(hv_idx,2)...
             .*abs(V_nc(hv_idx)))./V_nc(hv_idx));
       end     
       
@@ -151,7 +176,7 @@ if ~isempty(load_con)
       % converts to constant impedance abs(V_nc)<=0.5
       if ~isempty(lv_idx)
          %l_vl = length(lv_idx);
-         curr_mis(lv_idx) = -conj(diag(load_pot(lv_idx,3)+load_pot(lv_idx,4)))*V_nc(lv_idx)...
+         curr_mis(lv_idx) = -conj(diag(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4)))*V_nc(lv_idx)...
             - curr_load(lv_idx);
       end
       count = 0;
@@ -166,12 +191,12 @@ if ~isempty(load_con)
             v_mag2 = v_mag.*v_mag;
             v1 = (v_re.*v_re - v_im.*v_im);
             v2 = v_re.*v_im;
-            vp11 = -v1.*real(load_pot(hv_idx,1))-2*v2.*imag(load_pot(hv_idx,1));
-            vp12 = v1.*imag(load_pot(hv_idx,1))-2*v2.*real(load_pot(hv_idx,1));
-            vi11 = v_im.*v_im.*real(load_pot(hv_idx,2)) - v2.*imag(load_pot(hv_idx,2));
-            vi12 = v_re.*v_re.*imag(load_pot(hv_idx,2)) - v2.*real(load_pot(hv_idx,2));
-            vi21 = -v_im.*v_im.*imag(load_pot(hv_idx,2)) -v2.*real(load_pot(hv_idx,2));
-            vi22 = v_re.*v_re.*real(load_pot(hv_idx,2)) + v2.*imag(load_pot(hv_idx,2));
+            vp11 = -v1.*real(load_pot_mod(hv_idx,1))-2*v2.*imag(load_pot_mod(hv_idx,1));
+            vp12 = v1.*imag(load_pot_mod(hv_idx,1))-2*v2.*real(load_pot_mod(hv_idx,1));
+            vi11 = v_im.*v_im.*real(load_pot_mod(hv_idx,2)) - v2.*imag(load_pot_mod(hv_idx,2));
+            vi12 = v_re.*v_re.*imag(load_pot_mod(hv_idx,2)) - v2.*real(load_pot_mod(hv_idx,2));
+            vi21 = -v_im.*v_im.*imag(load_pot_mod(hv_idx,2)) -v2.*real(load_pot_mod(hv_idx,2));
+            vi22 = v_re.*v_re.*real(load_pot_mod(hv_idx,2)) + v2.*imag(load_pot_mod(hv_idx,2));
             vp11 = vp11./v_mag2./v_mag2;
             vp12 = vp12./v_mag2./v_mag2;
             vi11 = vi11./v_mag./v_mag2;
@@ -184,8 +209,8 @@ if ~isempty(load_con)
             v_s22(hv_idx) = -vp11 +vi22;
          end;
          if ~isempty(lv_idx)
-            v_s11(lv_idx) = -real(load_pot(lv_idx,3)+load_pot(lv_idx,4));
-            v_s12(lv_idx) = imag(load_pot(lv_idx,3)+load_pot(lv_idx,4));
+            v_s11(lv_idx) = -real(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4));
+            v_s12(lv_idx) = imag(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4));
             v_s22(lv_idx) = v_s11(lv_idx);
             v_s21(lv_idx) = -v_s12(lv_idx);
          end
@@ -209,13 +234,13 @@ if ~isempty(load_con)
          hv_idx = find(abs(V_nc) > 0.5);
          curr_load = Y21*psi + Y22*V_nc;
          if ~isempty(hv_idx)
-            curr_mis(hv_idx)=-conj((load_pot(hv_idx,1)+load_pot(hv_idx,2)...
+            curr_mis(hv_idx)=-conj((load_pot_mod(hv_idx,1)+load_pot_mod(hv_idx,2)...
                .*abs(V_nc(hv_idx)))./V_nc(hv_idx))...
                -curr_load(hv_idx); % current mismatch
          end
          if ~isempty(lv_idx)
             l_vl = length(lv_idx);
-            curr_mis(lv_idx) = -conj(diag(load_pot(lv_idx,3)+load_pot(lv_idx,4)))*V_nc(lv_idx)...
+            curr_mis(lv_idx) = -conj(diag(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4)))*V_nc(lv_idx)...
                - curr_load(lv_idx);
          end
          if n_conv~=0

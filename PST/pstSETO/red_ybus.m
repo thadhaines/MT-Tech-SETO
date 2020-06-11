@@ -25,6 +25,12 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] =...
 % (c) Copyright 1991-1996 Joe H. Chow - All Rights Reserved
 %
 % History (in reverse chronological order)
+%
+% Version:      2.34
+% Date:         Feb 2015
+% Author:       D. Trudnowski
+% Purpose:      Add power modulation
+%
 % correction to dc
 % Version:      2.3
 % Modification: Add induction generators
@@ -59,6 +65,8 @@ global basmva bus_int mac_int ind_int igen_int
 global mac_con ind_con ind_pot load_con igen_con igen_pot 
 
 global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
+% power modulation variables
+global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st pwrmod_con
 
 
 jay = sqrt(-1);
@@ -79,6 +87,7 @@ Y_d = y_sparse(bus_sol,line); % bus admittance matrix construction
 V = bus_sol(:,2);      % magnitude of terminal voltage
 % Compute constant impedance component of non-conforming loads
 if nargout > 2 %checking number of output arguments
+    
 % non-conforming load ajustments
 % subtract non-conforming loads from bus P and Q loads
   [nload dum] = size(load_con);
@@ -95,6 +104,20 @@ if nargout > 2 %checking number of output arguments
     end
   end
 end
+
+%Adjust load for pwrmod buses as these are PV buses.
+if n_pwrmod~=0
+    j = bus_int(pwrmod_con(:,1));
+    bus_sol(j,6) = bus_sol(j,4);
+    bus_sol(j,7) = bus_sol(j,5);
+    clear j
+end
+% if n_pwrmod~=0
+%     j = bus_int(pwrmod_con(:,1));
+%     bus_sol(j,4) = 0;
+%     bus_sol(j,5) = 0;
+%     clear j
+% end
 
 %  Add load components to Y matrix
 Pl = bus_sol(:,6);     % real power of loads

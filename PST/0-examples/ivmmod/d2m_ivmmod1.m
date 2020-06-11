@@ -1,14 +1,14 @@
-% 2-machine PST simulation with pwrmod control on buses 2 and 3. 
-% D. Trudnowski, Sp. 2015
+% 2-machine PST simulation with IVM generator at bus 2. 
+% D. Trudnowski, 2020
 
 bus = [ ...
 % num volt  angle p_gen q_gen p_load q_load G_shunt B_shunt type q_max q_min v_rated v_max v_min
-  1   1.0   0.0   0.12  0     0      0      0       0       1    100   -100  20      1.5   0.5;
-  2   0.98  0.0   0.005 0.001 0      0      0       0       2    1     -1    20      1.5   0.5; %Solar gen
-  3   0.97  0.0   0.05  0.01  0      0       0      0       2    1     -1    20      1.5   0.5; %Solar gen
-  4   1.0   0.0   0.15  0     0      0      0       0       2    100   -100  20      1.5   0.5
-  5   1.0   0.0   0     0     0.275  0.2    0       0       3    0     0     20      1.5   0.5;
-  6   1.0   0.0   0     0     0      0      0       0       3    0     0     20      1.5   0.5];
+  1   1.1   0.0   0.1   0     0      0      0       0       1    100   -100  20      1.5   0.5;
+  2   1.1   0.0   0.05  0.01  0      0      0       0       2    100   -100  20      1.5   0.5; %ivm gen
+  3   0.97  0.0   0     0     0      0      0       0       3    0     0     20      1.5   0.5;
+  4   1.1   0.0   0.15  0     0      0      0       0       2    100   -100  20      1.5   0.5
+  5   1.0   0.0   0     0     0.250  0.15   0       0.1     3    0     0     20      1.5   0.5;
+  6   1.0   0.0   0     0     0.05   0.05   0       0       3    0     0     20      1.5   0.5];
 
 line = [ ...
 % bus bus r    x    y    tapratio tapphase tapmax tapmin tapsize
@@ -19,14 +19,17 @@ line = [ ...
   2   3   0.0  1.0  0.0  1.0      0        0      0      0; %line
   1   2   0.0  5.0  0.0  1.0      0        0      0      0]; %line
 
-%Both generator parameters are from the example machine in chap 4 of
+%Generators 1 and 2 parameters are from the example machine in chap 4 of
 %Anderson and Fouad with a salient pole assumption.
 %This model is a sub-transient model.
 %From eqn (4.289), T"_qo=T'_qo if it is a 2-axis transient model.
 mac_con = [ ...
 % num bus base  x_l  r_a    x_d x'_d   x"_d  T'_do T"_do x_q   x'_q  x"_q  T'_qo T"_qo H      d_0  
    1   1  100   0.15 0.0011 1.7 0.245  0.185 5.9   0.03  1.64  1.64  0.185 0.082 0.082 2.37   0   0   1;
-   2   4  100   0.15 0.0011 1.7 0.245  0.185 5.9   0.03  1.64  1.64  0.185 0.082 0.082 2.37   0   0   4];
+   2   4  100   0.15 0.0011 1.7 0.245  0.185 5.9   0.03  1.64  1.64  0.185 0.082 0.082 2.37   0   0   4;
+% 1   2   3     4   5       6  7       8     9     10    11    12    13   14     15   16      17
+% num bus base  NA  r_a    NA  x'_d  NA      Td    Tv    NA    NA    NA    NA    NA    0      NA  
+   3   2  100   0    0     0   0.1   0       0.05  0.05  0     0     0     0     0     0      0   0   2]; %ivm gen
   
 %Exciter
 %From p. 1137 of Kundur
@@ -54,25 +57,9 @@ tg_con = [...
 % col 4       fraction const active current load
 % col 5       fraction const reactive current load
 load_con = [...
-%bus Pcont Qconst P_Icont Q_Iconst
-  2   1     1     0       0;  %Modulation bus
-  3   1     1     0       0;  %Modulation bus
-  5   0     0     0.1     0]; %Load bus
-
-% Power modulation data (sets up modulation of real and reac power injection)
-% col 1       bus number
-% col 2       real-power time constant (Tp)
-% col 3       max real-power modulation (pu on system base)
-% col 4       min real-power modulation (pu on system base)
-% col 5       reac-power time constant (Tq)
-% col 6       max reac-power modulation (pu on system base)
-% col 7       min reac-power modulation (pu on system base)
-% NOTE: This creates b_pwrmod_p and b_pwrmod_q for the linear analysis.
-%       b_pwrmod_*(:,j) corresponds to row j of pwrmod_con.
-pwrmod_con=[...
-%bus  T    Pmax Pmin  Tq   Qmax  Qmin
-  2   0.05 1    -1    0.05  1     -1; 
-  3   0.05 1    -1    0.05  1     -1];
+%bus Pconst Qconst P_Iconst Q_Iconst
+  5   1     0      0        1;  %Load bus
+  6   1     0      0        0]; %Load bus
 
 % Switching
 %Switching file defines the simulation control
@@ -98,8 +85,8 @@ pwrmod_con=[...
 %     col7  time step (s)
 sw_con = [...
 0        0    0    0    0    0    1/120;%sets intitial time step
-5.0      6    1    0    0    5    1/120; %no fault
-5+1/60   0    0    0    0    0    1/120; %clear near end of fault
-5+2/60   0    0    0    0    0    1/120; %clear far end of fault
-5.1      0    0    0    0    0    1/120; % increase time step
+9.0      3    2    0    0    5    1/120; %no fault, trip load at bus 3
+9+1/60   0    0    0    0    0    1/120; %clear near end of fault
+9+2/60   0    0    0    0    0    1/120; %clear far end of fault
+9.1      0    0    0    0    0    1/120; % increase time step
 10       0    0    0    0    0    1/120]; % end simulation
