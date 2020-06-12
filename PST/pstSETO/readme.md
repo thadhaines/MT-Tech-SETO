@@ -1,10 +1,10 @@
 pstSETO version
 
 TODO:  
-- Add base pst version
-- Add MT Tech 'batch' style capabilities
-- Add baseline examples
-- Add modified models and behavior from v2p3
-- Do new work on code structure, integration, and variable time stepping.
-- Add simple checks for 'old' to new system creation/initialization for new global variable scheme...
-- ensure timing capabilities for speed up comparisons  
+- Add baseline examples with both linear and non-linear simulations.
+- Convert ALL globals to new strucutured global array
+- Do work on code structure to allow for new integration methods, multi-rate possibiliites, and variable time stepping algorithms.
+- Add checks for 'old' to new system creation/initialization due to new global variable scheme.
+- Eensure timing capabilities for speed up comparisons.  
+- Add AGC model and area definitions to buses.
+- Investigate line current monitoring.
