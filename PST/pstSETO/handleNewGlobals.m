@@ -24,3 +24,12 @@ if exist('tg_con','var')
 else
     g.tg.tg_con = [];
 end
+
+% Global for plot flag
+if exist('livePlotFlag','var')
+    g.sys.livePlotFlag = livePlotFlag;
+    clear livePlotFlag
+else
+    % default behavior
+    g.sys.livePlotFlag = 1;
+end

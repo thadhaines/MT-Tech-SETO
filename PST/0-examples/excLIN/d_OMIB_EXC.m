@@ -13,7 +13,7 @@
 %% Optional System data, else assumed 60 Hz, 100 MVA
 %Fbase = 50; % Hz
 %Sbase = 50; % MW
-
+livePlotFlag = 0;
 %% bus data 
 % bus array format:
 % col1 number

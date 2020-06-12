@@ -1052,10 +1052,6 @@ if ~isempty(dcsp_con)
     Vr2 = V_rncprf;
     bo = boprf;
     
-    if k == 50 % DEBUG - showing of network solution call
-        warning('*** Performing network solution via i_simu')
-    end
-    
     h_sol = i_simu(1,1,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     % reinitialize dc controls
     mdc_sig(0,1);
@@ -1142,9 +1138,6 @@ while (kt<=ktmax)
             Vr2 = V_rncpf2;
             bo = bopf2;
             % i_simu forms the network interface variables
-            if k == 50 % DEBUG - showing of networ solution call
-                warning('*** Performing network solution via i_simu')
-            end
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             % duplicate call?
             % h_sol calculated after this 'if' block...
@@ -1208,9 +1201,6 @@ while (kt<=ktmax)
         end
         
         %% solve
-        if k == 50 % DEBUG - showing of network solution call
-            warning('*** k == 50; Performing network solution via i_simu')
-        end
         h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         %% HVDC
@@ -1611,9 +1601,6 @@ while (kt<=ktmax)
         end
         
         %% solve
-        if k == 50 % DEBUG - showing of network solution call
-            warning('*** k == 50; Performing network solution via i_simu')
-        end
         h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         vex(:,j)=vex(:,k);
@@ -1916,8 +1903,7 @@ while (kt<=ktmax)
         end
         
         %% Live plot call
-        livePlotFlag = 1; % for possible fugure sim flags
-        if livePlotFlag
+        if g.sys.livePlotFlag
            livePlot
         end
         

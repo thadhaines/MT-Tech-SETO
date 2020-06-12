@@ -4,6 +4,8 @@
 % only 1 exciter
 % Hydro gov twice size as Steam.
 
+% NOTE: live plotting disabled in d_ file to test speed up and better compare MATLAB to Octave performance
+% (Octave seems a bit faster when plotting is removed from simulation run)
 clear all; close all; clc
 
 %% Add pst path to MATLAB
