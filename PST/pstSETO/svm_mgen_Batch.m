@@ -196,7 +196,7 @@ global ibus_con  netg_con  stab_con
 % additional globals for pwrmod, ivmmod
 global load_con bus_int
 
-global  lmod_sig lmod_data 
+%global  lmod_sig lmod_data 
 % ivmmod
 global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig  
 
@@ -556,7 +556,7 @@ else
    tcsc_sig = zeros(1,2);
 end
 if g.lmod.n_lmod ~= 0
-   g.lmod.lmod_sig = zeros(n_lmod,2);
+   g.lmod.lmod_sig = zeros(g.lmod.n_lmod,2);
 else
    g.lmod.lmod_sig = zeros(1,2);
 end
@@ -956,7 +956,9 @@ if isempty(ibus_con)
       if n_exc~=0;b_vr = p_ang*b_vr;end
       if n_svc~=0;b_svc = p_ang*b_svc;end
       if n_tcsc~=0;b_tcsc = p_ang*b_tcsc;end
-      if g.lmod.n_lmod~=0;b_lmod = p_ang*b_lmod;end
+      if g.lmod.n_lmod~=0
+          b_lmod = p_ang*b_lmod;
+      end
       if n_rlmod~=0;b_rlmod = p_ang*b_rlmod;end
       if n_pwrmod~=0;b_pwrmod_p = p_ang*b_pwrmod_p; end
       if n_pwrmod~=0;b_pwrmod_q = p_ang*b_pwrmod_q; end

@@ -53,7 +53,7 @@ subplot(313)
 plot(t,pelect(ng,:),'k','LineWidth',2)
 ylabel('IVM real-power (pu)')
 
-set(gcf,'Position',[520   0.5*378   560   1.5*420])
+%set(gcf,'Position',[520   0.5*378   560   1.5*420])
 
 %% clean up file manipulations
 load PSTpath.mat

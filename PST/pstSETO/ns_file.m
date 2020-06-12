@@ -179,10 +179,10 @@ end;
 % lmod
 n_lmod_states = 0;
 if g.lmod.n_lmod~=0
-   state_lmod(1:n_lmod) = ones(g.lmod.n_lmod,1);
+   state_lmod(1:g.lmod.n_lmod) = ones(g.lmod.n_lmod,1);
    n_lmod_states = sum(state_lmod);
    n_lmod1 = ntot+ n_svc + n_tcsc;
-   state(n_lmod1+1:n_lmod1+n_lmod) = ones(g.lmod.n_lmod,1);
+   state(n_lmod1+1 : n_lmod1+g.lmod.n_lmod ) = ones(g.lmod.n_lmod,1);
 end;
 % rlmod
 n_rlmod_states = 0;

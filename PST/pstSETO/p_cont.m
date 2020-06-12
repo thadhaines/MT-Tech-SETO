@@ -267,7 +267,7 @@ if g.lmod.n_lmod~=0
       lmod_input = k_lmod;
       pert = p_ratio;
       nominal = 0.0;
-      lmod_sig(k_lmod,2) = g.lmod.lmod_sig(k_lmod,2) + pert;
+      g.lmod.lmod_sig(k_lmod,2) = g.lmod.lmod_sig(k_lmod,2) + pert;
       p_file
       g.lmod.lmod_sig(k_lmod,2) = nominal;  
       c_state = 0;
