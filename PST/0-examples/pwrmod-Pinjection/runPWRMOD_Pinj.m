@@ -59,7 +59,7 @@ subplot(414)
 plot(t,pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 Q (pu)')
 xlabel('Time (sec.)')
-set(gcf,'Position',[360 202 560 720]);
+%set(gcf,'Position',[360 202 560 720]);
 
 %% Simulate linear model
 Gv = ss(a_mat,b_pwrmod_p,c_v,zeros(6,2));
@@ -110,7 +110,7 @@ plot(t,f,'k',tL,fL,'r')
 legend('non-linear','linear','location','best')
 ylabel(['bus ' num2str(nb) ' (mHz)'])
 
-set(gcf,'Position',[360 102 560 720]);
+%set(gcf,'Position',[360 102 560 720]);
 
 %% clean up file manipulations
 load PSTpath.mat

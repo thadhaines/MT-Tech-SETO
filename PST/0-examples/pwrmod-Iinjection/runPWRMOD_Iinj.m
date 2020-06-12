@@ -106,7 +106,7 @@ fL = [fL fL(end)];
 plot(t,f,'k',tL,fL,'r')
 ylabel(['bus ' num2str(nb) ' (mHz)'])
 legend('non-linear','linear','location','best')
-set(gcf,'Position',[360 202 560 720])
+%set(gcf,'Position',[360 202 560 720])
 
 %% Plot nonlinear P and Q injected power
 figure
@@ -123,7 +123,7 @@ subplot(414)
 plot(t,pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 I_Q (pu)')
 xlabel('Time (sec.)')
-set(gcf,'Position',[360 202 560 720]);
+%set(gcf,'Position',[360 202 560 720]);
 
 %% clean up file manipulations
 load PSTpath.mat

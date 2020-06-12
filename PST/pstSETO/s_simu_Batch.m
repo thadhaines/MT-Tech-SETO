@@ -1301,12 +1301,6 @@ while (kt<=ktmax)
             end
         end
         
-        %% Live plot call
-        livePlotFlag = 1; % for possible fugure sim flags
-        if livePlotFlag
-           livePlot
-        end
-        
         %% step 3b: compute dynamics and integrate
         flag = 2;
         sys_freq(k) = 1.0; % why?... 5/21/20
@@ -1919,6 +1913,12 @@ while (kt<=ktmax)
                 ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
                 ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
             end
+        end
+        
+        %% Live plot call
+        livePlotFlag = 1; % for possible fugure sim flags
+        if livePlotFlag
+           livePlot
         end
         
     end

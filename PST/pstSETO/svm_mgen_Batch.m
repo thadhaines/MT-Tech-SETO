@@ -68,6 +68,7 @@
 
 clear 
 clear global
+tic % start timer
 %close %graphics windows
 % set up global variables
 
@@ -140,10 +141,11 @@ global  B_tcsc dB_tcsc
 global  tcsc_sig tcsc_dsig
 global  n_tcscud dtcscud_idx  %user defined damping controls
 
-% load modulation variables
+% load modulation variables % converted to g 06/12/20 - thad
 %global  lmod_con n_lmod lmod_idx
 %global  lmod_pot lmod_st dlmod_st
 %global  lmod_sig
+
 % reactive load modulation variables
 global  rlmod_con n_rlmod rlmod_idx
 global  rlmod_pot rlmod_st drlmod_st
@@ -160,7 +162,7 @@ global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx 
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
 
-% turbine-governor variables
+% turbine-governor variables % converted to g 06/12/20 - thad
 %global  tg_con tg_pot 
 %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
 %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
@@ -174,7 +176,6 @@ global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig d
 global  ric_idx  rpc_idx Vdc_ref dcc_pot 
 global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
 global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-
 
 % States
 %line
@@ -209,7 +210,6 @@ global  pwrmod_data
 
 % begning of global strucutred g
 global g
-
 
 
 jay = sqrt(-1);
@@ -312,10 +312,12 @@ if n_ib~=0
       n_exc = length(exc_con(:,1));
       net_idx = zeros(n_exc,1);
       for j = 1:n_ib
-         net_idx = net_idx|exc_con(:,2)==mac_con(mac_ib_idx(j),1);
+         net_idx = net_idx | exc_con(:,2) == mac_con(mac_ib_idx(j),1);
       end
       if length(net_idx)==1;
-         if net_idx ==1;exc_con=[];end
+         if net_idx ==1
+             exc_con=[];
+         end
       else
          perm = diag(~net_idx);
          perm = perm(~net_idx,:);
@@ -327,7 +329,7 @@ if n_ib~=0
       n_pss = length(pss_con(:,1));
       net_idx = zeros(n_pss,1);
       for j = 1:n_ib
-         net_idx = net_idx|pss_con(:,2) == mac_con(mac_ib_idx(j),1);
+         net_idx = net_idx | pss_con(:,2) == mac_con(mac_ib_idx(j),1);
       end
       if length(net_idx)==1
          if net_idx == 1;pss_con = [];end
@@ -1006,19 +1008,29 @@ end
 nz_eig = find(abs(l)>1e-4);
 damp(nz_eig,1) = -real(l(nz_eig))./abs(l(nz_eig));
 
-figure;hold;box on;
-stab_idx =find(damp>=0.05);
-plot(damp(stab_idx),freq(stab_idx),'k+')
-fmax = ceil(max(freq));
-plot([0.05 0.05],[0 fmax],'r')
-title(['Calculated Modes ' dfile])
-xlabel('damping ratio')
-ylabel('frequency Hz')
-us_idx = find(damp<0);
-plot(damp(us_idx),freq(us_idx),'r+')
-ud_idx = find(damp>0&damp<0.05);
-plot(damp(ud_idx),freq(ud_idx),'g+')
-% tidy work space
+% figure
+% hold on
+% box on
+% stab_idx =find(damp>=0.05);
+% plot(damp(stab_idx),freq(stab_idx),'k+')
+% fmax = ceil(max(freq));
+% plot([0.05 0.05],[0 fmax],'r')
+% title(['Calculated Modes ' dfile])
+% xlabel('damping ratio')
+% ylabel('frequency Hz')
+% us_idx = find(damp<0);
+% plot(damp(us_idx),freq(us_idx),'r+')
+% ud_idx = find(damp>0&damp<0.05);
+% plot(damp(ud_idx),freq(ud_idx),'g+')
+
+% full sim timing
+et = toc;
+ets = num2str(et);
+disp(['elapsed time = ' ets 's'])
+disp('*** End simulation.')
+disp(' ')
+
+%% tidy work space
 % clear global
   clear B Efd_state Pi Pr Qi Qr R R_f_state           
   clear TA_state TB_state TR_state V0 V1 V2 VLT V_rgprf V_rncprf            

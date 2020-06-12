@@ -1,6 +1,6 @@
 %% Script to detect 'legacy' data input and adjust to new global g approach
 % Usage of script to more easily detect legacy global definitons
-% global g is already defined
+% global g is already defined. Assumes data file strucutre does not change.
 %
 %   History:
 %   Date        Time    Engineer        Description
@@ -12,28 +12,15 @@ global g
 if exist('lmod_con','var')
     g.lmod.lmod_con = lmod_con;
     clear lmod_con 
-end
-if isfield(g,'lmod')
-    if ~isfield(g.lmod,'lmod_con')
+else
     g.lmod.lmod_con = [];
     g.lmod.n_lmod = 0;
-    end
-else %seems like there should be a better solution...
-     g.lmod.lmod_con = [];
-    g.lmod.n_lmod = 0;   
 end
 
 % tg
 if exist('tg_con','var')
-    % legacy defined
     g.tg.tg_con = tg_con;
     clear tg_con
-end
-if isfield(g, 'tg') % check for tg field
-    if ~isfield(g.tg, 'tg_con') % check for tg.tg_con field
-    % create empty tg_con if not defined
-    g.tg.tg_con = [];
-    end
 else
     g.tg.tg_con = [];
 end
