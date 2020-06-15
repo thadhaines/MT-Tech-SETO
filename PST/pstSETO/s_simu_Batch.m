@@ -155,9 +155,9 @@ warning('*** Declare Global Variables')
     %global lmod_data % added by Trudnowski - doesn't appear to be used? maybe in new models?
 
     % reactive load modulation variables - 7
-    global  rlmod_con n_rlmod rlmod_idx
-    global  rlmod_pot rlmod_st drlmod_st
-    global  rlmod_sig
+    %global  rlmod_con n_rlmod rlmod_idx
+    %global  rlmod_pot rlmod_st drlmod_st
+    %global  rlmod_sig
     
     %% power injection variables - 10
     global  pwrmod_con n_pwrmod pwrmod_idx
@@ -317,7 +317,7 @@ pss_indx;
 svc_indx(svc_dc);
 tcsc_indx(tcsc_dc);
 lm_indx;
-rlm_indx;
+rlm_indx();
 pwrmod_indx(bus); 
 
 n_mot = size(ind_con,1);
@@ -719,14 +719,14 @@ else
     g.lmod.lmod_sig = g.lmod.lmod_st;
 end
 
-if n_rlmod ~= 0
-    rlmod_st = zeros(n_rlmod,k); 
-    drlmod_st = rlmod_st; 
-    rlmod_sig = rlmod_st;
+if g.rlmod.n_rlmod ~= 0
+    g.rlmod.rlmod_st = zeros(g.rlmod.n_rlmod,k); 
+    g.rlmod.drlmod_st = g.rlmod.rlmod_st; 
+    g.rlmod.rlmod_sig = g.rlmod.rlmod_st;
 else
-    rlmod_st = zeros(1,k); 
-    drlmod_st = rlmod_st; 
-    rlmod_sig = rlmod_st;
+    g.rlmod.rlmod_st = zeros(1,k); 
+    g.rlmod.drlmod_st = g.rlmod.rlmod_st; 
+    g.rlmod.rlmod_sig = g.rlmod.rlmod_st;
 end
 
 %% Initialize pwrmod
@@ -990,9 +990,9 @@ if ~isempty(g.lmod.lmod_con)
     disp('load modulation')
     lmod(0,1,flag); % removed bus - thad
 end
-if ~isempty(rlmod_con)
+if ~isempty(g.rlmod.rlmod_con)
     disp('reactive load modulation')
-    rlmod(0,1,bus,flag);
+    rlmod(0,1,flag); % removed bus - thad
 end
 
 %% initialize power modulation control - copied from v2.3 06/01/20 -thad
@@ -1350,9 +1350,9 @@ while (kt<=ktmax)
             lmod(0,k,flag); % removed bus input - thad
         end
         
-        if n_rlmod~=0
-            rml_sig(t(k),k);
-            rlmod(0,k,bus_sim,flag);
+        if g.rlmod.n_rlmod~=0
+            rml_sig(k);
+            rlmod(0,k,flag);
         end
         
         %% pwrmod - copied from v2.3 - 06/01/20 -thad
@@ -1492,7 +1492,7 @@ while (kt<=ktmax)
         %lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k); % original line - thad
         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
         
-        rlmod_st(:,j) = rlmod_st(:,k)+h_sol*drlmod_st(:,k);
+        g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+h_sol*g.rlmod.drlmod_st(:,k);
         
         %% Copied from v2.3 - 06/01/20 - thad
         pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*dpwrmod_p_st(:,k);
@@ -1740,9 +1740,9 @@ while (kt<=ktmax)
             ml_sig(j); % removed t - thad
             lmod(0,j,flag); % removed bus - thad
         end
-        if n_rlmod~=0
-            rml_sig(t(j),j);
-            rlmod(0,j,bus_sim,flag);
+        if g.rlmod.n_rlmod~=0
+            rml_sig(j);
+            rlmod(0,j,flag);
         end
         
         % copied from v2.3 - thad - 06/01/20
@@ -1880,7 +1880,7 @@ while (kt<=ktmax)
         % modified to g
         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
         
-        rlmod_st(:,j) = rlmod_st(:,k) + h_sol*(drlmod_st(:,j) + drlmod_st(:,k))/2.;
+        g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
         
         % Copied from v2.3 - 06/01/20 - thad
         pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*(dpwrmod_p_st(:,j) + dpwrmod_p_st(:,k))/2;

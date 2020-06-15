@@ -1,0 +1,114 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of rlmod using global g\\ }
+\lhead{Research \\ 6/15/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable the \verb|rlmod| PST model(s) to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+global  rlmod_con n_rlmod rlmod_idx
+global  rlmod_pot rlmod_st drlmod_st
+global  rlmod_sig
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+
+%===============================================================================
+\paragraph{rlm\_indx}
+	\begin{itemize}
+		\item Functionalized
+		\item  Removed old globals, inserted g
+		\item Prepened all relevant variables with g.rlmod.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{handleNewGlobals.m}
+	\begin{itemize}
+		\item Addition of if statement to properly handle legacy data inputs
+	\end{itemize}
+
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+	\begin{itemize}
+		\item accomodation for rlm\_indx functionalization
+		\item prepended g.rlmod. to appropriate globals, logic checks, and state integrations.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{svm\_mgen\_Batch}
+	\begin{itemize}
+		\item added g.rlmod. to required globals, logic checks, state counters, and state populators.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{nc\_load}
+	\begin{itemize}
+		\item removal of old globals
+		\item addition of g.rlmod. to Y matrix addtion
+	\end{itemize}
+
+%===============================================================================
+\paragraph{ns\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item addition of g.rlmod. to globals for state alteration and state counters.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_cont}
+Should be functionalized...
+	\begin{itemize}
+		\item addition of g.rlmod. to globals for state distrubances and input signal logging.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item cleanup to rlmod call (removal of bus)
+		\item addition of g.rlmod. to variables for state counting, d\_vector creation, derivative logging, and signal tracking.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_m\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item Addition of g.rlmod to related variables for k\_col counting
+	\end{itemize}
+
+%===============================================================================
+\paragraph{rlmod}
+
+	\begin{itemize}
+		\item updated internal function documentation
+		\item appened g.rlmod. to appropriate variables
+		\item removed unused globals
+		\item Fixed incorrect call to non-existant variable (rl\_mod\_st)
+	\end{itemize}
+
+%===============================================================================
+\paragraph{rlm\_indx}
+
+	\begin{itemize}
+		\item updated internal function documentation
+		\item appened g.rlmod. to appropriate variables
+		\item removed unused globals
+
+	\end{itemize}
+
+\end{document}

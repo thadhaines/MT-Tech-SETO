@@ -1,28 +1,16 @@
 function lm_indx()
-% syntax: f = lm_indx
-% 5:02 PM 15/08/97
-% determines the relationship between lmod and nc loads
-% checks for lmod
-% determines number of modulated loads
-
-% original PST code
-% f is a dummy variable
-% f = 0;
-% global lmod_con load_con  n_lmod  lmod_idx
-% n_lmod = 0;
-% lmod_idx = [];
-% if ~isempty(lmod_con)
-%     n_lmod = length(lmod_con(:,1));
-%     lmod_idx = zeros(n_lmod,1);
-%     for j = 1:n_lmod
-%        index = find(lmod_con(j,2)==load_con(:,1));
-%        if ~isempty(index)
-%           lmod_idx(j) = index;
-%        else
-%           error('you must have the load modulation bus declared as a non-conforming load')
-%        end
-%     end
-% end
+% LM_INDX determines the relationship betweel lmod and nc loads.
+% LM_INDX determines the relationship between lmod and nc loads by 
+% checking for lmod_con and then determining the number of modulated loads
+%
+%   Syntax:
+%   lm_indx()
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   08/15/97    17:02   Graham Rogers   Version 1
+%   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
+%   06/15/20    15:58   Thad Haines     Revised format of globals and internal function documentation
 
 global g % thad
 global load_con % required as there is a check for non-conforming loads

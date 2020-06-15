@@ -12,6 +12,7 @@
 % Load modulation added
 % Date: September 1996
 % Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997
+global g
 
 for k = 1:n_mac
    % generators
@@ -186,22 +187,22 @@ if g.lmod.n_lmod~=0
 end;
 % rlmod
 n_rlmod_states = 0;
-if n_rlmod~=0
-   state_rlmod(1:n_rlmod) = ones(n_rlmod,1);
+if g.rlmod.n_rlmod~=0
+   state_rlmod(1:g.rlmod.n_rlmod) = ones(g.rlmod.n_rlmod,1);
    n_rlmod_states = sum(state_rlmod);
-   n_rlmod1 = ntot+n_svc+n_tcsc+n_lmod;
-   state(n_rlmod1+1:n_rlmod1+n_rlmod) = ones(n_rlmod,1);
+   n_rlmod1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod;
+   state(n_rlmod1+1 : n_rlmod1+g.rlmod.n_rlmod) = ones(g.rlmod.n_rlmod,1);
 end;
 % pwrmod
 n_pwrmod_states = 0;
 if n_pwrmod~=0
    state_p_pwrmod(1:n_pwrmod) = ones(n_pwrmod,1);
    n_pwrmod_p_states = sum(state_p_pwrmod);
-   n_pwrmod_p1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod;
+   n_pwrmod_p1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
    state(n_pwrmod_p1+1:n_pwrmod_p1+n_pwrmod) = ones(n_pwrmod,1);
    state_q_pwrmod(1:n_pwrmod) = ones(n_pwrmod,1);
    n_pwrmod_q_states = sum(state_q_pwrmod);
-   n_pwrmod_q1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+n_pwrmod;
+   n_pwrmod_q1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+n_pwrmod;
    state(n_pwrmod_q1+1:n_pwrmod_q1+n_pwrmod) = ones(n_pwrmod,1);
 end;
 

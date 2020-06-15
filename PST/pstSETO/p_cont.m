@@ -273,16 +273,16 @@ if g.lmod.n_lmod~=0
       c_state = 0;
    end
 end
-ntrl = ntl + n_rlmod;
+ntrl = ntl + g.rlmod.n_rlmod;
 % disturb rlmod states
-if n_rlmod~=0
+if g.rlmod.n_rlmod~=0
    disp('disturbing reactive load modulation')
    for k = ntl+1:ntrl
       j=1;
       k_rlmod = k - ntl;
-      pert = p_ratio*abs(rlmod_st(k_rlmod,1));   
+      pert = p_ratio*abs(g.rlmod.rlmod_st(k_rlmod,1));   
       pert = max(pert,p_ratio);
-      rlmod_st(k_rlmod,2) = rlmod_st(k_rlmod,1) + pert;
+      g.rlmod.rlmod_st(k_rlmod,2) = g.rlmod.rlmod_st(k_rlmod,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 36;
       % disturb the input variable
@@ -291,9 +291,9 @@ if n_rlmod~=0
       rlmod_input = k_rlmod;
       pert = p_ratio;
       nominal = 0.0;
-      rlmod_sig(k_rlmod,2) = rlmod_sig(k_rlmod,2) + pert;
+      g.rlmod.rlmod_sig(k_rlmod,2) = g.rlmod.rlmod_sig(k_rlmod,2) + pert;
       p_file
-      rlmod_sig(k_rlmod,2) = nominal;  
+      g.rlmod.rlmod_sig(k_rlmod,2) = nominal;  
       c_state = 0;
    end
 end
