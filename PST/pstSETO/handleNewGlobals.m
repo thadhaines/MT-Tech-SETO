@@ -6,9 +6,11 @@
 %   Date        Time    Engineer        Description
 %   06/02/20    08:51   Thad Haines     init - lmod_con
 %   06/05/20    09:53   Thad Haines     addition of tg_con
+%   06/12/20    11:53   Thad Haines     addition of livePlotFlag
+%   06/15/20    14:21   Thad Haines     addition of rlmod_con
 global g
 
-% lmod
+%% lmod
 if exist('lmod_con','var')
     g.lmod.lmod_con = lmod_con;
     clear lmod_con 
@@ -17,7 +19,16 @@ else
     g.lmod.n_lmod = 0;
 end
 
-% tg
+%% rlmod
+% indicies created in rlm_indx.m
+if exist('rlmod_con','var')
+    g.rlmod.rlmod_con = rlmod_con;
+    clear rlmod_con 
+else
+    g.rlmod.rlmod_con = [];
+end
+
+%% tg
 if exist('tg_con','var')
     g.tg.tg_con = tg_con;
     clear tg_con
@@ -25,7 +36,7 @@ else
     g.tg.tg_con = [];
 end
 
-% Global for plot flag
+%% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;
     clear livePlotFlag

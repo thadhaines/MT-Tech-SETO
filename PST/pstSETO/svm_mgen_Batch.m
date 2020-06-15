@@ -147,9 +147,9 @@ global  n_tcscud dtcscud_idx  %user defined damping controls
 %global  lmod_sig
 
 % reactive load modulation variables
-global  rlmod_con n_rlmod rlmod_idx
-global  rlmod_pot rlmod_st drlmod_st
-global  rlmod_sig
+%global  rlmod_con n_rlmod rlmod_idx
+%global  rlmod_pot rlmod_st drlmod_st
+%global  rlmod_sig
 
 % pss variables
 global  pss_con pss_pot pss_mb_idx pss_exc_idx
@@ -296,7 +296,8 @@ n_tcsc = 0;
 
 g.lmod.n_lmod = 0;
 
-n_rlmod = 0;
+g.rlmod.n_rlmod = 0;
+
 n_pwrmod = 0;
 % note dc_indx called in load flow
 mac_indx;% identifies generators
@@ -421,10 +422,10 @@ if ~isempty(g.lmod.lmod_con)
 else
    g.lmod.n_lmod = 0;
 end
-if ~isempty(rlmod_con)~=0
+if ~isempty(g.rlmod.rlmod_con)~=0
    rlm_indx; % identifies load modulation buses
 else
-   n_rlmod = 0;
+   g.rlmod.n_rlmod = 0;
 end
 if ~isempty(pwrmod_con)~=0
    pwrm_indx(bus); % identifies power modulation buses
@@ -513,9 +514,9 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+2*n_pwrmod+n_dcl,1);
+state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+2*n_pwrmod+n_dcl,1);
 max_state = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw...
-            +5*g.tg.n_tg+5*g.tg.n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod +n_rlmod+2*n_pwrmod+5*n_dcl;
+            +5*g.tg.n_tg+5*g.tg.n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod +g.rlmod.n_rlmod+2*n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 theta(:,1) = bus(:,3)*pi/180;
@@ -562,10 +563,10 @@ if g.lmod.n_lmod ~= 0
 else
    g.lmod.lmod_sig = zeros(1,2);
 end
-if n_rlmod ~= 0
-   rlmod_sig = zeros(n_rlmod,2);
+if g.rlmod.n_rlmod ~= 0
+   g.rlmod.rlmod_sig = zeros(g.rlmod.n_rlmod,2);
 else
-   rlmod_sig = zeros(1,2);
+   g.rlmod.rlmod_sig = zeros(1,2);
 end
 if n_pwrmod ~= 0
    pwrmod_p_sig = zeros(n_pwrmod,2);
@@ -654,9 +655,9 @@ if g.lmod.n_lmod~=0
    g.lmod.lmod_st = zeros(g.lmod.n_lmod,2);
    g.lmod.dlmod_st = zeros(g.lmod.n_lmod,2);
 end
-if n_rlmod~=0
-   rlmod_st = zeros(n_rlmod,2);
-   drlmod_st = zeros(n_rlmod,2);
+if g.rlmod.n_rlmod~=0
+   g.rlmod.rlmod_st = zeros(g.rlmod.n_rlmod,2);
+   g.rlmod.drlmod_st = zeros(g.rlmod.n_rlmod,2);
 end
 if n_pwrmod~=0
    pwrmod_p_st = zeros(n_pwrmod,2);
@@ -766,9 +767,9 @@ if ~isempty(g.lmod.lmod_con)
    disp('load modulation')
    lmod(0,1,flag);
 end
-if ~isempty(rlmod_con)
+if ~isempty(g.rlmod.rlmod_con)
    disp('reactive load modulation')
-   rlmod(0,1,bus,flag);
+   rlmod(0,1,flag);
 end
 if ~isempty(pwrmod_con)
    disp('power modulation')
@@ -853,8 +854,8 @@ end
 if g.lmod.n_lmod ~=0
    g.lmod.lmod_st(:,2) = g.lmod.lmod_st(:,1);
 end
-if n_rlmod ~=0
-   rlmod_st(:,2) = rlmod_st(:,1);
+if g.rlmod.n_rlmod ~=0
+   g.rlmod.rlmod_st(:,2) = g.rlmod.rlmod_st(:,1);
 end
 if n_pwrmod ~=0
    pwrmod_p_st(:,2) = pwrmod_p_st(:,1);
@@ -878,7 +879,7 @@ g.tg.tg_sig(:,2) = g.tg.tg_sig(:,1);
 svc_sig(:,2) = svc_sig(:,1);
 tcsc_sig(:,2) = tcsc_sig(:,1);
 g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
-rlmod_sig(:,2) = rlmod_sig(:,1);
+g.rlmod.rlmod_sig(:,2) = g.rlmod.rlmod_sig(:,1);
 if n_pwrmod ~=0
     pwrmod_p_sig(:,1) = pwrmod_p_st(:,1);
     pwrmod_q_sig(:,1) = pwrmod_q_st(:,1);
@@ -961,7 +962,9 @@ if isempty(ibus_con)
       if g.lmod.n_lmod~=0
           b_lmod = p_ang*b_lmod;
       end
-      if n_rlmod~=0;b_rlmod = p_ang*b_rlmod;end
+      if g.rlmod.n_rlmod~=0
+          b_rlmod = p_ang*b_rlmod;
+      end
       if n_pwrmod~=0;b_pwrmod_p = p_ang*b_pwrmod_p; end
       if n_pwrmod~=0;b_pwrmod_q = p_ang*b_pwrmod_q; end
       if n_dc~=0;b_dcr=p_ang*b_dcr;b_dci=p_ang*b_dci;end

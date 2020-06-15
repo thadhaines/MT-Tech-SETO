@@ -858,7 +858,7 @@ stab_idx =find(damp>=0.05);
 plot(damp(stab_idx),freq(stab_idx),'k+')
 fmax = ceil(max(freq));
 plot([0.05 0.05],[0 fmax],'r')
-title(['Calculated Modes ' dfile])
+title('Calculated Modes')
 xlabel('damping ratio')
 ylabel('frequency Hz')
 us_idx = find(damp<0);

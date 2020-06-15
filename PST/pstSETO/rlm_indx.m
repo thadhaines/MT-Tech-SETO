@@ -1,23 +1,32 @@
-function f = rlm_indx
-% syntax: f = rlm_indx
-% 5:28 PM 27/8/97
-% determines the relationship between lmod and nc loads
-% checks for rlmod
-% determines number of modulated loads
-% f is a dummy variable
-f = 0;
-global rlmod_con load_con  n_rlmod  rlmod_idx
-n_rlmod = 0;
-rlmod_idx = [];
-if ~isempty(rlmod_con)
-    n_rlmod = length(rlmod_con(:,1));
-    rlmod_idx = zeros(n_rlmod,1);
-    for j = 1:n_rlmod
-       index = find(rlmod_con(j,2)==load_con(:,1));
+function rlm_indx()
+% RLM_INDX determines the relationship betweel rlmod and nc loads.
+% RLM_INDX determines the relationship between rlmod and nc loads by 
+% checking for rlmod_con and then determining the number of modulated loads
+%
+%   Syntax:
+%   rlm_indx()
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   08/27/97    17:28   Graham Rogers   Version 1
+%   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
+%   06/15/20    15:58   Thad Haines     Revised format of globals and internal function documentation
+
+global g
+global load_con
+
+g.rlmod.n_rlmod = 0;
+g.rlmod.rlmod_idx = [];
+
+if ~isempty(g.rlmod.rlmod_con)
+    g.rlmod.n_rlmod = length(g.rlmod.rlmod_con(:,1));
+    g.rlmod.rlmod_idx = zeros(g.rlmod.n_rlmod,1);
+    for j = 1:g.rlmod.n_rlmod
+       index = find(g.rlmod.rlmod_con(j,2) == load_con(:,1));
        if ~isempty(index)
-          rlmod_idx(j) = index;
+          g.rlmod.rlmod_idx(j) = index;
        else
-          error('you must have the reactive load modulation bus declared as a non-conforming load')
+          error('*** The reactive load modulation bus must be declared as a non-conforming load.')
        end
     end
 end

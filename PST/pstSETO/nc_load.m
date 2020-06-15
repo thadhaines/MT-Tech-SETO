@@ -78,8 +78,9 @@ global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
 %global  lmod_con n_lmod lmod_idx lmod_st 
 %global lmod_pot lmod_st 
 global g % added g - thad
+
 % reactive load modulation variables
-global  rlmod_con n_rlmod rlmod_idx rlmod_pot rlmod_st 
+%global  rlmod_con n_rlmod rlmod_idx rlmod_pot rlmod_st 
 % power modulation variables
 global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st
 
@@ -134,9 +135,9 @@ if ~isempty(load_con)
          j = g.lmod.lmod_idx;
          Y22(j,j) = Y22(j,j) + diag(g.lmod.lmod_st(:,k));
       end
-      if n_rlmod ~=0
-         j = rlmod_idx;
-         Y22(j,j) = Y22(j,j) + jay*diag(rlmod_st(:,k));
+      if g.rlmod.n_rlmod ~=0
+         j = g.rlmod.rlmod_idx;
+         Y22(j,j) = Y22(j,j) + jay*diag(g.rlmod.rlmod_st(:,k));
       end
       
       %pwrmod % added 06/11/20

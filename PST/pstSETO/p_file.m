@@ -104,8 +104,8 @@ end
 if g.lmod.n_lmod~=0 
    lmod(0,2,flag);
 end
-if n_rlmod~=0 
-   rlmod(0,2,bus,flag);
+if g.rlmod.n_rlmod~=0 
+   rlmod(0,2,flag);
 end
 if n_pwrmod~=0 
    pwrmod_p(0,2,bus,flag);
@@ -186,19 +186,19 @@ if g.lmod.n_lmod ~= 0
    lmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc;
    d_vector(lmod_start+1:lmod_start+g.lmod.n_lmod) = g.lmod.dlmod_st(:,2);
 end
-if n_rlmod ~= 0
+if g.rlmod.n_rlmod ~= 0
    rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod;
-   d_vector(rlmod_start+1:rlmod_start+n_rlmod) = drlmod_st(:,2);
+   d_vector(rlmod_start+1:rlmod_start+g.rlmod.n_rlmod) = g.rlmod.drlmod_st(:,2);
 end
 if n_pwrmod ~= 0
-   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod;
+   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
    d_vector(pwrmod_p_start+1:pwrmod_p_start+n_pwrmod) = dpwrmod_p_st(:,2);
-   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+n_pwrmod;
+   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+n_pwrmod;
    d_vector(pwrmod_q_start+1:pwrmod_q_start+n_pwrmod) = dpwrmod_q_st(:,2);
 end
 
 if n_conv~=0
-   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ g.lmod.n_lmod+n_rlmod+2*n_pwrmod;
+   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*n_pwrmod;
    d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
    d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
    d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
@@ -461,10 +461,10 @@ if g.lmod.n_lmod ~=0
    g.lmod.dlmod_st(:,2) = g.lmod.dlmod_st(:,1);
    g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 end
-if n_rlmod ~=0
-   rlmod_st(:,2) = rlmod_st(:,1);
-   drlmod_st(:,2) = drlmod_st(:,1);
-   rlmod_sig(:,2) = rlmod_sig(:,1);
+if g.rlmod.n_rlmod ~=0
+   g.rlmod.rlmod_st(:,2) = g.rlmod.rlmod_st(:,1);
+   g.rlmod.drlmod_st(:,2) = g.rlmod.drlmod_st(:,1);
+   g.rlmod.rlmod_sig(:,2) = g.rlmod.rlmod_sig(:,1);
 end
 if n_pwrmod ~=0
    pwrmod_p_st(:,2) = pwrmod_p_st(:,1);
