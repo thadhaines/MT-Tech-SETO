@@ -77,18 +77,15 @@ jay = sqrt(-1);
 
 warning('*** Declare Global Variables')
 
-    %% Test of strucutured global
-    global g % thad - UNUSED in pstSETO as of 6/01/20
-    
-    %% debug variables
-    global DEBUG
+    %% global structured array
+    global g
 
-    %% system variables
+    %% system variables - 13
     global  basmva basrad syn_ref mach_ref sys_freq
     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
     global  lmon_con
 
-    %% synchronous machine variables
+    %% synchronous machine variables  - 47
     global  mac_con mac_pot mac_int ibus_con
     global  mac_ang mac_spd eqprime edprime psikd psikq
     global  curd curq curdg curqg fldcur
@@ -99,7 +96,7 @@ warning('*** Declare Global Variables')
     global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
     global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
 
-    %% excitation system variables
+    %% excitation system variables - 63
     global  exc_con exc_pot n_exc
     global  Efd V_R V_A V_As R_f V_FB V_TR V_B
     global  dEfd dV_R dV_As dR_f dV_TR
@@ -114,10 +111,10 @@ warning('*** Declare Global Variables')
     global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
     global st3_TR st3_TR_idx st3_noTR_idx;
 
-    %% non-conforming load variables
+    %% non-conforming load variables - 3
     global  load_con load_pot nload
 
-    %% induction motor variables
+    %% induction motor variables - 21
     global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
     global  motbus ind_int mld_con n_mot t_mot
     % states
@@ -125,7 +122,7 @@ warning('*** Declare Global Variables')
     % dstates
     global dvdp dvqp dslip
 
-    %% induction genertaor variables
+    %% induction genertaor variables - 19
     global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
     global  igen_int igbus n_ig
     %states
@@ -133,7 +130,7 @@ warning('*** Declare Global Variables')
     %dstates
     global dvdpig dvqpig dslig
 
-    %% svc variables
+    %% svc variables - 13
     global  svc_con n_svc svc_idx svc_pot svcll_idx
     global  svc_sig
     % svc user defined damping controls
@@ -143,7 +140,7 @@ warning('*** Declare Global Variables')
     %dstates
     global dB_cv dB_con
 
-    %% tcsc variables
+    %% tcsc variables - 10
     global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
     global  B_tcsc dB_tcsc
     global  tcsc_sig tcsc_dsig
@@ -157,28 +154,28 @@ warning('*** Declare Global Variables')
     % g.lmod.lmod_pot(:,1) = max, g.lmod.lmod_pot(:,2) = min
     %global lmod_data % added by Trudnowski - doesn't appear to be used? maybe in new models?
 
-    % reactive load modulation variables
+    % reactive load modulation variables - 7
     global  rlmod_con n_rlmod rlmod_idx
     global  rlmod_pot rlmod_st drlmod_st
     global  rlmod_sig
     
-    %% power injection variables % UNUSED - placeholders 06/01/20 - thad
+    %% power injection variables - 10
     global  pwrmod_con n_pwrmod pwrmod_idx
     global  pwrmod_p_st dpwrmod_p_st
     global  pwrmod_q_st dpwrmod_q_st
     global  pwrmod_p_sig pwrmod_q_sig
     global  pwrmod_data
     
-    %% ivm variables % UNUSED - placeholders 06/01/20 - thad
+    %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
 
-    %% pss variables
+    %% pss variables - 21
     global  pss_con pss_pot pss_mb_idx pss_exc_idx
     global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
     global  pss_idx n_pss pss_sp_idx pss_p_idx;
     global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
 
-    %% DeltaP/omega filter variables
+    %% DeltaP/omega filter variables - 21
     global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
     global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
     global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
@@ -188,7 +185,7 @@ warning('*** Declare Global Variables')
     %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
     %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
 
-    %% HVDC link variables
+    %% HVDC link variables - 63
     global  dcsp_con  dcl_con  dcc_con
     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
     global  inv_ac_line  rec_ac_line ac_line dcli_idx
@@ -207,10 +204,10 @@ warning('*** Declare Global Variables')
     %inverter
     global v_coni dv_coni
     
-    %% simulation control
+    %% simulation control - 2
     global sw_con  scr_con
 
-    %% pss design
+    %% pss design - 3
     global ibus_con  netg_con  stab_con
 
 %pst_var % set up global variables
@@ -278,10 +275,9 @@ end
 %% other init operations
 basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
 syn_ref = 0 ;     % synchronous reference frame
-ibus_con = []; % ignore infinite buses in transient simulation
+ibus_con = []; % ignore infinite buses in transient simulation % should be global? -thad 06/15/20
 
 %% Make sure bus max/min Q is the same as the pwrmod_con max/min Q
-% pwrmod stuff - UNUSED 06/01/20 -thad
 if ~isempty(n_pwrmod)
     for kk=1:n_pwrmod
         n = find(pwrmod_con(kk,1)==bus(:,1));

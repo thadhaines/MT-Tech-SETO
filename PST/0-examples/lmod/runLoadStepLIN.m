@@ -103,10 +103,11 @@ figure
 hold on
 plot(tL,lmodSig)
 plot(t,g.lmod.lmod_sig,'--')
+ylabel('Real Power [PU MW]')
 
 %plot(t,lmod_sig,'--')
 legend('Linear','Non-Linear','location','best')
-title('Exciter Modulation Signal')
+title('Modulation Signal')
 %% compare bus voltage magnitude
 figure
 hold on
