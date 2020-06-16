@@ -32,7 +32,7 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d_smallRLoadStep.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % Handle load modulation file placement etc...
-delete([PSTpath 'ml_sig.m']); % ensure ml_sig file is empty
+delete([PSTpath 'rml_sig.m']); % ensure ml_sig file is empty
 copyfile('rml_sig_smallStepV3.m',[PSTpath 'rml_sig.m']); % copy simulation specific data file to batch run location
 
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
@@ -67,10 +67,10 @@ svm_mgen_Batch
 %%  
 
 %% MATLAB linear system creation using linearized PST results
-tL = (0:0.01:5); % time to match PST d file time
+tL = (0:0.01:15); % time to match PST d file time
 lmodSig=zeros(1,size(tL,2)); % create blank mod signal same length as tL vector
 lmodSig(find(tL>1.0))= 0.01; % mirror logic from exciterModSig into input vector
-lmodSig(find(tL>10.0))= 0.0;
+%lmodSig(find(tL>10.0))= 0.0;
 G = ss(a_mat,b_rlmod,[c_v;c_spd],zeros(6,1)); % create system using pst matricies
 
 y = lsim(G,lmodSig,tL); % run input into state space system

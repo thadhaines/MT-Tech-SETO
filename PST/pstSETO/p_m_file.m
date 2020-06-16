@@ -286,7 +286,7 @@ if n_pwrmod ~=0
       k_row = k_row + 1;
       k_col = k_col + k;
       p_mat(k_row,k_col)=1;
-      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+n_pwrmod;
+      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+n_pwrmod;
    end
 end
 
