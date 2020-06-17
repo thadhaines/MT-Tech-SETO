@@ -146,7 +146,7 @@ warning('*** Declare Global Variables')
     global  tcsc_sig tcsc_dsig
     global  n_tcscud dtcscud_idx  %user defined damping controls
 
-    %% load modulation variables
+    %% load modulation variables - 7
     %global lmod_con % defined by user
     %global n_lmod lmod_idx % initialized and created in lm_indx
     %global lmod_sig lmod_st dlmod_st % initialized in s_simu
@@ -180,7 +180,7 @@ warning('*** Declare Global Variables')
     global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
     global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
 
-    %% turbine-governor variables
+    %% turbine-governor variables -17
     %global  tg_con tg_pot
     %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
     %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
