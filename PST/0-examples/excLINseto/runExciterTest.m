@@ -11,7 +11,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstV3p1'; %pstSETO';
+pstVer = 'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -31,9 +31,9 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d_OMIB_EXC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % Handle exciter modulation file placement etc.
-copyfile([PSTpath 'mexc_sig.m'],[PSTpath 'mexc_sig_ORIG_TMP.m']); % save copy of original ml_sig file
+%copyfile([PSTpath 'mexc_sig.m'],[PSTpath 'mexc_sig_ORIG_TMP.m']); % save copy of original ml_sig file
 delete([PSTpath 'mexc_sig.m']); % ensure ml_sig file is empty
-copyfile('exciterModSig.m',[PSTpath 'mexc_sig.m']); % copy simulation specific data file to batch run location
+copyfile('exciterModSigG.m',[PSTpath 'mexc_sig.m']); % copy simulation specific data file to batch run location
 
 s_simu_Batch %Run PST non-linear sim
 
@@ -86,8 +86,7 @@ clear all
 %% Clean up modulation file alterations...
 load PSTpath.mat
 delete([PSTpath 'mexc_sig.m']); % remove simulation specific ml_sig file
-copyfile([PSTpath 'mexc_sig_ORIG_TMP.m'],[PSTpath 'mexc_sig.m']); % Replace original file
-delete([PSTpath 'mexc_sig_ORIG_TMP.m']); % delete temporary file
+copyfile([PSTpath 'mexc_sig_ORIG.m'],[PSTpath 'mexc_sig.m']); % Replace original file
 
 %% temp file clean up
 delete('PSTpath.mat')
@@ -100,7 +99,8 @@ load linResults.mat
 figure
 hold on
 plot(tL,excSig)
-plot(t,exc_sig,'--')
+%plot(t,exc_sig,'--')
+plot(t,g.exc.exc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Exciter Modulation Signal')
 %% compare bus voltage magnitude

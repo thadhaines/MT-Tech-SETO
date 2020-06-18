@@ -12,7 +12,7 @@
 % Load modulation added
 % Date: September 1996
 % Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997
-global g
+
 
 for k = 1:n_mac
    % generators
@@ -46,40 +46,60 @@ for k = 1:n_mac
    end
    gen_state(k) = state(k);
    % exciters
-   if ~isempty(exc_con)
-      s_TR = 0; s_TB = 0; s_TA=0; s_TE=0;
-      if n_smp~=0
-         k_smp = find(mac_int(mac_exc(smp_idx))==k);
+   if ~isempty(g.exc.exc_con)
+      s_TR = 0; 
+      s_TB = 0; 
+      s_TA=0; 
+      s_TE=0;
+      if g.exc.n_smp~=0
+         k_smp = find(mac_int(mac_exc(g.exc.smp_idx))==k);
          if ~isempty(k_smp)
-            k_exc = find(mac_exc(smp_idx)==k);
-            if ~isempty(smp_TR_idx);s_TR = sum(smp_TR_idx == k_exc);end
-            if ~isempty(smp_TB_idx);s_TB = sum(smp_TB_idx == k_exc);end
-            if ~isempty(smp_TA_idx);s_TA = sum(smp_TA_idx == k_exc);end
+            k_exc = find(mac_exc(g.exc.smp_idx)==k);
+            if ~isempty(g.exc.smp_TR_idx)
+                s_TR = sum(g.exc.smp_TR_idx == k_exc);
+            end
+            if ~isempty(g.exc.smp_TB_idx)
+                s_TB = sum(g.exc.smp_TB_idx == k_exc);
+            end
+            if ~isempty(g.exc.smp_TA_idx)
+                s_TA = sum(g.exc.smp_TA_idx == k_exc);
+            end
+            
             TR_state(k) = s_TR;
             TB_state(k) = s_TB;
             Efd_state(k) = s_TA;
             state(k) = state(k) + s_TR + s_TB +s_TA;
          end
       end
-      if n_smppi~=0
-         k_smppi = find(mac_int(mac_exc(smppi_idx))==k);
+      if g.exc.n_smppi~=0
+         k_smppi = find(mac_int(mac_exc(g.exc.smppi_idx))==k);
          if ~isempty(k_smppi)
-            k_exc = find(mac_exc(smppi_idx)==k);
-            if ~isempty(smppi_TR_idx);s_TR = sum(smppi_TR_idx == k_exc);end
+            k_exc = find(mac_exc(g.exc.smppi_idx)==k);
+            if ~isempty(g.exc.smppi_TR_idx)
+                s_TR = sum(g.exc.smppi_TR_idx == k_exc);
+            end
             TR_state(k) = s_TR;
             TB_state(k) = 1;
             Efd_state(k) = 1;
             state(k) = state(k) + s_TR + 2;
          end
       end
-      if n_dc~=0
-         k_dc = find(mac_int(mac_exc(dc_idx))==k);
+      if g.exc.n_dc~=0
+         k_dc = find(mac_int(mac_exc(g.exc.dc_idx))==k);
          if ~isempty(k_dc)
-            k_exc = find(mac_exc(dc_idx)==k);
-            if ~isempty(dc_TR_idx);s_TR = sum(dc_TR_idx == k_exc);end
-            if ~isempty(dc_TB_idx);s_TB = sum(dc_TB_idx == k_exc);end
-            if ~isempty(dc_TA_idx);s_TA = sum(dc_TA_idx == k_exc);end
-            if ~isempty(dc_TE_idx);s_TE = sum(dc_TE_idx == k_exc);end
+            k_exc = find(mac_exc(g.exc.dc_idx)==k);
+            if ~isempty(g.exc.dc_TR_idx)
+                s_TR = sum(g.exc.dc_TR_idx == k_exc);
+            end
+            if ~isempty(g.exc.dc_TB_idx)
+                s_TB = sum(g.exc.dc_TB_idx == k_exc);
+            end
+            if ~isempty(g.exc.dc_TA_idx)
+                s_TA = sum(g.exc.dc_TA_idx == k_exc);
+            end
+            if ~isempty(g.exc.dc_TE_idx)
+                s_TE = sum(g.exc.dc_TE_idx == k_exc);
+            end
             TR_state(k) = s_TR;
             TB_state(k) = s_TB;
             TA_state(k) = s_TA;
@@ -88,13 +108,19 @@ for k = 1:n_mac
             state(k) = state(k) + s_TR + s_TB +s_TA + s_TE + 1;
          end
       end
-      if n_st3 ~=0 
-         k_st3 = find(mac_int(mac_exc(st3_idx))==k);
+      if g.exc.n_st3 ~=0 
+         k_st3 = find(mac_int(mac_exc(g.exc.st3_idx))==k);
          if ~isempty(k_st3)~=0
-            k_exc = find(mac_exc(st3_idx)==k);
-            if ~isempty(st3_TR_idx);s_TR = sum(st3_TR_idx == k_exc);end
-            if ~isempty(st3_TB_idx);s_TB = sum(st3_TB_idx == k_exc);end
-            if ~isempty(st3_TA_idx);s_TA = sum(st3_TA_idx == k_exc);end
+            k_exc = find(mac_exc(g.exc.st3_idx)==k);
+            if ~isempty(g.exc.st3_TR_idx)
+                s_TR = sum(g.exc.st3_TR_idx == k_exc);
+            end
+            if ~isempty(g.exc.st3_TB_idx)
+                s_TB = sum(g.exc.st3_TB_idx == k_exc);
+            end
+            if ~isempty(g.exc.st3_TA_idx)
+                s_TA = sum(g.exc.st3_TA_idx == k_exc);
+            end
             TR_state(k) = s_TR;
             TB_state(k) = s_TB;
             TA_state(k) = s_TA;

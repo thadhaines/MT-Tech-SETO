@@ -8,6 +8,7 @@
 %   06/05/20    09:53   Thad Haines     addition of tg_con
 %   06/12/20    11:53   Thad Haines     addition of livePlotFlag
 %   06/15/20    14:21   Thad Haines     addition of rlmod_con
+%   06/17/20    10:21   Thad Haines     addition of exc_con
 global g
 
 %% lmod
@@ -34,6 +35,14 @@ if exist('tg_con','var')
     clear tg_con
 else
     g.tg.tg_con = [];
+end
+
+%% exciter
+if exist('exc_con','var')
+    g.exc.exc_con = exc_con;
+    clear exc_con
+else
+    g.exc.exc_con = [];
 end
 
 %% Global for plot flag

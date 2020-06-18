@@ -8,6 +8,7 @@
 % (c) Copyright Joe Chow/Cherry Tree Scientific Software 1991-1998
 % All right reserved
 % step 3: perform 0.1% perturbation on each state in turn
+
 vr_input = 0;
 pr_input = 0;
 c_state = 0;
@@ -79,7 +80,7 @@ for k = 1:n_mac
       end 
       
       % exciters
-      if ~isempty(exc_con)
+      if ~isempty(g.exc.exc_con)
          p_exc    
       end
       %pss
@@ -95,18 +96,18 @@ for k = 1:n_mac
       end
       
       % disturb the input variables
-      if n_exc ~= 0
+      if g.exc.n_exc ~= 0
          c_state = 1;
-         exc_number = find(mac_int(exc_con(:,2)) ==k);
+         exc_number = find(mac_int(g.exc.exc_con(:,2)) ==k);
          if ~isempty(exc_number)
             disp('disturb V_ref')
             vr_input = vr_input + 1;  
-            pert = p_ratio*abs(exc_pot(exc_number,3));
+            pert = p_ratio*abs(g.exc.exc_pot(exc_number,3));
             pert = max(pert,p_ratio);
-            nominal = exc_pot(exc_number,3);
-            exc_pot(exc_number,3) = exc_pot(exc_number,3) + pert;
+            nominal = g.exc.exc_pot(exc_number,3);
+            g.exc.exc_pot(exc_number,3) = g.exc.exc_pot(exc_number,3) + pert;
             p_file
-            exc_pot(exc_number,3) = nominal;
+            g.exc.exc_pot(exc_number,3) = nominal;
          end
       end
       

@@ -7,6 +7,7 @@
 % Added code for pwrmod, D. Trudnowski, 2015
 % All Rights Reserved
 % step 3a: network solution
+
 flag = 1;
 %generators
 mac_ib(0,2,bus,flag);
@@ -72,10 +73,10 @@ dpwf(0,2,bus,flag);
 % pss
 pss(0,2,bus,flag);
 % exciters
-smpexc(0,2,bus,flag);
-smppi(0,2,bus,flag);
-exc_dc12(0,2,bus,flag);
-exc_st3(0,2,bus,flag);
+smpexc(0,2,flag);
+smppi(0,2,flag);
+exc_dc12(0,2,flag);
+exc_st3(0,2,flag);
 % turbine/governor
 tg(0,2,flag);
 tg_hydro(0,2,bus,flag);
@@ -88,12 +89,15 @@ mac_ind(0,2,bus,flag);
 mac_igen(0,2,bus,flag);
 dpwf(0,2,bus,flag);
 pss(0,2,bus,flag);
-smpexc(0,2,bus,flag);
-smppi(0,2,bus,flag);
-exc_dc12(0,2,bus,flag);
-exc_st3(0,2,bus,flag);
+
+smpexc(0,2,flag);
+smppi(0,2,flag);
+exc_dc12(0,2,flag);
+exc_st3(0,2,flag);
+
 tg(0,2,flag);
 tg_hydro(0,2,bus,flag);
+
 if n_svc~=0 
    v_svc = abs(v(bus_int(svc_con(:,2)),2));
    svc(0,2,bus,flag,v_svc);
@@ -121,7 +125,7 @@ telect(:,2) = pelect(:,2).*mac_pot(:,1)+mac_con(:,5).*cur_mag(:,2).*cur_mag(:,2)
 % form vector of d states
 d_vector = zeros(max_state,1);
 mac_state = 6*n_mac;
-exc_state = mac_state+5*n_exc;
+exc_state = mac_state+5*g.exc.n_exc;
 pss_state = exc_state + 3*n_pss;
 dpw_state = pss_state +6*n_dpw;
 d_vector(1:n_mac) = dmac_ang(:,2);
@@ -130,13 +134,16 @@ d_vector(2*n_mac+1:3*n_mac) = deqprime(:,2);
 d_vector(3*n_mac+1:4*n_mac) = dpsikd(:,2);
 d_vector(4*n_mac+1:5*n_mac) = dedprime(:,2);
 d_vector(5*n_mac+1:6*n_mac) = dpsikq(:,2);
-if n_exc~=0
-   d_vector(mac_state+1:mac_state+n_exc) = dV_TR(:,2);
-   d_vector(mac_state+n_exc+1:mac_state+2*n_exc) = dV_As(:,2);
-   d_vector(mac_state+2*n_exc+1:mac_state+3*n_exc) = dV_R(:,2);
-   d_vector(mac_state+3*n_exc+1:mac_state+4*n_exc) = dEfd(:,2);
-   d_vector(mac_state+4*n_exc+1:mac_state+5*n_exc) = dR_f(:,2);
+
+if g.exc.n_exc~=0
+    nEXC = g.exc.n_exc;
+   d_vector(mac_state+ 1 : mac_state+ nEXC ) = g.exc.dV_TR(:,2);
+   d_vector(mac_state+ 1 + nEXC : mac_state+ 2*nEXC) = g.exc.dV_As(:,2);
+   d_vector(mac_state+ 1 + 2*nEXC :mac_state+ 3*nEXC) = g.exc.dV_R(:,2);
+   d_vector(mac_state+ 1 + 3*nEXC :mac_state+ 4*nEXC) = g.exc.dEfd(:,2);
+   d_vector(mac_state+ 1 + 4*nEXC :mac_state+ 5*nEXC) = g.exc.dR_f(:,2);
 end
+
 if n_pss~=0
    d_vector(exc_state+1:exc_state+n_pss) = dpss1(:,2);
    d_vector(exc_state+n_pss+1:exc_state+2*n_pss) = dpss2(:,2);
@@ -213,17 +220,21 @@ if c_state == 0
    else
       j_state = j + sum(state(1:k-1));
    end
+   
    if n_ib~=0
       k_nib_idx = find(not_ib_idx==k);
    else
       k_nib_idx = k;
    end
+   
    if j == 2;  
       if ~isempty(k_nib_idx)
          c_spd(k_nib_idx,j_state) = 1;
       end
    end
+   
    a_mat(:,j_state) = p_mat*d_vector/pert;
+   
    % form output matrices 
    c_p(not_ib_idx,j_state) = (pelect(not_ib_idx,2)-pelect(not_ib_idx,1))...
       .*mac_pot(not_ib_idx,1)/pert;
@@ -233,8 +244,8 @@ if c_state == 0
    c_ang(:,j_state) = (theta(:,2) - theta(:,1))/pert;
    c_curd(:,j_state) = (curd(:,2) - curd(:,1))/pert;  % JHC 12/17/2015
    c_curq(:,j_state) = (curq(:,2) - curq(:,1))/pert;  % JHC 12/17/2015
-   if n_exc~=0
-      c_Efd(:,j_state) = (Efd(:,2)-Efd(:,1))/pert;
+   if g.exc.n_exc~=0
+      c_Efd(:,j_state) = (g.exc.Efd(:,2)-g.exc.Efd(:,1))/pert;
    end
    if ~isempty(lmon_con) 
       from_idx = bus_int(line(lmon_con,1));
@@ -379,18 +390,18 @@ dpsikd(:,2) = dpsikd(:,1);
 edprime(:,2) = edprime(:,1);
 dedprime(:,2) = dedprime(:,1);
 psikq(:,2)=psikq(:,1);
-if n_exc ~= 0
-   V_TR(:,2)=V_TR(:,1);
-   dV_TR(:,2)=dV_TR(:,1);
-   V_As(:,2) = V_As(:,1);
-   dV_As(:,2) = dV_As(:,1);
-   V_A(:,2) = V_A(:,1);
-   dV_R(:,2) = dV_R(:,1);
-   V_R(:,2)=V_R(:,1);
-   Efd(:,2)=Efd(:,1);
-   dEfd(:,2) = dEfd(:,1);
-   R_f(:,2)=R_f(:,1);
-   dR_f(:,2) = dR_f(:,1);
+if g.exc.n_exc ~= 0
+   g.exc.V_TR(:,2)=g.exc.V_TR(:,1);
+   g.exc.dV_TR(:,2)=g.exc.dV_TR(:,1);
+   g.exc.V_As(:,2) = g.exc.V_As(:,1);
+   g.exc.dV_As(:,2) = g.exc.dV_As(:,1);
+   g.exc.V_A(:,2) = g.exc.V_A(:,1);
+   g.exc.dV_R(:,2) = g.exc.dV_R(:,1);
+   g.exc.V_R(:,2)=g.exc.V_R(:,1);
+   g.exc.Efd(:,2)=g.exc.Efd(:,1);
+   g.exc.dEfd(:,2) = g.exc.dEfd(:,1);
+   g.exc.R_f(:,2)=g.exc.R_f(:,1);
+   g.exc.dR_f(:,2) = g.exc.dR_f(:,1);
 end
 if n_pss~=0
    pss1(:,2)=pss1(:,1);

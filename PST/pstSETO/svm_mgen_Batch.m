@@ -90,12 +90,13 @@ global  n_mac n_em n_tra n_sub n_ib
 global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
 global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
   
+global pm_sig n_pm
 
 % excitation system variables
 global  exc_con exc_pot n_exc
 global  Efd V_R V_A V_As R_f V_FB V_TR V_B
 global  dEfd dV_R dV_As dR_f dV_TR
-global  exc_sig pm_sig n_pm
+global  exc_sig 
 global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
 global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
 global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
@@ -281,10 +282,11 @@ else
    load sim_fle 
 end
 
-n_exc= 0;
-n_dc = 0;
-n_smp = 0;
-n_st3 = 0;
+g.exc.n_exc= 0;
+g.exc.n_dc = 0;
+g.exc.n_smp = 0;
+g.exc.n_st3 = 0;
+
 n_pss= 0;
 n_dpw = 0;
 
@@ -309,20 +311,20 @@ mac_exc=0;
 if n_ib~=0
    %remove controls associated with infinite bus generators
    %remove exciters
-   if ~isempty(exc_con)
-      n_exc = length(exc_con(:,1));
-      net_idx = zeros(n_exc,1);
+   if ~isempty(g.exc.exc_con)
+      g.exc.n_exc = length(g.exc.exc_con(:,1));
+      net_idx = zeros(g.exc.n_exc,1);
       for j = 1:n_ib
-         net_idx = net_idx | exc_con(:,2) == mac_con(mac_ib_idx(j),1);
+         net_idx = net_idx | g.exc.exc_con(:,2) == mac_con(mac_ib_idx(j),1);
       end
       if length(net_idx)==1;
          if net_idx ==1
-             exc_con=[];
+             g.exc.exc_con=[];
          end
       else
          perm = diag(~net_idx);
          perm = perm(~net_idx,:);
-         exc_con = perm*exc_con;
+         g.exc.exc_con = perm*g.exc.exc_con;
       end
    end
    % remove pss
@@ -374,12 +376,13 @@ if n_ib~=0
    end
 end
 
-if ~isempty(exc_con)
+if ~isempty(g.exc.exc_con)
    exc_indx;%identifies exciters
-   mac_exc = mac_int(exc_con(:,2));
+   mac_exc = mac_int(g.exc.exc_con(:,2));
 else
-   n_exc=0;
+   g.exc.n_exc=0;
 end
+
 mac_pss=0;
 if ~isempty(pss_con)
    pss_indx;%identifies power system stabilizers
@@ -395,7 +398,8 @@ else
    n_dpw=0;
 end
 
-mac_tg=0;mac_tgh=0;
+mac_tg=0;
+mac_tgh=0;
 if ~isempty(g.tg.tg_con)
    tg_indx;%identifies turbine/governor
    mac_tg = mac_int(g.tg.tg_con(g.tg.tg_idx,2));
@@ -490,8 +494,11 @@ disp(' ')
 disp('Performing linearization')
 % set line parameters
 if ~isempty(lmon_con)
-  R = line(lmon_con,3); X = line(lmon_con,4); B = line(lmon_con,5);
-  tap = line(lmon_con,6); phi = line(lmon_con,7);
+  R = line(lmon_con,3); 
+  X = line(lmon_con,4); 
+  B = line(lmon_con,5);
+  tap = line(lmon_con,6); 
+  phi = line(lmon_con,7);
 end
 % step 1: construct reduced Y matrix
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
@@ -514,9 +521,11 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+2*n_pwrmod+n_dcl,1);
-max_state = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw...
-            +5*g.tg.n_tg+5*g.tg.n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod +g.rlmod.n_rlmod+2*n_pwrmod+5*n_dcl;
+state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc ...
+    +g.lmod.n_lmod + g.rlmod.n_rlmod+2*n_pwrmod+n_dcl,1);
+max_state = 6*n_mac + 5*g.exc.n_exc+ 3*n_pss+ 6*n_dpw ...
+    + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
+    2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 theta(:,1) = bus(:,3)*pi/180;
@@ -541,7 +550,8 @@ theta(:,2) = theta(:,1);
 % find total number of states
 ns_file
 NumStates = sum(state);
-exc_sig = zeros(n_mac,2);
+g.exc.exc_sig = zeros(n_mac,2);
+
 if n_dpw~=0; dpw_out = zeros(n_dpw,2);else dpw_out = zeros(1,2);end
 if g.tg.n_tg ~=0||g.tg.n_tgh ~= 0
    g.tg.tg_sig = zeros(g.tg.n_tg+g.tg.n_tgh,2);
@@ -601,20 +611,22 @@ dedprime = zeros(n_mac,2);
 deqprime = zeros(n_mac,2);
 dpsikd = zeros(n_mac,2);
 dpsikq = zeros(n_mac,2);
-if n_exc~=0
-   V_TR = zeros(n_exc,2);
-   V_As = zeros(n_exc,2);
-   V_A = zeros(n_exc,2);
-   V_R =zeros(n_exc,2);
-   Efd = zeros(n_exc,2);
-   R_f = zeros(n_exc,2);
-   dV_TR = zeros(n_exc,2);
-   dV_As = zeros(n_exc,2);
-   dV_R =zeros(n_exc,2);
-   dEfd = zeros(n_exc,2);
-   dR_f = zeros(n_exc,2);
-   pss_out = zeros(n_exc,2);
+
+if g.exc.n_exc~=0
+   g.exc.V_TR = zeros(g.exc.n_exc,2);
+   g.exc.V_As = zeros(g.exc.n_exc,2);
+   g.exc.V_A = zeros(g.exc.n_exc,2);
+   g.exc.V_R =zeros(g.exc.n_exc,2);
+   g.exc.Efd = zeros(g.exc.n_exc,2);
+   g.exc.R_f = zeros(g.exc.n_exc,2);
+   g.exc.dV_TR = zeros(g.exc.n_exc,2);
+   g.exc.dV_As = zeros(g.exc.n_exc,2);
+   g.exc.dV_R =zeros(g.exc.n_exc,2);
+   g.exc.dEfd = zeros(g.exc.n_exc,2);
+   g.exc.dR_f = zeros(g.exc.n_exc,2);
+   pss_out = zeros(g.exc.n_exc,2);
 end
+
 if n_pss~=0
    pss1 = zeros(n_pss,2);
    pss2 = zeros(n_pss,2);
@@ -744,10 +756,10 @@ dpwf(0,1,bus,flag);
 %pss 
 pss(0,1,bus,flag); 
 %exciters
-smpexc(0,1,bus,flag);
-smppi(0,1,bus,flag);
-exc_dc12(0,1,bus,flag);
-exc_st3(0,1,bus,flag);
+smpexc(0,1,flag);
+smppi(0,1,flag);
+exc_dc12(0,1,flag);
+exc_st3(0,1,flag);
 % turbine governors
 tg(0,1,flag);
 tg_hydro(0,1,bus,flag);
@@ -800,15 +812,17 @@ eqprime(:,2) = eqprime(:,1);
 psikd(:,2) = psikd(:,1);
 edprime(:,2) = edprime(:,1);
 psikq(:,2)=psikq(:,1);
+
 %exciters
-if n_exc~=0
-   V_TR(:,2)=V_TR(:,1);
-   V_As(:,2) = V_As(:,1);
-   V_A(:,2) = V_A(:,1);
-   V_R(:,2)=V_R(:,1);
-   Efd(:,2)=Efd(:,1);
-   R_f(:,2)=R_f(:,1);
+if g.exc.n_exc~=0
+   g.exc.V_TR(:,2)=g.exc.V_TR(:,1);
+   g.exc.V_As(:,2) = g.exc.V_As(:,1);
+   g.exc.V_A(:,2) = g.exc.V_A(:,1);
+   g.exc.V_R(:,2)=g.exc.V_R(:,1);
+   g.exc.Efd(:,2)=g.exc.Efd(:,1);
+   g.exc.R_f(:,2)=g.exc.R_f(:,1);
 end
+
 %pss
 if n_pss~=0
    pss1(:,2)=pss1(:,1);
@@ -874,7 +888,7 @@ end
 eterm(:,2) = eterm(:,1);
 pmech(:,2) = pmech(:,1);
 vex(:,2) = vex(:,1);
-exc_sig(:,2) = exc_sig(:,1);
+g.exc.exc_sig(:,2) = g.exc.exc_sig(:,1);
 g.tg.tg_sig(:,2) = g.tg.tg_sig(:,1);
 svc_sig(:,2) = svc_sig(:,1);
 tcsc_sig(:,2) = tcsc_sig(:,1);
@@ -955,8 +969,12 @@ if isempty(ibus_con)
       end
       %transform the b matrices
       b_pm = p_ang*b_pm; 
-      if g.tg.n_tg~=0;b_pr = p_ang*b_pr;end
-      if n_exc~=0;b_vr = p_ang*b_vr;end
+      if g.tg.n_tg~=0
+          b_pr = p_ang*b_pr;
+      end
+      if g.exc.n_exc~=0
+          b_vr = p_ang*b_vr;
+      end
       if n_svc~=0;b_svc = p_ang*b_svc;end
       if n_tcsc~=0;b_tcsc = p_ang*b_tcsc;end
       if g.lmod.n_lmod~=0
@@ -967,7 +985,7 @@ if isempty(ibus_con)
       end
       if n_pwrmod~=0;b_pwrmod_p = p_ang*b_pwrmod_p; end
       if n_pwrmod~=0;b_pwrmod_q = p_ang*b_pwrmod_q; end
-      if n_dc~=0;b_dcr=p_ang*b_dcr;b_dci=p_ang*b_dci;end
+      if g.exc.n_dc~=0;b_dcr=p_ang*b_dcr;b_dci=p_ang*b_dci;end
    end 
 end
 

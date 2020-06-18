@@ -1,0 +1,162 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of exciters using global g\\ }
+\lhead{Research \\ 6/15/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable the exciter PST model to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+%% excitation system variables - 63
+global  exc_con exc_pot n_exc
+global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+global  dEfd dV_R dV_As dR_f dV_TR
+global  exc_sig % pm_sig n_pm % not related to exciters?
+global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+global smp_TR smp_TR_idx smp_no_TR_idx ;
+global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+global dc_TE  dc_TE_idx dc_noTE_idx;
+global dc_TF dc_TF_idx dc_TR dc_TR_idx
+global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+global st3_TR st3_TR_idx st3_noTR_idx;
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+% as g.exc.
+\end{verbatim}
+
+%===============================================================================
+\paragraph{exc\_indx}
+	\begin{itemize}
+		\item fucntionalized, removed dummy return value
+		\item addition of n\_dc1 and related variables to global
+		\item prepended g.exc. to old globals
+	\end{itemize}
+
+%===============================================================================
+\paragraph{handleNewGlobals.m}
+	\begin{itemize}
+		\item added if statement to check for exc\_con
+	\end{itemize}
+
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+	\begin{itemize}
+		\item  prepened g.exc. to zero initialization of states and derivatives, integrations
+		\item Removed bus input to smmpex, smppi, exc\_st3, and exc\_dc12
+	\end{itemize}
+
+%===============================================================================
+\paragraph{smpexc}
+	\begin{itemize}
+		\item  Changed three instances of dEFD to dEfd
+		\item prepended g.exc. to relevant exciter globals.
+		\item replaced length = 0 checks with isempty calls
+		\item removed bus input and f output (unused)
+		\item commented out calculations and definitions not used in function
+	\end{itemize}
+%===============================================================================
+\paragraph{smppi}
+	\begin{itemize}
+		\item  Changed three instances of dEFD to dEfd
+		\item prepended g.exc. to relevant exciter globals.
+		\item removed bus input and f output (unused)
+		\item commented out calculations and definitions not used in function
+	\end{itemize}
+%===============================================================================
+\paragraph{exc\_st3}
+	\begin{itemize}
+		\item  Fix of exc\_con(i,4) == 1; \% reset to 1 to single =
+		\item  replacement of length checks to isempty checks
+		\item prepended g.exc. to relevant exciter globals.
+		\item removed bus input and f output (unused)
+		\item commented out calculations and definitions not used in function
+	\end{itemize}
+
+%===============================================================================
+\paragraph{exc\_dc12}
+	\begin{itemize}
+		\item Fix of exc\_con(i,4) == 1; \% reset to 1 to single =
+		\item fix of g.exc.exc\_con(g.exc.dc\_idx(no\_KA),4) = ones(length(no\_KA),1); \% to single =
+		\item prepended g.exc. to relevant exciter globals.
+		\item removed bus input and f output (unused)
+		\item commented out calculations and definitions not used in function
+	\end{itemize}
+%===============================================================================
+\paragraph{svm\_mgen\_Batch}
+	\begin{itemize}
+		\item  Prepended g.exc. to exciter check, infinite bus exciter removal, exciter count check, state counts, zero creations, second state initalization, b matrix transforms, 
+		\item Removed bus input to smmpex, smppi, exc\_st3, and exc\_dc12
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mexc\_sig}
+	\begin{itemize}
+		\item  removal of t input (k only input)
+	\end{itemize}
+
+%===============================================================================
+\paragraph{nm\_if}
+	\begin{itemize}
+		\item removal of dummy return from exciter functions
+		\item alteration of inputs to accommodate cleaned up functions
+	\end{itemize}
+
+%===============================================================================
+\paragraph{ns\_file}
+Should be functionalized... (?)
+	\begin{itemize}
+		\item addition of g.exc. to globals for state counting, .
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item addition of g.exc. to relevant globals.
+		\item addition of g.exc. to d\_vector indexing
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_cont}
+Should be functionalized...
+	\begin{itemize}
+		\item addition of g.exc. to exciter disturbance c state.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_exc}
+	\begin{itemize}
+		\item Addition of g.exc. to related variables for perturbances
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item addition of g.exc. to exciter state reset
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_m\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item addition of g.exc. to exciter state counts and associated variable logic checks
+	\end{itemize}
+
+\end{document}
