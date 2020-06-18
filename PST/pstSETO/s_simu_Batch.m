@@ -97,19 +97,22 @@ warning('*** Declare Global Variables')
     global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
 
     %% excitation system variables - 63
-    global  exc_con exc_pot n_exc
-    global  Efd V_R V_A V_As R_f V_FB V_TR V_B
-    global  dEfd dV_R dV_As dR_f dV_TR
-    global  exc_sig pm_sig n_pm
-    global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
-    global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
-    global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
-    global smp_TR smp_TR_idx smp_no_TR_idx ;
-    global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
-    global dc_TE  dc_TE_idx dc_noTE_idx;
-    global dc_TF dc_TF_idx dc_TR dc_TR_idx
-    global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
-    global st3_TR st3_TR_idx st3_noTR_idx;
+    
+    global pm_sig n_pm % not exciter related?
+    
+%     global  exc_con exc_pot n_exc
+%     global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+%     global  dEfd dV_R dV_As dR_f dV_TR
+%     global  exc_sig 
+%     global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+%     global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+%     global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+%     global smp_TR smp_TR_idx smp_no_TR_idx ;
+%     global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+%     global dc_TE  dc_TE_idx dc_noTE_idx;
+%     global dc_TF dc_TF_idx dc_TR dc_TR_idx
+%     global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+%     global st3_TR st3_TR_idx st3_noTR_idx;
 
     %% non-conforming load variables - 3
     global  load_con load_pot nload
@@ -310,7 +313,7 @@ end
 %% set indexes
 % note: dc index set in dc load flow
 mac_indx;
-exc_indx;
+exc_indx();
 tg_indx(); % functionalized 06/05/20 - thad
 dpwf_indx;
 pss_indx;
@@ -589,26 +592,29 @@ cur_im = z;
 psi_re = z; 
 psi_im = z;
 
+%% exciter zero init
 ze = zeros(1,k);
-if n_exc~=0
-    ze = zeros(n_exc,k);
+if g.exc.n_exc~=0
+    ze = zeros(g.exc.n_exc,k);
 end
 
-V_B = ze;
-exc_sig = ze;
-V_TR = ze; 
-V_R = ze; 
-V_A = ze; 
-V_As = ze; 
-Efd = ze; 
-R_f = ze;
-dV_TR = ze; 
-dV_R = ze; 
-dV_As = ze; 
-dEfd = ze; 
-dR_f = ze;
-pss_out = ze;
+g.exc.V_B = ze;
+g.exc.exc_sig = ze;
+g.exc.V_TR = ze; 
+g.exc.V_R = ze; 
+g.exc.V_A = ze; 
+g.exc.V_As = ze; 
+g.exc.Efd = ze; 
+g.exc.R_f = ze;
+g.exc.dV_TR = ze; 
+g.exc.dV_R = ze; 
+g.exc.dV_As = ze; 
+g.exc.dEfd = ze; 
+g.exc.dR_f = ze;
 
+pss_out = ze; % seems related to pss more than exciters - thad 06/17/20
+
+%% machine zeros...
 vdp = zm; 
 vqp = zm; 
 slip = zm;
@@ -876,10 +882,12 @@ mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
 disp('generator controls')
 dpwf(0,1,bus,flag);
 pss(0,1,bus,flag);
-smpexc(0,1,bus,flag);
-smppi(0,1,bus,flag);
-exc_st3(0,1,bus,flag);
-exc_dc12(0,1,bus,flag);
+
+% exciters
+smpexc(0,1,flag);
+smppi(0,1,flag);
+exc_st3(0,1,flag);
+exc_dc12(0,1,flag);
 
 tg(0,1,flag); % modified 06/05/20 to global g
 
@@ -1241,11 +1249,11 @@ while (kt<=ktmax)
         
         %% network interface for control models
         dpwf(0,k,bus_sim,flag);
-        mexc_sig(t(k),k);
-        smpexc(0,k,bus_sim,flag);
-        smppi(0,k,bus_sim,flag);
-        exc_st3(0,k,bus_sim,flag);
-        exc_dc12(0,k,bus_sim,flag);
+        mexc_sig(k);
+        smpexc(0,k,flag);
+        smppi(0,k,flag);
+        exc_st3(0,k,flag);
+        exc_dc12(0,k,flag);
         mtg_sig(k);
         tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
@@ -1299,11 +1307,11 @@ while (kt<=ktmax)
         mac_em(0,k,bus_sim,flag);
         dpwf(0,k,bus_sim,flag);
         pss(0,k,bus_sim,flag);
-        mexc_sig(t(k),k);
-        smpexc(0,k,bus_sim,flag);
-        smppi(0,k,bus_sim,flag);
-        exc_st3(0,k,bus_sim,flag);
-        exc_dc12(0,k,bus_sim,flag);
+        mexc_sig(k);
+        smpexc(0,k,flag);
+        smppi(0,k,flag);
+        exc_st3(0,k,flag);
+        exc_dc12(0,k,flag);
         mtg_sig(k);
         tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
@@ -1455,11 +1463,14 @@ while (kt<=ktmax)
         eqprime(:,j) = eqprime(:,k) + h_sol*deqprime(:,k);
         psikd(:,j) = psikd(:,k) + h_sol*dpsikd(:,k);
         psikq(:,j) = psikq(:,k) + h_sol*dpsikq(:,k);
-        Efd(:,j) = Efd(:,k) + h_sol*dEfd(:,k);
-        V_R(:,j) = V_R(:,k) + h_sol*dV_R(:,k);
-        V_As(:,j) = V_As(:,k) + h_sol*dV_As(:,k);
-        R_f(:,j) = R_f(:,k) + h_sol*dR_f(:,k);
-        V_TR(:,j) = V_TR(:,k) + h_sol*dV_TR(:,k);
+        
+        % Exciter integration
+        g.exc.Efd(:,j) = g.exc.Efd(:,k) + h_sol*g.exc.dEfd(:,k);
+        g.exc.V_R(:,j) = g.exc.V_R(:,k) + h_sol*g.exc.dV_R(:,k);
+        g.exc.V_As(:,j) = g.exc.V_As(:,k) + h_sol*g.exc.dV_As(:,k);
+        g.exc.R_f(:,j) = g.exc.R_f(:,k) + h_sol*g.exc.dR_f(:,k);
+        g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*g.exc.dV_TR(:,k);
+        
         sdpw1(:,j) = sdpw1(:,k) + h_sol*dsdpw1(:,k);
         sdpw2(:,j) = sdpw2(:,k) + h_sol*dsdpw2(:,k);
         sdpw3(:,j) = sdpw3(:,k) + h_sol*dsdpw3(:,k);
@@ -1491,7 +1502,6 @@ while (kt<=ktmax)
         
         %lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k); % original line - thad
         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
-        
         g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+h_sol*g.rlmod.drlmod_st(:,k);
         
         %% Copied from v2.3 - 06/01/20 - thad
@@ -1641,11 +1651,11 @@ while (kt<=ktmax)
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
         dpwf(0,j,bus_sim,flag);
         pss(0,j,bus_sim,flag);
-        mexc_sig(t(j),j);
-        smpexc(0,j,bus_sim,flag);
-        smppi(0,j,bus_sim,flag);
-        exc_st3(0,j,bus_sim,flag);
-        exc_dc12(0,j,bus_sim,flag);
+        mexc_sig(j);
+        smpexc(0,j,flag);
+        smppi(0,j,flag);
+        exc_st3(0,j,flag);
+        exc_dc12(0,j,flag);
         tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
@@ -1689,11 +1699,11 @@ while (kt<=ktmax)
         mac_em(0,j,bus_sim,flag);
         dpwf(0,j,bus_sim,flag);
         pss(0,j,bus_sim,flag);
-        mexc_sig(t(j),j);
-        smpexc(0,j,bus_sim,flag);
-        smppi(0,j,bus_sim,flag);
-        exc_st3(0,j,bus_sim,flag);
-        exc_dc12(0,j,bus_sim,flag);
+        mexc_sig(j);
+        smpexc(0,j,flag);
+        smppi(0,j,flag);
+        exc_st3(0,j,flag);
+        exc_dc12(0,j,flag);
         mtg_sig(j);
         tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
@@ -1843,11 +1853,14 @@ while (kt<=ktmax)
         eqprime(:,j) = eqprime(:,k) + h_sol*(deqprime(:,k)+deqprime(:,j))/2.;
         psikd(:,j) = psikd(:,k) + h_sol*(dpsikd(:,k)+dpsikd(:,j))/2.;
         psikq(:,j) = psikq(:,k) + h_sol*(dpsikq(:,k)+dpsikq(:,j))/2.;
-        Efd(:,j) = Efd(:,k) + h_sol*(dEfd(:,k)+dEfd(:,j))/2.;
-        V_R(:,j) = V_R(:,k) + h_sol*(dV_R(:,k)+dV_R(:,j))/2.;
-        V_As(:,j) = V_As(:,k) + h_sol*(dV_As(:,k)+dV_As(:,j))/2.;
-        R_f(:,j) = R_f(:,k) + h_sol*(dR_f(:,k)+dR_f(:,j))/2.;
-        V_TR(:,j) = V_TR(:,k) + h_sol*(dV_TR(:,k)+dV_TR(:,j))/2.;
+        
+        % exciter integration
+        g.exc.Efd(:,j) = g.exc.Efd(:,k) + h_sol*(g.exc.dEfd(:,k)+g.exc.dEfd(:,j))/2.;
+        g.exc.V_R(:,j) = g.exc.V_R(:,k) + h_sol*(g.exc.dV_R(:,k)+g.exc.dV_R(:,j))/2.;
+        g.exc.V_As(:,j) = g.exc.V_As(:,k) + h_sol*(g.exc.dV_As(:,k)+g.exc.dV_As(:,j))/2.;
+        g.exc.R_f(:,j) = g.exc.R_f(:,k) + h_sol*(g.exc.dR_f(:,k)+g.exc.dR_f(:,j))/2.;
+        g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*(g.exc.dV_TR(:,k)+g.exc.dV_TR(:,j))/2.;
+        
         sdpw11(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
         sdpw12(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
         sdpw13(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
@@ -1879,7 +1892,6 @@ while (kt<=ktmax)
         
         % modified to g
         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
-        
         g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
         
         % Copied from v2.3 - 06/01/20 - thad

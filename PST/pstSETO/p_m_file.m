@@ -22,6 +22,21 @@
 % Modified: November 1996
 %           svc added 
 % Copyright: Joe Chow/Cherry Tree Scientific Software 1991 to 1997, All rights reserved
+% excitation system variables
+global  exc_con exc_pot n_exc
+global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+global  dEfd dV_R dV_As dR_f dV_TR
+global  exc_sig pm_sig n_pm
+global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+global smp_TR smp_TR_idx smp_no_TR_idx ;
+global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+global dc_TE  dc_TE_idx dc_noTE_idx;
+global dc_TF dc_TF_idx dc_TR dc_TR_idx 
+global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+global st3_TR st3_TR_idx st3_noTR_idx;
+global g
 
 k_row = 1;
 exc_count = 0;
@@ -39,9 +54,13 @@ for k = 1:n_mac
          p_mat(k_row+kgs-1,k_col+(kgs-1)*n_mac) = 1;%all generators
       end
       % sub or tra models
-      if gen_state(k)>2;p_mat(k_row+2, k_col+2*n_mac)=1;end
+      if gen_state(k)>2
+          p_mat(k_row+2, k_col+2*n_mac)=1;
+      end
       %tra models
-      if gen_state(k)==4;p_mat(k_row+3,k_col+4*n_mac)=1;end
+      if gen_state(k)==4
+          p_mat(k_row+3,k_col+4*n_mac)=1;
+      end
       %sub models
       if gen_state(k)==6
          for kgs = 4:6
@@ -50,6 +69,7 @@ for k = 1:n_mac
       end
       k_row = k_row + gen_state(k)-1;
       k_col = n_mac*6;
+      
       if mac_exc ~=0
          k_exc = find(mac_exc==k);
          if ~isempty(k_exc)
@@ -60,29 +80,30 @@ for k = 1:n_mac
                k_row = k_row + 1;
                p_mat(k_row,k_cex) = 1;
             end
-            k_cex = k_cex + n_exc;     
+            k_cex = k_cex + g.exc.n_exc;     
             if TB_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_cex) = 1;
             end
-            k_cex = k_cex + n_exc;
+            k_cex = k_cex + g.exc.n_exc;
             if TA_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_cex) = 1;
             end
-            k_cex = k_cex + n_exc;     
+            k_cex = k_cex + g.exc.n_exc;     
             if Efd_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_cex) = 1;
             end
-            k_cex = k_cex + n_exc;     
+            k_cex = k_cex + g.exc.n_exc;     
             if R_f_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_cex) = 1;
             end 
          end
       end
-      k_col = 6*n_mac+5*n_exc;
+      k_col = 6*n_mac+5*g.exc.n_exc;
+      
       if mac_pss~=0
          k_pss = find(mac_pss==k);
          if ~isempty(k_pss) 
@@ -105,7 +126,7 @@ for k = 1:n_mac
             end 
          end 
       end
-      k_col = 6*n_mac+5*n_exc+3*n_pss;
+      k_col = 6*n_mac+5*g.exc.n_exc+3*n_pss;
 
       if mac_dpw~=0
          k_dpw = find(mac_dpw==k);
@@ -132,7 +153,7 @@ for k = 1:n_mac
             p_mat(k_row,k_cdpw) = 1;  
          end 
       end
-      k_col= 6*n_mac+5*n_exc+3*n_pss+6*n_dpw;    
+      k_col= 6*n_mac+5*g.exc.n_exc+3*n_pss+6*n_dpw;    
       % governors
       if mac_tg ~=0
          k_tg = find(mac_tg == k);
@@ -151,6 +172,7 @@ for k = 1:n_mac
             end
          end
       end
+      
       if mac_tgh ~=0
          k_tgh = find(mac_tgh==k);
          if ~isempty(k_tgh)
@@ -159,16 +181,16 @@ for k = 1:n_mac
             if tgh_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
-               k_ctg = k_ctg + n_tg + n_tgh;
+               k_ctg = k_ctg + g.tg.n_tg + g.tg.n_tgh;
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
-               k_ctg = k_ctg + n_tg + n_tgh;
+               k_ctg = k_ctg + g.tg.n_tg + g.tg.n_tgh;
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
-               k_ctg = k_ctg + n_tg + n_tgh;
+               k_ctg = k_ctg + g.tg.n_tg + g.tg.n_tgh;
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
-               k_ctg = k_ctg + n_tg + n_tgh;
+               k_ctg = k_ctg + g.tg.n_tg + g.tg.n_tgh;
                k_row = k_row + 1;
                p_mat(k_row,k_ctg) = 1;
             end
@@ -179,7 +201,8 @@ end
 
 % p_mat for induction motors
 
-k_colg = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw+5*(g.tg.n_tg + g.tg.n_tgh);
+k_colg = 6*n_mac+5*g.exc.n_exc+3*n_pss+6*n_dpw...
+    +5*(g.tg.n_tg + g.tg.n_tgh);
 k_col = k_colg;
 if n_mot~=0
    for k=1:n_mot
@@ -192,7 +215,7 @@ if n_mot~=0
       k_row = k_row+1;
       k_col = k_col+n_mot;
       p_mat(k_row,k_col) = 1;
-      k_col =6*n_mac+5*n_exc+3*n_pss+5*(n_tg+n_tgh);
+      k_col =6*n_mac+5*g.exc.n_exc+3*n_pss+5*(g.tg.n_tg+g.tg.n_tgh);
    end
 end
 
@@ -209,7 +232,8 @@ if n_ig~=0
       k_row = k_row+1;
       k_col = k_col+n_ig;
       p_mat(k_row,k_col) = 1;
-      k_col =6*n_mac+5*n_exc+3*n_pss+5*(n_tg+n_tgh)+3*n_mot;
+      k_col =6*n_mac+5*g.exc.n_exc+3*n_pss ...
+          +5*(g.tg.n_tg+g.tg.n_tgh)+3*n_mot;
    end
 end
 
@@ -316,7 +340,9 @@ if n_conv~=0
             p_mat(k_row, k_col) = 1;
          end
       end
-      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+2*n_pwrmod;
+      k_col = k_colg+3*n_mot+3*n_ig+2*n_svc...
+          +n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod...
+          +2*n_pwrmod;
    end
 end 
 

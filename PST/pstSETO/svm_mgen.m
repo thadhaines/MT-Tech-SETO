@@ -362,7 +362,7 @@ pss3_state = state;
 dpw_state = state;
 tg_state = state;
 state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc+g.lmod.n_lmod+n_rlmod+2*n_pwrmod+n_dcl,1);
-max_state = 6*n_mac+5*n_exc+3*n_pss+6*n_dpw...
+max_state = 6*n_mac+5*g.exc.n_exc+3*n_pss+6*n_dpw...
             +5*n_tg+5*n_tgh+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod +n_rlmod+2*n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line

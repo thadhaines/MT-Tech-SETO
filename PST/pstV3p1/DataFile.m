@@ -8,11 +8,12 @@
 %   03/20/18    21:19   copied from base, added a DC exciter (type 1)
 %   05/19/20    10:26   Modified for use in exploring PST operation
 %   05/21/20    08:24   Added optional Fbase and Sbase variables
+%   06/11/20    09:22   Removed load modulation for linear comparison
 
 %% Optional System data, else assumed 60 Hz, 100 MVA
 %Fbase = 50; % Hz
 %Sbase = 50; % MW
-
+livePlotFlag = 0;
 %% bus data 
 % bus array format:
 % col1 number
@@ -37,7 +38,7 @@ bus = [ ...
 %   1   2   3       4       5       6       7       8   9   A   B       C       D        E   F
 %busNum V delta     P_gen   Q_gen P_load   Q_load   G   B  type Q_max  Q_minVrated_(kv) Vmax Vmin
     1   1   0       -.5     0       0       0       0   0   1   100     -100  	20       2   0.5; %slack / infinite bus
-    2   1   0       0       0       0.3     0.01    0   0   3   0       0       20       2   0.5;
+    2   1   0       0       0       0.3     0       0   0   3   0       0       20       2   0.5;
     3   1   0       0       0       0       0       0   0   3   0       0       20       2   0.5;
     4   1   0       0.25    0       0       0       0   0   2   100     -100  	20       2   0.5];    %gen
    
@@ -61,12 +62,6 @@ line = [ ...
     1   3   0   3       0   1   0       0   0   0;
     2   3   0   1       0   1   0       0   0   0;
     3   4   0   0.1     0   1   0       0   0   0]; % 'transformer'?
-
-lmon_con = [ ...
-%   Line array indices to monitor
-    1,... % moitor current between bus 1 and 2
-    4   % monitor current between bus 3 and 4
-];
     
 %% Machine data 
 % mac_con array format:
@@ -127,7 +122,7 @@ exc_con = [ ...
 %   1       2       3       4       5       6       7       8       9      
 %   Type    mach #  T_R     K_A     T_A     T_B     T_C     V_Rmax  V_Rmin  
     0       1       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       2       0       150      0.01    12.0    1.0     7.5     -6; 
+%    0       2       0       150      0.01    12.0    1.0     7.5     -6; 
 ];
 
 %% Governor data
@@ -182,10 +177,8 @@ sw_con = [ ...
     1                   3   2   0   0   6   0.01;  % No Action
     1+(2/60)            0   0   0   0   0   0.01;  % 
     1+(2/60)+(1/600)    0   0   0   0   0   0.01;   % 
-    5                   0   0   0   0   0   0.01;   % change time step
-    %5                   0   0   0   0   0   1/(60);     % change time step
-    %20                   0   0   0   0   0   1/(60);     % end
-];    % end
+    20                   0   0   0   0   0   0.01;   % end
+];    
   
 %% Load Modulation
 
@@ -196,21 +189,21 @@ sw_con = [ ...
 % col   3 proportion of constant reactive power load
 % col   4 proportion of constant active current load
 % col   5 proportion of constant reactive current load
-load_con = [...
+%load_con = [...
     %   1   2       3       4       5
-        2   0       0       0       0;]; %constant impedance
-
-% rlmod_con format
-% sets up model for reactive load modulation
+%        2   1.0       1.0       0       0;]; %constant power
+%
+% lmod_con format
+% sets up model for load modulation
 % col	variable  						unit
-% 1  	reactive load modulation number 
+% 1  	load modulation number 
 % 2  	bus number 
 % 3  	modulation base MVA  			MVA
-% 4  	maximum susceptance lmod_max 	pu
-% 5  	minimum susceptance lmod_min 	pu
+% 4  	maximum conductance lmod_max 	pu
+% 5  	minimum conductance lmod_min 	pu
 % 6  	regulator gain K  				pu
 % 7  	regulator time constant T_R  	sec
-rlmod_con = [ ...
-  % 1   2   3       4       5       6       7
-    1   2   100     1.0     0.0     1.0     0.1;];
+% lmod_con = [ ...
+%   % 1   2   3       4       5       6       7
+%     1   2   100     1.0     0.0     1.0     0.1;];
 

@@ -19,21 +19,20 @@ global  n_mac n_em n_tra n_sub n_ib
 global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
 global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
   
-
-% excitation system variables
-global  exc_con exc_pot n_exc
-global  Efd V_R V_A V_As R_f V_FB V_TR V_B
-global  dEfd dV_R dV_As dR_f dV_TR
-global  exc_sig pm_sig n_pm
-global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
-global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
-global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
-global smp_TR smp_TR_idx smp_no_TR_idx ;
-global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
-global dc_TE  dc_TE_idx dc_noTE_idx;
-global dc_TF dc_TF_idx dc_TR dc_TR_idx 
-global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
-global st3_TR st3_TR_idx st3_noTR_idx;
+% % excitation system variables
+% global  exc_con exc_pot n_exc
+% global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+% global  dEfd dV_R dV_As dR_f dV_TR
+% global  exc_sig pm_sig n_pm
+% global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+% global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+% global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+% global smp_TR smp_TR_idx smp_no_TR_idx ;
+% global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+% global dc_TE  dc_TE_idx dc_noTE_idx;
+% global dc_TF dc_TF_idx dc_TR dc_TR_idx 
+% global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+% global st3_TR st3_TR_idx st3_noTR_idx;
 
 % non-conforming load variables
 global  load_con load_pot nload
@@ -216,10 +215,12 @@ f = dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
 % network interface for control models
 f = dpwf(0,k,bus_sim,flag);
 f = pss(0,k,bus_sim,flag);
-f = mexc_sig(t(k),k);
-f = smpexc(0,k,bus_sim,flag);
-f = exc_st3(0,k,bus_sim,flag);
-f = exc_dc12(0,k,bus_sim,flag);
+
+mexc_sig(k);
+smpexc(0,k,flag);
+exc_st3(0,k,flag);
+exc_dc12(0,k,flag);
+
 f = mtg_sig(t(k),k);
 f = tg(0,k,bus_sim,flag);
 f = tg_hydro(0,k,bus_sim,flag);
