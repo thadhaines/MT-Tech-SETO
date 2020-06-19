@@ -9,6 +9,7 @@
 %   06/12/20    11:53   Thad Haines     addition of livePlotFlag
 %   06/15/20    14:21   Thad Haines     addition of rlmod_con
 %   06/17/20    10:21   Thad Haines     addition of exc_con
+%   06/18/20    14:21   Thad Haines     addition of mac_con and ibus_con
 global g
 
 %% lmod
@@ -44,7 +45,20 @@ if exist('exc_con','var')
 else
     g.exc.exc_con = [];
 end
-
+%% machines
+if exist('mac_con','var')
+    g.mac.mac_con = mac_con;
+    clear mac_con
+else
+    g.mac.mac_con = [];
+end
+%% inifite bus
+if exist('ibus_con','var')
+    g.mac.ibus_con = ibus_con;
+    clear ibus_con
+else
+    g.mac.ibus_con = [];
+end
 %% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;

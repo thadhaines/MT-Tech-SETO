@@ -20,14 +20,15 @@ function [tripOut,mac_trip_states] = mac_trip_logic(tripStatus,mac_trip_states,t
 % Date:   Jan 2017
 
 %% define global variables
-global bus_v %pu bus voltages; bus_v(n,kT) = bus n voltage at time t(kT)
-global mac_spd %Gen pu speeds; mac_spd(n,kT) = gen n speed at time t(kT)
-global pelect qelect %gen pu powers; pelect(n,kT) = gen n real power at time t(kT)
-global cur_re cur_im %gen pu currents
-global mac_con n_mac
+% global bus_v %pu bus voltages; bus_v(n,kT) = bus n voltage at time t(kT)
+% global mac_spd %Gen pu speeds; mac_spd(n,kT) = gen n speed at time t(kT)
+% global pelect qelect %gen pu powers; pelect(n,kT) = gen n real power at time t(kT)
+% global cur_re cur_im %gen pu currents
+% global mac_con n_mac
 
+global g
 %% Initialize
-tripOut = false(n_mac,1);
+tripOut = false(g.mac.n_mac,1);
 mac_trip_states = 0;
 
 

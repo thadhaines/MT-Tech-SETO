@@ -14,35 +14,35 @@
 % Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997
 
 
-for k = 1:n_mac
+for k = 1:g.mac.n_mac
    % generators
    no_mac = 0;
-   if ~isempty(mac_ib_idx);
-      k_ib = find(mac_ib_idx==k);
-      if ~isempty(k_ib); 
+   if ~isempty(g.mac.mac_ib_idx)
+      k_ib = find(g.mac.mac_ib_idx==k);
+      if ~isempty(k_ib)
          state(k) = 0;
          no_mac = 1;
-      end;
+      end
    end
    if no_mac ==0
-      if ~isempty(mac_em_idx);
-         k_em = find(mac_em_idx == k);
-         if ~isempty(k_em); 
+      if ~isempty(g.mac.mac_em_idx)
+         k_em = find(g.mac.mac_em_idx == k);
+         if ~isempty(k_em)
             state(k) = 2; 
-         end;
+         end
       end
-      if ~isempty(mac_tra_idx);
-         k_tra = find(mac_tra_idx==k);
-         if ~isempty(k_tra);
+      if ~isempty(g.mac.mac_tra_idx)
+         k_tra = find(g.mac.mac_tra_idx==k);
+         if ~isempty(k_tra)
             state(k) = 4; 
-         end;
-      end;
-      if ~isempty(mac_sub_idx);
-         k_sub = find(mac_sub_idx == k);
-         if ~isempty(k_sub);
+         end
+      end
+      if ~isempty(g.mac.mac_sub_idx)
+         k_sub = find(g.mac.mac_sub_idx == k);
+         if ~isempty(k_sub)
             state(k)=6;
-         end;
-      end;
+         end
+      end
    end
    gen_state(k) = state(k);
    % exciters
@@ -52,7 +52,7 @@ for k = 1:n_mac
       s_TA=0; 
       s_TE=0;
       if g.exc.n_smp~=0
-         k_smp = find(mac_int(mac_exc(g.exc.smp_idx))==k);
+         k_smp = find(g.mac.mac_int(mac_exc(g.exc.smp_idx))==k);
          if ~isempty(k_smp)
             k_exc = find(mac_exc(g.exc.smp_idx)==k);
             if ~isempty(g.exc.smp_TR_idx)
@@ -72,7 +72,7 @@ for k = 1:n_mac
          end
       end
       if g.exc.n_smppi~=0
-         k_smppi = find(mac_int(mac_exc(g.exc.smppi_idx))==k);
+         k_smppi = find(g.mac.mac_int(mac_exc(g.exc.smppi_idx))==k);
          if ~isempty(k_smppi)
             k_exc = find(mac_exc(g.exc.smppi_idx)==k);
             if ~isempty(g.exc.smppi_TR_idx)
@@ -85,7 +85,7 @@ for k = 1:n_mac
          end
       end
       if g.exc.n_dc~=0
-         k_dc = find(mac_int(mac_exc(g.exc.dc_idx))==k);
+         k_dc = find(g.mac.mac_int(mac_exc(g.exc.dc_idx))==k);
          if ~isempty(k_dc)
             k_exc = find(mac_exc(g.exc.dc_idx)==k);
             if ~isempty(g.exc.dc_TR_idx)
@@ -109,7 +109,7 @@ for k = 1:n_mac
          end
       end
       if g.exc.n_st3 ~=0 
-         k_st3 = find(mac_int(mac_exc(g.exc.st3_idx))==k);
+         k_st3 = find(g.mac.mac_int(mac_exc(g.exc.st3_idx))==k);
          if ~isempty(k_st3)~=0
             k_exc = find(mac_exc(g.exc.st3_idx)==k);
             if ~isempty(g.exc.st3_TR_idx)
@@ -130,11 +130,15 @@ for k = 1:n_mac
    end
    %pss
    if ~isempty(pss_con)
-      k_pss = find(mac_int(mac_pss)==k);
+      k_pss = find(g.mac.mac_int(mac_pss)==k);
       s_T4 = 0;
       if ~isempty(k_pss)
          k_p = find(mac_pss==k);
-         if ~isempty(pss_T4_idx); s_T4 =sum( pss_T4_idx == k_p);else;s_T4=0;end
+         if ~isempty(pss_T4_idx)
+             s_T4 =sum( pss_T4_idx == k_p);
+         else
+             s_T4=0;
+         end
          pss1_state(k) = 1;
          pss2_state(k) = 1;
          pss3_state(k) = s_T4;
@@ -143,7 +147,7 @@ for k = 1:n_mac
    end
    %deltaP/omega filter
    if ~isempty(dpw_con)
-      k_dpw = find(mac_int(mac_dpw)==k);
+      k_dpw = find(g.mac.mac_int(mac_dpw)==k);
       if ~isempty(k_dpw)
          state(k) = state(k) + 6;
          dpw_state(k)=1;
@@ -152,12 +156,12 @@ for k = 1:n_mac
 
    % turbine governors
    if ~isempty(g.tg.tg_con)
-      k_tg = find(mac_int(mac_tg)==k);
+      k_tg = find(g.mac.mac_int(mac_tg)==k);
       if ~isempty(k_tg)
          state(k) = state(k) + 3;
          tg_state(k) = 1;
       end
-      k_tgh = find(mac_int(mac_tgh)==k);
+      k_tgh = find(g.mac.mac_int(mac_tgh)==k);
       if ~isempty(k_tgh)
          state(k) = state(k) + 5;
          tgh_state(k) = 1;
@@ -169,7 +173,7 @@ n_mot_states = 0;
 if n_mot~=0
    state_mot(1:n_mot) = 3*ones(n_mot,1);
    n_mot_states = sum(state_mot);
-   state(n_mac+1:ngm) = 3*ones(n_mot,1);
+   state(g.mac.n_mac+1:ngm) = 3*ones(n_mot,1);
 end 
 
 % induction generator

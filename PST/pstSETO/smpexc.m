@@ -1,73 +1,44 @@
 function smpexc(i,k,flag)
-% Syntax: [f] = smpexc(i,k,flag) 
-% 8:51 am January 29, 1999
+%SMPEXC is a simple excitation system, (exc_con(i,1)=0)
+% SMPPI is a simple excitation system, (exc_con(i,1)=0) with vectorized
+% computation option.
 %
-% Purpose: simple excitation system, (exc_con(i,1)=0)
-%            with vectorized computation option
-%           
-% Input: i - generator number
-%            0, vectorized computation
-%        k - integer time
-%        bus - solved loadflow bus data
-%        flag - 0 - initialization
-%               1 - network interface computation
-%               2 - generator dynamics computation
-%        
+% Syntax: smpexc(i,k,flag) 
 %
-% Output: f - dummy variable 
+%   Input: 
+%   i - generator number
+%           0 for vectorized computation
+%   k - integer time (data index)
+%   bus - solved loadflow bus data
+%   flag -  0 - initialization
+%          	1 - network interface computation
+%          	2 - generator dynamics computation 
 %
-
-% Files:
+%   Output: 
+%   VOID
 %
-% See Also: exc_dc12, exc_st3
-
-% Algorithm:
-%
-% Calls:
-%
-% Call By:
-
-% (c) Copyright 1991 Joe H. Chow - All Rights Reserved
-
-% History (in reverse chronological order)
-% Error correction January 1999
-% in non-vector dynamics calculation
-% Efd(i,k) = exc_cin(i,9); changed to Efd(i,k) = exc_con(i,9);
-% Version:2.1
-% Date:August 1997
-% Author:Graham Rogers
-% Purpose:Reversed change in exc_sig referencing
-%         Added pss_out to free exc_sig for other control functions
-%
-% Version:2.0
-% Date:June 1996
-% Author:Graham Rogers
-% Purpose:Modified vectorization to allow different exciters
-% Modification:	note change in way exc_sig is referenced
-%               i.e., in terms of the generator number and not the
-%               exciter number
-
-% Version:  1.0
-% Author:   Joe H. Chow
-% Date:     March 1991
-
+%   History:
+%   Date        Time    Engineer        Description
+%   03/xx/91    xx:xx   Joe H. Chow     Version 1.0
+%   (c) Copyright 1991 Joe H. Chow - All Rights Reserved
+%   01/29/99    08:51   -               -
+%   06/xx/99    xx:xx   Graham Rogers   Version 2.0 Modified vectorization to allow different exciters.
+%                                       note change in way exc_sig is referenced
+%                                       i.e., in terms of the generator number and not the
+%                                       exciter number
+%   08/XX/97    XX:XX   Graham Rogers   Version 2.1 Reversed change in exc_sig referencing
+%                                       Added pss_out to free exc_sig for other control functions
+%   01/29/99    08:51   -               Error Correction in non-vector dynamics calculation
+%                                       Efd(i,k) = exc_cin(i,9); changed to Efd(i,k) = exc_con(i,9);
+%   06/19/20    10:34   Thad Haines     Revised format of globals and internal function documentation
 
 % system variables
 global  psi_re psi_im cur_re cur_im
 
-% synchronous machine variables
-global  vex eterm mac_int
-
-% % excitation system variables
-% global  exc_con exc_pot Efd V_R V_A V_As R_f V_FB V_TR V_B
-% global  dEfd dV_R dV_As dR_f dV_TR
-% global  exc_sig
-% global  smp_idx n_smp ;
-% global  smp_TA smp_TA_idx smp_noTA_idx s smp_TB smp_TB_idx smp_noTB_idx;
-% global  smp_TR smp_TR_idx  smp_noTR_idx;
-
 % pss variables
 global pss_out 
+
+% Combined global
 global g
 
 if i ~= 0
@@ -82,62 +53,62 @@ end
 
 if flag == 0 % initialization
    if i ~= 0  % scalar computation
-     n = mac_int(g.exc.exc_con(i,2)); % machine number
-     g.exc.Efd(i,1) = vex(n,1);
+     n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
+     g.exc.Efd(i,1) = g.mac.vex(n,1);
      g.exc.V_A(i,1) = g.exc.Efd(i,1)/g.exc.exc_con(i,4); % laglead
      g.exc.V_As(i,1) = g.exc.V_A(i,1); % leadlag state variable
-     g.exc.V_TR(i,1)= eterm(n,1); % input filter state
+     g.exc.V_TR(i,1)= g.mac.eterm(n,1); % input filter state
      err = g.exc.V_A(i,1); % summing junction error
      if g.exc.exc_con(i,6)~=0
        g.exc.exc_pot(i,5) = g.exc.exc_con(i,7)/g.exc.exc_con(i,6);
      else
        g.exc.exc_pot(i,5)=1;
      end
-     g.exc.exc_pot(i,3) = eterm(n,1)+err; % reference voltage
+     g.exc.exc_pot(i,3) = g.mac.eterm(n,1)+err; % reference voltage
     
    else  % vectorized computation
 
      if g.exc.n_smp ~= 0
-       n = mac_int(g.exc.exc_con(g.exc.smp_idx,2)); % machine number with simple exciters
-       g.exc.Efd(g.exc.smp_idx,1) = vex(n,1);
+       n = g.mac.mac_int(g.exc.exc_con(g.exc.smp_idx,2)); % machine number with simple exciters
+       g.exc.Efd(g.exc.smp_idx,1) = g.mac.vex(n,1);
        g.exc.V_A(g.exc.smp_idx,1) = g.exc.Efd(g.exc.smp_idx,1)./g.exc.exc_con(g.exc.smp_idx,4); % laglead
        g.exc.V_As(g.exc.smp_idx,1) = g.exc.V_A(g.exc.smp_idx,1); % leadlag state variable
-       g.exc.V_TR(g.exc.smp_idx,1) = eterm(n,1); % input filter state
+       g.exc.V_TR(g.exc.smp_idx,1) = g.mac.eterm(n,1); % input filter state
        err = g.exc.V_A(g.exc.smp_idx,1); % summing junction error
        g.exc.exc_pot(g.exc.smp_idx,5) = ones(g.exc.n_smp,1);
        TB = g.exc.smp_TB_idx;
        if ~isempty(TB)
          g.exc.exc_pot(g.exc.smp_idx(TB),5) = g.exc.exc_con(g.exc.smp_idx(TB),7)./g.exc.exc_con(g.exc.smp_idx(TB),6);
        end
-       g.exc.exc_pot(g.exc.smp_idx,3) = eterm(n,1)+err; % reference voltage
+       g.exc.exc_pot(g.exc.smp_idx,3) = g.mac.eterm(n,1)+err; % reference voltage
      end
    end
 end
 
 if flag == 1 % network interface computation
    if i ~= 0 % scalar computation
-     n = mac_int(g.exc.exc_con(i,2)); % machine number
+     n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
      if g.exc.exc_con(i,5)~=0
-       vex(n,k) = g.exc.Efd(i,k); % field voltage for machines
+       g.mac.vex(n,k) = g.exc.Efd(i,k); % field voltage for machines
      else
        if g.exc.exc_con(i,6)==0
-         vex(n,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
+         g.mac.vex(n,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
                    + pss_out(i,k))*g.exc.exc_con(i,4);
        else
          g.exc.V_A(i,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)+pss_out(i,k))...
                   *g.exc.exc_pot(i,5) + (1.-g.exc.exc_pot(i,5))*g.exc.V_As(i,k);
-         vex(n,k) = g.exc.V_A(i,k)*g.exc.exc_con(i,4);
+         g.mac.vex(n,k) = g.exc.V_A(i,k)*g.exc.exc_con(i,4);
        end
      end 
    else      % vectorized computation
 
      if g.exc.n_smp ~=0 % check for any simple exciters
-        n = mac_int(g.exc.exc_con(g.exc.smp_idx,2)); % machine numbers for simple exciters
+        n = g.mac.mac_int(g.exc.exc_con(g.exc.smp_idx,2)); % machine numbers for simple exciters
         % field voltage for machines having TA and TB  zero
         not_TATB = find((g.exc.smp_TA + g.exc.smp_TB)<0.001);
         if ~isempty(not_TATB)
           n_nTATB = n(not_TATB);% machine numbers for exciters with TA & TB zero
-          vex(n_nTATB,k) = (g.exc.exc_sig(g.exc.smp_idx(not_TATB),k)...
+          g.mac.vex(n_nTATB,k) = (g.exc.exc_sig(g.exc.smp_idx(not_TATB),k)...
                            +g.exc.exc_pot(g.exc.smp_idx(not_TATB),3)-...
                            g.exc.V_TR(g.exc.smp_idx(not_TATB),k) + ...
                            pss_out(g.exc.smp_idx(not_TATB),k))...
@@ -155,14 +126,14 @@ if flag == 1 % network interface computation
                                 .*g.exc.exc_pot(g.exc.smp_idx(TB),5) + ...
                                 (ones(length(TB),1)-...
                                 g.exc.exc_pot(g.exc.smp_idx(TB),5)).*g.exc.V_As(g.exc.smp_idx(TB),k);
-           vex(n_TB,k) = g.exc.V_A(g.exc.smp_idx(TB),k).*g.exc.exc_con(g.exc.smp_idx(TB),4);
+           g.mac.vex(n_TB,k) = g.exc.V_A(g.exc.smp_idx(TB),k).*g.exc.exc_con(g.exc.smp_idx(TB),4);
         end 
 
         % field voltage for non zero TA
         TA=g.exc.smp_TA_idx;
         if ~isempty(TA)
            n_TA = n(TA); % machine number 
-           vex(n_TA,k) = g.exc.Efd(g.exc.smp_idx(TA),k); % field voltage for machines with TA
+           g.mac.vex(n_TA,k) = g.exc.Efd(g.exc.smp_idx(TA),k); % field voltage for machines with TA
         end 
      end
   end
@@ -170,12 +141,12 @@ end
 
 if flag == 2 % exciter dynamics calculation
   if i ~= 0 % scalar computation
-     n = mac_int(g.exc.exc_con(i,2)); % machine number
+     n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
      if g.exc.exc_con(i,3)== 0 %no input filter
         g.exc.dV_TR(i,k) = 0;
-        g.exc.V_TR(i,k)=eterm(n,k);
+        g.exc.V_TR(i,k)=g.mac.eterm(n,k);
      else
-        g.exc.dV_TR(i,k)=(eterm(n,k)-g.exc.V_TR(i,k))/g.exc.exc_con(i,3);
+        g.exc.dV_TR(i,k)=(g.mac.eterm(n,k)-g.exc.V_TR(i,k))/g.exc.exc_con(i,3);
      end
      err = g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
            + pss_out(i,k);	
@@ -219,17 +190,17 @@ if flag == 2 % exciter dynamics calculation
   
     if g.exc.n_smp~=0
          % machine numbers
-         n = mac_int(g.exc.exc_con(g.exc.smp_idx,2));
+         n = g.mac.mac_int(g.exc.exc_con(g.exc.smp_idx,2));
          TR = g.exc.smp_TR_idx;
          no_TR = g.exc.smp_noTR_idx;
          if ~isempty(no_TR) % some exciters have zero TR
            n_nTR = n(no_TR);
            g.exc.dV_TR(g.exc.smp_idx(no_TR),k) = zeros(length(no_TR),1);
-           g.exc.V_TR(g.exc.smp_idx(no_TR),k) = eterm(n_nTR,k);
+           g.exc.V_TR(g.exc.smp_idx(no_TR),k) = g.mac.eterm(n_nTR,k);
          end
          if ~isempty(TR) %some exciters have nonzero TR
            n_TR = n(TR);
-           g.exc.dV_TR(g.exc.smp_idx(TR),k) = (eterm(n_TR,k)-...
+           g.exc.dV_TR(g.exc.smp_idx(TR),k) = (g.mac.eterm(n_TR,k)-...
                                 g.exc.V_TR(g.exc.smp_idx(TR),k))...
                               ./g.exc.exc_con(g.exc.smp_idx(TR),3);
          end

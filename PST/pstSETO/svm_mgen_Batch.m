@@ -72,40 +72,39 @@ tic % start timer
 %close %graphics windows
 % set up global variables
 
-%pst_var
-% copied from pst_var for global highlighs 06/11/20 -thad
-% system variables
+% %pst_var
+% % copied from pst_var for global highlighs 06/11/20 -thad
+% % system variables
 global  basmva basrad syn_ref mach_ref sys_freq
 global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
 global  lmon_con
+% 
+% % synchronous machine variables
+% global  mac_con mac_pot mac_int ibus_con
+% global  mac_ang mac_spd eqprime edprime psikd psikq
+% global  curd curq curdg curqg fldcur
+% global  psidpp psiqpp vex eterm theta ed eq 
+% global  pmech pelect qelect
+% global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+% global  n_mac n_em n_tra n_sub n_ib
+% global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+% global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+% global pm_sig n_pm
 
-% synchronous machine variables
-global  mac_con mac_pot mac_int ibus_con
-global  mac_ang mac_spd eqprime edprime psikd psikq
-global  curd curq curdg curqg fldcur
-global  psidpp psiqpp vex eterm theta ed eq 
-global  pmech pelect qelect
-global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
-global  n_mac n_em n_tra n_sub n_ib
-global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
-global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
-  
-global pm_sig n_pm
-
-% excitation system variables
-global  exc_con exc_pot n_exc
-global  Efd V_R V_A V_As R_f V_FB V_TR V_B
-global  dEfd dV_R dV_As dR_f dV_TR
-global  exc_sig 
-global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
-global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
-global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
-global smp_TR smp_TR_idx smp_no_TR_idx ;
-global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
-global dc_TE  dc_TE_idx dc_noTE_idx;
-global dc_TF dc_TF_idx dc_TR dc_TR_idx 
-global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
-global st3_TR st3_TR_idx st3_noTR_idx;
+% % excitation system variables
+% global  exc_con exc_pot n_exc
+% global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+% global  dEfd dV_R dV_As dR_f dV_TR
+% global  exc_sig 
+% global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+% global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+% global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+% global smp_TR smp_TR_idx smp_no_TR_idx ;
+% global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+% global dc_TE  dc_TE_idx dc_noTE_idx;
+% global dc_TF dc_TF_idx dc_TR dc_TR_idx 
+% global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+% global st3_TR st3_TR_idx st3_noTR_idx;
 
 % non-conforming load variables
 global  load_con load_pot nload
@@ -191,7 +190,7 @@ global v_coni dv_coni
 global sw_con  scr_con
 
 % pss design
-global ibus_con  netg_con  stab_con
+global  netg_con  stab_con
 
 % end copied from pst_far
 
@@ -233,12 +232,15 @@ dci_dc=[]; dcr_dc=[];
 % end
 dfile = 'DataFile';
 eval(dfile);
+
+handleNewGlobals
+
 % check for valid dynamic data file
-if isempty(mac_con)
+if isempty(g.mac.mac_con)
    error(' the selected file is not a valid data file')
 end
 
-handleNewGlobals
+
 
 %basdat = inputdlg({'Base MVA:','Base Frequency Hz:'},'Input Base Data',1,{'100','60'}); 
 basdat = {'100';'60'};
@@ -303,19 +305,19 @@ g.rlmod.n_rlmod = 0;
 n_pwrmod = 0;
 % note dc_indx called in load flow
 mac_indx;% identifies generators
-ntot = n_mac+n_mot+n_ig;
-ngm = n_mac+n_mot;
-pm_sig = zeros(n_mac,2);
+ntot = g.mac.n_mac+n_mot+n_ig;
+ngm = g.mac.n_mac+n_mot;
+g.mac.pm_sig = zeros(g.mac.n_mac,2);
 mac_exc=0;
 % check for infinite buses
-if n_ib~=0
+if g.mac.n_ib~=0
    %remove controls associated with infinite bus generators
    %remove exciters
    if ~isempty(g.exc.exc_con)
       g.exc.n_exc = length(g.exc.exc_con(:,1));
       net_idx = zeros(g.exc.n_exc,1);
-      for j = 1:n_ib
-         net_idx = net_idx | g.exc.exc_con(:,2) == mac_con(mac_ib_idx(j),1);
+      for j = 1:g.mac.n_ib
+         net_idx = net_idx | g.exc.exc_con(:,2) == g.mac.mac_con(g.mac.mac_ib_idx(j),1);
       end
       if length(net_idx)==1;
          if net_idx ==1
@@ -331,8 +333,8 @@ if n_ib~=0
    if ~isempty(pss_con)
       n_pss = length(pss_con(:,1));
       net_idx = zeros(n_pss,1);
-      for j = 1:n_ib
-         net_idx = net_idx | pss_con(:,2) == mac_con(mac_ib_idx(j),1);
+      for j = 1:g.mac.n_ib
+         net_idx = net_idx | pss_con(:,2) == g.mac.mac_con(g.mac.mac_ib_idx(j),1);
       end
       if length(net_idx)==1
          if net_idx == 1;pss_con = [];end
@@ -346,8 +348,8 @@ if n_ib~=0
    if ~isempty(dpw_con)
       n_dpw = length(dpw_con(:,1));
       net_idx = zeros(n_dpw,1);
-      for j = 1:n_ib
-         net_idx = net_idx|dpw_con(:,1) == mac_con(mac_ib_idx(j),1);
+      for j = 1:g.mac.n_ib
+         net_idx = net_idx|dpw_con(:,1) == g.mac.mac_con(g.mac.mac_ib_idx(j),1);
       end
       if length(net_idx)==1
          if net_idx == 1;dpw_con = [];end
@@ -361,8 +363,8 @@ if n_ib~=0
    if ~isempty(g.tg.tg_con)
       g.tg.n_tg = length(g.tg.tg_con(:,1));
       net_idx= zeros(g.tg.n_tg,1);
-      for j=1:n_ib
-         net_idx =net_idx| g.tg.tg_con(:,2) == mac_con(mac_ib_idx(j),1);
+      for j=1:g.mac.n_ib
+         net_idx =net_idx| g.tg.tg_con(:,2) == g.mac.mac_con(g.mac.mac_ib_idx(j),1);
       end
       if length(net_idx)==1
          if net_idx==1
@@ -378,7 +380,7 @@ end
 
 if ~isempty(g.exc.exc_con)
    exc_indx;%identifies exciters
-   mac_exc = mac_int(g.exc.exc_con(:,2));
+   mac_exc = g.mac.mac_int(g.exc.exc_con(:,2));
 else
    g.exc.n_exc=0;
 end
@@ -386,14 +388,14 @@ end
 mac_pss=0;
 if ~isempty(pss_con)
    pss_indx;%identifies power system stabilizers
-   mac_pss=mac_int(pss_con(:,2));
+   mac_pss= g.mac.mac_int(pss_con(:,2));
 else
    n_pss=0;
 end
 mac_dpw=0;
 if ~isempty(dpw_con)
    dpwf_indx;%identifies deltaP/omega filters
-   mac_dpw=mac_int(dpw_con(:,1));
+   mac_dpw= g.mac.mac_int(dpw_con(:,1));
 else
    n_dpw=0;
 end
@@ -402,8 +404,8 @@ mac_tg=0;
 mac_tgh=0;
 if ~isempty(g.tg.tg_con)
    tg_indx;%identifies turbine/governor
-   mac_tg = mac_int(g.tg.tg_con(g.tg.tg_idx,2));
-   mac_tgh = mac_int(g.tg.tg_con(g.tg.tgh_idx,2));
+   mac_tg = g.mac.mac_int(g.tg.tg_con(g.tg.tg_idx,2));
+   mac_tgh = g.mac.mac_int(g.tg.tg_con(g.tg.tgh_idx,2));
 else
    g.tg.n_tg =0;
    g.tg.n_tgh = 0;
@@ -489,7 +491,7 @@ dc_cont(0,1,1,bus,0); % initialize the dc controls - sets up data for red_ybus
 % dc link initialization alters the bus matrix
 v = ones(length(bus(:,1)),2);
 bus_v=v;
-theta = zeros(length(bus(:,1)),2);
+g.mac.theta = zeros(length(bus(:,1)),2);
 disp(' ')
 disp('Performing linearization')
 % set line parameters
@@ -509,7 +511,7 @@ if isempty(load_con)
 else
    nload = length(load_con(:,1));
 end
-state = zeros(n_mac,1);
+state = zeros(g.mac.n_mac,1);
 gen_state = state;
 TR_state = state;
 TB_state = state;
@@ -521,15 +523,15 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(n_mac+n_mot+n_ig+n_svc+n_tcsc ...
+state = zeros(g.mac.n_mac+n_mot+n_ig+n_svc+n_tcsc ...
     +g.lmod.n_lmod + g.rlmod.n_rlmod+2*n_pwrmod+n_dcl,1);
-max_state = 6*n_mac + 5*g.exc.n_exc+ 3*n_pss+ 6*n_dpw ...
+max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*n_pss+ 6*n_dpw ...
     + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
     2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
-theta(:,1) = bus(:,3)*pi/180;
-v(:,1) = bus(:,2).*exp(jay*theta(:,1));
+g.mac.theta(:,1) = bus(:,3)*pi/180;
+v(:,1) = bus(:,2).*exp(jay*g.mac.theta(:,1));
 if n_conv ~= 0
    % convert dc LT to Equ HT bus
    Pr = bus(rec_ac_bus,6);
@@ -541,16 +543,16 @@ if n_conv ~= 0
    i_aci = (Pi - jay*Qi)./conj(VLT(i_idx));
    v(rec_ac_bus,1) = VLT(r_idx) + jay*dcc_pot(:,2).*i_acr;
    v(inv_ac_bus,1) = VLT(i_idx) + jay*dcc_pot(:,4).*i_aci;
-   theta(ac_bus,1) = angle(v(ac_bus,1));
+   g.mac.theta(ac_bus,1) = angle(v(ac_bus,1));
 end
 bus_v(:,1) = v(:,1);  
 v(:,2) = v(:,1);
 bus_v(:,2)=v(:,1);
-theta(:,2) = theta(:,1);
+g.mac.theta(:,2) = g.mac.theta(:,1);
 % find total number of states
 ns_file
 NumStates = sum(state);
-g.exc.exc_sig = zeros(n_mac,2);
+g.exc.exc_sig = zeros(g.mac.n_mac,2);
 
 if n_dpw~=0; dpw_out = zeros(n_dpw,2);else dpw_out = zeros(1,2);end
 if g.tg.n_tg ~=0||g.tg.n_tgh ~= 0
@@ -592,25 +594,26 @@ else
    dc_sig = zeros(2,2);
 end
 % set initial state and rate matrices to zero
+nMacZero = zeros(g.mac.n_mac,2);
+psi_re = nMacZero;
+psi_im = nMacZero;
+psi = nMacZero;
 
-eterm = zeros(n_mac,2);
-pelect = zeros(n_mac,2);
-qelect = zeros(n_mac,2);
-psi_re = zeros(n_mac,2);
-psi_im = zeros(n_mac,2);
-psi = zeros(n_mac,2);
-mac_ang = zeros(n_mac,2);
-mac_spd = zeros(n_mac,2);
-edprime = zeros(n_mac,2);
-eqprime = zeros(n_mac,2);
-psikd = zeros(n_mac,2);
-psikq = zeros(n_mac,2);
-dmac_ang = zeros(n_mac,2);
-dmac_spd = zeros(n_mac,2);
-dedprime = zeros(n_mac,2);
-deqprime = zeros(n_mac,2);
-dpsikd = zeros(n_mac,2);
-dpsikq = zeros(n_mac,2);
+g.mac.eterm = nMacZero;
+g.mac.pelect = nMacZero;
+g.mac.qelect = nMacZero;
+g.mac.mac_ang = nMacZero;
+g.mac.mac_spd = nMacZero;
+g.mac.edprime = nMacZero;
+g.mac.eqprime = nMacZero;
+g.mac.psikd = nMacZero;
+g.mac.psikq = nMacZero;
+g.mac.dmac_ang = nMacZero;
+g.mac.dmac_spd = nMacZero;
+g.mac.dedprime = nMacZero;
+g.mac.deqprime = nMacZero;
+g.mac.dpsikd = nMacZero;
+g.mac.dpsikq = nMacZero;
 
 if g.exc.n_exc~=0
    g.exc.V_TR = zeros(g.exc.n_exc,2);
@@ -689,9 +692,9 @@ end
 % set dimensions for A matrix and permutation matrix
 a_mat = zeros(NumStates);
 p_mat = sparse(zeros(NumStates,max_state));
-c_spd = zeros(length(not_ib_idx),NumStates);
-c_p = zeros(length(not_ib_idx),NumStates);
-c_t = zeros(length(not_ib_idx),NumStates);
+c_spd = zeros(length(g.mac.not_ib_idx),NumStates);
+c_p = zeros(length(g.mac.not_ib_idx),NumStates);
+c_t = zeros(length(g.mac.not_ib_idx),NumStates);
 
 %determine p_mat: converts the vector of length max_states to 
 %a column of a_mat or b
@@ -726,12 +729,12 @@ if nload~=0
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);%vnc is a dummy variable
    cur(:,1) = cur(:,1) + Y_gncprf*v(bus_intprf(load_con(:,1)),1);% modify currents for nc loads 
 end
-cur_re(1:n_mac,1) = real(cur(1:n_mac,1)); 
-cur_im(1:n_mac,1) = imag(cur(1:n_mac,1));
-cur_mag(1:n_mac,1) = abs(cur(1:n_mac,1)).*mac_pot(:,1);
+cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
+cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
+cur_mag(1:g.mac.n_mac,1) = abs(cur(1:g.mac.n_mac,1)).*g.mac.mac_pot(:,1);
 if n_mot~=0
-   idmot(:,1) = -real(cur(n_mac+1:ngm,1));%induction motor currents
-   iqmot(:,1) = -imag(cur(n_mac+1:ngm,1));%current out of network
+   idmot(:,1) = -real(cur(g.mac.n_mac+1:ngm,1));%induction motor currents
+   iqmot(:,1) = -imag(cur(g.mac.n_mac+1:ngm,1));%current out of network
 end 
 if n_ig~=0
    idig(:,1) = -real(cur(ngm+1:ntot,1));%induction generator currents
@@ -749,8 +752,8 @@ if n_conv ~=0
    i_dc(i_idx,1) = i_dci(:,1);
 end
 
-telect(:,1) = pelect(:,1).*mac_pot(:,1)...
-   + cur_mag(:,1).*cur_mag(:,1).*mac_con(:,5);
+telect(:,1) = g.mac.pelect(:,1).*g.mac.mac_pot(:,1)...
+   + cur_mag(:,1).*cur_mag(:,1).*g.mac.mac_con(:,5);
 % DeltaP/omega filter
 dpwf(0,1,bus,flag);
 %pss 
@@ -806,12 +809,12 @@ sys_freq(2) = 1;
 
 %set states
 %generators
-mac_ang(:,2) = mac_ang(:,1);
-mac_spd(:,2) = mac_spd(:,1);
-eqprime(:,2) = eqprime(:,1);
-psikd(:,2) = psikd(:,1);
-edprime(:,2) = edprime(:,1);
-psikq(:,2)=psikq(:,1);
+g.mac.mac_ang(:,2) = g.mac.mac_ang(:,1);
+g.mac.mac_spd(:,2) = g.mac.mac_spd(:,1);
+g.mac.eqprime(:,2) = g.mac.eqprime(:,1);
+g.mac.psikd(:,2) = g.mac.psikd(:,1);
+g.mac.edprime(:,2) = g.mac.edprime(:,1);
+g.mac.psikq(:,2)= g.mac.psikq(:,1);
 
 %exciters
 if g.exc.n_exc~=0
@@ -885,9 +888,9 @@ end
 % set interconnection variables in perturbation stage to defaults
 % this accounts for any generators which do not have the
 % corresponding controls
-eterm(:,2) = eterm(:,1);
-pmech(:,2) = pmech(:,1);
-vex(:,2) = vex(:,1);
+g.mac.eterm(:,2) = g.mac.eterm(:,1);
+g.mac.pmech(:,2) = g.mac.pmech(:,1);
+g.mac.vex(:,2) = g.mac.vex(:,1);
 g.exc.exc_sig(:,2) = g.exc.exc_sig(:,1);
 g.tg.tg_sig(:,2) = g.tg.tg_sig(:,1);
 svc_sig(:,2) = svc_sig(:,1);
@@ -914,8 +917,8 @@ end
 p_cont
 
 % setup matrix giving state numbers for generators
-mac_state = zeros(sum(state(1:n_mac)),3);
-for k = 1:n_mac
+mac_state = zeros(sum(state(1:g.mac.n_mac)),3);
+for k = 1:g.mac.n_mac
    if state(k)~=0
       if k == 1
          j = 1;
@@ -928,12 +931,15 @@ for k = 1:n_mac
       mac_state(j:jj,3) = k*ones(state(k),1);
    end
 end
+
 ang_idx = find(mac_state(:,2)==1);
-b_pm = zeros(NumStates,n_mac-n_ib);b_pm(ang_idx+1,:)=diag(0.5./mac_con(not_ib_idx,16));
+b_pm = zeros(NumStates,g.mac.n_mac-g.mac.n_ib);
+
+b_pm(ang_idx+1,:)= diag(0.5./g.mac.mac_con(g.mac.not_ib_idx,16));
 % Form transformation matrix to get rid of zero eigenvalue
 % Use generator 1 as reference
 % check for infinite buses
-if isempty(ibus_con)
+if isempty(g.mac.ibus_con)
    ref_gen = 'N';%questdlg('Set gen 1 as reference');
    if strcmp(ref_gen,'Yes')
       p_ang = eye(NumStates);

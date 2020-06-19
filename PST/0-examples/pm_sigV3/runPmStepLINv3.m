@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstV3p1';
+pstVer =   'pstV3p1'; % 'pstV2P3'; % 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -83,6 +83,7 @@ end
 linSpd = y(:,5:6)'+ 1.0; % rotate into col vectors
 
 % collect pm...
+load pMechStepNonLin.mat pmech
 linPm = y(:,7:8)'+pmech(:,1);% rotate to vector
 save linResults.mat tL linV linSpd modSig linPm
 

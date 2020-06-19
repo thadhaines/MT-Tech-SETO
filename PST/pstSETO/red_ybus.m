@@ -60,14 +60,16 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] =...
 % 
 % ***********************************************************
 
-global basmva bus_int mac_int ind_int igen_int
+global basmva bus_int  ind_int igen_int
 
-global mac_con ind_con ind_pot load_con igen_con igen_pot 
+%global mac_con 
+global ind_con ind_pot load_con igen_con igen_pot 
 
 global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
 % power modulation variables
 global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st pwrmod_con
 
+global g
 
 jay = sqrt(-1);
 swing_bus = 1;
@@ -76,7 +78,7 @@ load_bus = 3;
 
 nline = length(line(:,1));     % number of lines
 nbus = length(bus_sol(:,1));     % number of buses
-[n,dummy] = size(mac_con);    % number of generators
+[n,dummy] = size(g.mac.mac_con);    % number of generators
 [nmot,dummy]=size(ind_con);	% number of induction motors
 [nig,dummy] = size(igen_con); % number of induction generators
 n_tot=n+nmot+nig;			% total number of machines
@@ -127,7 +129,7 @@ Ql = bus_sol(:,7);     % reactive power of loads
 
 %  buses with no generator data
 gen_exist = zeros(max(bus_sol(:,1)),1);
-gen_exist(round(mac_con(1:n,2))) = 1:n;
+gen_exist(round(g.mac.mac_con(1:n,2))) = 1:n;
 netgen= find(gen_exist(round(bus_sol(:,1))) < 1);% index of buses with no dynamic gen data
 Pl(netgen) = Pl(netgen) - bus_sol(netgen,4);  % convert generation 
 Ql(netgen) = Ql(netgen) - bus_sol(netgen,5);  %   to negative load
@@ -144,20 +146,20 @@ Y_b = sparse(1,1,0,n_tot,nbus);
 
 % extract appropriate xdprime and xdpprime from machine
 %   data
-ra=mac_con(:,5)*basmva./mac_con(:,3);
-testxpp= mac_con(:,8) ~= zeros(n,1);
+ra=g.mac.mac_con(:,5)*basmva./g.mac.mac_con(:,3);
+testxpp= g.mac.mac_con(:,8) ~= zeros(n,1);
 testxp = ~testxpp;  
 txpp=find(testxpp);
 txp=find(testxp);
 if ~isempty(txpp)
-   xd(txpp,1) = mac_con(txpp,8)*basmva./mac_con(txpp,3); %xppd 
+   xd(txpp,1) = g.mac.mac_con(txpp,8)*basmva./g.mac.mac_con(txpp,3); %xppd 
 end
 if ~isempty(txp)
-   xd(txp,1) = mac_con(txp,7)*basmva./mac_con(txp,3); %xpd
+   xd(txp,1) = g.mac.mac_con(txp,7)*basmva./g.mac.mac_con(txp,3); %xpd
 end 
 y(1:n,1) = ones(n,1)./(ra+jay*xd); 
    
-jg = bus_int(round(mac_con(:,2)));  % buses connected to
+jg = bus_int(round(g.mac.mac_con(:,2)));  % buses connected to
                                       % generator
 
 % check for multiple generators at a bus

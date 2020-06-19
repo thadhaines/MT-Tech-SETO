@@ -31,6 +31,13 @@ copyfile('d_2machineGov.m',[PSTpath 'DataFile.m']); % copy system data file to b
 delete([PSTpath 'mpm_sig.m']); % ensure sig file is empty
 copyfile('mpm_sig_PmStepSETO.m',[PSTpath 'mpm_sig.m']); % copy simulation specific data file to batch run location
 
+
+% Use 'new' mac_sub model
+delete([PSTpath 'mac_sub.m']); % ensure sig file is empty
+copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % copy simulation specific data file to batch run location
+
+
+
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
 %% Simulation variable cleanup
@@ -62,10 +69,10 @@ clear all; close all;
 svm_mgen_Batch  
 
 %% MATLAB linear system creation using linearized PST results
-tL = (0:0.01:5); % time to match PST d file time
+tL = (0:0.01:15); % time to match PST d file time
 modSig=zeros(1,size(tL,2)); % create blank mod signal same length as tL vector
 modSig(find(tL> 1.0 ))= -0.025; % mirror logic from exciterModSig into input vector
-%modSig(find(tL>5))= -0.05; % mirror logic from exciterModSig into input vector
+modSig(find(tL>5))= 0; % mirror logic from exciterModSig into input vector
 %modSig(find(tL>10))= 0; % mirror logic from exciterModSig into input vector
 bsys = b_pm;
 csys = [c_v;c_spd;c_pm];
@@ -83,7 +90,7 @@ end
 linSpd = y(:,5:6)'+ 1.0; % rotate into col vectors
 
 % collect pm...
-linPm = y(:,7:8)'+pmech(:,1);% rotate to vector
+linPm = y(:,7:8)'+g.mac.pmech(:,1);% rotate to vector
 save linResults.mat tL linV linSpd modSig linPm
 
 %% Clean up modulation file alterations.
@@ -91,6 +98,10 @@ save linResults.mat tL linV linSpd modSig linPm
 load PSTpath.mat
 delete([PSTpath 'mpm_sig.m']); % remove simulation specific ml_sig file
 copyfile([PSTpath 'mpm_sig_ORIG.m'],[PSTpath 'mpm_sig.m']); % Replace original file
+
+% Return new sub transient model back to OG
+delete([PSTpath 'mac_sub.m']); % ensure sig file is empty
+copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % copy simulation specific data file to batch run location
 
 %% temp file clean up
 delete('PSTpath.mat')
@@ -104,8 +115,7 @@ load linResults.mat
 figure
 hold on
 plot(tL,modSig)
-%plot(t,g.tg.tg_sig,'--')
-plot(t,pm_sig,'--')
+plot(t,g.mac.pm_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Governor Pref Modulation Signal')
 
@@ -132,7 +142,7 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-    plot(t,mac_spd(busN,:),'--')
+    plot(t,g.mac.mac_spd(busN,:),'--')
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end
@@ -148,7 +158,7 @@ legNames={};
 for busN=1:size(linPm,1)
     plot(tL,linPm(busN,:))
     legNames{end+1}= ['Gen Pm ', int2str(busN), ' Linear'];
-    plot(t,pmech(busN,:),'--')
+    plot(t,g.mac.pmech(busN,:),'--')
     legNames{end+1}= ['Gen Pm ', int2str(busN), ' non-Linear'];
 end
 legend(legNames,'location','best')
