@@ -51,7 +51,7 @@ if ~isempty(g.exc.exc_con)
     end
     
     %check for dc exciters
-    g.exc.dc_idx = find( (g.exc.exc_con(:,1) == 1) || (g.exc.exc_con(:,1)==2) );
+    g.exc.dc_idx = find( (g.exc.exc_con(:,1) == 1) | (g.exc.exc_con(:,1)==2) );
     if ~isempty(g.exc.dc_idx)
         g.exc.n_dc = length(g.exc.dc_idx);
     end

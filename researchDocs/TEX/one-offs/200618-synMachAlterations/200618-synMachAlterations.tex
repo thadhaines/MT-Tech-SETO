@@ -1,0 +1,183 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of synchronous machines using global g\\ }
+\lhead{Research \\ 6/18/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable the classical, transient (2-1axis), sub-transient, and NEW sub-transient machine PST models to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+    %% synchronous machine variables  
+    global  mac_con mac_pot mac_int ibus_con
+    global  mac_ang mac_spd eqprime edprime psikd psikq
+    global  curd curq curdg curqg fldcur
+    global  psidpp psiqpp vex eterm theta ed eq
+    global  pmech pelect qelect
+    global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+    global  n_mac n_em n_tra n_sub n_ib
+    global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+    global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+    global pm_sig n_pm 
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+% as g.mac.
+\end{verbatim}
+
+%===============================================================================
+\paragraph{mac\_indx}
+	\begin{itemize}
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+
+%===============================================================================
+\paragraph{handleNewGlobals.m}
+	\begin{itemize}
+		\item added if statement to check for mac\_con and ibus\_con
+	\end{itemize}
+
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+	\begin{itemize}
+		\item  added g to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{svm\_mgen\_Batch}
+	\begin{itemize}
+		\item  added g to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{i\_simu}
+	\begin{itemize}
+		\item added g to related machine variables n\_mac and theta
+	\end{itemize}
+
+%===============================================================================
+\paragraph{livePlot}
+	\begin{itemize}
+		\item  added g to related machine variables mac\_spd
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mac\_em}
+	\begin{itemize}
+		\item removed dummy return value
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mac\_sub}
+	\begin{itemize}
+		\item removed dummy return value
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mac\_sub\_NEW}
+	\begin{itemize}
+		\item removed dummy return value
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mac\_tra}
+	\begin{itemize}
+		\item removed dummy return value
+		\item added g to related machine variables
+		\item updated internal function documentation
+		\item removed comments so that x'd==x'q - was causing initialization errors.
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mac\_trip\_logic}
+	\begin{itemize}
+		\item added g to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{ns\_file}
+Should be functionalized... (?)
+	\begin{itemize}
+		\item added g to related machine variables (mostly mac\_int)
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_cont}
+Should be functionalized...(?)
+	\begin{itemize}
+		\item added g to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_file}
+Should be functionalized... (?)
+	\begin{itemize}
+		\item added g to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{p\_m\_file}
+Should be functionalized...
+	\begin{itemize}
+		\item added g to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{red\_ybus}
+	\begin{itemize}
+		\item added g  and appropriate prepending to related machine variables
+	\end{itemize}
+
+%===============================================================================
+\paragraph{smpexc}
+	\begin{itemize}
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{smppi}
+	\begin{itemize}
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{exc\_dc12}
+	\begin{itemize}
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{exc\_st3}
+	\begin{itemize}
+		\item added g to related machine variables
+		\item updated internal function documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{tg}
+	\begin{itemize}
+		\item added g to related machine variables
+	\end{itemize}
+
+
+
+
+\end{document}

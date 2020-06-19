@@ -85,21 +85,19 @@ warning('*** Declare Global Variables')
     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
     global  lmon_con
 
-    %% synchronous machine variables  - 47
-    global  mac_con mac_pot mac_int ibus_con
-    global  mac_ang mac_spd eqprime edprime psikd psikq
-    global  curd curq curdg curqg fldcur
-    global  psidpp psiqpp vex eterm theta ed eq
-    global  pmech pelect qelect
-    global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
-    global  n_mac n_em n_tra n_sub n_ib
-    global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
-    global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+%     %% synchronous machine variables  - 47
+%     global  mac_con mac_pot mac_int ibus_con
+%     global  mac_ang mac_spd eqprime edprime psikd psikq
+%     global  curd curq curdg curqg fldcur
+%     global  psidpp psiqpp vex eterm theta ed eq
+%     global  pmech pelect qelect
+%     global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+%     global  n_mac n_em n_tra n_sub n_ib
+%     global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+%     global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+%     global pm_sig n_pm 
 
     %% excitation system variables - 63
-    
-    global pm_sig n_pm % not exciter related?
-    
 %     global  exc_con exc_pot n_exc
 %     global  Efd V_R V_A V_As R_f V_FB V_TR V_B
 %     global  dEfd dV_R dV_As dR_f dV_TR
@@ -241,17 +239,18 @@ catch ME
    fprintf('*** Caught ERROR: %s\n',ME.message)
    fprintf('*** Continuing with simulation...\n')
 end 
+%% run script to handle legacy input to new global g approach
+handleNewGlobals
 
 % check for valid dynamic data file
-if isempty(mac_con)
+if isempty(g.mac.mac_con)
     error('mac_con is Empty - invalid/incomplete input data.')
 end
 if isempty(sw_con)
     error('sw_con is Empty - simulation has no switching data.')
 end
 
-%% run script to handle legacy input to new global g approach
-handleNewGlobals
+
 
 %% Allow Fbase and Sbase to be defined in batch runs
 % Handle varaible input system frequency
@@ -278,7 +277,7 @@ end
 %% other init operations
 basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
 syn_ref = 0 ;     % synchronous reference frame
-ibus_con = []; % ignore infinite buses in transient simulation % should be global? -thad 06/15/20
+g.mac.ibus_con = []; % ignore infinite buses in transient simulation % should be global? -thad 06/15/20
 
 %% Make sure bus max/min Q is the same as the pwrmod_con max/min Q
 if ~isempty(n_pwrmod)
@@ -312,7 +311,7 @@ end
 
 %% set indexes
 % note: dc index set in dc load flow
-mac_indx;
+mac_indx();
 exc_indx();
 tg_indx(); % functionalized 06/05/20 - thad
 dpwf_indx;
@@ -333,9 +332,10 @@ if isempty(n_ig)
     n_ig = 0; 
 end
 
-ntot = n_mac+n_mot+n_ig;
-ngm = n_mac + n_mot;
-n_pm = n_mac;
+ntot = g.mac.n_mac+n_mot+n_ig;
+ngm = g.mac.n_mac + n_mot;
+
+g.mac.n_pm = g.mac.n_mac; % into an init?
 
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
@@ -382,7 +382,7 @@ end
 k = sum(k_inc)+1; % k is the total number of time steps in the simulation
 
 t(k) = sw_con(n_switch,1);
-n = size(mac_con, 1) ;
+n = size(g.mac.mac_con, 1) ;
 n_bus = length(bus(:,1));
 
 % add time array t to global g - thad
@@ -504,25 +504,41 @@ end
 %% End of DC specific stuff? - continuation of zero intialization - 06/01/20 -thad
 
 v_p = z1;
-theta = zeros(n_bus+1,k);
-bus_v = zeros(n_bus+1,k);
-mac_ang = z; 
-mac_spd = z; 
-dmac_ang = z; 
-dmac_spd = z;
-pmech = z; 
-pelect = z; 
 mac_ref = z1;  
 sys_ref = z1;
-edprime = z; 
-eqprime = z; 
-dedprime = z; 
-deqprime = z;
-psikd = z; 
-psikq = z; 
-dpsikd = z; 
-dpsikq = z;
-pm_sig = z;
+bus_v = zeros(n_bus+1,k);
+
+cur_re = z; 
+cur_im = z; 
+psi_re = z; 
+psi_im = z;
+
+g.mac.theta = zeros(n_bus+1,k);
+g.mac.mac_ang = z; 
+g.mac.mac_spd = z; 
+g.mac.dmac_ang = z; 
+g.mac.dmac_spd = z;
+g.mac.pmech = z; 
+g.mac.pelect = z; 
+g.mac.edprime = z; 
+g.mac.eqprime = z; 
+g.mac.dedprime = z; 
+g.mac.deqprime = z;
+g.mac.psikd = z; 
+g.mac.psikq = z; 
+g.mac.dpsikd = z; 
+g.mac.dpsikq = z;
+g.mac.pm_sig = z;
+g.mac.curd = z; 
+g.mac.curq = z; 
+g.mac.curdg = z; 
+g.mac.curqg = z; 
+g.mac.fldcur = z;
+g.mac.ed = z; 
+g.mac.eq = z; 
+g.mac.eterm = z; 
+g.mac.qelect = z;
+g.mac.vex = z; 
 
 % modified to use global g - thad 06/05/20
 totGovs = g.tg.n_tg + g.tg.n_tgh;
@@ -577,20 +593,6 @@ dsdpw4 = z_dpw;
 dsdpw5 = z_dpw; 
 dsdpw6 = z_dpw;
 
-curd = z; 
-curq = z; 
-curdg = z; 
-curqg = z; 
-fldcur = z;
-ed = z; 
-eq = z; 
-eterm = z; 
-qelect = z;
-vex = z; 
-cur_re = z; 
-cur_im = z; 
-psi_re = z; 
-psi_im = z;
 
 %% exciter zero init
 ze = zeros(1,k);
@@ -614,7 +616,7 @@ g.exc.dR_f = ze;
 
 pss_out = ze; % seems related to pss more than exciters - thad 06/17/20
 
-%% machine zeros...
+%% machine zeros?..
 vdp = zm; 
 vqp = zm; 
 slip = zm;
@@ -703,17 +705,8 @@ else
     td_sig = zeros(1,k);
 end
 
-% if n_lmod ~= 0
-%     lmod_st = zeros(n_lmod,k); 
-%     dlmod_st = lmod_st; 
-%     lmod_sig = lmod_st;
-% else
-%     lmod_st = zeros(1,k); 
-%     dlmod_st = lmod_st; 
-%     lmod_sig = lmod_st;
-% end
 
-if g.lmod.n_lmod ~= 0 % future g.x code 06/01/20 -thad
+if g.lmod.n_lmod ~= 0 
     % initialize zeros for all states and signals associated with lmod
     g.lmod.lmod_st = zeros(g.lmod.n_lmod,k);
     g.lmod.dlmod_st = g.lmod.lmod_st;
@@ -780,8 +773,8 @@ y_switch % calculates the reduced y matrices for the different switching conditi
 disp('initializing other models...')
 
 %% step 2: initialization
-theta(1:n_bus,1) = bus(:,3)*pi/180;
-bus_v(1:n_bus,1) = bus(:,2).*exp(jay*theta(1:n_bus,1));
+g.mac.theta(1:n_bus,1) = bus(:,3)*pi/180;
+bus_v(1:n_bus,1) = bus(:,2).*exp(jay*g.mac.theta(1:n_bus,1));
 
 if n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of line current for svc damping controls
@@ -838,10 +831,10 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
     VHT(r_idx,1) = (VLT(r_idx) + jay*dcc_pot(:,2).*i_acr);
     VHT(i_idx,1) = (VLT(i_idx) + jay*dcc_pot(:,4).*i_aci);
     bus_v(ac_bus,1) = VHT;
-    theta(ac_bus,1) = angle(bus_v(ac_bus,1));
+    g.mac.theta(ac_bus,1) = angle(bus_v(ac_bus,1));
     % modify the bus matrix to the HT buses
     bus(ac_bus,2) = abs(bus_v(ac_bus,1));
-    bus(ac_bus,3) = theta(ac_bus,1)*180/pi;
+    bus(ac_bus,3) = g.mac.theta(ac_bus,1)*180/pi;
     SHT = VHT.*conj(IHT);
     bus(ac_bus,6) = real(SHT);
     bus(ac_bus,7) = imag(SHT);
@@ -852,7 +845,7 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
             b_num1 = dcr_dc{j,3};
             b_num2 = dcr_dc{j,4};
             conv_num = dcr_dc{j,2};
-            angdcr(j,:) = theta(bus_int(b_num1),1)-theta(bus_int(b_num2),1);
+            angdcr(j,:) = g.mac.theta(bus_int(b_num1),1)-g.mac.theta(bus_int(b_num2),1);
             dcrd_sig(j,:)=angdcr(j,:);
         end
     end
@@ -862,7 +855,7 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
             b_num1 = dci_dc{j,3};
             b_num2 = dci_dc{j,4};
             conv_num = dci_dc{j,2};
-            angdci(j,:) = theta(bus_int(b_num1),1)-theta(bus_int(b_num2),1);
+            angdci(j,:) = g.mac.theta(bus_int(b_num1),1)-g.mac.theta(bus_int(b_num2),1);
             dcid_sig(j,:) = angdci(j,:);
         end
     end
@@ -874,7 +867,7 @@ flag = 0;
 bus_int = bus_intprf;% pre-fault system
 
 disp('generators')
-mac_sub(0,1,bus,flag);
+mac_sub(0,1,bus,flag); % first 
 mac_tra(0,1,bus,flag);
 mac_em(0,1,bus,flag);
 mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
@@ -1064,7 +1057,7 @@ if ~isempty(dcsp_con)
     dc_line(0,1,1,bus,flag);
 end
 
-H_sum = sum(mac_con(:,16)./mac_pot(:,1));
+H_sum = sum(g.mac.mac_con(:,16)./g.mac.mac_pot(:,1));
 %% step 3: perform a predictor-corrector integration
 %
 % This doesn't seem to be very predictor correctory.... 5/15/20
@@ -1079,7 +1072,7 @@ ktmax = k_tot-k_inc(lswitch);
 bus_sim = bus;
 
 % added from v2.3 06/01/20 - thad
-mac_trip_flags = false(n_mac,1);
+mac_trip_flags = false(g.mac.n_mac,1);
 mac_trip_states = 0;
 
 %% Simulation loop start
@@ -1103,7 +1096,7 @@ while (kt<=ktmax)
         
         % mach_ref(k) = mac_ang(syn_ref,k);
         mach_ref(k) = 0;
-        pmech(:,k+1) = pmech(:,k);
+        g.mac.pmech(:,k+1) = g.mac.pmech(:,k);
         tmig(:,k+1) = tmig(:,k);
         
         if n_conv~=0
@@ -1194,7 +1187,7 @@ while (kt<=ktmax)
         
         %% apply gen trip - added from v2.3 - 06/01/20 - thad
         if sum(mac_trip_flags)>0.5
-            genBuses = mac_con(mac_trip_flags==1,2);
+            genBuses = g.mac.mac_con(mac_trip_flags==1,2);
             for kB=1:length(genBuses)
                 nL = find(genBuses(kB)==line_sim(:,1) | genBuses(kB)==line_sim(:,2));
                 if isempty(nL); error(' '); end
@@ -1215,7 +1208,7 @@ while (kt<=ktmax)
                 b_num1 = dcr_dc{jj,3};
                 b_num2 = dcr_dc{jj,4};
                 conv_num = dcr_dc{jj,2};
-                angdcr(jj,k) = (theta(bus_int(b_num1),k)-theta(bus_int(b_num2),k));
+                angdcr(jj,k) = (g.mac.theta(bus_int(b_num1),k)-g.mac.theta(bus_int(b_num2),k));
                 dcrd_sig(jj,k)=angdcr(jj,k);
                 st_state = tot_states+1; 
                 dcr_states = dcr_dc{jj,7}; 
@@ -1233,7 +1226,7 @@ while (kt<=ktmax)
                 b_num1 = dci_dc{jj,3};
                 b_num2 = dci_dc{jj,4};
                 conv_num = dci_dc{jj,2};
-                angdci(jj,k)=theta(bus_int(b_num1),k)-theta(bus_int(b_num2),k);
+                angdci(jj,k)=g.mac.theta(bus_int(b_num1),k)-g.mac.theta(bus_int(b_num2),k);
                 dcid_sig(jj,k)=(angdci(jj,k)-angdci(jj,k-1))/(t(k)-t(k-1));
                 st_state = tot_states+1; 
                 dci_states = dci_dc{jj,7}; 
@@ -1249,11 +1242,13 @@ while (kt<=ktmax)
         
         %% network interface for control models
         dpwf(0,k,bus_sim,flag);
+        
         mexc_sig(k);
         smpexc(0,k,flag);
         smppi(0,k,flag);
         exc_st3(0,k,flag);
         exc_dc12(0,k,flag);
+        
         mtg_sig(k);
         tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
@@ -1299,19 +1294,24 @@ while (kt<=ktmax)
         flag = 2;
         sys_freq(k) = 1.0; % why?... 5/21/20
         
-        mpm_sig(t(k),k);
+        mpm_sig(k);
+        
         mac_ind(0,k,bus_sim,flag);
         mac_igen(0,k,bus_sim,flag);
+        
         mac_sub(0,k,bus_sim,flag);
         mac_tra(0,k,bus_sim,flag);
         mac_em(0,k,bus_sim,flag);
+        
         dpwf(0,k,bus_sim,flag);
         pss(0,k,bus_sim,flag);
+        
         mexc_sig(k);
         smpexc(0,k,flag);
         smppi(0,k,flag);
         exc_st3(0,k,flag);
         exc_dc12(0,k,flag);
+        
         mtg_sig(k);
         tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
@@ -1457,12 +1457,12 @@ while (kt<=ktmax)
         
         %% following statements are predictor steps
         j = k+1;
-        mac_ang(:,j) = mac_ang(:,k) + h_sol*dmac_ang(:,k);
-        mac_spd(:,j) = mac_spd(:,k) + h_sol*dmac_spd(:,k);
-        edprime(:,j) = edprime(:,k) + h_sol*dedprime(:,k);
-        eqprime(:,j) = eqprime(:,k) + h_sol*deqprime(:,k);
-        psikd(:,j) = psikd(:,k) + h_sol*dpsikd(:,k);
-        psikq(:,j) = psikq(:,k) + h_sol*dpsikq(:,k);
+        g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*g.mac.dmac_ang(:,k);
+        g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + h_sol*g.mac.dmac_spd(:,k);
+        g.mac.edprime(:,j) = g.mac.edprime(:,k) + h_sol*g.mac.dedprime(:,k);
+        g.mac.eqprime(:,j) = g.mac.eqprime(:,k) + h_sol*g.mac.deqprime(:,k);
+        g.mac.psikd(:,j) = g.mac.psikd(:,k) + h_sol*g.mac.dpsikd(:,k);
+        g.mac.psikq(:,j) = g.mac.psikq(:,k) + h_sol*g.mac.dpsikq(:,k);
         
         % Exciter integration
         g.exc.Efd(:,j) = g.exc.Efd(:,k) + h_sol*g.exc.dEfd(:,k);
@@ -1529,7 +1529,7 @@ while (kt<=ktmax)
         % mach_ref(j) = mac_ang(syn_ref,j);
         mach_ref(j) = 0;
         % perform network interface calculations again with predicted states
-        mpm_sig(t(j),j);
+        mpm_sig(j);
         mac_ind(0,j,bus_sim,flag);
         mac_igen(0,j,bus_sim,flag);
         mac_sub(0,j,bus_sim,flag);
@@ -1594,7 +1594,7 @@ while (kt<=ktmax)
         
         % apply gen trip - copied from v2.3 - 06/01/20 - thad
         if sum(mac_trip_flags)>0.5
-            genBuses = mac_con(mac_trip_flags==1,2);
+            genBuses = g.mac.mac_con(mac_trip_flags==1,2);
             for kB=1:length(genBuses)
                 nL = find(genBuses(kB)==line_sim(:,1) | genBuses(kB)==line_sim(:,2));
                 if isempty(nL)
@@ -1609,7 +1609,7 @@ while (kt<=ktmax)
         %% solve
         h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
-        vex(:,j)=vex(:,k);
+        g.mac.vex(:,j) = g.mac.vex(:,k);
         cur_ord(:,j) = cur_ord(:,k);
         % calculate the new value of bus angles rectifier user defined control
         if ndcr_ud~=0
@@ -1618,7 +1618,7 @@ while (kt<=ktmax)
                 b_num1 = dcr_dc{jj,3};
                 b_num2 = dcr_dc{jj,4};
                 conv_num = dcr_dc{jj,2};
-                angdcr(jj,j) = theta(bus_int(b_num1),j)-theta(bus_int(b_num2),j);
+                angdcr(jj,j) = g.mac.theta(bus_int(b_num1),j)-g.mac.theta(bus_int(b_num2),j);
                 dcrd_sig(jj,j)=angdcr(jj,j);
                 st_state = tot_states+1; 
                 dcr_states = dcr_dc{jj,7}; 
@@ -1635,7 +1635,7 @@ while (kt<=ktmax)
                 b_num1 = dci_dc{jj,3};
                 b_num2 = dci_dc{jj,4};
                 conv_num = dci_dc{jj,2};
-                angdci(jj,j) = theta(bus_int(b_num1),j)-theta(bus_int(b_num2),j);
+                angdci(jj,j) = g.mac.theta(bus_int(b_num1),j)-g.mac.theta(bus_int(b_num2),j);
                 dcid_sig(jj,j) = (angdci(jj,j)-angdci(jj,k))/(t(j)-t(k));
                 st_state = tot_states+1; 
                 dci_states = dci_dc{jj,7}; 
@@ -1673,9 +1673,9 @@ while (kt<=ktmax)
                 B = line_sim(l_num,5);
                 tap = line_sim(l_num,6);phi = line_sim(l_num,7);
                 [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
-                if svc_bn == from_bus;
+                if svc_bn == from_bus
                     d_sig(jj,j)=abs(l_if);
-                elseif svc_bn==to_bus;
+                elseif svc_bn==to_bus
                     d_sig(jj,j)=abs(l_it);
                 end
             end
@@ -1847,12 +1847,12 @@ while (kt<=ktmax)
         end
         
         %% following statements are corrector steps (Actual RK2 computation)
-        mac_ang(:,j) = mac_ang(:,k) + h_sol*(dmac_ang(:,k)+dmac_ang(:,j))/2.;
-        mac_spd(:,j) = mac_spd(:,k) + h_sol*(dmac_spd(:,k)+dmac_spd(:,j))/2.;
-        edprime(:,j) = edprime(:,k) + h_sol*(dedprime(:,k)+dedprime(:,j))/2.;
-        eqprime(:,j) = eqprime(:,k) + h_sol*(deqprime(:,k)+deqprime(:,j))/2.;
-        psikd(:,j) = psikd(:,k) + h_sol*(dpsikd(:,k)+dpsikd(:,j))/2.;
-        psikq(:,j) = psikq(:,k) + h_sol*(dpsikq(:,k)+dpsikq(:,j))/2.;
+        g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*(g.mac.dmac_ang(:,k)+g.mac.dmac_ang(:,j))/2.;
+        g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + h_sol*(g.mac.dmac_spd(:,k)+g.mac.dmac_spd(:,j))/2.;
+        g.mac.edprime(:,j) = g.mac.edprime(:,k) + h_sol*(g.mac.dedprime(:,k)+g.mac.dedprime(:,j))/2.;
+        g.mac.eqprime(:,j) = g.mac.eqprime(:,k) + h_sol*(g.mac.deqprime(:,k)+g.mac.deqprime(:,j))/2.;
+        g.mac.psikd(:,j) = g.mac.psikd(:,k) + h_sol*(g.mac.dpsikd(:,k)+g.mac.dpsikd(:,j))/2.;
+        g.mac.psikq(:,j) = g.mac.psikq(:,k) + h_sol*(g.mac.dpsikq(:,k)+g.mac.dpsikq(:,j))/2.;
         
         % exciter integration
         g.exc.Efd(:,j) = g.exc.Efd(:,k) + h_sol*(g.exc.dEfd(:,k)+g.exc.dEfd(:,j))/2.;

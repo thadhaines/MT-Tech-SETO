@@ -49,59 +49,59 @@ if flag == 0 % initialization
         end
     end
     if i ~= 0  % scalar computation
-        n = mac_int(g.tg.tg_con(i,2)); % machine number
+        n = g.mac.mac_int(g.tg.tg_con(i,2)); % machine number
         
         % Check for pmech being inside generator limits
-        if pmech(n,k) > g.tg.tg_con(i,5)
+        if g.mac.pmech(n,k) > g.tg.tg_con(i,5)
             error('TG init: pmech > upper limit, check machine base')
         end
-        if pmech(n,k) < 0
+        if g.mac.pmech(n,k) < 0
             error('TG init: pmech < 0, check data')
         end
         
         % Initialize states
-        g.tg.tg1(i,1) = pmech(n,k);
+        g.tg.tg1(i,1) = g.mac.pmech(n,k);
         %
         g.tg.tg_pot(i,1) = g.tg.tg_con(i,8)/g.tg.tg_con(i,7);
         a1 = 1 - g.tg.tg_pot(i,1);
         g.tg.tg_pot(i,2) = a1;
-        g.tg.tg2(i,1) = a1*pmech(n,k);
+        g.tg.tg2(i,1) = a1*g.mac.pmech(n,k);
         %
         g.tg.tg_pot(i,3) = g.tg.tg_con(i,9)/g.tg.tg_con(i,10);
         a2 = 1 - g.tg.tg_pot(i,3);
         g.tg.tg_pot(i,4) = a2;
-        g.tg.tg3(i,1) = a2*pmech(n,k);
+        g.tg.tg3(i,1) = a2*g.mac.pmech(n,k);
         %
-        g.tg.tg_pot(i,5) = pmech(n,k);
+        g.tg.tg_pot(i,5) = g.mac.pmech(n,k);
         %
         g.tg.tg_sig(i,1)=0;
     else
         %  vectorized computation
         if g.tg.n_tg~=0
-            n = mac_int(g.tg.tg_con(g.tg.tg_idx,2)); % machine number
-            maxlmt = find(pmech(n,1) > g.tg.tg_con(g.tg.tg_idx,5));
+            n = g.mac.mac_int(g.tg.tg_con(g.tg.tg_idx,2)); % machine number
+            maxlmt = find(g.mac.pmech(n,1) > g.tg.tg_con(g.tg.tg_idx,5));
             if ~isempty(maxlmt)
                 n(maxlmt)
                 error(' pmech excedes maximum limit')
             end
-            minlmt = find(pmech(n,1) < zeros(g.tg.n_tg,1)); % min limit not user defined...
+            minlmt = find(g.mac.pmech(n,1) < zeros(g.tg.n_tg,1)); % min limit not user defined...
             if ~isempty(minlmt)
                 n(minlmt)
                 error('pmech less than zero')
             end
-            g.tg.tg1(g.tg.tg_idx,1) = pmech(n,1);
+            g.tg.tg1(g.tg.tg_idx,1) = g.mac.pmech(n,1);
             %
             g.tg.tg_pot(g.tg.tg_idx,1) = g.tg.tg_con(g.tg.tg_idx,8)./g.tg.tg_con(g.tg.tg_idx,7);
             a1 = ones(g.tg.n_tg,1) - g.tg.tg_pot(g.tg.tg_idx,1);
             g.tg.tg_pot(g.tg.tg_idx,2) = a1;
-            g.tg.tg2(g.tg.tg_idx,1) = a1.*pmech(n,k);
+            g.tg.tg2(g.tg.tg_idx,1) = a1.*g.mac.pmech(n,k);
             %
             g.tg.tg_pot(g.tg.tg_idx,3) = g.tg.tg_con(g.tg.tg_idx,9)./g.tg.tg_con(g.tg.tg_idx,10);
             a2 = ones(g.tg.n_tg,1) - g.tg.tg_pot(g.tg.tg_idx,3);
             g.tg.tg_pot(g.tg.tg_idx,4) = a2;
-            g.tg.tg3(g.tg.tg_idx,1) = a2.*pmech(n,k);
+            g.tg.tg3(g.tg.tg_idx,1) = a2.*g.mac.pmech(n,k);
             %
-            g.tg.tg_pot(g.tg.tg_idx,5) = pmech(n,k);% set reference value
+            g.tg.tg_pot(g.tg.tg_idx,5) = g.mac.pmech(n,k);% set reference value
             g.tg.tg_sig(g.tg.tg_idx,1) = zeros(g.tg.n_tg,1);
         end
     end
@@ -109,22 +109,22 @@ end
 
 if flag == 1 % network interface computation
     if i ~= 0 % scalar computation
-        n = mac_int(g.tg.tg_con(i,2)); % machine number
+        n = g.mac.mac_int(g.tg.tg_con(i,2)); % machine number
         % the following update is needed because pmech depends on
         %   the output of the states tg1, tg2 and tg3
-        pmech(n,k) = g.tg.tg3(i,k) + g.tg.tg_pot(i,3)*( g.tg.tg2(i,k) + g.tg.tg_pot(i,1)*g.tg.tg1(i,k) );
+        g.mac.pmech(n,k) = g.tg.tg3(i,k) + g.tg.tg_pot(i,3)*( g.tg.tg2(i,k) + g.tg.tg_pot(i,1)*g.tg.tg1(i,k) );
     else
         if g.tg.n_tg~=0
-            n = mac_int(g.tg.tg_con(g.tg.tg_idx,2)); % machine number
-            pmech(n,k) = g.tg.tg3(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,3).*( g.tg.tg2(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k) );
+            n = g.mac.mac_int(g.tg.tg_con(g.tg.tg_idx,2)); % machine number
+            g.mac.pmech(n,k) = g.tg.tg3(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,3).*( g.tg.tg2(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k) );
         end
     end
 end
 
 if flag == 2 % turbine governor dynamics calculation
     if i ~= 0 % scalar computation
-        n = mac_int(g.tg.tg_con(i,2)); % machine number
-        spd_err = g.tg.tg_con(i,3) - mac_spd(n,k);
+        n = g.mac.mac_int(g.tg.tg_con(i,2)); % machine number
+        spd_err = g.tg.tg_con(i,3) - g.mac.mac_spd(n,k);
         % addition of tg_sig
         demand = g.tg.tg_pot(i,5) + spd_err*g.tg.tg_con(i,4) + g.tg.tg_sig(i,k);
         demand = min( max(demand,0),g.tg.tg_con(i,5) ); % ensure limited demand
@@ -135,12 +135,12 @@ if flag == 2 % turbine governor dynamics calculation
         %
         g.tg.dtg3(i,k) = ( (g.tg.tg2(i,k)+g.tg.tg_pot(i,1)*g.tg.tg1(i,k))*g.tg.tg_pot(i,4) - g.tg.tg3(i,k) )/ g.tg.tg_con(i,10);
         
-        pmech(n,k) = g.tg.tg3(i,k) + g.tg.tg_pot(i,3)*(g.tg.tg2(i,k) + g.tg.tg_pot(:,1)*g.tg.tg1(i,k));
+        g.mac.pmech(n,k) = g.tg.tg3(i,k) + g.tg.tg_pot(i,3)*(g.tg.tg2(i,k) + g.tg.tg_pot(:,1)*g.tg.tg1(i,k));
     else
         % vectorized computation
         if g.tg.n_tg ~=0
-            n = mac_int(g.tg.tg_con(g.tg.tg_idx,2)); % machine number
-            spd_err = g.tg.tg_con(g.tg.tg_idx,3) - mac_spd(n,k);
+            n = g.mac.mac_int(g.tg.tg_con(g.tg.tg_idx,2)); % machine number
+            spd_err = g.tg.tg_con(g.tg.tg_idx,3) - g.mac.mac_spd(n,k);
             demand = g.tg.tg_pot(g.tg.tg_idx,5) + spd_err.*g.tg.tg_con(g.tg.tg_idx,4) + g.tg.tg_sig(g.tg.tg_idx,k);
             demand = min( max(demand,zeros(g.tg.n_tg,1)),g.tg.tg_con(g.tg.tg_idx,5) );
             g.tg.dtg1(g.tg.tg_idx,k) = (demand - g.tg.tg1(g.tg.tg_idx,k))./g.tg.tg_con(g.tg.tg_idx,6);
@@ -149,7 +149,7 @@ if flag == 2 % turbine governor dynamics calculation
             %
             g.tg.dtg3(g.tg.tg_idx,k) = ((g.tg.tg2(g.tg.tg_idx,k)+g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k)).*g.tg.tg_pot(g.tg.tg_idx,4) - g.tg.tg3(g.tg.tg_idx,k))./g.tg.tg_con(g.tg.tg_idx,10);
             
-            pmech(n,k) = g.tg.tg3(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,3).*(g.tg.tg2(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k));
+            g.mac.pmech(n,k) = g.tg.tg3(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,3).*(g.tg.tg2(g.tg.tg_idx,k) + g.tg.tg_pot(g.tg.tg_idx,1).*g.tg.tg1(g.tg.tg_idx,k));
         end
     end
 end

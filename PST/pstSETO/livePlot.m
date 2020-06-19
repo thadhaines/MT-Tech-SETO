@@ -18,9 +18,9 @@ if (mod(k,25)==0)
     
     % plot generator info
     subplot(nPlt,1,2)
-    Lcolor = lines(size(mac_spd,1));
-    for pltGen = 1:size(mac_spd,1)
-        plot(t(1:k),mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
+    Lcolor = lines(size(g.mac.mac_spd,1));
+    for pltGen = 1:size(g.mac.mac_spd,1)
+        plot(t(1:k),g.mac.mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
         hold on
     end
     title('System Generator Speed');

@@ -9,72 +9,73 @@
 % All right reserved
 % step 3: perform 0.1% perturbation on each state in turn
 
+
 vr_input = 0;
 pr_input = 0;
 c_state = 0;
 p_ratio = 1e-5;
-for k = 1:n_mac
+for k = 1:g.mac.n_mac
    not_ib = 1;
-   if ~isempty(mac_ib_idx);
-      ib_chk = find(mac_ib_idx==k);
+   if ~isempty(g.mac.mac_ib_idx)
+      ib_chk = find(g.mac.mac_ib_idx==k);
       if ~isempty(ib_chk);not_ib = 0;end
    end
    if not_ib==1
       j = 1;
       disp('disturb generator')
-      pert = p_ratio*abs(mac_ang(k,1));   
+      pert = p_ratio*abs(g.mac.mac_ang(k,1));   
       pert = max(pert,p_ratio);
-      mac_ang(k,2) = mac_ang(k,1) + pert;
+      g.mac.mac_ang(k,2) = g.mac.mac_ang(k,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 1;
       
       j = j+1;
-      pert = p_ratio*abs(mac_spd(k,1));   
+      pert = p_ratio*abs(g.mac.mac_spd(k,1));   
       pert = max(pert,p_ratio);
-      mac_spd(k,2) = mac_spd(k,1) + pert;
+      g.mac.mac_spd(k,2) = g.mac.mac_spd(k,1) + pert;
       p_file  % m file of perturbations
       st_name(k,j) = 2;
       k_tra = 0;
       k_sub = 0;
-      if ~isempty(mac_tra_idx)
-         k_idx = find(mac_tra_idx==k);
+      if ~isempty(g.mac.mac_tra_idx)
+         k_idx = find(g.mac.mac_tra_idx==k);
          if ~isempty(k_idx);k_tra = 1;end
       end
-      if ~isempty(mac_sub_idx)
-         k_idx = find(mac_sub_idx==k);
+      if ~isempty(g.mac.mac_sub_idx)
+         k_idx = find(g.mac.mac_sub_idx==k);
          if ~isempty(k_idx);k_sub=1;end
       end
-      if k_tra==1|k_sub==1
+      if k_tra==1 || k_sub==1
          j=j+1;
-         pert = p_ratio*abs(eqprime(k,1));   
+         pert = p_ratio*abs(g.mac.eqprime(k,1));   
          pert = max(pert,p_ratio);
-         eqprime(k,2) = eqprime(k,1) + pert;
+         g.mac.eqprime(k,2) = g.mac.eqprime(k,1) + pert;
          p_file   % m file of perturbations
          st_name(k,j) = 3; 
       end
       if k_sub==1
          j=j+1;
-         pert = p_ratio*abs(psikd(k,1));   
+         pert = p_ratio*abs(g.mac.psikd(k,1));   
          pert = max(pert,p_ratio);
-         psikd(k,2) = psikd(k,1) + pert;
+         g.mac.psikd(k,2) = g.mac.psikd(k,1) + pert;
          p_file   % m file of perturbations
          st_name(k,j) = 4;
       end
       
-      if k_tra==1|k_sub==1
+      if k_tra==1 || k_sub==1
          j=j+1;
-         pert = p_ratio*abs(edprime(k,1));   
+         pert = p_ratio*abs(g.mac.edprime(k,1));   
          pert = max(pert,p_ratio);
-         edprime(k,2) = edprime(k,1) + pert;
+         g.mac.edprime(k,2) = g.mac.edprime(k,1) + pert;
          p_file   % m file of perturbations
          st_name(k,j) = 5;
       end 
       
       if k_sub==1 
          j=j+1;
-         pert = p_ratio*abs(psikq(k,1));   
+         pert = p_ratio*abs(g.mac.psikq(k,1));   
          pert = max(pert,p_ratio);
-         psikq(k,2) = psikq(k,1) + pert;
+         g.mac.psikq(k,2) = g.mac.psikq(k,1) + pert;
          p_file  % m file of perturbations
          st_name(k,j) = 6;
       end 
@@ -98,7 +99,7 @@ for k = 1:n_mac
       % disturb the input variables
       if g.exc.n_exc ~= 0
          c_state = 1;
-         exc_number = find(mac_int(g.exc.exc_con(:,2)) ==k);
+         exc_number = find(g.mac.mac_int(g.exc.exc_con(:,2)) ==k);
          if ~isempty(exc_number)
             disp('disturb V_ref')
             vr_input = vr_input + 1;  
@@ -135,9 +136,9 @@ end
 % disturb induction motor states
 if n_mot~=0
    disp('disturbing induction motors')
-   for k = n_mac+1:ngm
+   for k = g.mac.n_mac+1:ngm
       j=1;
-      k_ind = k - n_mac;
+      k_ind = k - g.mac.n_mac;
       pert = p_ratio*abs(vdp(k_ind,1));   
       pert = max(pert,p_ratio);
       vdp(k_ind,2) = vdp(k_ind,1) + pert;

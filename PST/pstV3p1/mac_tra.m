@@ -59,11 +59,12 @@ if n_tra~=0
     % check that machine i is a transient machine
     tra = find(mac_tra_idx == i);
     if length(tra)~=0 
-%       % make x'd=x'q
-%       if mac_con(i,7)~=mac_con(i,12)
-%          mac_con(i,12) = mac_con(i,7);
-%       disp('changing xqp at generator');disp(i)
-%       end
+        % comment removed - thad
+      % make x'd=x'q
+      if mac_con(i,7)~=mac_con(i,12)
+         mac_con(i,12) = mac_con(i,7);
+      disp('changing xqp at generator');disp(i)
+      end
       % check Tqo'
       if mac_con(i,14)==0;mac_con(i,14)=999.0;end                                                       
       busnum = bus_int(mac_con(i,2)); % bus number 
@@ -123,15 +124,16 @@ if n_tra~=0
   else
     % vectorized computation
     % make xd' = xq'
-%     uexp_idx = find(mac_con(mac_tra_idx,7)~=mac_con(mac_tra_idx,12));
-%     if ~isempty(uexp_idx)
-%        mac_con(mac_tra_idx(uexp_idx),12) = mac_con(mac_tra_idx(uexp_idx),7);
-%        mtist=int2str(mac_tra_idx(uexp_idx));
-%       % disp(['changing xqp at generators  ' mtist])
-%        disp('changing xqp at generators') % The disp command revised by 
-%        disp(mtist) % Joe Chow 12/12/2015 
-%                    % incompatible dimension in concaternation 
-%     end
+    % removed comment... - made machine initialize incorrectly - thad 06/19/20
+    uexp_idx = find(mac_con(mac_tra_idx,7)~=mac_con(mac_tra_idx,12));
+    if ~isempty(uexp_idx)
+       mac_con(mac_tra_idx(uexp_idx),12) = mac_con(mac_tra_idx(uexp_idx),7);
+       mtist=int2str(mac_tra_idx(uexp_idx));
+      % disp(['changing xqp at generators  ' mtist])
+       disp('changing xqp at generators') % The disp command revised by 
+       disp(mtist) % Joe Chow 12/12/2015 
+                   % incompatible dimension in concaternation 
+    end
     % make Tqo' non-zero
     notqp_idx = find(mac_con(mac_tra_idx,14)==0);
     if ~isempty(notqp_idx)

@@ -1,4 +1,4 @@
-%%  d_OneMacInfBus.m
+%%  d_2machineGov.m
 %   Thad Haines         EELE 5550
 %   Program Purpose:    Create bus, line, mac_con and sw_con for sub transient PST Model. 
 %                       DC exciter, steam gov, all bus same V base, lossless lines, 
@@ -8,12 +8,13 @@
 %   03/20/18    21:19   copied from base, added a DC exciter (type 1)
 %   05/19/20    10:26   Modified for use in exploring PST operation
 %   05/21/20    08:24   Added optional Fbase and Sbase variables
-%   06/11/20    09:22   Removed load modulation for linear comparison
+%   06/02/20    09:37   Alteration to have one governor
+%   06/18/20    11:08   Modified for pm signal test
 
 %% Optional System data, else assumed 60 Hz, 100 MVA
 %Fbase = 50; % Hz
 %Sbase = 50; % MW
-livePlotFlag = 0;
+
 %% bus data 
 % bus array format:
 % col1 number
@@ -85,14 +86,14 @@ line = [ ...
 % 18. dampling coefficient d_1(pu),
 % 19. bus number
 %
-
 mac_con = [ ...
 %   1   2   3 [MVA] 4       5       6       7       8       9       A       B       C       D       E       F       16      17      18      19
 % Mac_# b_# Sbase   x_l     r_a     x_d     x'_d    x"_d    T'_do   T"_do   x_q     x'_q    x"_q	T'_qo   T"_qo   H       d_o     d_1     b_#
     1   1   100     0.15    0.0011  1.7     0.245   0.185   5.9     0.03    1.64    1.64    0.185   0.082   0.082   5.0    0       0       1;  % G1 - double size
-    2   4   100     0.15    0.0011  1.7     0.245   0.185   5.9     0.03    1.64    1.64    0.185   0.082   0.082   2.37    0       0       4];   % G2
-                                            % infinite bus really small x'_d
-                                            % if x'_d = zero -> crash?
+    %2   4   100     0.15    0.0011  1.7     0.245   0.185   5.9     0.03    1.64    1.64    0.185   0.082   0.082   2.37    0       0       4 % subtransient
+    %2   4   100     0       0       0       0.245   0       0       0       0   0       0       0       0       2.37    0       0       4% G2 classical
+     2   4   100     0    0.0011     1.7     0.245   0       5.9     0       1.64    1.64    0       0.082   0       2.37    0       0       4 % g2 2 axis
+    ];                                           
                                             
 %% Exciter data
 % exc_con format:
@@ -122,7 +123,7 @@ exc_con = [ ...
 %   1       2       3       4       5       6       7       8       9      
 %   Type    mach #  T_R     K_A     T_A     T_B     T_C     V_Rmax  V_Rmin  
     0       1       0       100      0.01    12.0    1.0     7.5     -6;   
-%    0       2       0       150      0.01    12.0    1.0     7.5     -6; 
+    0       2       0       150      0.01    12.0    1.0     7.5     -6; 
 ];
 
 %% Governor data
@@ -142,7 +143,7 @@ exc_con = [ ...
 tg_con = [ ...
 %   1   2   3   4       5       6       7       8       9       A
 %               1/R     Tmax    Ts      Tc      T3      T4      T5
-    1   1   1   1/0.05  1.00    0.4     45.00   5.00    -1.00   0.5 % hydro Gov
+    1   1   1   1/0.05  1.00    0.4     45.00   5.00    -1.00   0.5 % hydro Gov using model 1
     1   2   1   1/0.05  1.00    0.04    0.20    0.0     1.50    5.00 %steam Gov
 ];
 
@@ -173,12 +174,13 @@ tg_con = [ ...
 
 sw_con = [ ...
 %   1                   2   3   4   5   6   7   
-    0                   0   0   0   0   0   0.01;     % time start, ts set
-    1                   3   2   0   0   6   0.01;  % No Action
-    1+(2/60)            0   0   0   0   0   0.01;  % 
-    1+(2/60)+(1/600)    0   0   0   0   0   0.01;   % 
-    20                   0   0   0   0   0   0.01;   % end
-];    
+    0                   0   0   0   0   0   1/(60);     % time start, ts set
+    1                   3   2   0   0   6   1/(60*10);  % No Action
+    1+(2/60)            0   0   0   0   0   1/(60*10);  % 
+    1+(2/60)+(1/600)    0   0   0   0   0   1/(60*5);   % 
+    3                   0   0   0   0   0   1/(60*2);   % change time step
+    5                   0   0   0   0   0   1/(60);     % change time step
+];    % end
   
 %% Load Modulation
 
@@ -189,10 +191,10 @@ sw_con = [ ...
 % col   3 proportion of constant reactive power load
 % col   4 proportion of constant active current load
 % col   5 proportion of constant reactive current load
-%load_con = [...
-    %   1   2       3       4       5
-%        2   1.0       1.0       0       0;]; %constant power
-%
+% load_con = [...
+%     %   1   2       3       4       5
+%         2   0       0       0       0;]; %constant impedance
+
 % lmod_con format
 % sets up model for load modulation
 % col	variable  						unit

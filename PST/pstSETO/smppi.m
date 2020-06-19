@@ -1,55 +1,35 @@
 function smppi(i,k,flag)
-% Syntax: smpexc(i,k,flag) 
-% 8:51 am January 29, 1999
+%SMPPI Simple excitation system with pi avr
+% SMPPI is a simple excitation system with pi avr, (exc_con(i,1)=4)
+% with vectorized computation option.
 %
-% Purpose: simple excitation system with pi avr, (exc_con(i,1)=4)
-%            with vectorized computation option
-%           
-% Input: i - generator number
-%            0, vectorized computation
-%        k - integer time
-%        bus - solved loadflow bus data
-%        flag - 0 - initialization
-%               1 - network interface computation
-%               2 - generator dynamics computation
-%        
+% Syntax: smppi(i,k,flag) 
 %
-% Output: f - dummy variable 
+%   Input: 
+%   i - generator number
+%           0 for vectorized computation
+%   k - integer time (data index)
+%   bus - solved loadflow bus data
+%   flag -  0 - initialization
+%          	1 - network interface computation
+%          	2 - generator dynamics computation 
 %
-
-% Files:
+%   Output: 
+%   VOID
 %
-% See Also: smpexc,exc_dc12, exc_st3
-
-% Algorithm:
-%
-% Calls:
-%
-% Call By:
-
-% (c) Copyright 1999 Joe H. Chow/Cherry Tree Scientific Software - All Rights Reserved
-
-% Version:1.0
-% Date:September 1999
-% Author:Graham Rogers
+%   History:
+%   Date        Time    Engineer        Description
+%   01/29/99    08:51   -               -
+%   09/xx/99    xx:xx   Graham Rogers   Version 1.0
+%   (c) Copyright 1999 Joe H. Chow/Cherry Tree Scientific Software - All Rights Reserved
+%   06/19/20    10:34   Thad Haines     Revised format of globals and internal function documentation
 
 % system variables
 global  psi_re psi_im cur_re cur_im
 
-% synchronous machine variables
-global  vex eterm mac_int
-
-% % excitation system variables
-% global  exc_con exc_pot Efd V_R V_A V_As R_f V_FB V_TR V_B
-% global  dEfd dV_R dV_As dR_f dV_TR
-% global  exc_sig
-% global  smppi_idx n_smppi ;
-% global  smppi_TR smppi_TR_idx  smppi_noTR_idx;
-
 % pss variables
 global pss_out 
 
-% new strucutred array g
 global g
 
 if i ~= 0
@@ -63,43 +43,43 @@ end
 
 if flag == 0 % initialization
    if i ~= 0  % scalar computation
-      n = mac_int(g.exc.exc_con(i,2)); % machine number
-      g.exc.Efd(i,1) = vex(n,1);
+      n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
+      g.exc.Efd(i,1) = g.mac.vex(n,1);
       g.exc.V_As(i,1) = g.exc.Efd(i,1); % integrator state
-      g.exc.V_TR(i,1)=eterm(n,1); % input filter state
+      g.exc.V_TR(i,1)=g.mac.eterm(n,1); % input filter state
       %err = 0; % summing junction error -commented out, not used -thad
-      g.exc.exc_pot(i,3) = eterm(n,1); % reference voltage
+      g.exc.exc_pot(i,3) = g.mac.eterm(n,1); % reference voltage
    else  % vectorized computation
       if g.exc.n_smppi ~= 0
-         n = mac_int(g.exc.exc_con(g.exc.smppi_idx,2)); % machine number with simple exciters
-         g.exc.Efd(g.exc.smppi_idx,1) = vex(n,1);
+         n = g.mac.mac_int(g.exc.exc_con(g.exc.smppi_idx,2)); % machine number with simple exciters
+         g.exc.Efd(g.exc.smppi_idx,1) = g.mac.vex(n,1);
          g.exc.V_As(g.exc.smppi_idx,1) = g.exc.Efd(g.exc.smppi_idx,1); % integrator
-         g.exc.V_TR(g.exc.smppi_idx,1) = eterm(n,1); % input filter state
-         g.exc.exc_pot(g.exc.smppi_idx,3) = eterm(n,1); % reference voltage
+         g.exc.V_TR(g.exc.smppi_idx,1) = g.mac.eterm(n,1); % input filter state
+         g.exc.exc_pot(g.exc.smppi_idx,3) = g.mac.eterm(n,1); % reference voltage
       end
    end
 end
 
 if flag == 1 % network interface computation
    if i ~= 0 % scalar computation
-      n = mac_int(g.exc.exc_con(i,2)); % machine number
-      vex(n,k) = g.exc.Efd(i,k); % field voltage for machines
+      n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
+      g.mac.vex(n,k) = g.exc.Efd(i,k); % field voltage for machines
    else      % vectorized computation
       if g.exc.n_smppi ~=0 % check for any simple pi exciters
-         n = mac_int(g.exc.exc_con(g.exc.smppi_idx,2)); % machine numbers for simple exciters
-         vex(n,k) = g.exc.Efd(g.exc.smppi_idx,k);
+         n = g.mac.mac_int(g.exc.exc_con(g.exc.smppi_idx,2)); % machine numbers for simple exciters
+         g.mac.vex(n,k) = g.exc.Efd(g.exc.smppi_idx,k);
       end
    end
 end
 
 if flag == 2 % exciter dynamics calculation
    if i ~= 0 % scalar computation
-      n = mac_int(g.exc.exc_con(i,2)); % machine number
+      n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
       if g.exc.exc_con(i,3)== 0 %no input filter
          g.exc.dV_TR(i,k) = 0;
-         g.exc.V_TR(i,k)=eterm(n,k);
+         g.exc.V_TR(i,k)=g.mac.eterm(n,k);
       else
-         g.exc.dV_TR(i,k)=(eterm(n,k)-g.exc.V_TR(i,k))/g.exc.exc_con(i,3);
+         g.exc.dV_TR(i,k)=(g.mac.eterm(n,k)-g.exc.V_TR(i,k))/g.exc.exc_con(i,3);
       end
       err = g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
          + pss_out(i,k);
@@ -129,17 +109,17 @@ if flag == 2 % exciter dynamics calculation
       
       if g.exc.n_smppi~=0
          % machine numbers
-         n = mac_int(g.exc.exc_con(g.exc.smppi_idx,2));
+         n = g.mac.mac_int(g.exc.exc_con(g.exc.smppi_idx,2));
          TR = g.exc.smppi_TR_idx;
          no_TR = g.exc.smppi_noTR_idx;
          if ~isempty(no_TR) % some exciters have zero TR
             n_nTR = n(no_TR);
             g.exc.dV_TR(g.exc.smppi_idx(no_TR),k)=zeros(length(no_TR),1);
-            g.exc.V_TR(g.exc.smppi_idx(no_TR),k)=eterm(n_nTR,k);
+            g.exc.V_TR(g.exc.smppi_idx(no_TR),k)=g.mac.eterm(n_nTR,k);
          end
          if ~isempty(TR) %some exciters have nonzero TR
             n_TR = n(TR);
-            g.exc.dV_TR(g.exc.smppi_idx(TR),k)=(eterm(n_TR,k)-g.exc.V_TR(g.exc.smppi_idx(TR),k))...
+            g.exc.dV_TR(g.exc.smppi_idx(TR),k)=(g.mac.eterm(n_TR,k)-g.exc.V_TR(g.exc.smppi_idx(TR),k))...
                ./g.exc.exc_con(g.exc.smppi_idx(TR),3);
          end
          % error defined for all simple exciters

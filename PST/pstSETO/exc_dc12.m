@@ -1,80 +1,48 @@
 function exc_dc12(i,k,flag)
+%EXC_DC12 is an excitation model DC1 (exc_con(i,1)=1) and model DC2 (exc_con(i,1)=2)
+% EXC_DC12 is an excitation system, model DC1 (exc_con(i,1)=1) and 
+% model DC2 (exc_con(i,1)=2) with vectorized computation option
+%
 % Syntax: exc_dc12(i,k,flag)
-% 9:07 am 2/7/98
-% Purpose: excitation system, model DC1 (exc_con(i,1)=1)
-%            and model DC2 (exc_con(i,1)=2)
-%            with vectorized computation option
 %
-% Input: i - generator number
-%            0, vectorized computation
-%        k - integer time
-%        flag - 0 - initialization
-%               1 - network interface computation
-%               2 - generator dynamics computation
+%   Input: 
+%   i - generator number
+%           0 for vectorized computation
+%   k - integer time (data index)
+%   flag -  0 - initialization
+%          	1 - network interface computation
+%          	2 - generator dynamics computation 
 %
+%   Output: 
+%   VOID
 %
-% Output:
-%
-% Files:
-%
-% See Also: exc_st3 smp_exc
-%
-% (c) Copyright 1991-1996 Joe H. Chow - All Rights Reserved
-% History (in reverse chronological order)
-%
-% Corrected error on satuation block - JHC
-% Date:         12/17/2015
-% Corrected error with no_TE - GJR
-% Date:         2/7/98
-% Version:      2.2
-% Date:         30/6/98
-% Purpose:      Corrected satuaration Asat modified
-% Version:	2.1
-% Date:		14/8/97
-% Author:	Graham Rogers
-% Purpose:	Reverted to exciter number for exc_sig
-%               Added pss_out so that exc_sig can be used for other
-%               control inputs if desired
-%               Corrected sign of exc_sig in error signal
-% Version:	2.0
-% Date:		22/6/96
-% Author:	Graham Rogers
-% Purpose:	To enable vector calculations with different
-%               exciter models on generators
-%               This means that the vector option (i=0)
-%               is the mode normally used
-%               Indexes formed in exc_indx are required
-% Modification:	changed way exc_sig is referenced
+%   History:
+%   Date        Time    Engineer        Description
+%   03/xx/91    xx:xx   Joe H. Chow     Version 1.0
+%   05/22/95    XX:XX   GJR             Version 1.1 Correct errors with Saturation model and Lead/Lag initialization
+%   06/22/96    xx:xx:  Graham Rogers   Version 2.0 To enable vector calculations with different
+%                                       exciter models on generators
+%                                       This means that the vector option (i=0)
+%                                       is the mode normally used
+%                                       Indexes formed in exc_indx are required
+%               Modification:	changed way exc_sig is referenced
 %               i.e., in terms of the generator number and not the
 %               exciter number
-% Version:	1.1
-% Date:		22/5/95
-% Author:	GJR
-% Purpose:	Correct errors
-% Modification:	Saturation model and Lead/Lag initialization
-
-% Version:  1.0
-% Author:   Joe H. Chow
-% Date:     March 1991
-% 
-% % excitation system variables
-% global  exc_con exc_pot Efd V_R V_A V_As R_f V_FB V_TR V_B
-% global  dEfd dV_R dV_As dR_f dV_TR
-% 
-% % indexing variables
-% global  dc_idx n_dc dc2_idx n_dc2 ;
-% global dc_TA dc_TA_idx dc_noTA_idx dc_TB dc_TB_idx dc_noTB_idx;
-% global dc_TE dc_TE_idx dc_noTE_idx;
-% global dc_TF dc_TF_idx  dc_TR dc_TR_idx dc_noTR_idx;
+%   (c) Copyright 1991-1996 Joe H. Chow - All Rights Reserved
+%   08/14/97    XX:XX   Graham Rodgers  Version 2.1 Reverted to exciter number for exc_sig
+%                                       Added pss_out so that exc_sig can be used for other
+%                                       control inputs if desired
+%                                       Corrected sign of exc_sig in error signal
+%   07/02/98    xx:xx   -               Version 2.2 Corrected satuaration Asat modified
+%   07/02/98    xx:xx   GJR             Corrected error with no_TE
+%   12/17/15    xx:xx   JHC             Corrected error on satuation block
+%   06/19/20    11:13   Thad Haines     Revised format of globals and internal function documentation
 
 % pss variables
-
 global pss_out
-%interface variable
-%global  exc_sig
-%
+
 % machine variables
-global  mac_int vex eterm
+%global  mac_int vex eterm
 
 global g
 
@@ -89,10 +57,10 @@ end
 % jay = sqrt(-1);
 if flag == 0 % initialization
     if i ~= 0  % scalar computation
-        n = mac_int(g.exc.exc_con(i,2)); % machine number
-        g.exc.Efd(i,1) = vex(n,1);
+        n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
+        g.exc.Efd(i,1) = g.mac.vex(n,1);
         if g.exc.exc_con(i,11) == 0  % T_E = 0
-            g.exc.V_R(i,1) = vex(n,1);
+            g.exc.V_R(i,1) = g.mac.vex(n,1);
             g.exc.exc_pot(i,1) = 0;
             g.exc.exc_pot(i,2) = 0;
         else
@@ -111,7 +79,7 @@ if flag == 0 % initialization
                     g.exc.exc_pot(i,1)*exp(g.exc.exc_pot(i,2)...
                     *abs(g.exc.exc_con(i,14)))*sign(g.exc.exc_con(i,14));
                 if g.exc.exc_con(i,1) == 2  % bus fed voltage limit
-                    g.exc.exc_con(i,8) = g.exc.exc_con(i,8)/eterm(n,1);
+                    g.exc.exc_con(i,8) = g.exc.exc_con(i,8)/g.mac.eterm(n,1);
                 end
                 g.exc.exc_con(i,9) = -g.exc.exc_con(i,8);
             end
@@ -125,7 +93,7 @@ if flag == 0 % initialization
         if g.exc.exc_con(i,1) == 1
             mult = 1;
         else
-            mult = eterm(n,1);
+            mult = g.mac.eterm(n,1);
         end
         if g.exc.V_R(i,1) > g.exc.exc_con(i,8)*mult
             error('EXC_DC12: V_R exceeds upper limit')
@@ -144,16 +112,16 @@ if flag == 0 % initialization
         g.exc.exc_pot(i,5) = g.exc.exc_con(i,16)/g.exc.exc_con(i,17);
         g.exc.R_f(i,1) = g.exc.Efd(i,1); % rate feedback state variable
         g.exc.V_FB(i,1) = 0;
-        g.exc.exc_pot(i,3) = eterm(n,1)+err; % reference voltage
-        g.exc.V_TR(i,1) = eterm(n,1); % transducer state var
+        g.exc.exc_pot(i,3) = g.mac.eterm(n,1)+err; % reference voltage
+        g.exc.V_TR(i,1) = g.mac.eterm(n,1); % transducer state var
         
     else  % vectorized computation
         if g.exc.n_dc~=0
-            n = mac_int(g.exc.exc_con(g.exc.dc_idx,2)); % dc machine numbers
+            n = g.mac.mac_int(g.exc.exc_con(g.exc.dc_idx,2)); % dc machine numbers
             if g.exc.n_dc2~=0
-                n2 = mac_int(g.exc.exc_con(g.exc.dc2_idx,2)); %dc type 2 exciters gen numb
+                n2 = g.mac.mac_int(g.exc.exc_con(g.exc.dc2_idx,2)); %dc type 2 exciters gen numb
             end
-            g.exc.Efd(g.exc.dc_idx,1) = vex(n,1);
+            g.exc.Efd(g.exc.dc_idx,1) = g.mac.vex(n,1);
             TE = g.exc.dc_TE(g.exc.dc_TE_idx);
             
             expsat= find(g.exc.exc_con(g.exc.dc_idx,14)==0);
@@ -176,7 +144,7 @@ if flag == 0 % initialization
             end
             if ~isempty(g.exc.dc_noTE_idx)
                 no_TE = g.exc.dc_noTE_idx;
-                g.exc.V_R(g.exc.dc_idx(no_TE),1) = vex(n(no_TE),1);
+                g.exc.V_R(g.exc.dc_idx(no_TE),1) = g.mac.vex(n(no_TE),1);
                 g.exc.exc_pot(g.exc.dc_idx(no_TE),1) = zeros(length(no_TE),1);
                 g.exc.exc_pot(g.exc.dc_idx(no_TE),2) = g.exc.exc_pot(g.exc.dc_idx(no_TE),1);
             end
@@ -194,7 +162,7 @@ if flag == 0 % initialization
                 bus_fed = find(g.exc.exc_con(g.exc.dc_idx(no_Vrmax),1)==2);
                 if ~isempty(bus_fed)
                     g.exc.exc_con(g.exc.dc_idx(no_Vrmax(bus_fed)),8) = g.exc.exc_con(g.exc.dc_idx(no_Vrmax(bus_fed)),8)...
-                        ./eterm(n(no_Vrmax(bus_fed)),1);
+                        ./g.mac.eterm(n(no_Vrmax(bus_fed)),1);
                     g.exc.exc_con(g.exc.dc_idx(no_Vrmax(bus_fed)),9) = - g.exc.exc_con(g.exc.dc_idx(no_Vrmax(bus_fed)),8);
                 end
             end
@@ -216,16 +184,16 @@ if flag == 0 % initialization
             %check limits
             mult = ones(g.exc.n_dc,1);
             if g.exc.n_dc2~=0
-                mult(find(g.exc.exc_con(g.exc.dc_idx,1)==2)) = eterm(n2,1);
+                mult(find(g.exc.exc_con(g.exc.dc_idx,1)==2)) = g.mac.eterm(n2,1);
             end
             over_lmt = find(g.exc.V_R(g.exc.dc_idx,1) > g.exc.exc_con(g.exc.dc_idx,8).*mult);
             if ~isempty(over_lmt)
-                mac_int(g.exc.exc_con(g.exc.dc_idx(over_lmt),2))
+                g.mac.mac_int(g.exc.exc_con(g.exc.dc_idx(over_lmt),2))
                 error('EXC_DC12: V_R exceeds upper limit')
             end
             under_lmt = find(g.exc.V_R(g.exc.dc_idx,1)<g.exc.exc_con(g.exc.dc_idx,9).*mult);
             if ~isempty(under_lmt)
-                mac_int(g.exc.exc_con(g.exc.dc_idx(under_lmt),2))
+                g.mac.mac_int(g.exc.exc_con(g.exc.dc_idx(under_lmt),2))
                 error('EXC_DC12: V_R below lower limit')
             end
             
@@ -244,32 +212,32 @@ if flag == 0 % initialization
             g.exc.exc_pot(g.exc.dc_idx,5) = g.exc.exc_con(g.exc.dc_idx,16)./g.exc.exc_con(g.exc.dc_idx,17);
             g.exc.R_f(g.exc.dc_idx,1) = g.exc.Efd(g.exc.dc_idx,1); % rate feedback state variable
             g.exc.V_FB(g.exc.dc_idx,1) = zeros(g.exc.n_dc,1);
-            g.exc.exc_pot(g.exc.dc_idx,3) = eterm(n,1)+err; % reference voltage
-            g.exc.V_TR(g.exc.dc_idx,1) = eterm(n,1); % transducer state var
+            g.exc.exc_pot(g.exc.dc_idx,3) = g.mac.eterm(n,1)+err; % reference voltage
+            g.exc.V_TR(g.exc.dc_idx,1) = g.mac.eterm(n,1); % transducer state var
         end
     end
 end
 
 if flag == 1 % network interface computation
     if i ~= 0 % scalar computation
-        n = mac_int(g.exc.exc_con(i,2)); % machine number
-        vex(n,k) = g.exc.Efd(i,k); % set field voltage for machines
+        n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
+        g.mac.vex(n,k) = g.exc.Efd(i,k); % set field voltage for machines
     else      % vectorized computation
         if g.exc.n_dc~=0
-            n = mac_int(g.exc.exc_con(g.exc.dc_idx,2)); % machine number
-            vex(n,k) = g.exc.Efd(g.exc.dc_idx,k); % set field voltage for machines
+            n = g.mac.mac_int(g.exc.exc_con(g.exc.dc_idx,2)); % machine number
+            g.mac.vex(n,k) = g.exc.Efd(g.exc.dc_idx,k); % set field voltage for machines
         end
     end
 end
 
 if flag == 2 % exciter dynamics calculation
     if i ~= 0 % scalar computation
-        n = mac_int(g.exc.exc_con(i,2)); % machine number
+        n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
         if g.exc.exc_con(i,3) == 0  % transducer time constant = 0
             g.exc.dV_TR(i,k) = 0;
-            g.exc.V_TR(i,k) = eterm(n,k);
+            g.exc.V_TR(i,k) = g.mac.eterm(n,k);
         else
-            g.exc.dV_TR(i,k) = (-g.exc.V_TR(i,k)+eterm(n,k))/g.exc.exc_con(i,3);
+            g.exc.dV_TR(i,k) = (-g.exc.V_TR(i,k)+g.mac.eterm(n,k))/g.exc.exc_con(i,3);
         end
         g.exc.V_FB(i,k) = g.exc.exc_pot(i,5)*(g.exc.Efd(i,k)-g.exc.R_f(i,k));
         err = g.exc.exc_sig(i,k) - g.exc.V_FB(i,k) + g.exc.exc_pot(i,3) - g.exc.V_TR(i,k);
@@ -286,7 +254,7 @@ if flag == 2 % exciter dynamics calculation
         if g.exc.exc_con(i,1) == 1
             mult = 1;  % solid fed
         else
-            mult = eterm(n,k);  % bus fed
+            mult = g.mac.eterm(n,k);  % bus fed
         end
         if g.exc.exc_con(i,5) == 0 % no Ta
             g.exc.dV_R(i,k) = 0.0;
@@ -325,19 +293,19 @@ if flag == 2 % exciter dynamics calculation
         
     else % vectorized computation
         if g.exc.n_dc~=0
-            n = mac_int(g.exc.exc_con(g.exc.dc_idx,2)); % machine number
+            n = g.mac.mac_int(g.exc.exc_con(g.exc.dc_idx,2)); % machine number
             if g.exc.n_dc2~=0
-                n2 = mac_int(g.exc.exc_con(g.exc.dc2_idx,2));
+                n2 = g.mac.mac_int(g.exc.exc_con(g.exc.dc2_idx,2));
             end
             TR = g.exc.dc_TR_idx;
             no_TR = g.exc.dc_noTR_idx;
             if ~isempty(no_TR)
                 g.exc.dV_TR(g.exc.dc_idx(no_TR),k) = zeros(length(no_TR),1);
-                g.exc.V_TR(g.exc.dc_idx(no_TR),k) = eterm(n(no_TR),k);
+                g.exc.V_TR(g.exc.dc_idx(no_TR),k) = g.mac.eterm(n(no_TR),k);
             end
             if ~isempty(TR)
                 g.exc.dV_TR(g.exc.dc_idx(TR),k) = (-g.exc.V_TR(g.exc.dc_idx(TR),k) ...
-                    +eterm(n(TR),k))./g.exc.exc_con(g.exc.dc_idx(TR),3);
+                    +g.mac.eterm(n(TR),k))./g.exc.exc_con(g.exc.dc_idx(TR),3);
             end
             g.exc.V_FB(g.exc.dc_idx,k) = g.exc.exc_pot(g.exc.dc_idx,5)...
                 .*(g.exc.Efd(g.exc.dc_idx,k)-g.exc.R_f(g.exc.dc_idx,k));
@@ -360,7 +328,7 @@ if flag == 2 % exciter dynamics calculation
             end
             mult = ones(g.exc.n_dc,1);
             if g.exc.n_dc2 ~=0
-                mult(find(g.exc.exc_con(g.exc.dc_idx,1)==2)) = eterm(n2,k);
+                mult(find(g.exc.exc_con(g.exc.dc_idx,1)==2)) = g.mac.eterm(n2,k);
             end
             no_TA = g.exc.dc_noTA_idx;
             if ~isempty(no_TA)
