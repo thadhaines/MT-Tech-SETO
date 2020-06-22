@@ -1,0 +1,147 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{AGC Notes\\ }
+\lhead{Research \\ 6/19/20}
+
+\usepackage{minted}
+\usepackage{setspace}
+\begin{document}
+\onehalfspacing
+\paragraph{General AGC Notes} \ \\
+The current versions of Power System Toolbox (PST) does not have any AGC (automatic generation control) or area related models. 
+Previous AGC work from PSLTDSim (Power system long-term dynamic simulator) may be a good starting point for adding AGC to PST. \\
+
+The central computational task behind AGC is the calculation and distribution of an area control error (ACE) value.
+At the most basic level, this requires knowing an area’s actual net interchange, scheduled net interchange, and frequency.
+The standard NERC reported ACE (RACE) calculation is 
+\begin{equation}{\label{eq: race} }
+RACE = (NI_A - NI_S) - 10B (F_A - F_S) - I_{ME} + I_{ATEC}  
+\end{equation}%{Area Control Error} % this function creates a new paragraph.
+With variables defined as:
+\begin{itemize}
+\item $NI_A$ - Actual net interchange
+\item $NI_S$ - Scheduled net interchange
+\item $B$ - Fixed frequency bias
+\item $F_A$ - Actual system frequency
+\item $F_S$ - Scheduled system frequency
+\item $I_{ME}$ - Meter error 
+\item $I_{ATEC}$ - Area time error correction
+\end{itemize}
+$I_{ME}$ and $I_{ATEC}$ are often ignored, or set to zero, for simulation purposes.
+
+An optional variable frequency bias $B_V$  that replaces/enhances the standard frequency bias $B$ may be calculated as 
+\begin{equation}{\label{eq:varibaleBias} }
+B_V = B\left( 1 + K_B \abs{\Delta \omega} \right)
+\end{equation}%\eqcaption{Variable Frequency Bias} % this function creates a new paragraph.
+Where
+\begin{equation}{\label{eq:speed-deviation} }
+\Delta\omega = \omega_{rated} - \omega.
+\end{equation}%\eqcaption{Per-Unit Speed Deviation}
+It should be noted that frequency bias is a negative number and has units of $MW/0.1Hz$.
+
+By convention, $ACE$, or $RACE$ is measured in $MW$ and a positive value indicates a general over-generation condition while a negative value is representative of an under-generation situation.
+
+\pagebreak
+\paragraph{PST possibilities} \ \\
+To accommodate AGC, PST would require an ‘\verb|area_con|’ data structure that lists each bus associated with a particular area. 
+Code will have to be written to calculate and log area interchange based on power flow through lines that connect areas. 
+These calculations are already included with PST in the \verb|line_pq| function, but used only in the linearization of systems and after a non-linear simulation.\\
+
+Some kind of center of inertia combined frequency (from Sam’s phd work) may be used to  estimate area or system frequency used in ACE calculations.
+This would also require area generator buses to be defined in the \verb|area_con|.\\
+
+An ‘\verb|agc_con|’ will also have to be created to define the parameters and options associated with AGC such as frequency bias, action time, filter parameters, integration parameters, gains, etc. 
+A list of AGC controlled generators (with participation factors) would also be required. \\
+
+%Variable frequency bias options may be included, though not required.
+
+Instead of using the previous ‘array’ based definitions that PST has historically employed for system parameterization, a structured array approach may be used i.e.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+agc_con(1).actTime = 30; % AGC action time for AGC 1
+…
+agc_con(2).ctrlGens = [2,3,4]; % list of AGC gens for AGC 2
+agc_con(2).genPF = [0.25, 0.25, 0.5]; % participation factor for AGC2
+…
+\end{minted}
+For reference, the AGC model in PSLTDSim is created using code similar to:
+
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{python}
+mirror.sysBA = {
+    'BA1':{
+        'Area':1,
+        'B': "1.0 : permax", # MW/0.1 Hz
+        'BVgain' : 500.0, # variable frequency bias gain
+        'AGCActionTime': 30.00, # seconds 
+        'ACEgain' : 2.0,
+        'AGCType':'TLB : 0', # Tie-Line Bias 
+        'IncludeIACE' : True,
+        'IACEwindow' : 30, # seconds - size of window - 0 for non window
+        'IACEscale' : 1/10,
+        'ACEFiltering': 'PI : 0.04 0.0001'
+        'CtrlGens': [
+            'gen 1 : 0.5 : rampA',
+            'gen 2 1 : 0.5 : rampA', ]
+        },
+    }
+        \end{minted}     
+        
+\pagebreak
+\paragraph{PSLTDSim AGC model} \ \\
+The AGC model from PSLTDSim contains basic and optional control blocks. 
+% insert fig here
+\begin{figure}[!ht]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{../../../../../ResearchDocs/TEX/models/AGC-TLB/AGC-TLB}
+	\caption{Block diagram of ACE calculation and manipulation.}
+	\label{fig: AGC-TLB}
+\end{figure}%\vspace{-1em} % will remove 1 white space after image - typically good
+
+
+The conditional summing block contains logic that may be used to collect error values that are deemed internal to an area to more efficiently respond to events.
+This was done by comparing the sign of the error signal to the sign of frequency deviation.\\
+ 
+A moving window integrator with a user defined time range was used in the PSLTDSim AGC model. 
+This seems possible in PST, but will require some extra considerations when dealing with variable time steps.\\
+
+In simulations carried out by PSLTDSim, the most useful optional filter was the proportional-integral (PI) type shown below.
+% insert fig here
+\begin{figure}[!ht]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{../../../../../ResearchDocs/TEX/models/filterAgents/filterAgent}
+	\caption{Block diagrams of optional ACE filters (Low pass, Integral, PI).}
+	\label{fig: filterAgents}
+\end{figure}%\vspace{-1em} % will remove 1 white space after image - typically good
+
+
+ACE signals distributed to participating generators acted as a relative ramp on a the associated governor $P_{REF}$ value (or $P_{mech}$ for un-governed units).
+A low pass filter with a large time constant $\approx$1/4  AGC action time may be an easier implementation for PST.\\
+
+Plant controllers (similar to GDACS) were not created in PSLTDSim due to time constraints and may be overly detailed for this project.
+\end{document}
