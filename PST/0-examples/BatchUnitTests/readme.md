@@ -1,0 +1,1 @@
+Examples have been adapted from other places to allow for a simple batch run of 'unit tests'.
