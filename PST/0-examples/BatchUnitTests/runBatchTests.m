@@ -1,5 +1,6 @@
 %% runBatchTests.m
 %   Script to run PST tests aimed at testing specific models
+%   Modified from full example cases with shortened simulation times.
 
 clear all; close all; clc
 
@@ -28,7 +29,7 @@ runEXCtype0
 
 load compTest.mat
 % append Test name and data prefix to running completed test Cell
-compTest{length(compTest)+1} = {'Exciter - Type 0 - Simple Exciter - smpexc', 'excT0'};
+compTest{length(compTest)+1} = {'Exciter - Type 0 - Simple Exciter - smpexc', 'excT0', 'Exciter Modulation [V PU]'};
 save compTest.mat compTest
 
 %% Run exciter type 1 test
@@ -36,7 +37,7 @@ runEXCtype1
 
 load compTest.mat
 % append Test name and data prefix to running completed test Cell
-compTest{length(compTest)+1} = {'Exciter - Type 1 - DC Exciter Type 1 - exc_dc12', 'excT1'};
+compTest{length(compTest)+1} = {'Exciter - Type 1 - DC Exciter Type 1 - exc_dc12', 'excT1', 'Exciter Modulation [V PU]'};
 save compTest.mat compTest
 
 %% Run exciter type 2 test
@@ -44,7 +45,7 @@ runEXCtype2
 
 load compTest.mat
 % append Test name and data prefix to running completed test Cell
-compTest{length(compTest)+1} = {'Exciter - Type 2 - DC Exciter Type 2 - exc_dc12', 'excT2'};
+compTest{length(compTest)+1} = {'Exciter - Type 2 - DC Exciter Type 2 - exc_dc12', 'excT2', 'Exciter Modulation [V PU]'};
 save compTest.mat compTest
 
 %% Run exciter type 3 test
@@ -52,7 +53,7 @@ runEXCtype3
 
 load compTest.mat
 % append Test name and data prefix to running completed test Cell
-compTest{length(compTest)+1} = {'Exciter - Type 3 - ST3 model - exc_st3', 'excT3'};
+compTest{length(compTest)+1} = {'Exciter - Type 3 - ST3 model - exc_st3', 'excT3', 'Exciter Modulation [V PU]'};
 save compTest.mat compTest
 
 %% Run exciter type 4 test
@@ -60,7 +61,7 @@ runEXCtype4
 
 load compTest.mat
 % append Test name and data prefix to running completed test Cell
-compTest{length(compTest)+1} = {'Exciter - Type 4 - Simple exciter with PI - smppi', 'excT4'};
+compTest{length(compTest)+1} = {'Exciter - Type 4 - Simple exciter with PI - smppi', 'excT4', 'Exciter Modulation [V PU]'};
 save compTest.mat compTest
 
 
@@ -71,6 +72,7 @@ for ut=1:length(compTest)
     % load data
     caseName = compTest{ut}{1};
     dataPrefix = compTest{ut}{2};
+    modSigName = compTest{ut}{3};
     linDataN = [ dataPrefix, 'LIN.mat'];
     nlDataN = [dataPrefix, 'NL.mat'];
     feval('load',linDataN)
@@ -84,6 +86,8 @@ for ut=1:length(compTest)
     plot(t,modSigNL,'--')
     legend('Linear','Non-Linear','location','best')
     title('Modulation Signal')
+    xlabel('Time [sec]')
+    ylabel(modSigName)
     
     %% compare bus voltage magnitude
     subplot(2, 2, 2)
