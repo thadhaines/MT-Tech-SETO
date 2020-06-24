@@ -1,0 +1,69 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Mini WECC\\ Version Comparisons}
+\lhead{Research \\ 6/23/20}
+
+\usepackage{minted}
+\usepackage{setspace}
+\usepackage{lscape}
+\usepackage{multicol}
+\begin{document}
+\raggedright
+\begin{landscape}
+\verb|d_miniWECC_V3C_C3_6_C_AlbertaSw_LineOpen_CurrentLoads.m|
+\begin{multicols}{3}
+%==============================================================================
+\paragraph{3.1 vs SETO - No PSS} \ \\
+
+\includegraphics[width=\linewidth]{seto3noPSS}
+
+\paragraph{3.1 vs SETO - PSS} \ \\
+\includegraphics[width=\linewidth]{seto3PSS}
+
+The SETO version of PST is based off version 3.1.
+Result differences are minor.
+
+The SETO version runs $\approx$2x faster than version 3.1.
+
+\vfill\null
+\columnbreak
+%==============================================================================
+\paragraph{2.3 vs 3.1 - No PSS} \ \\
+
+\includegraphics[width=\linewidth]{23noPSS}
+%Version 3.1 seems slightly more damped than 2.3
+
+\paragraph{2.3 vs 3.1 - PSS} \ \\
+\includegraphics[width=\linewidth]{23PSS}
+The Washout filter of the PSS model was adjusted by JHC in Version 3.1 (See \verb|pss.m|).
+This involved re-ordering a division that acts directly on \verb|dpss1|.
+
+\vfill\null
+\columnbreak
+
+%==============================================================================
+\paragraph{2.3 vs SETO - No PSS} \ \\
+
+\includegraphics[width=\linewidth]{seto2noPSS}
+
+\paragraph{2.3 vs SETO - PSS} \ \\
+\includegraphics[width=\linewidth]{seto2PSS}
+
+This version comparison case has the largest absolute machine speed difference.
+
+
+\vfill\null
+\end{multicols}
+
+
+\end{landscape}
+
+
+\end{document}

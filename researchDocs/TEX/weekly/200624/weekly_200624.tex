@@ -18,10 +18,31 @@
 \paragraph{Recent Progress:}
 	\begin{enumerate}
 		\itemsep0em 
-		\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
-		\item Added Syncrhonous machine models em, sub, tra, and sub\_NEW to global g, tested as functional in both linear and non-linear batch runs.
-		\item Conceptual work on \verb|lmon| - a line flow montior for non-linear simulation
+		\item Global g, linear \& non-linear functionality for:
+		\begin{minipage}{\linewidth}
+		\begin{multicols}{2}
+				\begin{itemize}
+		\itemsep0em 
+				\footnotesize
+					\item exc\_dc12
+					\item exc\_st3
+					\item smpexc
+					\item smppi
+					\item mac\_sub
+					\item mac\_tra
+					\item mac\_em
+					\item mac\_sub\_NEW
+				\end{itemize}
+		\end{multicols}
+		\end{minipage}
+		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
+		%\item Added Syncrhonous machine models em, sub, tra, and sub\_NEW to global g, tested as functional in both linear and non-linear batch runs.
+	%	\item Conceptual work on \verb|lmon| - a line flow montior for non-linear simulation
 		\item Collected thoughts on AGC.
+		\item Started work on batch unit testing
+		\item Fixed multiplication in \verb|exc_st3|, and x'd comment in \verb|mac_tra| for version 3+
+		\item identified PSS alterations
+		\item Initial mini WECC version comparisons
 		\item GitHub updated:\\
 	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
 	\end{enumerate}
@@ -31,7 +52,8 @@
 	\begin{itemize}
 		\itemsep 0em 
 			\item Continue development of current injection and voltage injection converter models and their implementation in PST.
-			\item Be aware of multi rate methods
+			%\item Be aware of multi rate methods % mostly TAMU/Power world
+			\item Decide on PST base version
 			\item Plan for variable time step methods
 			\item Investigate power electronics-based models
 	\end{itemize}
@@ -44,9 +66,10 @@
 		\item Test models in both non-linear and linear simulations
 		\item think about cleaning up svm\_mgen\_Batch
 		\item Explore/Create v3 example cases
+		\item Get code/cases from Ryan
 		\item Think about AGC implementation.
-		\item Reference Trudnowski code for `structured array, functionalized' approach.
-		\item Reference Stajcar code for basic transient stability simulation flow.
+		%\item Reference Trudnowski code for `structured array, functionalized' approach.
+		%\item Reference Stajcar code for basic transient stability simulation flow.
 		\item Work on understanding PST operation
 		\item Document findings of PST functionality
 		\item Investigate Octave compatibility
@@ -83,6 +106,7 @@
 	\begin{enumerate}
 	\itemsep0em 
 	\item Requirements for variable step methods
+	\item Mini WECC version
 	\item PST modeling of transformers?
 	\end{enumerate}
 
