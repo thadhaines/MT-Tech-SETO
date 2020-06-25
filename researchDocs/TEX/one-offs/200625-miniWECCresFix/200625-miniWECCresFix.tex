@@ -1,0 +1,67 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Mini WECC\\ Version Comparisons - with model fix}
+\lhead{Research \\ 6/25/20}
+
+\usepackage{minted}
+\usepackage{setspace}
+\usepackage{lscape}
+\usepackage{multicol}
+\begin{document}
+\raggedright
+\begin{landscape}
+\verb|d_miniWECC_V3C_C3_6_C_AlbertaSw_LineOpen_CurrentLoads.m|
+\begin{multicols}{3}
+%==============================================================================
+\paragraph{3.1 vs SETO - No PSS} \ \\
+
+\includegraphics[width=\linewidth]{pstSETOnoPSSLpstV3p1noPSSL}
+
+\paragraph{3.1 vs SETO - PSS} \ \\
+\includegraphics[width=\linewidth]{pstSETOPSSLpstV3p1PSSL}
+
+The SETO version of PST is based off version 3.1.
+
+The SETO version runs $\approx$2x faster than version 3.1.
+
+\vfill\null
+\columnbreak
+%==============================================================================
+\paragraph{2.3 vs 3.1 - No PSS} \ \\
+
+\includegraphics[width=\linewidth]{pstV2P3noPSSLpstV3p1noPSSL}
+%Version 3.1 seems slightly more damped than 2.3
+
+\paragraph{2.3 vs 3.1 - PSS} \ \\
+\includegraphics[width=\linewidth]{pstV2P3PSSLpstV3p1PSSL}
+The Washout filter of the PSS model was adjusted by JHC in Version 3.1 (See \verb|pss.m|).
+This involved re-ordering a division that acts directly on \verb|dpss1|.
+
+\vfill\null
+\columnbreak
+
+%==============================================================================
+\paragraph{2.3 vs SETO - No PSS} \ \\
+
+\includegraphics[width=\linewidth]{pstV2P3noPSSLpstSETOnoPSSL}
+
+\paragraph{2.3 vs SETO - PSS} \ \\
+\includegraphics[width=\linewidth]{pstV2P3PSSLpstSETOPSSL}
+
+As the SETO version is based off 3.1, it also includes the adjusted pss model.
+
+\vfill\null
+\end{multicols}
+
+
+\end{landscape}
+
+
+\end{document}
