@@ -1,0 +1,61 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of PSS using global g\\ }
+\lhead{Research \\ 6/29/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable \verb|pss| PST models ver2 and ver3 to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+%% pss variables - 21
+    global  pss_con pss_pot pss_mb_idx pss_exc_idx
+    global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
+    global  pss_idx n_pss pss_sp_idx pss_p_idx;
+    global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+
+%===============================================================================
+\paragraph{XXX\_indx}
+	\begin{itemize}
+		\item ...
+	\end{itemize}
+
+%===============================================================================
+\paragraph{handleNewGlobals.m}
+	\begin{itemize}
+		\item Addition of if statement to properly handle legacy data inputs
+	\end{itemize}
+
+
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+	\begin{itemize}
+		\item ...
+	\end{itemize}
+
+%===============================================================================
+\paragraph{...}
+	\begin{itemize}
+		\item ...
+	\end{itemize}
+
+%===============================================================================
+
+
+\end{document}

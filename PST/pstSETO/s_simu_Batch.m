@@ -84,6 +84,7 @@ warning('*** Declare Global Variables')
     global  basmva basrad syn_ref mach_ref sys_freq
     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
     global  lmon_con
+    % todo: add theta to system variables (currently in g.mac.)
 
 %     %% synchronous machine variables  - 47
 %     global  mac_con mac_pot mac_int ibus_con
