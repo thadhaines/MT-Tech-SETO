@@ -20,22 +20,27 @@ save PSTpath.mat PSTpath
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
-clear all; close all; clc
+clear all; %close all; clc
 load PSTpath
 delete([PSTpath 'mac_sub.m']); 
 copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); %use new machine model
 delete([PSTpath 'DataFile.m']); 
+
 copyfile('d2m_pwrmod2.m',[PSTpath 'DataFile.m']); %System data file
 delete([PSTpath 'pwrmod_dyn.m']); 
+
+delete([PSTpath 'pss.m']); 
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use specific pss model
+
 copyfile('pwrmod_dyn_Example2.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
 s_simu_Batch %Run PST
-save('Example2_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t and bus_v results
+save('Example2_NonlinearSim','t','bus_v','g'); %Save t and bus_v results
 
 %% Build Linear model, simulate, and store results
 %Build PST linear model with real-power input and voltage mag and angle
 %outputs
-clear all; close all; clc
+clear all; %close all; clc
 load PSTpath
 %delete([PSTpath 'DataFile.m']); copyfile('d2m_pwrmod2.m',[PSTpath 'DataFile.m']); %System data file
 %delete([PSTpath 'pwrmod_dyn.m']); copyfile('pwrmod_dyn_Example2.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
@@ -72,8 +77,8 @@ tL = tL';
 save('Example2_LinearSim','tL','bus_vL'); %Save linear results
 
 %% Plot linear vs nonlinear
-clear all; close all; clc
-load('Example2_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st');
+clear all; %close all; clc
+load('Example2_NonlinearSim','t','bus_v','g');
 load('Example2_LinearSim','tL','bus_vL');
 
 figure
@@ -111,16 +116,16 @@ legend('non-linear','linear','location','best')
 %% Plot nonlinear P and Q injected power
 figure
 subplot(411)
-plot(t,pwrmod_p_st(1,:),'k')
+plot(t,g.pwr.pwrmod_p_st(1,:),'k')
 ylabel('Bus 2 I_P (pu)')
 subplot(412)
-plot(t,pwrmod_p_st(2,:),'k')
+plot(t,g.pwr.pwrmod_p_st(2,:),'k')
 ylabel('Bus 3 I_P (pu)')
 subplot(413)
-plot(t,pwrmod_q_st(1,:),'k')
+plot(t,g.pwr.pwrmod_q_st(1,:),'k')
 ylabel('Bus 2 I_Q (pu)')
 subplot(414)
-plot(t,pwrmod_q_st(2,:),'k')
+plot(t,g.pwr.pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 I_Q (pu)')
 xlabel('Time (sec.)')
 %set(gcf,'Position',[360 202 560 720]);
@@ -128,5 +133,5 @@ xlabel('Time (sec.)')
 %% clean up file manipulations
 load PSTpath.mat
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
-copyfile([PSTpath 'pwrmod_dyn_ORIGINAL.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
+copyfile([PSTpath 'pwrmod_dyn_ORIG.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
 delete PSTpath.mat
