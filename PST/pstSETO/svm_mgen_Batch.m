@@ -757,7 +757,7 @@ telect(:,1) = g.mac.pelect(:,1).*g.mac.mac_pot(:,1)...
 % DeltaP/omega filter
 dpwf(0,1,bus,flag);
 %pss 
-pss(0,1,bus,flag); 
+pss(0,1,flag); 
 %exciters
 smpexc(0,1,flag);
 smppi(0,1,flag);

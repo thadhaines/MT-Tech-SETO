@@ -1,4 +1,4 @@
-function [f] = pss(i,k,bus,flag)
+function pss(i,k,flag)
 % Syntax: [f] = pss(i,k,bus,flag)
 % 8:05 am 23/10/97
 %
@@ -26,10 +26,6 @@ function [f] = pss(i,k,bus,flag)
 % (c) Copyright 1991-2 Joe H. Chow - All Rights Reserved
 
 % History (in reverse chronological order)
-% Version 3.1
-% April 2011
-% corrected washout filter calculation 
-%
 % Version 2.2
 % July 1998
 % added interface to deltaP/omega filter
@@ -55,8 +51,8 @@ global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
 global  pss_idx n_pss pss_sp_idx pss_p_idx;
 global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
 global  dpw_pss_idx n_dpw dpw_out
-global  mac_con mac_int mac_spd pelect basmva 
-f=0;
+% global  mac_con mac_int mac_spd pelect 
+global  basmva 
 
 global g
 
@@ -68,9 +64,9 @@ if n_pss~=0
    end
    
    
-   
-   jay = sqrt(-1);
-   num_mac=length(g.mac.mac_con(:,1));
+%    
+%    jay = sqrt(-1);
+%    num_mac=length(g.mac.mac_con(:,1));
    
    if flag == 0; % initialization
       if i ~= 0  % scalar computation
@@ -101,7 +97,7 @@ if n_pss~=0
          n=pss_mb_idx;
          if ~isempty(pss_sp_idx)
             n_sp = g.mac.mac_int(pss_con(pss_sp_idx,2));
-            pss1(pss_sp_idx,1)= g.mac.mac_spd(n_sp,1);
+            pss1(pss_sp_idx,1)=g.mac.mac_spd(n_sp,1);
          end
          if ~isempty(pss_p_idx)
             n_p = g.mac.mac_int(pss_con(pss_p_idx,2));
@@ -124,16 +120,16 @@ if n_pss~=0
       if i ~= 0 % scalar computation
          n = pss_mb_idx(i); % machine number
          if pss_con(i,1) == 1
-            var1 = g.mac.mac_spd(i,k)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = (g.mac.mac_spd(i,k)-pss1(i,k))/pss_con(i,4);
          else
             n = g.mac.mac_int(pss_con(i,2)); % machine number 
-            var1 = g.mac.pelect(i,k)*basmva/g.mac.mac_con(n,3)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = (g.mac.pelect(i,k)*basmva/g.mac.mac_con(n,3)-pss1(i,k))/pss_con(i,4);
          end
          if n_dpw~=0
             if n_dpw ~= 0
                i_dpw = find(dpw_pss_idx==i);
                if ~isempty(i_dpw)
-                  var1 = dpw_out(i_dpw,k)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+                  var1 = (dpw_out(i_dpw,k)-pss1(i,k))/pss_con(i,4);
                end
             end
          end  
@@ -154,14 +150,14 @@ if n_pss~=0
             var2 = var1; var3 = var1;
             if length(pss_sp_idx)~=0
                n_sp = g.mac.mac_int(pss_con(pss_sp_idx,2));
-               var1(pss_sp_idx) = g.mac.mac_spd(n_sp,k)-pss1(pss_sp_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+               var1(pss_sp_idx) = (g.mac.mac_spd(n_sp,k)-pss1(pss_sp_idx,k))./pss_con(pss_sp_idx,4);
             end
             if ~isempty(pss_p_idx)
                n_p = g.mac.mac_int(pss_con(pss_p_idx,2));
-               var1(pss_p_idx) = g.mac.pelect(n_p,k)*basmva./g.mac.mac_con(n_p,3)-pss1(pss_p_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+               var1(pss_p_idx) = (g.mac.pelect(n_p,k)*basmva./g.mac.mac_con(n_p,3)-pss1(pss_p_idx,k))./pss_con(pss_p_idx,4);
             end
             if n_dpw ~= 0
-               var1 = dpw_out(:,k)-pss1(dpw_pss_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+               var1 = (dpw_out(:,k)-pss1(dpw_pss_idx,k))./pss_con(dpw_pss_idx,4);
             end
          end  
          
@@ -182,11 +178,12 @@ if n_pss~=0
       if i ~= 0 % scalar computation
          n = pss_mb_idx(i); % machine number
          if pss_con(i,1) == 1
-            var1 = g.mac.mac_spd(i,k)-pss1(i,k);  % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = (g.mac.mac_spd(i,k)-pss1(i,k))/pss_con(i,4);
          else
             n = g.mac.mac_int(pss_con(i,2)); % machine number 
-            var1 = g.mac.pelect(i,k)*basmva./g.mac.mac_con(n,3)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = (g.mac.pelect(i,k)*basmva./g.mac.mac_con(n,3)-pss1(i,k))/pss_con(i,4);
          end
+         
          if n_dpw~=0
             if n_dpw ~= 0
                i_dpw = find(dpw_pss_idx==i);
@@ -196,7 +193,7 @@ if n_pss~=0
             end
          end  
          
-         dpss1(i,k) = var1/pss_con(i,4);   % divide by pss_con(i,4)  JHC April 17, 2011
+         dpss1(i,k) = var1;
          
          var2 = pss_pot(i,1)*pss_con(i,3)*var1 + pss2(i,k);
          dpss2(i,k) = ((1-pss_pot(i,1))*pss_con(i,3)*var1 - pss2(i,k))/pss_con(i,6);
@@ -216,22 +213,24 @@ if n_pss~=0
          if n_pss~=0
             n = pss_mb_idx; % machine number vector
             var1 = zeros(n_pss,1);
-            var2 = var1; var3 = var1;
+            var2 = var1; 
+            var3 = var1;
             if ~isempty(pss_sp_idx)
                n_sp = g.mac.mac_int(pss_con(pss_sp_idx,2));
-               var1(pss_sp_idx) = g.mac.mac_spd(n_sp,k)-pss1(pss_sp_idx,k); % do not divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
+               var1(pss_sp_idx) = (g.mac.mac_spd(n_sp,k)-pss1(pss_sp_idx,k))...
+                  ./pss_con(pss_sp_idx,4);
             end
             if ~isempty(pss_p_idx)
                n_p = g.mac.mac_int(pss_con(pss_p_idx,2));
-               var1(pss_p_idx) = g.mac.pelect(n_p,k)*basmva./g.mac.mac_con(n_p,3)...
-                  -pss1(pss_p_idx,k); % do not divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
+               var1(pss_p_idx) = (g.mac.pelect(n_p,k)*basmva./g.mac.mac_con(n_p,3)...
+                  -pss1(pss_p_idx,k))./pss_con(pss_p_idx,4);
             end
             if n_dpw ~= 0
                var1 = (dpw_out(:,k)-pss1(dpw_pss_idx,k))./pss_con(dpw_pss_idx,4);
             end
          end  
          
-         dpss1(pss_idx,k) = var1./pss_con(pss_sp_idx,4); % divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
+         dpss1(pss_idx,k) = var1;
          
          var2 = pss_pot(pss_idx,1).*(pss_con(pss_idx,3).*var1) + pss2(pss_idx,k);
          dpss2(pss_idx,k) = ((ones(n_pss,1)-pss_pot(pss_idx,1))...

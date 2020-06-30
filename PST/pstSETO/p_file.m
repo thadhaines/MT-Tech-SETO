@@ -73,7 +73,7 @@ end
 % DeltaP/omega filter
 dpwf(0,2,bus,flag);
 % pss
-pss(0,2,bus,flag);
+pss(0,2,flag);
 % exciters
 smpexc(0,2,flag);
 smppi(0,2,flag);
@@ -90,7 +90,7 @@ mac_sub(0,2,bus,flag);
 mac_ind(0,2,bus,flag); 
 mac_igen(0,2,bus,flag);
 dpwf(0,2,bus,flag);
-pss(0,2,bus,flag);
+pss(0,2,flag);
 
 smpexc(0,2,flag);
 smppi(0,2,flag);

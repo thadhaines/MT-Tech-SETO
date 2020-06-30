@@ -5,7 +5,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'pstSETO';% 'pstV2p3';%
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -23,6 +23,10 @@ clear all; close all; clc
 load PSTpath.mat
 delete([PSTpath 'mac_sub.m']); 
 copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
+
+delete([PSTpath 'pss.m']); 
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use new pss
+
 
 delete([PSTpath 'DataFile.m']); 
 copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file

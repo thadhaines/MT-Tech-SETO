@@ -875,7 +875,7 @@ mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
 
 disp('generator controls')
 dpwf(0,1,bus,flag);
-pss(0,1,bus,flag);
+pss(0,1,flag);
 
 % exciters
 smpexc(0,1,flag);
@@ -1305,7 +1305,7 @@ while (kt<=ktmax)
         mac_em(0,k,bus_sim,flag);
         
         dpwf(0,k,bus_sim,flag);
-        pss(0,k,bus_sim,flag);
+        pss(0,k,flag);
         
         mexc_sig(k);
         smpexc(0,k,flag);
@@ -1651,7 +1651,7 @@ while (kt<=ktmax)
         %% network interface for control models - 'corrector' step
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
         dpwf(0,j,bus_sim,flag);
-        pss(0,j,bus_sim,flag);
+        pss(0,j,flag);
         mexc_sig(j);
         smpexc(0,j,flag);
         smppi(0,j,flag);
@@ -1699,7 +1699,7 @@ while (kt<=ktmax)
         mac_tra(0,j,bus_sim,flag);
         mac_em(0,j,bus_sim,flag);
         dpwf(0,j,bus_sim,flag);
-        pss(0,j,bus_sim,flag);
+        pss(0,j,flag);
         mexc_sig(j);
         smpexc(0,j,flag);
         smppi(0,j,flag);
