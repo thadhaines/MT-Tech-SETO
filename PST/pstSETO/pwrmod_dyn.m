@@ -34,13 +34,14 @@ function [P,Q,dP_states,dQ_states,P_statesIni,Q_statesIni] = pwrmod_dyn(P_states
 %   pwrmod_con = see system data file.
 % D. Trudnowski, 2015
 
-global pwrmod_data bus_v pwrmod_con load_con
+%global pwrmod_data bus_v pwrmod_con 
+global load_con
+global g
 
 %% Parameters
-nOrderP = 1; %order of state equations for P modulation
-nOrderQ = 1; %order of state equations for Q modulation
+nOrderP = [1;1]; %order of state equations for P modulation
+nOrderQ = [1;1]; %order of state equations for Q modulation
 
-%% Initialize output variables
 %% Initialize output variables
 P = zeros(n_pwrmod,1);
 Q = zeros(n_pwrmod,1);
@@ -52,19 +53,41 @@ Q_statesIni = cell(n_pwrmod,1);
 %% Define and initialize state derivatives at t = 0 (set to zero).
 if Flag==0
     for k=1:n_pwrmod
-        Q_statesIni{k} = zeros(nOrderQ,1);
-        P_statesIni{k} = zeros(nOrderP,1);
+        Q_statesIni{k} = zeros(nOrderQ(k),1);
+        P_statesIni{k} = zeros(nOrderP(k),1);
     end
-    pwrmod_data = zeros(length(Time),2); %Store Pref in pwrmod_data
+    g.pwr.pwrmod_data = zeros(length(Time),2); %Store Pref in pwrmod_data
     clear k
 
 %% Calculate P and Q
 elseif Flag==1
-    %Not used
+    for k=1:length(P)
+        n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
+        m = find(g.pwr.pwrmod_con(k,1)==load_con(:,1));
+        if load_con(m,2)==1
+            %Initial power injection
+            P(k) = bus(n,4); %Real power 
+            Q(k) = bus(n,5); %Reac power
+        else
+            %Initial current injection
+            P(k) = bus(n,4)/abs(bus(n,2)); %Real-power current
+            Q(k) = bus(n,5)/abs(bus(n,2)); %Reac-power current
+        end
+    end
+    if Time(kSim)>=1 && Time(kSim)<1.5; 
+        P(1) = P(1)-0.0001;
+    end
+    if Time(kSim)>=4 && Time(kSim)<4.5; 
+        P(2) = P(2)+0.0002;
+    end
 
 %% Calculate derivatives
 elseif Flag==2
-    %Not used
+    for k=1:n_pwrmod
+        dP_states{k} = zeros(nOrderP(k),1);
+        dQ_states{k} = zeros(nOrderQ(k),1);
+    end
+    clear k
     
 end
 

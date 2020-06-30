@@ -35,11 +35,11 @@ delete([PSTpath 'pwrmod_dyn.m']);
 copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
 s_simu_Batch %Run PST
-save('Example1_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t and bus_v results
+save('Example1_NonlinearSim','t','bus_v','g'); %Save t and bus_v results
 
 %% Build linear model, simulate, and store results
 %Build linear model
-clear all; clc; close all
+clear all; %clc; close all
 load PSTpath
 %delete([PSTpath 'DataFile.m']); copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
 %delete([PSTpath 'pwrmod_dyn.m']); copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
@@ -80,7 +80,7 @@ tL = tL';
 save('Example1_LinearSim','tL','bus_vL'); %Save linear results
 
 %% Plot Nonlinear vs Linear
-clear all; clc
+clear all; %clc
 load('Example1_NonlinearSim','t','bus_v');
 load('Example1_LinearSim','tL','bus_vL');
 figure(2)

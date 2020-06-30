@@ -67,7 +67,7 @@ global ind_con ind_pot load_con igen_con igen_pot
 
 global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
 % power modulation variables
-global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st pwrmod_con
+% global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st pwrmod_con
 
 global g
 
@@ -108,8 +108,8 @@ if nargout > 2 %checking number of output arguments
 end
 
 %Adjust load for pwrmod buses as these are PV buses.
-if n_pwrmod~=0
-    j = bus_int(pwrmod_con(:,1));
+if g.pwr.n_pwrmod~=0
+    j = bus_int(g.pwr.pwrmod_con(:,1));
     bus_sol(j,6) = bus_sol(j,4);
     bus_sol(j,7) = bus_sol(j,5);
     clear j

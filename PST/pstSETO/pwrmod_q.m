@@ -1,4 +1,4 @@
-function f = pwrmod_q(i,k,bus,flag)
+function pwrmod_q(i,k,bus,flag)
 % Syntax: f = pwrmod_q(i,k,bus,flag)
 % Purpose: reac-power modulation model 
 %          with vectorized computation option
@@ -22,28 +22,29 @@ function f = pwrmod_q(i,k,bus,flag)
 % Author: Dan Trudnowski
 
 % power modulation variables
-global pwrmod_con n_pwrmod pwrmod_q_st dpwrmod_q_st pwrmod_q_sig pwrmod_idx bus_int load_con
-
-f = 0;% dummy variable
-
-jay = sqrt(-1);
-if ~isempty(pwrmod_con)
+% global pwrmod_con n_pwrmod pwrmod_q_st dpwrmod_q_st pwrmod_q_sig pwrmod_idx 
+global bus_int load_con
+global g
+% f = 0;% dummy variable
+% 
+% jay = sqrt(-1);
+if ~isempty(g.pwr.pwrmod_con)
    if flag == 0; % initialization
       if i~=0
-          jj = bus_int(pwrmod_con(i,1));
-          if (load_con(pwrmod_idx(i),2)==1 && load_con(pwrmod_idx(i),3)==1)
-             pwrmod_q_st(i,1) = bus(jj,5);
+          jj = bus_int(g.pwr.pwrmod_con(i,1));
+          if (load_con(g.pwr.pwrmod_idx(i),2)==1 && load_con(g.pwr.pwrmod_idx(i),3)==1)
+             g.pwr.pwrmod_q_st(i,1) = bus(jj,5);
           else
-             pwrmod_q_st(i,1) = bus(jj,5)/abs(bus(jj,2));
+             g.pwr.pwrmod_q_st(i,1) = bus(jj,5)/abs(bus(jj,2));
           end
           clear jj
       else % vectorized calculation
-          for ii=1:n_pwrmod
-              jj = bus_int(pwrmod_con(ii,1));
-              if (load_con(pwrmod_idx(ii),2)==1 && load_con(pwrmod_idx(ii),3)==1)
-                 pwrmod_q_st(ii,1) = bus(jj,5);
+          for ii=1:g.pwr.n_pwrmod
+              jj = bus_int(g.pwr.pwrmod_con(ii,1));
+              if (load_con(g.pwr.pwrmod_idx(ii),2)==1 && load_con(g.pwr.pwrmod_idx(ii),3)==1)
+                 g.pwr.pwrmod_q_st(ii,1) = bus(jj,5);
               else
-                 pwrmod_q_st(ii,1) = bus(jj,5)/abs(bus(jj,2));
+                 g.pwr.pwrmod_q_st(ii,1) = bus(jj,5)/abs(bus(jj,2));
               end
           end
           clear jj
@@ -57,35 +58,35 @@ if ~isempty(pwrmod_con)
       % for linearization with operating condition at limits,
       % additional code will be needed
       if i ~= 0
-         dpwrmod_q_st(i,k) = (-pwrmod_q_st(i,k)+pwrmod_q_sig(i,k))/pwrmod_con(i,5);
+         g.pwr.dpwrmod_q_st(i,k) = (-g.pwr.pwrmod_q_st(i,k)+g.pwr.pwrmod_q_sig(i,k))/g.pwr.pwrmod_con(i,5);
          % anti-windup reset
-         if pwrmod_q_st(i,k) > pwrmod_con(i,6)
-            if dpwrmod_q_st(i,k)>0
-               dpwrmod_q_st(i,k) = 0;
+         if g.pwr.pwrmod_q_st(i,k) > g.pwr.pwrmod_con(i,6)
+            if g.pwr.dpwrmod_q_st(i,k)>0
+               g.pwr.dpwrmod_q_st(i,k) = 0;
             end
          end
-         if pwrmod_q_st(i,k) < pwrmod_con(i,7)
-            if dpwrmod_q_st(i,k)<0
-               dpwrmod_q_st(i,k) = 0;
+         if g.pwr.pwrmod_q_st(i,k) < g.pwr.pwrmod_con(i,7)
+            if g.pwr.dpwrmod_q_st(i,k)<0
+               g.pwr.dpwrmod_q_st(i,k) = 0;
             end
          end
       else %vectorized computation
-         dpwrmod_q_st(:,k) = (-pwrmod_q_st(:,k)+pwrmod_q_sig(:,k))./pwrmod_con(:,5);
+         g.pwr.dpwrmod_q_st(:,k) = (-g.pwr.pwrmod_q_st(:,k)+g.pwr.pwrmod_q_sig(:,k))./g.pwr.pwrmod_con(:,5);
          % anti-windup reset
-         indmx =find(pwrmod_q_st(:,k) > pwrmod_con(:,6));
+         indmx =find(g.pwr.pwrmod_q_st(:,k) > g.pwr.pwrmod_con(:,6));
          if ~isempty(indmx)
-            indrate = find(dpwrmod_q_st(indmx,k)>0);
+            indrate = find(g.pwr.dpwrmod_q_st(indmx,k)>0);
             if ~isempty(indrate)
                % set rate to zero
-               dpwrmod_q_st(indmx(indrate),k) = zeros(length(indrate),1);
+               g.pwr.dpwrmod_q_st(indmx(indrate),k) = zeros(length(indrate),1);
             end
          end
-         indmn = find(pwrmod_q_st(:,k) < pwrmod_con(:,7));
+         indmn = find(g.pwr.pwrmod_q_st(:,k) < g.pwr.pwrmod_con(:,7));
          if ~isempty(indmn)
-            indrate = find(dpwrmod_q_st(indmn)<0);
+            indrate = find(g.pwr.dpwrmod_q_st(indmn)<0);
             if ~isempty(indrate)
                % set rate to zero
-               dpwrmod_q_st(indmn(indrate),k) = zeros(length(indrate),1);
+               g.pwr.dpwrmod_q_st(indmn(indrate),k) = zeros(length(indrate),1);
             end
          end
       end

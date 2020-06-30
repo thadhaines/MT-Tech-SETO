@@ -69,7 +69,7 @@ warning('*** s_simu_Batch Start')
 
 close % close graphics windows
 tic % set timer
-plot_now=0;
+% plot_now=0;
 jay = sqrt(-1);
 
 %% Contents of pst_var copied into this section so that globals highlight - thad
@@ -161,12 +161,12 @@ warning('*** Declare Global Variables')
     %global  rlmod_pot rlmod_st drlmod_st
     %global  rlmod_sig
     
-    %% power injection variables - 10
-    global  pwrmod_con n_pwrmod pwrmod_idx
-    global  pwrmod_p_st dpwrmod_p_st
-    global  pwrmod_q_st dpwrmod_q_st
-    global  pwrmod_p_sig pwrmod_q_sig
-    global  pwrmod_data
+%     %% power injection variables - 10 - g.pwr.
+%     global  pwrmod_con n_pwrmod pwrmod_idx
+%     global  pwrmod_p_st dpwrmod_p_st
+%     global  pwrmod_q_st dpwrmod_q_st
+%     global  pwrmod_p_sig pwrmod_q_sig
+%     global  pwrmod_data
     
     %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
@@ -280,14 +280,6 @@ basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
 syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = []; % ignore infinite buses in transient simulation % should be global? -thad 06/15/20
 
-%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q
-if ~isempty(n_pwrmod)
-    for kk=1:n_pwrmod
-        n = find(pwrmod_con(kk,1)==bus(:,1));
-        bus(n,11:12) = pwrmod_con(kk,6:7);
-    end
-    clear kk n
-end
 
 %% solve for loadflow - loadflow parameter
 warning('*** Solve initial loadflow')
@@ -337,6 +329,16 @@ ntot = g.mac.n_mac+n_mot+n_ig;
 ngm = g.mac.n_mac + n_mot;
 
 g.mac.n_pm = g.mac.n_mac; % into an init?
+
+%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q - moved to place after pwrmod is counted (never actually executed prior...) -thad 06/30/20
+if ~isempty(g.pwr.n_pwrmod)
+    for kk=1:g.pwr.n_pwrmod
+        n = find(g.pwr.pwrmod_con(kk,1)==bus(:,1));
+        bus(n,11:12) = g.pwr.pwrmod_con(kk,6:7);
+    end
+    clear kk n
+end
+
 
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
@@ -730,20 +732,20 @@ else
 end
 
 %% Initialize pwrmod
-if n_pwrmod ~= 0
-    pwrmod_p_st = zeros(n_pwrmod,k);
-    dpwrmod_p_st = pwrmod_p_st;
-    pwrmod_p_sig = pwrmod_p_st;
-    pwrmod_q_st = zeros(n_pwrmod,k);
-    dpwrmod_q_st = pwrmod_q_st;
-    pwrmod_q_sig = pwrmod_q_st;
+if g.pwr.n_pwrmod ~= 0
+    g.pwr.pwrmod_p_st = zeros(g.pwr.n_pwrmod,k);
+    g.pwr.dpwrmod_p_st = g.pwr.pwrmod_p_st;
+    g.pwr.pwrmod_p_sig = g.pwr.pwrmod_p_st;
+    g.pwr.pwrmod_q_st = zeros(g.pwr.n_pwrmod,k);
+    g.pwr.dpwrmod_q_st = g.pwr.pwrmod_q_st;
+    g.pwr.pwrmod_q_sig = g.pwr.pwrmod_q_st;
 else
-    pwrmod_p_st = zeros(1,k);
-    dpwrmod_p_st = pwrmod_p_st;
-    pwrmod_p_sig = pwrmod_p_st;
-    pwrmod_q_st = zeros(1,k);
-    dpwrmod_q_st = pwrmod_q_st;
-    pwrmod_q_sig = pwrmod_q_st;
+    g.pwr.pwrmod_p_st = zeros(1,k);
+    g.pwr.dpwrmod_p_st = g.pwr.pwrmod_p_st;
+    g.pwr.pwrmod_p_sig = g.pwr.pwrmod_p_st;
+    g.pwr.pwrmod_q_st = zeros(1,k);
+    g.pwr.dpwrmod_q_st = g.pwr.pwrmod_q_st;
+    g.pwr.pwrmod_q_sig = g.pwr.pwrmod_q_st;
 end
 
 %% Initialize ivmmod sigs
@@ -999,22 +1001,22 @@ end
 
 %% initialize power modulation control - copied from v2.3 06/01/20 -thad
 % Seems like this should be put in a seperate script - thad 06/08/20
-if n_pwrmod~=0
+if g.pwr.n_pwrmod~=0
     disp('power modulation')
     pwrmod_p(0,1,bus,flag);
     pwrmod_q(0,1,bus,flag);
-    [~,~,~,~,Pini,Qini] = pwrmod_dyn([],[],bus,t,0,0,n_pwrmod);
+    [~,~,~,~,Pini,Qini] = pwrmod_dyn([],[],bus,t,0,0,g.pwr.n_pwrmod);
     if (~iscell(Pini) || ~iscell(Qini))
         error('Error in pwrmod_dyn, P_statesIni and P_statesIni must be cells');
     end
-    if (any(size(Pini)-[n_pwrmod 1]) || any(size(Qini)-[n_pwrmod 1]))
+    if (any(size(Pini)-[g.pwr.n_pwrmod 1]) || any(size(Qini)-[g.pwr.n_pwrmod 1]))
         error('Dimension error in pwrmod_dyn'); 
     end
-    pwrmod_p_sigst = cell(n_pwrmod,1);
+    pwrmod_p_sigst = cell(g.pwr.n_pwrmod,1);
     pwrmod_q_sigst = pwrmod_p_sigst;
     dpwrmod_p_sigst = pwrmod_p_sigst;
     dpwrmod_q_sigst = pwrmod_p_sigst;
-    for index=1:n_pwrmod
+    for index=1:g.pwr.n_pwrmod
         if ((size(Pini{index},2)~=1) || (size(Qini{index},2)~=1))
             error('Dimension error in pwrmod_dyn'); 
         end
@@ -1365,21 +1367,21 @@ while (kt<=ktmax)
         end
         
         %% pwrmod - copied from v2.3 - 06/01/20 -thad
-        if n_pwrmod~=0
-            Pst = cell(n_pwrmod,1);
+        if g.pwr.n_pwrmod~=0
+            Pst = cell(g.pwr.n_pwrmod,1);
             Qst = Pst;
-            for index=1:n_pwrmod
+            for index=1:g.pwr.n_pwrmod
                 Pst{index} = pwrmod_p_sigst{index}(:,k);
                 Qst{index} = pwrmod_q_sigst{index}(:,k);
             end
-            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,bus,t,k,flag,n_pwrmod);
+            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,bus,t,k,flag,g.pwr.n_pwrmod);
             if (~iscell(dp) || ~iscell(dq)) 
                 error('Error in pwrmod_dyn, dp and dq must be cells'); 
             end
-            if (any(size(dp)-[n_pwrmod 1]) || any(size(dq)-[n_pwrmod 1]))
+            if (any(size(dp)-[g.pwr.n_pwrmod 1]) || any(size(dq)-[g.pwr.n_pwrmod 1]))
                 error('Dimension error in pwrmod_dyn'); 
             end
-            for index=1:n_pwrmod
+            for index=1:g.pwr.n_pwrmod
                 if ((size(dp{index},2)~=1) || (size(dq{index},2)~=1))
                     error('Dimension error in pwrmod_dyn'); 
                 end
@@ -1392,12 +1394,12 @@ while (kt<=ktmax)
                 dpwrmod_p_sigst{index}(:,k) = dp{index};
                 dpwrmod_q_sigst{index}(:,k) = dq{index};
             end
-            [P,Q,~,~] = pwrmod_dyn(Pst,Qst,bus,t,k,1,n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
-            if (length(P)~=n_pwrmod) || (length(Q)~=n_pwrmod)
+            [P,Q,~,~] = pwrmod_dyn(Pst,Qst,bus,t,k,1,g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
+            if (length(P)~=g.pwr.n_pwrmod) || (length(Q)~=g.pwr.n_pwrmod)
                 error('Dimension error in pwrmod_dyn'); 
             end
-            pwrmod_p_sig(:,k) = P;
-            pwrmod_q_sig(:,k) = Q;
+            g.pwr.pwrmod_p_sig(:,k) = P;
+            g.pwr.pwrmod_q_sig(:,k) = Q;
             pwrmod_p(0,k,bus_sim,flag);
             pwrmod_q(0,k,bus_sim,flag);
             clear P Q Pst Qst dp dq index
@@ -1506,11 +1508,11 @@ while (kt<=ktmax)
         g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+h_sol*g.rlmod.drlmod_st(:,k);
         
         %% Copied from v2.3 - 06/01/20 - thad
-        pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*dpwrmod_p_st(:,k);
-        pwrmod_q_st(:,j) = pwrmod_q_st(:,k)+h_sol*dpwrmod_q_st(:,k);
+        g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*g.pwr.dpwrmod_p_st(:,k);
+        g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*g.pwr.dpwrmod_q_st(:,k);
         %% pwrmod
-        if n_pwrmod~=0
-            for index=1:n_pwrmod
+        if g.pwr.n_pwrmod~=0
+            for index=1:g.pwr.n_pwrmod
                 pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*dpwrmod_p_sigst{index}(:,k);
                 pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*dpwrmod_q_sigst{index}(:,k);
             end
@@ -1757,22 +1759,22 @@ while (kt<=ktmax)
         end
         
         % copied from v2.3 - thad - 06/01/20
-        if n_pwrmod~=0
-            Pst = cell(n_pwrmod,1);
+        if g.pwr.n_pwrmod~=0
+            Pst = cell(g.pwr.n_pwrmod,1);
             Qst = Pst;
-            for index=1:n_pwrmod
+            for index=1:g.pwr.n_pwrmod
                 Pst{index} = pwrmod_p_sigst{index}(:,j);
                 Qst{index} = pwrmod_q_sigst{index}(:,j);
             end
-            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,bus,t,j,flag,n_pwrmod);
+            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,bus,t,j,flag,g.pwr.n_pwrmod);
             if (~iscell(dp) || ~iscell(dq))
                 error('Error in pwrmod_dyn, dp and dq must be cells'); 
             end
-            if (any(size(dp)-[n_pwrmod 1]) || any(size(dq)-[n_pwrmod 1]))
+            if (any(size(dp)-[g.pwr.n_pwrmod 1]) || any(size(dq)-[g.pwr.n_pwrmod 1]))
                 error('Dimension error in pwrmod_dyn'); 
             end
             
-            for index=1:n_pwrmod
+            for index=1:g.pwr.n_pwrmod
                 if ((size(dp{index},2)~=1) || (size(dq{index},2)~=1))
                     error('Dimension error in pwrmod_dyn'); 
                 end
@@ -1785,12 +1787,12 @@ while (kt<=ktmax)
                 dpwrmod_p_sigst{index}(:,j) = dp{index};
                 dpwrmod_q_sigst{index}(:,j) = dq{index};
             end
-            [P,Q,~,~,~,~] = pwrmod_dyn(Pst,Qst,bus,t,j,1,n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
-            if (length(P)~=n_pwrmod) || (length(Q)~=n_pwrmod)
+            [P,Q,~,~,~,~] = pwrmod_dyn(Pst,Qst,bus,t,j,1,g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
+            if (length(P)~=g.pwr.n_pwrmod) || (length(Q)~=g.pwr.n_pwrmod)
                 error('Dimension error in pwrmod_dyn');
             end
-            pwrmod_p_sig(:,j) = P;
-            pwrmod_q_sig(:,j) = Q;
+            g.pwr.pwrmod_p_sig(:,j) = P;
+            g.pwr.pwrmod_q_sig(:,j) = Q;
             pwrmod_p(0,j,bus_sim,flag);
             pwrmod_q(0,j,bus_sim,flag);
             clear P Q Pst Qst dp dq index
@@ -1896,10 +1898,10 @@ while (kt<=ktmax)
         g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
         
         % Copied from v2.3 - 06/01/20 - thad
-        pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*(dpwrmod_p_st(:,j) + dpwrmod_p_st(:,k))/2;
-        pwrmod_q_st(:,j) = pwrmod_q_st(:,k)+h_sol*(dpwrmod_q_st(:,j) + dpwrmod_q_st(:,k))/2;
-        if n_pwrmod~=0
-            for index=1:n_pwrmod
+        g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*(g.pwr.dpwrmod_p_st(:,j) + g.pwr.dpwrmod_p_st(:,k))/2;
+        g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*(g.pwr.dpwrmod_q_st(:,j) + g.pwr.dpwrmod_q_st(:,k))/2;
+        if g.pwr.n_pwrmod~=0
+            for index=1:g.pwr.n_pwrmod
                 pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*(dpwrmod_p_sigst{index}(:,j) + dpwrmod_p_sigst{index}(:,k))/2;
                 pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*(dpwrmod_q_sigst{index}(:,j) + dpwrmod_q_sigst{index}(:,k))/2;
             end
