@@ -201,12 +201,12 @@ global load_con bus_int
 % ivmmod
 global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig  
 
-% power injection variables
-global  pwrmod_con n_pwrmod pwrmod_idx
-global  pwrmod_p_st dpwrmod_p_st
-global  pwrmod_q_st dpwrmod_q_st
-global  pwrmod_p_sig pwrmod_q_sig
-global  pwrmod_data
+% % power injection variables
+% global  pwrmod_con n_pwrmod pwrmod_idx
+% global  pwrmod_p_st dpwrmod_p_st
+% global  pwrmod_q_st dpwrmod_q_st
+% global  pwrmod_p_sig pwrmod_q_sig
+% global  pwrmod_data
 
 % begning of global strucutred g
 global g
@@ -302,7 +302,7 @@ g.lmod.n_lmod = 0;
 
 g.rlmod.n_rlmod = 0;
 
-n_pwrmod = 0;
+g.pwr.n_pwrmod = 0;
 % note dc_indx called in load flow
 mac_indx;% identifies generators
 ntot = g.mac.n_mac+n_mot+n_ig;
@@ -433,10 +433,10 @@ if ~isempty(g.rlmod.rlmod_con)~=0
 else
    g.rlmod.n_rlmod = 0;
 end
-if ~isempty(pwrmod_con)~=0
-   pwrm_indx(bus); % identifies power modulation buses
+if ~isempty(g.pwr.pwrmod_con)
+   pwrmod_indx(bus); % identifies power modulation buses % corrected to call pwrmod_indx, not pwrm_indx
 else
-   n_pwrmod = 0;
+   g.pwr.n_pwrmod = 0;
 end
 
 %initialize induction motor
@@ -524,10 +524,10 @@ pss3_state = state;
 dpw_state = state;
 tg_state = state;
 state = zeros(g.mac.n_mac+n_mot+n_ig+n_svc+n_tcsc ...
-    +g.lmod.n_lmod + g.rlmod.n_rlmod+2*n_pwrmod+n_dcl,1);
+    +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+n_dcl,1);
 max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*n_pss+ 6*n_dpw ...
     + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
-    2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*n_pwrmod+5*n_dcl;
+    2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 g.mac.theta(:,1) = bus(:,3)*pi/180;
@@ -580,12 +580,12 @@ if g.rlmod.n_rlmod ~= 0
 else
    g.rlmod.rlmod_sig = zeros(1,2);
 end
-if n_pwrmod ~= 0
-   pwrmod_p_sig = zeros(n_pwrmod,2);
-   pwrmod_q_sig = zeros(n_pwrmod,2);
+if g.pwr.n_pwrmod ~= 0
+   g.pwr.pwrmod_p_sig = zeros(g.pwr.n_pwrmod,2);
+   g.pwr.pwrmod_q_sig = zeros(g.pwr.n_pwrmod,2);
 else
-   pwrmod_p_sig = zeros(1,2);
-   pwrmod_q_sig = zeros(1,2);
+   g.pwr.pwrmod_p_sig = zeros(1,2);
+   g.pwr.pwrmod_q_sig = zeros(1,2);
 end
 
 if n_conv ~= 0
@@ -674,11 +674,11 @@ if g.rlmod.n_rlmod~=0
    g.rlmod.rlmod_st = zeros(g.rlmod.n_rlmod,2);
    g.rlmod.drlmod_st = zeros(g.rlmod.n_rlmod,2);
 end
-if n_pwrmod~=0
-   pwrmod_p_st = zeros(n_pwrmod,2);
-   dpwrmod_p_st = zeros(n_pwrmod,2);
-   pwrmod_q_st = zeros(n_pwrmod,2);
-   dpwrmod_q_st = zeros(n_pwrmod,2);
+if g.pwr.n_pwrmod~=0
+   g.pwr.pwrmod_p_st = zeros(g.pwr.n_pwrmod,2);
+   g.pwr.dpwrmod_p_st = zeros(g.pwr.n_pwrmod,2);
+   g.pwr.pwrmod_q_st = zeros(g.pwr.n_pwrmod,2);
+   g.pwr.dpwrmod_q_st = zeros(g.pwr.n_pwrmod,2);
 end
 
 %HVDC links
@@ -786,7 +786,7 @@ if ~isempty(g.rlmod.rlmod_con)
    disp('reactive load modulation')
    rlmod(0,1,flag);
 end
-if ~isempty(pwrmod_con)
+if ~isempty(g.pwr.pwrmod_con)
    disp('power modulation')
    pwrmod_p(0,1,bus,flag);
    pwrmod_q(0,1,bus,flag);
@@ -874,9 +874,9 @@ end
 if g.rlmod.n_rlmod ~=0
    g.rlmod.rlmod_st(:,2) = g.rlmod.rlmod_st(:,1);
 end
-if n_pwrmod ~=0
-   pwrmod_p_st(:,2) = pwrmod_p_st(:,1);
-   pwrmod_q_st(:,2) = pwrmod_q_st(:,1);
+if g.pwr.n_pwrmod ~=0
+   g.pwr.pwrmod_p_st(:,2) = g.pwr.pwrmod_p_st(:,1);
+   g.pwr.pwrmod_q_st(:,2) = g.pwr.pwrmod_q_st(:,1);
 end
 if n_conv~=0
    v_conr(:,2) = v_conr(:,1);
@@ -897,12 +897,12 @@ svc_sig(:,2) = svc_sig(:,1);
 tcsc_sig(:,2) = tcsc_sig(:,1);
 g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 g.rlmod.rlmod_sig(:,2) = g.rlmod.rlmod_sig(:,1);
-if n_pwrmod ~=0
-    pwrmod_p_sig(:,1) = pwrmod_p_st(:,1);
-    pwrmod_q_sig(:,1) = pwrmod_q_st(:,1);
+if g.pwr.n_pwrmod ~=0
+    g.pwr.pwrmod_p_sig(:,1) = g.pwr.pwrmod_p_st(:,1);
+    g.pwr.pwrmod_q_sig(:,1) = g.pwr.pwrmod_q_st(:,1);
 end
-pwrmod_p_sig(:,2) = pwrmod_p_sig(:,1);
-pwrmod_q_sig(:,2) = pwrmod_q_sig(:,1);
+g.pwr.pwrmod_p_sig(:,2) = g.pwr.pwrmod_p_sig(:,1);
+g.pwr.pwrmod_q_sig(:,2) = g.pwr.pwrmod_q_sig(:,1);
 
 if n_conv~=0
    Vdc(:,2) = Vdc(:,1);
@@ -989,9 +989,16 @@ if isempty(g.mac.ibus_con)
       if g.rlmod.n_rlmod~=0
           b_rlmod = p_ang*b_rlmod;
       end
-      if n_pwrmod~=0;b_pwrmod_p = p_ang*b_pwrmod_p; end
-      if n_pwrmod~=0;b_pwrmod_q = p_ang*b_pwrmod_q; end
-      if g.exc.n_dc~=0;b_dcr=p_ang*b_dcr;b_dci=p_ang*b_dci;end
+      if g.pwr.n_pwrmod~=0
+          b_pwrmod_p = p_ang*b_pwrmod_p; 
+      end
+      if g.pwr.n_pwrmod~=0
+          b_pwrmod_q = p_ang*b_pwrmod_q; 
+      end
+      if g.exc.n_dc~=0
+          b_dcr=p_ang*b_dcr;
+          b_dci=p_ang*b_dci;
+      end
    end 
 end
 

@@ -25,7 +25,7 @@ delete([PSTpath 'mac_sub.m']);
 copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
 
 delete([PSTpath 'pss.m']); 
-copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use new pss
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use specific pss model
 
 
 delete([PSTpath 'DataFile.m']); 
@@ -51,16 +51,16 @@ save('Example1_Linear','a_mat','b_pwrmod_p','c_v','c_ang');
 load('Example1_NonlinearSim')
 figure(1)
 subplot(411)
-plot(t,pwrmod_p_st(1,:),'k')
+plot(t,g.pwr.pwrmod_p_st(1,:),'k')
 ylabel('Bus 2 P (pu)')
 subplot(412)
-plot(t,pwrmod_p_st(2,:),'k')
+plot(t,g.pwr.pwrmod_p_st(2,:),'k')
 ylabel('Bus 3 P (pu)')
 subplot(413)
-plot(t,pwrmod_q_st(1,:),'k')
+plot(t,g.pwr.pwrmod_q_st(1,:),'k')
 ylabel('Bus 2 Q (pu)')
 subplot(414)
-plot(t,pwrmod_q_st(2,:),'k')
+plot(t,g.pwr.pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 Q (pu)')
 xlabel('Time (sec.)')
 %set(gcf,'Position',[360 202 560 720]);
@@ -119,5 +119,5 @@ ylabel(['bus ' num2str(nb) ' (mHz)'])
 %% clean up file manipulations
 load PSTpath.mat
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
-copyfile([PSTpath 'pwrmod_dyn_ORIGINAL.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
+copyfile([PSTpath 'pwrmod_dyn_ORIG.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
 delete PSTpath.mat

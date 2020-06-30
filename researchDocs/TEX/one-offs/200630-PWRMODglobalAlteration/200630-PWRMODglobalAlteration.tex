@@ -93,11 +93,50 @@ global g
 \paragraph{Linear Specific files}\line(1,0){300}
 
 %===============================================================================
-\paragraph{...}
+\paragraph{Files ran as a script:}
 	\begin{itemize}
-		\item ...
+		\item ns\_file
+		\item p\_m\_file
+		\item p\_file
+		\item p\_cont
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{ns\_file.m}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.| in counting of states
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrm\_indx.m}
+	\begin{itemize}
+		\item Appears to be a duplicate of pwrmod\_indx.m
+		\item Renamed to pwrm\_indx.OLD
+		\item Calls to pwrm\_indx replaced with calls to pwrmod\_indx
+	\end{itemize}
+%===============================================================================
+\paragraph{p\_cont}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{p\_file}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{p\_m\_file}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
 	\end{itemize}
 
+%===============================================================================
+\paragraph{svm\_mgen\_Batch.m}
+	\begin{itemize}
+		\item pwrmod related globals commented out
+		\item modified to use new global \verb|g.pwr.|
+		\item prwm\_indx replaced with pwrmod\_indx
+	\end{itemize}
+	
 %===============================================================================
 
 
