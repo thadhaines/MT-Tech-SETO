@@ -1,7 +1,5 @@
 %% test to use ode solver to step PST-esq model
-close all
-clear
-clc
+close all;clear;format compact;clc
 
 %% pss model definition (miniWECC)
 %           1   2   3   4       5   6   7       8       9       10
@@ -14,7 +12,7 @@ block2 = tf([pss_con(5), 1],[pss_con(6), 1]);
 block3 = tf([pss_con(7), 1],[pss_con(8), 1]);
 
 G= block1*block2*block3;
-tL = 0:1/60/4:tend;
+tL = 0:1/60/4:tend; % quarter cycle steps
 modSig = zeros(size(tL,1),1);
 modSig(tL>=1) = .001; % very small input to avoid limiter
 yL = lsim(G,modSig,tL);
@@ -44,21 +42,22 @@ yOut1 = C*y1'+D*U;
 
 % Step input
 U = modSig(end);
-[t2,y2] = ode45(@getXdot, [1,tend],y1(end,:)', options); 
+[t2,y2] = ode45(@getXdot, [1,tend],y1(end,:)', options);
 yOut2 = C*y2'+D*U;
 
 % combining output
 tCombined = [t1;t2];
 yCombined = [yOut1, yOut2];
 
-% plotting variable timestep results
+%% plotting variable timestep results
 hold on
 plot(tCombined,yCombined,'--','color','black')
 nPfix = length(tL);
 nPvar = length(tCombined);
-legend( {['Fixed timestep (',int2str(nPfix),' points)'];...
+legend( {['Fixed time step (',int2str(nPfix),' points)'];...
     ['Variable time step (',int2str(nPvar),' points)']})
 title('System Output')
+set(gca,'fontsize',13); % font size
 %% Plot Time step size
 tStep = zeros(length(tCombined),1);
 for tNdx = 2:length(tCombined)
@@ -68,13 +67,55 @@ end
 subplot(2,1,2)
 stairs(tCombined,tStep)
 title('Variable Time Step Size')
+set(gca,'fontsize',13); % font size
 
-%% plot absolute dif
+temp = gcf;
+newPos = temp.Position + [0, 0, temp.Position(3), 0]; % double width
+set(gcf,'Position',newPos)
+% 
+% printFigs = 1;
+% % pdf output code
+% if printFigs
+%     set(gcf,'color','w'); % to remove border of figure
+%     export_fig('step','-pdf'); % to print fig
+% end
+%% plot detail of figure....
+detailTime = [tend-1, tend];
 figure
-[tdif, ydif] = calcVarDif(tL, yL, tCombined, yCombined);
-plot(tdif,abs(ydif))
+subplot(2,1,1)
+plot(tL,yL, 'r')
+hold on
+plot(tCombined,yCombined,'--','color','black')
+legend( {['Fixed time step'];...
+    ['Variable time step']})
+title('System Output - Detail')
+xlim([detailTime])
 
-title('Absolute difference')
+set(gca,'fontsize',13); % font size
+
+subplot(2,1,2)
+stairs(tCombined,tStep)
+xlim([detailTime])
+title('Variable Time Step Size - Detail')
+ylim([0,0.05])
+set(gca,'fontsize',13); % font size
+
+temp = gcf;
+newPos = temp.Position + [0, 0, temp.Position(3), 0]; % double width
+set(gcf,'Position',newPos)
+
+% 
+% % pdf output code
+% if printFigs
+%     set(gcf,'color','w'); % to remove border of figure
+%     export_fig('stepDetail','-pdf'); % to print fig
+% end
+%% plot absolute dif
+% figure
+% [tdif, ydif] = calcVarDif(tL, yL, tCombined, yCombined);
+% plot(tdif,abs(ydif))
+%
+% title('Absolute difference')
 
 
 
@@ -83,7 +124,7 @@ title('Absolute difference')
 The variable time step requires less steps (~6x less in this example)
 for very similar output.
 
-The absolute difference calculation may have an error that results in 
+The absolute difference calculation may have an error that results in
 larger than relistic differences at step changes.
 
 Data output plots appear the same upon inspection.
@@ -95,7 +136,7 @@ Manipulation of ODE45 output is required for correct state operation and
 model output handling.
 
 ODE45 has a 'OutputFcn' option that may be useful in indexing,
-time advancement, required state/output handling, and/or 
+time advancement, required state/output handling, and/or
 network solution calls.
 
 Other ODE45 options exist that may also be useful in future developement.

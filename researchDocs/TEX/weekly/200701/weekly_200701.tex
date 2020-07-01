@@ -20,13 +20,13 @@
 		\itemsep0em 
 		\item Global g, linear \& non-linear functionality for:
 		\begin{minipage}{\linewidth}
-		\begin{multicols}{2}
+		%\begin{multicols}{2}
 				\begin{itemize}
 		\itemsep0em 
 				\footnotesize
-					\item ...
+					\item pwrmod - using gen bus
 				\end{itemize}
-		\end{multicols}
+		%\end{multicols}
 		\end{minipage}
 		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
 		%\item Added Syncrhonous machine models em, sub, tra, and sub\_NEW to global g, tested as functional in both linear and non-linear batch runs.
@@ -34,6 +34,7 @@
 		%\item Collected thoughts on AGC.
 		%\item Started work on batch unit testing
 		\item Explored ODE45 viability.
+		\item Found note about PSS gain
 		\item Wrote up changes to pstSETO Version.
 		\item Fixed default machine model in 2.3 and reran mini WECC version comparisons
 		\item created MATLAB plot functions to compare PST data
@@ -61,7 +62,7 @@
 		\item Test models in both non-linear and linear simulations
 		\item Think about using standard ODE solvers
 		\item Investigate PSS differences between v2.3 and 3.1
-		\item think about cleaning up svm\_mgen\_Batch
+		\item think about cleaning up or flowcharting svm\_mgen\_Batch
 		\item Explore/Create v3 example cases
 		\item Think about AGC implementation.
 		%\item Reference Trudnowski code for `structured array, functionalized' approach.
@@ -102,7 +103,7 @@
 	\begin{enumerate}
 	\itemsep0em 
 	\item Requirements for variable step methods
-	\item Mini WECC version
+	\item PQ bus for pwrmod not working?
 	\item PST modeling of transformers?
 	\end{enumerate}
 
