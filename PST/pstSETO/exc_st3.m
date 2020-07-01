@@ -35,6 +35,7 @@ function exc_st3(i,k,flag)
 %                                       add pss_out so that exc_sig is available for other control
 %                                       functions
 %   06/19/20    11:34   Thad Haines     Revised format of globals and internal function documentation
+%   07/01/20    12:41   Thad Haines     Adjusted theta(n) to theta(n_bus) in calculation of vep per Ryan Elliot (line 131)
 
 
 % system variables
@@ -127,7 +128,7 @@ if g.exc.n_st3~=0
       g.exc.exc_pot(g.exc.st3_idx,2) = g.exc.exc_con(g.exc.st3_idx,13).*sin(g.exc.exc_con(g.exc.st3_idx,14)*pi/180);
       iterm =(g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))./...
              (g.mac.eterm(n,1).*exp(-jay*g.mac.theta(n_bus,1))).*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,1).*exp(jay*g.mac.theta(n,1)).*(g.exc.exc_pot(g.exc.st3_idx,1) + jay*g.exc.exc_pot(g.exc.st3_idx,2));
+      vep = g.mac.eterm(n,1).*exp(jay*g.mac.theta(n_bus,1)).*(g.exc.exc_pot(g.exc.st3_idx,1) + jay*g.exc.exc_pot(g.exc.st3_idx,2));% corrected theta index to n_bus from n per Ryan - thad 07/01/20
       ve = vep+jay*(g.exc.exc_con(g.exc.st3_idx,15)...
            + (g.exc.exc_pot(g.exc.st3_idx,1)+jay*g.exc.exc_pot(g.exc.st3_idx,2)).*g.exc.exc_con(g.exc.st3_idx,16)).*iterm;
       V_E = abs(ve);

@@ -1,0 +1,34 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{MATLAB variable step ode solver \\ Compared to fixed step lsim using a state space PSS model}
+\lhead{Research \\ 6/30/20}
+
+\usepackage{minted}
+\usepackage{setspace}
+\usepackage{lscape}
+\usepackage{multicol}
+\begin{document}
+\onehalfspacing
+\paragraph{Step Results of a 3rd Order State Space System} \ \\
+Building on the previous ODE45 comparison, the code was altered to test a variety of variable step MATLAB ode solvers.
+Simulation time was set to one minute so that step variations could be observed post disturbance.
+It should be noted that max step size was limited to 20 seconds.
+
+
+\foreach \name in {ode45, ode23, ode113, ode15s, ode23s, ode23t, ode23tb}{
+\subparagraph{\name} \ \\
+\includegraphics[width=\linewidth]{step\name}
+
+\includegraphics[width=\linewidth]{stepDetail\name}
+\pagebreak
+}
+
+
+\end{document}

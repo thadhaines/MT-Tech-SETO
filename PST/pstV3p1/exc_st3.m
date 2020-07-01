@@ -148,7 +148,7 @@ if n_st3~=0
       exc_pot(st3_idx,2) = exc_con(st3_idx,13).*sin(exc_con(st3_idx,14)*pi/180);
       iterm =(pelect(n,1)-jay*qelect(n,1))./...
              (eterm(n,1).*exp(-jay*theta(n_bus,1))).*mac_pot(n,1);
-      vep = eterm(n,1).*exp(jay*theta(n,1)).*(exc_pot(st3_idx,1) + jay*exc_pot(st3_idx,2));
+      vep = eterm(n,1).*exp(jay*theta(n_bus,1)).*(exc_pot(st3_idx,1) + jay*exc_pot(st3_idx,2)); % corrected theta index to n_bus from n per Ryan - thad 07/01/20
       ve = vep+jay*(exc_con(st3_idx,15)...
            + (exc_pot(st3_idx,1)+jay*exc_pot(st3_idx,2)).*exc_con(st3_idx,16)).*iterm;
       V_E = abs(ve);
