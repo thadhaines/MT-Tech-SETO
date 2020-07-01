@@ -1,4 +1,4 @@
-function f = pwrmod_p(i,k,bus,flag)
+function pwrmod_p(i,k,bus,flag)
 % Syntax: f = pwrmod_p(i,k,bus,flag)
 % Purpose: real-power modulation model 
 %          with vectorized computation option
@@ -22,28 +22,29 @@ function f = pwrmod_p(i,k,bus,flag)
 % Author: Dan Trudnowski
 
 % power modulation variables
-global pwrmod_con n_pwrmod pwrmod_p_st dpwrmod_p_st pwrmod_p_sig pwrmod_idx bus_int load_con
-
-f = 0;% dummy variable
-
-jay = sqrt(-1);
-if ~isempty(pwrmod_con)
+% global pwrmod_con n_pwrmod pwrmod_p_st dpwrmod_p_st pwrmod_p_sig pwrmod_idx 
+global bus_int load_con
+global g
+% f = 0;% dummy variable
+% 
+% jay = sqrt(-1);
+if ~isempty(g.pwr.pwrmod_con)
    if flag == 0; % initialization
       if i~=0
-          jj = bus_int(pwrmod_con(i,1));
-          if (load_con(pwrmod_idx(i),2)==1 && load_con(pwrmod_idx(i),3)==1)
-             pwrmod_p_st(i,1) = bus(jj,4);
+          jj = bus_int(g.pwr.pwrmod_con(i,1));
+          if (load_con(g.pwr.pwrmod_idx(i),2)==1 && load_con(g.pwr.pwrmod_idx(i),3)==1)
+             g.pwr.pwrmod_p_st(i,1) = bus(jj,4);
           else
-             pwrmod_p_st(i,1) = bus(jj,4)/abs(bus(jj,2));
+             g.pwr.pwrmod_p_st(i,1) = bus(jj,4)/abs(bus(jj,2));
           end
           clear jj
       else % vectorized calculation
-          for ii=1:n_pwrmod
-              jj = bus_int(pwrmod_con(ii,1));
-              if (load_con(pwrmod_idx(ii),2)==1 && load_con(pwrmod_idx(ii),3)==1)
-                 pwrmod_p_st(ii,1) = bus(jj,4);
+          for ii=1:g.pwr.n_pwrmod
+              jj = bus_int(g.pwr.pwrmod_con(ii,1));
+              if (load_con(g.pwr.pwrmod_idx(ii),2)==1 && load_con(g.pwr.pwrmod_idx(ii),3)==1)
+                 g.pwr.pwrmod_p_st(ii,1) = bus(jj,4);
               else
-                 pwrmod_p_st(ii,1) = bus(jj,4)/abs(bus(jj,2));
+                 g.pwr.pwrmod_p_st(ii,1) = bus(jj,4)/abs(bus(jj,2));
               end
           end
           clear jj
@@ -57,35 +58,35 @@ if ~isempty(pwrmod_con)
       % for linearization with operating condition at limits,
       % additional code will be needed
       if i ~= 0
-         dpwrmod_p_st(i,k) = (-pwrmod_p_st(i,k)+pwrmod_p_sig(i,k))/pwrmod_con(i,2);
+         g.pwr.dpwrmod_p_st(i,k) = (-g.pwr.pwrmod_p_st(i,k)+g.pwr.pwrmod_p_sig(i,k))/g.pwr.pwrmod_con(i,2);
          % anti-windup reset
-         if pwrmod_p_st(i,k) > pwrmod_con(i,3)
-            if dpwrmod_p_st(i,k)>0
-               dpwrmod_p_st(i,k) = 0;
+         if g.pwr.pwrmod_p_st(i,k) > g.pwr.pwrmod_con(i,3)
+            if g.pwr.dpwrmod_p_st(i,k)>0
+               g.pwr.dpwrmod_p_st(i,k) = 0;
             end
          end
-         if pwrmod_p_st(i,k) < pwrmod_con(i,4)
-            if dpwrmod_p_st(i,k)<0
-               dpwrmod_p_st(i,k) = 0;
+         if g.pwr.pwrmod_p_st(i,k) < g.pwr.pwrmod_con(i,4)
+            if g.pwr.dpwrmod_p_st(i,k)<0
+               g.pwr.dpwrmod_p_st(i,k) = 0;
             end
          end
       else %vectorized computation
-         dpwrmod_p_st(:,k) = (-pwrmod_p_st(:,k)+pwrmod_p_sig(:,k))./pwrmod_con(:,2);
+         g.pwr.dpwrmod_p_st(:,k) = (-g.pwr.pwrmod_p_st(:,k)+g.pwr.pwrmod_p_sig(:,k))./g.pwr.pwrmod_con(:,2);
          % anti-windup reset
-         indmx =find(pwrmod_p_st(:,k) > pwrmod_con(:,3));
+         indmx =find(g.pwr.pwrmod_p_st(:,k) > g.pwr.pwrmod_con(:,3));
          if ~isempty(indmx)
-            indrate = find(dpwrmod_p_st(indmx,k)>0);
+            indrate = find(g.pwr.dpwrmod_p_st(indmx,k)>0);
             if ~isempty(indrate)
                % set rate to zero
-               dpwrmod_p_st(indmx(indrate),k) = zeros(length(indrate),1);
+               g.pwr.dpwrmod_p_st(indmx(indrate),k) = zeros(length(indrate),1);
             end
          end
-         indmn = find(pwrmod_p_st(:,k) < pwrmod_con(:,4));
+         indmn = find(g.pwr.pwrmod_p_st(:,k) < g.pwr.pwrmod_con(:,4));
          if ~isempty(indmn)
-            indrate = find(dpwrmod_p_st(indmn)<0);
+            indrate = find(g.pwr.dpwrmod_p_st(indmn)<0);
             if ~isempty(indrate)
                % set rate to zero
-               dpwrmod_p_st(indmn(indrate),k) = zeros(length(indrate),1);
+               g.pwr.dpwrmod_p_st(indmn(indrate),k) = zeros(length(indrate),1);
             end
          end
       end

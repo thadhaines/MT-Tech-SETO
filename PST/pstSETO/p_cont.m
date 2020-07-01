@@ -9,7 +9,6 @@
 % All right reserved
 % step 3: perform 0.1% perturbation on each state in turn
 
-
 vr_input = 0;
 pr_input = 0;
 c_state = 0;
@@ -300,15 +299,15 @@ if g.rlmod.n_rlmod~=0
    end
 end
 % disturb pwrmod_p states
-ntpwr_p = ntrl + n_pwrmod;
-if n_pwrmod~=0
+ntpwr_p = ntrl + g.pwr.n_pwrmod;
+if g.pwr.n_pwrmod~=0
    disp('disturbing real power modulation')
    for k = ntrl+1:ntpwr_p
       j=1;
       k_pwrmod_p = k - ntrl;
-      pert = p_ratio*abs(pwrmod_p_st(k_pwrmod_p,1));   
+      pert = p_ratio*abs(g.pwr.pwrmod_p_st(k_pwrmod_p,1));   
       pert = max(pert,p_ratio);
-      pwrmod_p_st(k_pwrmod_p,2) = pwrmod_p_st(k_pwrmod_p,1) + pert;
+      g.pwr.pwrmod_p_st(k_pwrmod_p,2) = g.pwr.pwrmod_p_st(k_pwrmod_p,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 37;
       % disturb the input variable
@@ -317,22 +316,22 @@ if n_pwrmod~=0
       pwrmod_p_input = k_pwrmod_p;
       pert = p_ratio;
 %       nominal = 0.0;
-      pwrmod_p_sig(k_pwrmod_p,2) = pwrmod_p_sig(k_pwrmod_p,2) + pert;
+      g.pwr.pwrmod_p_sig(k_pwrmod_p,2) = g.pwr.pwrmod_p_sig(k_pwrmod_p,2) + pert;
       p_file
 %       pwrmod_p_sig(k_pwrmod_p,2) = nominal;  
       c_state = 0;
    end
 end
 % disturb pwrmod_q states
-ntpwr_q = ntpwr_p + n_pwrmod;
-if n_pwrmod~=0
+ntpwr_q = ntpwr_p + g.pwr.n_pwrmod;
+if g.pwr.n_pwrmod~=0
    disp('disturbing reac power modulation')
    for k = ntpwr_p+1:ntpwr_q
       j=1;
       k_pwrmod_q = k - ntpwr_p;
-      pert = p_ratio*abs(pwrmod_q_st(k_pwrmod_q,1));   
+      pert = p_ratio*abs(g.pwr.pwrmod_q_st(k_pwrmod_q,1));   
       pert = max(pert,p_ratio);
-      pwrmod_q_st(k_pwrmod_q,2) = pwrmod_q_st(k_pwrmod_q,1) + pert;
+      g.pwr.pwrmod_q_st(k_pwrmod_q,2) = g.pwr.pwrmod_q_st(k_pwrmod_q,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 38;
       % disturb the input variable
@@ -341,7 +340,7 @@ if n_pwrmod~=0
       pwrmod_q_input = k_pwrmod_q;
       pert = p_ratio;
 %       nominal = 0.0;
-      pwrmod_q_sig(k_pwrmod_q,2) = pwrmod_q_sig(k_pwrmod_q,2) + pert;
+      g.pwr.pwrmod_q_sig(k_pwrmod_q,2) = g.pwr.pwrmod_q_sig(k_pwrmod_q,2) + pert;
       p_file
 %       pwrmod_q_sig(k_pwrmod_q,2) = nominal;  
       c_state = 0;

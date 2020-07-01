@@ -73,7 +73,7 @@ end
 % DeltaP/omega filter
 dpwf(0,2,bus,flag);
 % pss
-pss(0,2,bus,flag);
+pss(0,2,flag);
 % exciters
 smpexc(0,2,flag);
 smppi(0,2,flag);
@@ -90,7 +90,7 @@ mac_sub(0,2,bus,flag);
 mac_ind(0,2,bus,flag); 
 mac_igen(0,2,bus,flag);
 dpwf(0,2,bus,flag);
-pss(0,2,bus,flag);
+pss(0,2,flag);
 
 smpexc(0,2,flag);
 smppi(0,2,flag);
@@ -113,7 +113,7 @@ end
 if g.rlmod.n_rlmod~=0 
    rlmod(0,2,flag);
 end
-if n_pwrmod~=0 
+if g.pwr.n_pwrmod~=0 
    pwrmod_p(0,2,bus,flag);
    pwrmod_q(0,2,bus,flag);
 end
@@ -200,15 +200,15 @@ if g.rlmod.n_rlmod ~= 0
    rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod;
    d_vector(rlmod_start+1:rlmod_start+g.rlmod.n_rlmod) = g.rlmod.drlmod_st(:,2);
 end
-if n_pwrmod ~= 0
+if g.pwr.n_pwrmod ~= 0
    pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
-   d_vector(pwrmod_p_start+1:pwrmod_p_start+n_pwrmod) = dpwrmod_p_st(:,2);
-   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+n_pwrmod;
-   d_vector(pwrmod_q_start+1:pwrmod_q_start+n_pwrmod) = dpwrmod_q_st(:,2);
+   d_vector(pwrmod_p_start+1:pwrmod_p_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_p_st(:,2);
+   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
+   d_vector(pwrmod_q_start+1:pwrmod_q_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_q_st(:,2);
 end
 
 if n_conv~=0
-   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*n_pwrmod;
+   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
    d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
    d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
    d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
@@ -482,13 +482,13 @@ if g.rlmod.n_rlmod ~=0
    g.rlmod.drlmod_st(:,2) = g.rlmod.drlmod_st(:,1);
    g.rlmod.rlmod_sig(:,2) = g.rlmod.rlmod_sig(:,1);
 end
-if n_pwrmod ~=0
-   pwrmod_p_st(:,2) = pwrmod_p_st(:,1);
-   dpwrmod_p_st(:,2) = dpwrmod_p_st(:,1);
-   pwrmod_p_sig(:,2) = pwrmod_p_sig(:,1);
-   pwrmod_q_st(:,2) = pwrmod_q_st(:,1);
-   dpwrmod_q_st(:,2) = dpwrmod_q_st(:,1);
-   pwrmod_q_sig(:,2) = pwrmod_q_sig(:,1);
+if g.pwr.n_pwrmod ~=0
+   g.pwr.pwrmod_p_st(:,2) = g.pwr.pwrmod_p_st(:,1);
+   g.pwr.dpwrmod_p_st(:,2) = g.pwr.dpwrmod_p_st(:,1);
+   g.pwr.pwrmod_p_sig(:,2) = g.pwr.pwrmod_p_sig(:,1);
+   g.pwr.pwrmod_q_st(:,2) = g.pwr.pwrmod_q_st(:,1);
+   g.pwr.dpwrmod_q_st(:,2) = g.pwr.dpwrmod_q_st(:,1);
+   g.pwr.pwrmod_q_sig(:,2) = g.pwr.pwrmod_q_sig(:,1);
 end
 
 if n_conv~=0

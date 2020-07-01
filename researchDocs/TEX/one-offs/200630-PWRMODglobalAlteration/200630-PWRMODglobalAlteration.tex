@@ -1,0 +1,143 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of PWRMOD using global g\\ }
+\lhead{Research \\ 6/30/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable \verb|pwrmod| PST models to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+% power injection variables
+global  pwrmod_con n_pwrmod pwrmod_idx
+global  pwrmod_p_st dpwrmod_p_st
+global  pwrmod_q_st dpwrmod_q_st
+global  pwrmod_p_sig pwrmod_q_sig
+global  pwrmod_data
+
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{handleNewGlobals.m}
+	\begin{itemize}
+		\item Addition of if statement to properly handle `legacy' data inputs
+	\end{itemize}
+%===============================================================================
+\paragraph{livePlot}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{nc\_load}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+
+%===============================================================================
+\paragraph{pwrmod\_dyn\_ORIG}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrmod\_dyn}
+	\begin{itemize}
+		\item User defined file
+		\item Example cases modified to use new global \verb|g.pwr.|
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{pwrmod\_indx}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrmod\_p}
+	\begin{itemize}
+		\item removed dummy f variable
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrmod\_q}
+	\begin{itemize}
+		\item removed dummy f variable
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{red\_ybus}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{s\_simu\_Batch.m}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.| in data init, zero creation, and integration
+	\end{itemize}
+	
+
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300}
+
+%===============================================================================
+\paragraph{Files ran as a script:}
+	\begin{itemize}
+		\item ns\_file
+		\item p\_m\_file
+		\item p\_file
+		\item p\_cont
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{ns\_file.m}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.| in counting of states
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrm\_indx.m}
+	\begin{itemize}
+		\item Appears to be a duplicate of pwrmod\_indx.m
+		\item Renamed to pwrm\_indx.OLD
+		\item Calls to pwrm\_indx replaced with calls to pwrmod\_indx
+	\end{itemize}
+%===============================================================================
+\paragraph{p\_cont}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{p\_file}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+%===============================================================================
+\paragraph{p\_m\_file}
+	\begin{itemize}
+		\item modified to use new global \verb|g.pwr.|
+	\end{itemize}
+
+%===============================================================================
+\paragraph{svm\_mgen\_Batch.m}
+	\begin{itemize}
+		\item pwrmod related globals commented out
+		\item modified to use new global \verb|g.pwr.|
+		\item prwm\_indx replaced with pwrmod\_indx
+	\end{itemize}
+	
+%===============================================================================
+
+
+\end{document}

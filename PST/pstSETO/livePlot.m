@@ -1,7 +1,7 @@
 %% fancier live plotting ~ Obviously causes sim to run slower
 
 if (mod(k,25)==0)
-    if ~isempty(g.lmod.lmod_con) || ~isempty(pwrmod_con)
+    if ~isempty(g.lmod.lmod_con) || ~isempty(g.pwr.pwrmod_con)
         nPlt = 3;
     else
         nPlt = 2;
@@ -37,11 +37,11 @@ if (mod(k,25)==0)
     end
     
     % Plot Powermod injection if present
-    if ~isempty(pwrmod_con)
+    if ~isempty(g.pwr.pwrmod_con)
         subplot(nPlt,1,3)
-        Lcolor = lines(size(pwrmod_p_st,1));
-        for pltData = 1:size(pwrmod_p_st,1)
-            plot(t(1:k),pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
+        Lcolor = lines(size(g.pwr.pwrmod_p_st,1));
+        for pltData = 1:size(g.pwr.pwrmod_p_st,1)
+            plot(t(1:k),g.pwr.pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
             hold on
         end
         title('Power Modulation');

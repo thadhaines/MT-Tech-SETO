@@ -5,7 +5,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'pstSETO';% 'pstV2p3';%
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -24,6 +24,10 @@ load PSTpath.mat
 delete([PSTpath 'mac_sub.m']); 
 copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
 
+delete([PSTpath 'pss.m']); 
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use specific pss model
+
+
 delete([PSTpath 'DataFile.m']); 
 copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
 
@@ -31,11 +35,11 @@ delete([PSTpath 'pwrmod_dyn.m']);
 copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
 s_simu_Batch %Run PST
-save('Example1_NonlinearSim','t','bus_v','pwrmod_p_st','pwrmod_q_st'); %Save t and bus_v results
+save('Example1_NonlinearSim','t','bus_v','g'); %Save t and bus_v results
 
 %% Build linear model, simulate, and store results
 %Build linear model
-clear all; clc; close all
+clear all; %clc; close all
 load PSTpath
 %delete([PSTpath 'DataFile.m']); copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
 %delete([PSTpath 'pwrmod_dyn.m']); copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
@@ -47,16 +51,16 @@ save('Example1_Linear','a_mat','b_pwrmod_p','c_v','c_ang');
 load('Example1_NonlinearSim')
 figure(1)
 subplot(411)
-plot(t,pwrmod_p_st(1,:),'k')
+plot(t,g.pwr.pwrmod_p_st(1,:),'k')
 ylabel('Bus 2 P (pu)')
 subplot(412)
-plot(t,pwrmod_p_st(2,:),'k')
+plot(t,g.pwr.pwrmod_p_st(2,:),'k')
 ylabel('Bus 3 P (pu)')
 subplot(413)
-plot(t,pwrmod_q_st(1,:),'k')
+plot(t,g.pwr.pwrmod_q_st(1,:),'k')
 ylabel('Bus 2 Q (pu)')
 subplot(414)
-plot(t,pwrmod_q_st(2,:),'k')
+plot(t,g.pwr.pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 Q (pu)')
 xlabel('Time (sec.)')
 %set(gcf,'Position',[360 202 560 720]);
@@ -76,7 +80,7 @@ tL = tL';
 save('Example1_LinearSim','tL','bus_vL'); %Save linear results
 
 %% Plot Nonlinear vs Linear
-clear all; clc
+clear all; %clc
 load('Example1_NonlinearSim','t','bus_v');
 load('Example1_LinearSim','tL','bus_vL');
 figure(2)
@@ -115,5 +119,5 @@ ylabel(['bus ' num2str(nb) ' (mHz)'])
 %% clean up file manipulations
 load PSTpath.mat
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
-copyfile([PSTpath 'pwrmod_dyn_ORIGINAL.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
+copyfile([PSTpath 'pwrmod_dyn_ORIG.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
 delete PSTpath.mat

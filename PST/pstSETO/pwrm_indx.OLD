@@ -1,4 +1,5 @@
 function f = pwrm_indx(bus)
+% Seems to be a duplicate of pwrmod_indx - removed for now -thad 06/30/20
 % syntax: f = pwrm_indx
 % determines the relationship between pwrmod and nc loads
 % checks for pwrmod

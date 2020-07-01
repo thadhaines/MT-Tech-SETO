@@ -34,7 +34,9 @@ function [P,Q,dP_states,dQ_states,P_statesIni,Q_statesIni] = pwrmod_dyn(P_states
 %   pwrmod_con = see system data file.
 % D. Trudnowski, 2015
 
-global pwrmod_data bus_v pwrmod_con load_con
+%global pwrmod_data pwrmod_con 
+global load_con bus_v
+global g
 
 %% Parameters
 nOrderP = [2;2]; %order of state equations for P modulation
@@ -61,19 +63,19 @@ if Flag==0
     for k=1:n_pwrmod
         Q_statesIni{k} = zeros(nOrderQ(k),1);
         P_statesIni{k} = zeros(nOrderP(k),1);
-        n = find(pwrmod_con(k,1)==bus(:,1));
+        n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
         P_statesIni{k}(1) = bus(n,4); %Initial real power
         P_statesIni{k}(2) = bus(n,2); %Initial voltage magnitude
     end
-    pwrmod_data = zeros(length(Time),2); %Store Pref in pwrmod_data
+    g.pwr.pwrmod_data = zeros(length(Time),2); %Store Pref in pwrmod_data
     clear k n
 
 %% Calculate P and Q
 elseif Flag==1
     %Initial conditions
     for k=1:length(P)
-        n = find(pwrmod_con(k,1)==bus(:,1));
-        m = find(pwrmod_con(k,1)==load_con(:,1));
+        n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
+        m = find(g.pwr.pwrmod_con(k,1)==load_con(:,1));
         if load_con(m,2)==1
             %Initial power injection
             P(k) = bus(n,4); %Real power 
@@ -102,7 +104,7 @@ elseif Flag==2
         dP_states{k} = zeros(nOrderP(k),1);
         
         %Bus location
-        n = find(bus(:,1)==pwrmod_con(k,1));
+        n = find(bus(:,1)==g.pwr.pwrmod_con(k,1));
         
         %Set Pref and store result in pwrmod_data
         Pref = bus(n,4);
@@ -115,7 +117,7 @@ elseif Flag==2
                 Pref = Pref + 0.0002; %Pulse Pref
             end 
         end
-        pwrmod_data(kSim,k) = Pref;
+        g.pwr.pwrmod_data(kSim,k) = Pref;
         
         %Calculate dP_states
         if P_states{k}(1)>Ipmax(k) || P_states{k}(1)<Ipmin(k) 
