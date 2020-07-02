@@ -32,11 +32,12 @@ function [dc,Ec,ddelta_states,dE_states,delta_statesIni,E_statesIni] = ivmmod_dy
 % D. Trudnowski, 2020
 
 global ivmmod_data
-global bus_v bus_int edprime mac_ang pelect qelect
-global n_ivm mac_ivm_idx mac_con
+global n_ivm mac_ivm_idx
+
+global g
 
 %% Parameters
-busnum = bus_int(mac_con(mac_ivm_idx,2)); % bus numbers where ivm's are connected
+busnum = g.sys.bus_int(g.mac.mac_con(mac_ivm_idx,2)); % bus numbers where ivm's are connected
 
 %% Initialize output variables
 dc = zeros(n_ivm,1);
@@ -59,8 +60,8 @@ if Flag==0
 %% Calculate dc and Ec
 elseif Flag==1
     for k=1:n_ivm
-        Ec(k) = edprime(mac_ivm_idx(k),1); %edprime(*,1) is initial internal voltage E
-        dc(k) = mac_ang(mac_ivm_idx(k),1); %mac_ang(*,1) is initial internal voltage d
+        Ec(k) = g.mac.edprime(mac_ivm_idx(k),1); %edprime(*,1) is initial internal voltage E
+        dc(k) = g.mac.mac_ang(mac_ivm_idx(k),1); %mac_ang(*,1) is initial internal voltage d
     end
 
 %% Calculate derivatives

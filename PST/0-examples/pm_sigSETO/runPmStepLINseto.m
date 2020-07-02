@@ -90,7 +90,9 @@ end
 linSpd = y(:,5:6)'+ 1.0; % rotate into col vectors
 
 % collect pm...
-linPm = y(:,7:8)'+g.mac.pmech(:,1);% rotate to vector
+linPm = y(:,7:8)';% rotate to vector
+linPm(1,:)= linPm(1,:)+ g.mac.pmech(1,1);
+linPm(2,:)= linPm(2,:)+ g.mac.pmech(2,1);
 save linResults.mat tL linV linSpd modSig linPm
 
 %% Clean up modulation file alterations.
@@ -126,7 +128,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(bus_v(busN,:)),'--')
+    plot(t,abs(g.sys.bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
