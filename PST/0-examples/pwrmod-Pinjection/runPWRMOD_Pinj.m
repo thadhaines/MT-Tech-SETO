@@ -35,7 +35,7 @@ delete([PSTpath 'pwrmod_dyn.m']);
 copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
 s_simu_Batch %Run PST
-save('Example1_NonlinearSim','t','bus_v','g'); %Save t and bus_v results
+save('Example1_NonlinearSim','t','g'); %Save t and bus_v results
 
 %% Build linear model, simulate, and store results
 %Build linear model
@@ -70,28 +70,28 @@ Gv = ss(a_mat,b_pwrmod_p,c_v,zeros(6,2));
 Ga = ss(a_mat,b_pwrmod_p,c_ang,zeros(6,2));
 tL = [0:1/120:10]';
 u = [-0.0001*(stepfun(tL,1)-stepfun(tL,1.5)) 0.0002*(stepfun(tL,4)-stepfun(tL,4.5))]; 
-load('Example1_NonlinearSim','t','bus_v');
+load('Example1_NonlinearSim','t','g');
 v = lsim(Gv,u,tL);
-v = v + ones(size(v,1),1)*abs(bus_v(1:6,1))';
+v = v + ones(size(v,1),1)*abs(g.sys.bus_v(1:6,1))';
 a = lsim(Ga,u,tL);
-a = a + ones(size(a,1),1)*angle(bus_v(1:6,1))';
+a = a + ones(size(a,1),1)*angle(g.sys.bus_v(1:6,1))';
 bus_vL = transpose(v.*exp(1i*a));
 tL = tL';
 save('Example1_LinearSim','tL','bus_vL'); %Save linear results
 
 %% Plot Nonlinear vs Linear
 clear all; %clc
-load('Example1_NonlinearSim','t','bus_v');
+load('Example1_NonlinearSim','t','g');
 load('Example1_LinearSim','tL','bus_vL');
 figure(2)
 subplot(411)
 nb = 2; %Bus to plot
-plot(t,abs(bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
+plot(t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
 ylabel(['bus ' num2str(nb) ' V (abs)'])
 legend('non-linear','linear','location','best')
 
 subplot(412)
-f = 1e3*angle(bus_v(nb,2:end)./bus_v(nb,1:end-1))./(2*pi*diff(t)); 
+f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(t)); 
 f = [f f(end)];
 fL = 1e3*angle(bus_vL(nb,2:end)./bus_vL(nb,1:end-1))./(2*pi*diff(tL)); 
 fL = [fL fL(end)];
@@ -101,12 +101,12 @@ ylabel(['bus ' num2str(nb) ' (mHz)'])
 
 subplot(413)
 nb = 3; %Bus to plot
-plot(t,abs(bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
+plot(t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
 legend('non-linear','linear','location','best')
 ylabel(['bus ' num2str(nb) ' V (abs)'])
 
 subplot(414)
-f = 1e3*angle(bus_v(nb,2:end)./bus_v(nb,1:end-1))./(2*pi*diff(t)); 
+f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(t)); 
 f = [f f(end)];
 fL = 1e3*angle(bus_vL(nb,2:end)./bus_vL(nb,1:end-1))./(2*pi*diff(tL)); 
 fL = [fL fL(end)];

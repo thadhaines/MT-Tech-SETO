@@ -128,10 +128,12 @@ tic % start timer
 % global  pwrmod_p_sig pwrmod_q_sig
 % global  pwrmod_data
 
+% % non-conforming load variables
+% global  load_con load_pot nload
+
+
 %% Non converted globals
 
-% non-conforming load variables
-global  load_con load_pot nload
 
 % induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
@@ -206,8 +208,6 @@ global  netg_con  stab_con
 
 % end copied from pst_far
 
-% additional globals for pwrmod, ivmmod
-global load_con bus_int
 
 %global  lmod_sig lmod_data 
 % ivmmod
@@ -511,10 +511,10 @@ end
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
 bus_intprf = g.sys.bus_int;% store the internal bus numbers for the pre_fault system
 nbus = length(bus(:,1));
-if isempty(load_con)
-   nload = 0;
+if isempty(g.ncl.load_con)
+   g.ncl.nload = 0;
 else
-   nload = length(load_con(:,1));
+   g.ncl.nload = length(g.ncl.load_con(:,1));
 end
 state = zeros(g.mac.n_mac,1);
 gen_state = state;
@@ -729,10 +729,10 @@ else
    int_volt = psi;
 end
 cur(:,1) = Y_gprf*int_volt; % network solution currents into generators       
-b_v(boprf(nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
-if nload~=0
+b_v(boprf(g.ncl.nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
+if g.ncl.nload~=0
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);%vnc is a dummy variable
-   cur(:,1) = cur(:,1) + Y_gncprf*v(bus_intprf(load_con(:,1)),1);% modify currents for nc loads 
+   cur(:,1) = cur(:,1) + Y_gncprf*v(bus_intprf(g.ncl.load_con(:,1)),1);% modify currents for nc loads 
 end
 g.sys.cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
 g.sys.cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
@@ -798,11 +798,11 @@ if ~isempty(g.pwr.pwrmod_con)
 end
 
 % initialize non-linear loads
-if ~isempty(load_con)
+if ~isempty(g.ncl.load_con)
    disp('non-linear loads')
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);
 else
-   nload = 0;
+   g.ncl.nload = 0;
 end
 % hvdc lines
 dc_line(0,1,1,bus,flag);

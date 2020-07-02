@@ -12,7 +12,7 @@ function [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
 % Date   October 1996
 % (c) Copyright Joe Chow 1996 - All rights reserved
 global  bus_int  basmva
-global  dcsp_con  dcl_con dcc_con load_con
+global  dcsp_con  dcl_con dcc_con 
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
 global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi

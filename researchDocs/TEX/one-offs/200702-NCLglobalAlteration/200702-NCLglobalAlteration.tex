@@ -1,0 +1,139 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of Non conforming load using global g\\ }
+\lhead{Research \\7/02/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable non-conforming loads in PST to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+    global  load_con load_pot nload
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{dc\_indx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{handleNewGlobals}
+	\begin{itemize}
+		\item Addition of load\_con to global g
+	\end{itemize}
+%===============================================================================
+\paragraph{i\_simu}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{lm\_index}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{mac\_sub\_NEW}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.sys| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{nc\_load}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrmod\_indx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+		\item updated internal documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrmod\_p}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+		\item updated internal documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{pwrmod\_q}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+		\item updated internal documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{red\_ybus}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+		\item updated internal documentation
+	\end{itemize}
+%===============================================================================
+\paragraph{rlm\_indx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+
+%===============================================================================
+\paragraph{svc\_indx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+
+%===============================================================================
+\paragraph{s\_simu\_Batch}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+
+%===============================================================================
+\paragraph{tscs\_indx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+		\item removal of dummy f return
+	\end{itemize}
+
+%===============================================================================
+\paragraph{y\_switch} - ran as a script...
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300}
+
+%===============================================================================
+\paragraph{Files ran as a script:}
+	\begin{itemize}
+		\item ns\_file
+		\item p\_m\_file
+		\item p\_file
+		\item p\_cont
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{p\_file}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+
+%===============================================================================
+\paragraph{svm\_mgen\_Batch}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.ncl| structure
+	\end{itemize}
+
+
+\end{document}

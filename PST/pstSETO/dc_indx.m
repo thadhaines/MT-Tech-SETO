@@ -21,13 +21,15 @@ function f = dc_indx(bus,line,dci_dc,dcr_dc)
 
 f = 0;
 global  bus_int
-global  dcsp_con  dcl_con dcc_con load_con
+global  dcsp_con  dcl_con dcc_con 
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
 global  ric_idx  rpc_idx
 global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
 global  ldc_idx
 global  ndcr_ud ndci_ud dcrud_idx dciud_idx
+
+global g
 % pick out ac voltages (should be LT converter transformer buses)
 % check that line and cont data is consistent
 n_conv = 0;
@@ -98,7 +100,7 @@ l_cap = n_dcl-l_no_cap;
 no_ind_idx = find(dcl_con(:,4) ==0|dcl_con(:,6)==0|dcl_con(:,7)==0);
 
 % index of converters in load_con
-j = bus_int(load_con(:,1));
+j = bus_int(g.ncl.load_con(:,1));
 for k = 1: n_conv
    ldc_idx(k) = find(j==ac_bus(k));
    if isempty(ldc_idx(k))

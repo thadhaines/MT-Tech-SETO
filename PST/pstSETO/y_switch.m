@@ -12,9 +12,10 @@
 % errors in line to line, line to ground and line to line to ground corrected
 
 % create pre-fault admittance matrix
-if ~isempty(load_con)
-    nload = length(load_con(:,1));
+if ~isempty(g.ncl.load_con)
+    g.ncl.nload = length(g.ncl.load_con(:,1));
 end
+
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
 bus_intprf = g.sys.bus_int;% store the internal bus numbers for the pre_fault system
 nbus = length(bus(:,1));

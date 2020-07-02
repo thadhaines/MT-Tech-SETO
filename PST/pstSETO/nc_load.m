@@ -66,8 +66,7 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 % Author:   Joe H. Chow
 % Date:     April 1991
 
-% non conforming load variables
-global load_con load_pot  
+
 % dc variables
 global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
 global  n_conv n_dcl ldc_idx
@@ -79,26 +78,26 @@ global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
 global g 
 
 
-if ~isempty(load_con)
+if ~isempty(g.ncl.load_con)
    jay = sqrt(-1);
    if flag == 0; % initialization
        
-      %nload = size(load_con,1);
+      g.ncl.nload = size(g.ncl.load_con,1);
       %  set up constant power and current load components in 
       %    load_pot
       %  vectorized computation
-      j = g.sys.bus_int(load_con(:,1));
+      j = g.sys.bus_int(g.ncl.load_con(:,1));
       % no need for special treatment for dc buses on initialization
       V_nc = bus(j,2).*exp(jay*bus(j,3)*pi/180);
       % constant power component
-      load_pot(:,1) = bus(j,6).*load_con(:,2) ...
-                      + jay*bus(j,7).*load_con(:,3);
-      S_cc = bus(j,6).*load_con(:,4) ...
-             + jay*bus(j,7).*load_con(:,5);
+      g.ncl.load_pot(:,1) = bus(j,6).*g.ncl.load_con(:,2) ...
+                      + jay*bus(j,7).*g.ncl.load_con(:,3);
+      S_cc = bus(j,6).*g.ncl.load_con(:,4) ...
+             + jay*bus(j,7).*g.ncl.load_con(:,5);
       % constant current component
-      load_pot(:,2) = S_cc./abs(V_nc);
-      load_pot(:,3) = load_pot(:,1)./V_nc./conj(V_nc);% const impedance equ of const power load
-      load_pot(:,4) = S_cc./V_nc./conj(V_nc);% const impedance equ of constant current load
+      g.ncl.load_pot(:,2) = S_cc./abs(V_nc);
+      g.ncl.load_pot(:,3) = g.ncl.load_pot(:,1)./V_nc./conj(V_nc);% const impedance equ of const power load
+      g.ncl.load_pot(:,4) = S_cc./V_nc./conj(V_nc);% const impedance equ of constant current load
    end
    if flag == 1 % network interface computation 
       if nargin < 7
@@ -106,10 +105,10 @@ if ~isempty(load_con)
 %         tol = 1e-5;   % JHC August 3, 2018
       end
       
-      nload = size(load_con,1);
+      g.ncl.nload = size(g.ncl.load_con,1);
       
       if nargin < 6
-         V_o = ones(nload,1);%set default trial voltages
+         V_o = ones(g.ncl.nload,1);%set default trial voltages
       end
       V_nc = V_o;
       
@@ -136,14 +135,14 @@ if ~isempty(load_con)
       end
       
       %pwrmod % added 06/11/20
-      load_pot_mod = load_pot;
+      load_pot_mod = g.ncl.load_pot;
       if g.pwr.n_pwrmod~=0
           for index=1:g.pwr.n_pwrmod
-            if (load_con(g.pwr.pwrmod_idx(index),2)==1 && load_con(g.pwr.pwrmod_idx(index),3)==1)
+            if (g.ncl.load_con(g.pwr.pwrmod_idx(index),2)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(index),3)==1)
                 load_pot_mod(g.pwr.pwrmod_idx(index),1) = - (g.pwr.pwrmod_p_st(index,k) + jay*g.pwr.pwrmod_q_st(index,k)); %power modulation
 %                 load_pot_mod(pwrmod_idx(index),3) = ...
 %                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/(V_nc(index)*conj(V_nc(index))); %power modulation with v<0.5 - maybe disable?
-            elseif (load_con(g.pwr.pwrmod_idx(index),4)==1 && load_con(g.pwr.pwrmod_idx(index),5)==1); 
+            elseif (g.ncl.load_con(g.pwr.pwrmod_idx(index),4)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(index),5)==1); 
                 load_pot_mod(g.pwr.pwrmod_idx(index),2) = - (g.pwr.pwrmod_p_st(index,k) + jay*g.pwr.pwrmod_q_st(index,k)); %current modulation
 %                 load_pot_mod(pwrmod_idx(index),4) = ...
 %                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/abs(V_nc(index)); %current modulation with v<.5 - maybe disable?
@@ -154,7 +153,7 @@ if ~isempty(load_con)
       lv_idx = find(abs(V_nc)<=0.5);
       
       hv_idx = find(abs(V_nc) > 0.5);
-      curr_mis = zeros(nload,1);
+      curr_mis = zeros(g.ncl.nload,1);
       curr_load = Y21*psi + Y22*V_nc;
       if ~isempty(hv_idx)
          curr_nc = -conj((load_pot_mod(hv_idx,1)+load_pot_mod(hv_idx,2)...
@@ -223,7 +222,7 @@ if ~isempty(load_con)
             Y22_imag+diag(v_s21)   Y22_real+diag(v_s22)];
          b = [ real(curr_mis); imag(curr_mis) ];
          x = Jac_nc\b;   % solve for voltage increment
-         V_nc = V_nc + x(1:nload,1) + jay*x(nload+1:2*nload,1);
+         V_nc = V_nc + x(1:g.ncl.nload,1) + jay*x(g.ncl.nload+1:2*g.ncl.nload,1);
          % update voltage
          count = count + 1;
          lv_idx = find(abs(V_nc)<=0.5);

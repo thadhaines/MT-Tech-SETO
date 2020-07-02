@@ -9,7 +9,7 @@
 %            (c) copyright Joe Chow 1996  - All rights reserved
 %
 global basmva bus_int
-global  dcsp_con  dcl_con dcc_con load_con
+global  dcsp_con  dcl_con dcc_con 
 global  r_idx  i_idx n_dcl  n_conv  con_ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
 global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tsepr tsepi
