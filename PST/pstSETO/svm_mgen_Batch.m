@@ -74,10 +74,11 @@ tic % start timer
 
 % %pst_var
 % % copied from pst_var for global highlighs 06/11/20 -thad
-% % system variables
-global  basmva basrad syn_ref mach_ref sys_freq
-global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
-global  lmon_con
+%     %% system variables - 13
+%     global  basmva basrad syn_ref mach_ref sys_freq
+%     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
+%     global  lmon_con % lmon_con not used in non-linear sim...
+%     global theta % moved from g.mac as it is a system variable
 % 
 % % synchronous machine variables
 % global  mac_con mac_pot mac_int ibus_con
@@ -105,6 +106,29 @@ global  lmon_con
 % global dc_TF dc_TF_idx dc_TR dc_TR_idx 
 % global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
 % global st3_TR st3_TR_idx st3_noTR_idx;
+
+% load modulation variables % converted to g 06/12/20 - thad
+%global  lmod_con n_lmod lmod_idx
+%global  lmod_pot lmod_st dlmod_st
+%global  lmod_sig
+
+% reactive load modulation variables
+%global  rlmod_con n_rlmod rlmod_idx
+%global  rlmod_pot rlmod_st drlmod_st
+%global  rlmod_sig
+% turbine-governor variables % converted to g 06/12/20 - thad
+%global  tg_con tg_pot 
+%global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+%global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+
+% % power injection variables
+% global  pwrmod_con n_pwrmod pwrmod_idx
+% global  pwrmod_p_st dpwrmod_p_st
+% global  pwrmod_q_st dpwrmod_q_st
+% global  pwrmod_p_sig pwrmod_q_sig
+% global  pwrmod_data
+
+%% Non converted globals
 
 % non-conforming load variables
 global  load_con load_pot nload
@@ -141,15 +165,6 @@ global  B_tcsc dB_tcsc
 global  tcsc_sig tcsc_dsig
 global  n_tcscud dtcscud_idx  %user defined damping controls
 
-% load modulation variables % converted to g 06/12/20 - thad
-%global  lmod_con n_lmod lmod_idx
-%global  lmod_pot lmod_st dlmod_st
-%global  lmod_sig
-
-% reactive load modulation variables
-%global  rlmod_con n_rlmod rlmod_idx
-%global  rlmod_pot rlmod_st drlmod_st
-%global  rlmod_sig
 
 % pss variables
 global  pss_con pss_pot pss_mb_idx pss_exc_idx
@@ -162,10 +177,7 @@ global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx 
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
 
-% turbine-governor variables % converted to g 06/12/20 - thad
-%global  tg_con tg_pot 
-%global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
-%global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+
 
 %HVDC link variables
 global  dcsp_con  dcl_con  dcc_con
@@ -200,13 +212,6 @@ global load_con bus_int
 %global  lmod_sig lmod_data 
 % ivmmod
 global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig  
-
-% % power injection variables
-% global  pwrmod_con n_pwrmod pwrmod_idx
-% global  pwrmod_p_st dpwrmod_p_st
-% global  pwrmod_q_st dpwrmod_q_st
-% global  pwrmod_p_sig pwrmod_q_sig
-% global  pwrmod_data
 
 % begning of global strucutred g
 global g
@@ -244,10 +249,10 @@ end
 
 %basdat = inputdlg({'Base MVA:','Base Frequency Hz:'},'Input Base Data',1,{'100','60'}); 
 basdat = {'100';'60'};
-sys_freq = str2double(basdat{2});
-basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
-basmva = str2double(basdat{1});
-syn_ref = 0 ;     % synchronous reference frame
+g.sys.sys_freq = str2double(basdat{2});
+g.sys.basrad = 2*pi*g.sys.sys_freq; % default system frequency is 60 Hz
+g.sys.basmva = str2double(basdat{1});
+g.sys.syn_ref = 0 ;     % synchronous reference frame
 
 % disp(' ')
 % lfpf = inputdlg('do you wish to perform a post fault load flow?Y/N[N]','s');
@@ -490,21 +495,21 @@ dc_cont(0,1,1,bus,0); % initialize the dc controls - sets up data for red_ybus
 % this has to be done before red_ybus is used since the induction motor,svc and
 % dc link initialization alters the bus matrix
 v = ones(length(bus(:,1)),2);
-bus_v=v;
-g.mac.theta = zeros(length(bus(:,1)),2);
+g.sys.bus_v = v;
+g.sys.theta = zeros(length(bus(:,1)),2);
 disp(' ')
 disp('Performing linearization')
 % set line parameters
-if ~isempty(lmon_con)
-  R = line(lmon_con,3); 
-  X = line(lmon_con,4); 
-  B = line(lmon_con,5);
-  tap = line(lmon_con,6); 
-  phi = line(lmon_con,7);
+if ~isempty(g.sys.lmon_con)
+  R = line(g.sys.lmon_con,3); 
+  X = line(g.sys.lmon_con,4); 
+  B = line(g.sys.lmon_con,5);
+  tap = line(g.sys.lmon_con,6); 
+  phi = line(g.sys.lmon_con,7);
 end
 % step 1: construct reduced Y matrix
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
-bus_intprf = bus_int;% store the internal bus numbers for the pre_fault system
+bus_intprf = g.sys.bus_int;% store the internal bus numbers for the pre_fault system
 nbus = length(bus(:,1));
 if isempty(load_con)
    nload = 0;
@@ -530,8 +535,8 @@ max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*n_pss+ 6*n_dpw ...
     2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
-g.mac.theta(:,1) = bus(:,3)*pi/180;
-v(:,1) = bus(:,2).*exp(jay*g.mac.theta(:,1));
+g.sys.theta(:,1) = bus(:,3)*pi/180;
+v(:,1) = bus(:,2).*exp(jay*g.sys.theta(:,1));
 if n_conv ~= 0
    % convert dc LT to Equ HT bus
    Pr = bus(rec_ac_bus,6);
@@ -543,12 +548,12 @@ if n_conv ~= 0
    i_aci = (Pi - jay*Qi)./conj(VLT(i_idx));
    v(rec_ac_bus,1) = VLT(r_idx) + jay*dcc_pot(:,2).*i_acr;
    v(inv_ac_bus,1) = VLT(i_idx) + jay*dcc_pot(:,4).*i_aci;
-   g.mac.theta(ac_bus,1) = angle(v(ac_bus,1));
+   g.sys.theta(ac_bus,1) = angle(v(ac_bus,1));
 end
-bus_v(:,1) = v(:,1);  
+g.sys.bus_v(:,1) = v(:,1);  
 v(:,2) = v(:,1);
-bus_v(:,2)=v(:,1);
-g.mac.theta(:,2) = g.mac.theta(:,1);
+g.sys.bus_v(:,2)=v(:,1);
+g.sys.theta(:,2) = g.sys.theta(:,1);
 % find total number of states
 ns_file
 NumStates = sum(state);
@@ -595,8 +600,8 @@ else
 end
 % set initial state and rate matrices to zero
 nMacZero = zeros(g.mac.n_mac,2);
-psi_re = nMacZero;
-psi_im = nMacZero;
+g.sys.psi_re = nMacZero;
+g.sys.psi_im = nMacZero;
 psi = nMacZero;
 
 g.mac.eterm = nMacZero;
@@ -709,7 +714,7 @@ mac_tra(0,1,bus,flag);
 mac_sub(0,1,bus,flag);
 mac_ib(0,1,bus,flag);
 %calculate initial electrical torque
-psi = psi_re(:,1)+jay*psi_im(:,1);
+psi = g.sys.psi_re(:,1)+jay*g.sys.psi_im(:,1);
 if n_mot~=0&&n_ig==0
    vmp = vdp(:,1) + jay*vqp(:,1);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
@@ -729,8 +734,8 @@ if nload~=0
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);%vnc is a dummy variable
    cur(:,1) = cur(:,1) + Y_gncprf*v(bus_intprf(load_con(:,1)),1);% modify currents for nc loads 
 end
-cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
-cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
+g.sys.cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
+g.sys.cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
 cur_mag(1:g.mac.n_mac,1) = abs(cur(1:g.mac.n_mac,1)).*g.mac.mac_pot(:,1);
 if n_mot~=0
    idmot(:,1) = -real(cur(g.mac.n_mac+1:ngm,1));%induction motor currents
@@ -802,10 +807,10 @@ end
 % hvdc lines
 dc_line(0,1,1,bus,flag);
 
-mach_ref(1) = 0;
-mach_ref(2) = 0;
-sys_freq(1) = 1;
-sys_freq(2) = 1;
+g.sys.mach_ref(1) = 0;
+g.sys.mach_ref(2) = 0;
+g.sys.sys_freq(1) = 1;
+g.sys.sys_freq(2) = 1;
 
 %set states
 %generators
@@ -955,7 +960,7 @@ if isempty(g.mac.ibus_con)
       c_pm = c_pm*p_angi;
       c_t = c_t*p_angi;
       c_p = c_p*p_angi;
-      if ~isempty(lmon_con)
+      if ~isempty(g.sys.lmon_con)
          c_pf1 = c_pf1*p_angi;
          c_qf1 = c_qf1*p_angi;
          c_pf2 = c_pf2*p_angi;
