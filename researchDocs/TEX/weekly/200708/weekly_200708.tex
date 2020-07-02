@@ -1,0 +1,158 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Research Update \\ Week of July 8th, 2020}
+\lhead{Research \\ }
+
+
+\begin{document}
+\begin{multicols}{2}
+\raggedright
+
+\paragraph{Recent Progress:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Global g, linear \& non-linear functionality for:
+		\begin{minipage}{\linewidth}
+		%\begin{multicols}{2}
+				\begin{itemize}
+		\itemsep0em 
+				\footnotesize
+					\item system variables
+					\item non-conforming loads
+				\end{itemize}
+		%\end{multicols}
+		\end{minipage}
+		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
+		%\item Added Syncrhonous machine models em, sub, tra, and sub\_NEW to global g, tested as functional in both linear and non-linear batch runs.
+	%	\item Conceptual work on \verb|lmon| - a line flow montior for non-linear simulation
+		%\item Collected thoughts on AGC.
+		%\item Started work on batch unit testing
+		\item ODE test for variable time step
+		\item Found note about PSS gain - Same as Ryan info.
+		
+		\item created MATLAB plot functions to compare PST data
+		\item GitHub updated:\\
+	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
+	\end{enumerate}
+	
+
+\paragraph{Sandia Action Items:}
+	\begin{itemize}
+		\itemsep 0em 
+			\item Continue development of pwrmod and ivmmod models and their implementation in PST.
+			%\item Be aware of multi rate methods % mostly TAMU/Power world
+			\item Decide on PST base version (3.1$\longrightarrow$SETO)
+			\item Plan for variable time step methods
+			\item Investigate power electronics-based models (REGC - Matt)
+	\end{itemize}
+
+	
+\paragraph{Current Tasks:}
+	\begin{enumerate}
+		\itemsep 0em 
+		\item Continue to cast globals to structured g
+		\item Test models in both non-linear and linear simulations
+		\item Explore/Create example cases
+		\item Get code/cases from Ryan
+		\item Think about AGC implementation.
+		\item Think about using standard ODE solvers
+		\item think about cleaning up or flowcharting svm\_mgen\_Batch
+		%\item Reference Trudnowski code for `structured array, functionalized' approach.
+		%\item Reference Stajcar code for basic transient stability simulation flow.
+		\item Work on understanding PST operation
+		\item Document findings of PST functionality
+		\item Investigate Octave compatibility
+\end{enumerate}
+
+\vfill\null
+\columnbreak
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
+	\end{enumerate}
+
+
+\paragraph{Coding Thoughts:} 
+	\begin{enumerate}
+
+		\itemsep 0em 
+		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations. ex: \verb|g.lmod.lmod_con|, \verb|g.sys.t|
+		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+		This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+		Would enable addition of area definitions to models.
+		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+		Possibly employ \verb|feval| for a more dynamic calculation routine.
+		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (use flags)
+		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+		\item Generate comparison scripts to verify simulated results match after code changes.
+	\end{enumerate}
+	
+
+
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+	\item Requirements for variable step methods
+	\item PST modeling of transformers?
+	\end{enumerate}
+
+
+
+\vfill\null
+\end{multicols}
+
+
+
+\begin{comment}
+		\item PST modeling of faults: \\
+		Uses alternate Y matrices? \\
+		Creates fault bus?
+
+Things required for simulation....
+\begin{minipage}{\linewidth}
+\begin{multicols}{2}
+		\begin{itemize}
+\itemsep0em 
+		\footnotesize
+			\item system model
+			\item Load flow solver
+			\item Network solver
+			\item Machine models
+			\item Governor model
+			\item Exciter models
+			\item converter models
+			\item load modulation models
+			\item ...
+		\end{itemize}
+\end{multicols}
+\end{minipage}
+
+% Unused categories
+\paragraph{Future Tasks:} %(Little to No Progress since last time / Things coming down the pipe)
+	\begin{enumerate}
+		\item none		
+	\end{enumerate}
+	
+\paragraph{Future Work: (not by me)}
+	\begin{itemize}
+		\item none
+	\end{itemize}
+
+\paragraph{Requests:}
+	\begin{enumerate}
+			\item none
+	\end{enumerate}
+\end{comment}
+
+
+
+\end{document}
