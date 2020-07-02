@@ -60,14 +60,19 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] =...
 % 
 % ***********************************************************
 
-global basmva bus_int  ind_int igen_int
+
+    % power modulation variables
+% global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st pwrmod_con
+
+%     
+% 
+% global basmva bus_int  
+global ind_int igen_int
 
 %global mac_con 
 global ind_con ind_pot load_con igen_con igen_pot 
 
 global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
-% power modulation variables
-% global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st pwrmod_con
 
 global g
 
@@ -94,7 +99,7 @@ if nargout > 2 %checking number of output arguments
 % subtract non-conforming loads from bus P and Q loads
   [nload dum] = size(load_con);
   if nload~=0
-    j = bus_int(load_con(:,1));
+    j = g.sys.bus_int(load_con(:,1));
     bus_sol(j,6) = (ones(nload,1)-load_con(:,2)-load_con(:,4)) ...
                    .*bus_sol(j,6);
     bus_sol(j,7) = (ones(nload,1)-load_con(:,3)-load_con(:,5))...
@@ -109,7 +114,7 @@ end
 
 %Adjust load for pwrmod buses as these are PV buses.
 if g.pwr.n_pwrmod~=0
-    j = bus_int(g.pwr.pwrmod_con(:,1));
+    j = g.sys.bus_int(g.pwr.pwrmod_con(:,1));
     bus_sol(j,6) = bus_sol(j,4);
     bus_sol(j,7) = bus_sol(j,5);
     clear j
@@ -146,20 +151,20 @@ Y_b = sparse(1,1,0,n_tot,nbus);
 
 % extract appropriate xdprime and xdpprime from machine
 %   data
-ra=g.mac.mac_con(:,5)*basmva./g.mac.mac_con(:,3);
+ra=g.mac.mac_con(:,5)*g.sys.basmva./g.mac.mac_con(:,3);
 testxpp= g.mac.mac_con(:,8) ~= zeros(n,1);
 testxp = ~testxpp;  
 txpp=find(testxpp);
 txp=find(testxp);
 if ~isempty(txpp)
-   xd(txpp,1) = g.mac.mac_con(txpp,8)*basmva./g.mac.mac_con(txpp,3); %xppd 
+   xd(txpp,1) = g.mac.mac_con(txpp,8)*g.sys.basmva./g.mac.mac_con(txpp,3); %xppd 
 end
 if ~isempty(txp)
-   xd(txp,1) = g.mac.mac_con(txp,7)*basmva./g.mac.mac_con(txp,3); %xpd
+   xd(txp,1) = g.mac.mac_con(txp,7)*g.sys.basmva./g.mac.mac_con(txp,3); %xpd
 end 
 y(1:n,1) = ones(n,1)./(ra+jay*xd); 
    
-jg = bus_int(round(g.mac.mac_con(:,2)));  % buses connected to
+jg = g.sys.bus_int(round(g.mac.mac_con(:,2)));  % buses connected to
                                       % generator
 
 % check for multiple generators at a bus
@@ -194,7 +199,7 @@ if length(ind_con)~=0
       xsp = ind_pot(:,5).*ind_pot(:,1);
       rs=ind_con(:,4).*ind_pot(:,1);
       y(n+1:ngm,1) = ones(nmot,1)./(rs+jay*xsp);     
-      jm = bus_int(round(ind_con(:,2)));  % bus connected to induction motor
+      jm = g.sys.bus_int(round(ind_con(:,2)));  % bus connected to induction motor
         % check for multiple induction motors at a bus
        perm = eye(nmot);
        for k = 1:nmot
@@ -224,7 +229,7 @@ if nig~=0
       xsp = igen_pot(:,5).*igen_pot(:,1);
       rs=igen_con(:,4).*igen_pot(:,1);
       y(ngm+1:n_tot,1) = ones(nig,1)./(rs+jay*xsp);     
-      jm = bus_int(round(igen_con(:,2)));  % bus connected to induction generator
+      jm = g.sys.bus_int(round(igen_con(:,2)));  % bus connected to induction generator
         % check for multiple induction generators at a bus
        perm = eye(nig);
        for k = 1:nig
@@ -261,7 +266,7 @@ if nargout <= 2
     % Note dc buses must be the last entries in load_con
       bus_order = zeros(nbus,1);
       bus_conf = zeros(nbus,1);
-      bus_order(1:nload) = bus_int(load_con(:,1));
+      bus_order(1:nload) = g.sys.bus_int(load_con(:,1));
       bus_conf(bus_order(1:nload))=ones(nload,1); % constant impedance bus
                                                 % indicator                                                                                    
       bus_order(nload+1:nbus)=find(~bus_conf);
@@ -372,7 +377,7 @@ if nargout <= 2
       Y21 = [];
       Y22 = [];
       rec_V2 = [];
-      bus_order = bus_int(bus_sol(:,1));
+      bus_order = g.sys.bus_int(bus_sol(:,1));
     end
 end
 

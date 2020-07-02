@@ -25,10 +25,6 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 % Author:   Graham Rogers
 % Copyright (c) Joe Chow All Rights Reserved
 
-global bus_v bus_int
-%global n_mac theta
-global psi_re psi_im  
-global cur_re  cur_im
 
 global load_con nload
 
@@ -47,7 +43,7 @@ kdc=10*(k-1)+1;
 if isempty(n_mot); n_mot = 0;end
 if isempty(n_ig); n_ig =0;end
 jay = sqrt(-1);
-psi = psi_re(:,k) + jay*psi_im(:,k);
+psi = g.sys.psi_re(:,k) + jay*g.sys.psi_im(:,k);
 vmp = vdp(:,k) + jay*vqp(:,k);
 vmpig = vdpig(:,k) + jay*vqpig(:,k);
 if (n_mot~=0&n_ig==0)
@@ -71,8 +67,12 @@ cur = Y_g*int_volt; % network solution currents into generators
 b_v(bo(nload+1:nbus),1) = rec_V1*int_volt;   % bus voltage reconstruction
 
 if nload~=0
-    if k~=1; kk = k-1;else; kk=k;end;
-    vnc = bus_v(bus_int(load_con(:,1)),kk);% initial value
+    if k~=1
+        kk = k-1;
+    else
+        kk=k;
+    end
+    vnc = g.sys.bus_v(g.sys.bus_int(load_con(:,1)),kk);% initial value
     vnc = nc_load(bus_sim,flag,Y_nc,Y_ncg,int_volt,vnc,1e-5,k,kdc);
     
     % set nc load voltages
@@ -82,29 +82,29 @@ if nload~=0
 end
 % note: the dc bus voltages are the equivalent HT bus voltages
 %       and not the LT bus voltages
-bus_v(bus_int(bus_sim(:,1)),k) = b_v;
-g.mac.theta(bus_int(bus_sim(:,1)),k) = angle(b_v);
-cur_re(:,k) = real(cur(1:g.mac.n_mac));
-cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
+g.sys.bus_v(g.sys.bus_int(bus_sim(:,1)),k) = b_v;
+g.sys.theta(g.sys.bus_int(bus_sim(:,1)),k) = angle(b_v);
+g.sys.cur_re(:,k) = real(cur(1:g.mac.n_mac));
+g.sys.cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
 if n_mot~=0
     idmot(:,k) = -real(cur(g.mac.n_mac+1:ngm));%induction motor currents
     iqmot(:,k) = -imag(cur(g.mac.n_mac+1:ngm));%current out of network
-    s_mot(:,k) = bus_v(bus_int(ind_con(:,2)),k).*(idmot(:,k)-jay*iqmot(:,k));
+    s_mot(:,k) = g.sys.bus_v(g.sys.bus_int(ind_con(:,2)),k).*(idmot(:,k)-jay*iqmot(:,k));
     p_mot(:,k) = real(s_mot(:,k));
     q_mot(:,k) = imag(s_mot(:,k));
 end
 if n_ig~=0
     idig(:,k) = -real(cur(ngm+1:ntot));%induction generator currents
     iqig(:,k) = -imag(cur(ngm+1:ntot));%current out of network
-    s_igen(:,k) = bus_v(bus_int(igen_con(:,2)),k).*(idig(:,k)-jay*iqig(:,k));
+    s_igen(:,k) = g.sys.bus_v(g.sys.bus_int(igen_con(:,2)),k).*(idig(:,k)-jay*iqig(:,k));
     pig(:,k) = real(s_igen(:,k));
     qig(:,k) = imag(s_igen(:,k));
 end
 
 if n_conv ~=0
     % calculate dc voltage and current
-    V0(r_idx,1) = abs(bus_v(rec_ac_bus,k)).*dcc_pot(:,7);
-    V0(i_idx,1) = abs(bus_v(inv_ac_bus,k)).*dcc_pot(:,8);
+    V0(r_idx,1) = abs(g.sys.bus_v(rec_ac_bus,k)).*dcc_pot(:,7);
+    V0(i_idx,1) = abs(g.sys.bus_v(inv_ac_bus,k)).*dcc_pot(:,8);
     Vdc(r_idx,kdc) = V0(r_idx,1).*cos(alpha(:,kdc)) - i_dcr(:,kdc).*dcc_pot(:,3);
     Vdc(i_idx,kdc) = V0(i_idx,1).*cos(gamma(:,kdc)) - i_dci(:,kdc).*dcc_pot(:,5);
     i_dc(r_idx,kdc) = i_dcr(:,kdc);

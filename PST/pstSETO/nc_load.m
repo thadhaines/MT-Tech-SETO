@@ -66,7 +66,8 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 % Author:   Joe H. Chow
 % Date:     April 1991
 
-global load_con load_pot bus_int 
+% non conforming load variables
+global load_con load_pot  
 % dc variables
 global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
 global  n_conv n_dcl ldc_idx
@@ -74,15 +75,9 @@ global  n_conv n_dcl ldc_idx
 global svc_con svc_idx n_svc svc_pot B_cv
 % tcsc wariables
 global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
-% load modulation variables
-%global  lmod_con n_lmod lmod_idx lmod_st 
-%global lmod_pot lmod_st 
-global g % added g - thad
 
-% % reactive load modulation variables
-% % global  rlmod_con n_rlmod rlmod_idx rlmod_pot rlmod_st 
-% % power modulation variables
-% % global pwrmod_idx n_pwrmod pwrmod_p_st pwrmod_q_st
+global g 
+
 
 if ~isempty(load_con)
    jay = sqrt(-1);
@@ -92,7 +87,7 @@ if ~isempty(load_con)
       %  set up constant power and current load components in 
       %    load_pot
       %  vectorized computation
-      j = bus_int(load_con(:,1));
+      j = g.sys.bus_int(load_con(:,1));
       % no need for special treatment for dc buses on initialization
       V_nc = bus(j,2).*exp(jay*bus(j,3)*pi/180);
       % constant power component

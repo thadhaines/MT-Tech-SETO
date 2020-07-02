@@ -47,11 +47,14 @@ function [bus_sol,line_sol,line_flow,Jac] = ...
 % Date:      March 1991
 %
 % ***********************************************************
-global bus_int
+
 global Qg bus_type g_bno PQV_no PQ_no ang_red volt_red 
 global Q Ql
 global gen_chg_idx
 global ac_line n_dcl
+
+global g
+
 tt = clock;     % start the total time clock
 jay = sqrt(-1);
 load_bus = 3;
@@ -259,9 +262,9 @@ tap_ratio(tap_index)=line(tap_index,6);
 phase_shift(:,1) = line(:,7);
 tps = tap_ratio.*exp(jay*phase_shift*pi/180); 
 from_bus = line(:,1);
-from_int = bus_int(round(from_bus));
+from_int = g.sys.bus_int(round(from_bus));
 to_bus = line(:,2);
-to_int = bus_int(round(to_bus));
+to_int = g.sys.bus_int(round(to_bus));
 r = line(:,3);
 rx = line(:,4);
 chrg = line(:,5);

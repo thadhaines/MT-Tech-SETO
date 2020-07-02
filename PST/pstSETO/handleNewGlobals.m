@@ -11,6 +11,7 @@
 %   06/17/20    10:21   Thad Haines     addition of exc_con
 %   06/18/20    14:21   Thad Haines     addition of mac_con and ibus_con
 %   06/30/20    10:18   Thad Haines     addition of pwrmod_con
+%   07/02/20    10:10   Thad Haines     addition of lmon_con
 global g
 
 %% lmod
@@ -66,6 +67,13 @@ if exist('pwrmod_con','var')
     clear pwrmod_con;
 else
     g.pwr.pwrmod_con = [];
+end
+%% lmon_con
+if exist('lmon_con','var')
+    g.sys.lmon_con = lmon_con;
+    clear lmon_con;
+else
+    g.sys.lmon_con = [];
 end
 %% Global for plot flag
 if exist('livePlotFlag','var')
