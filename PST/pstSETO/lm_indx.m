@@ -12,9 +12,7 @@ function lm_indx()
 %   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
 %   06/15/20    15:58   Thad Haines     Revised format of globals and internal function documentation
 
-global g % thad
-global load_con % required as there is a check for non-conforming loads
-
+global g 
 % set initial number of load modulations to zero
 g.lmod.n_lmod = 0;
 % initialize empty index array of loads to modulate
@@ -33,7 +31,7 @@ if ~isempty(g.lmod.lmod_con)
     
     for j = 1:g.lmod.n_lmod % for each modulated load...
         % find index in load_con
-        index = find(g.lmod.lmod_con(j,2) == load_con(:,1));
+        index = find(g.lmod.lmod_con(j,2) == g.ncl.load_con(:,1));
         
         % if index is found, save index in lmod_idx
         if ~isempty(index)

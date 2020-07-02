@@ -26,7 +26,7 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 % Copyright (c) Joe Chow All Rights Reserved
 
 
-global load_con nload
+%global load_con nload
 
 global vdp vqp n_mot idmot iqmot p_mot q_mot ind_con
 
@@ -64,20 +64,20 @@ end
 h_sol = h(ks);
 nbus = length(bus_sim(:,1));
 cur = Y_g*int_volt; % network solution currents into generators
-b_v(bo(nload+1:nbus),1) = rec_V1*int_volt;   % bus voltage reconstruction
+b_v(bo(g.ncl.nload+1:nbus),1) = rec_V1*int_volt;   % bus voltage reconstruction
 
-if nload~=0
+if g.ncl.nload~=0
     if k~=1
         kk = k-1;
     else
         kk=k;
     end
-    vnc = g.sys.bus_v(g.sys.bus_int(load_con(:,1)),kk);% initial value
+    vnc = g.sys.bus_v(g.sys.bus_int(g.ncl.load_con(:,1)),kk);% initial value
     vnc = nc_load(bus_sim,flag,Y_nc,Y_ncg,int_volt,vnc,1e-5,k,kdc);
     
     % set nc load voltages
-    b_v(bo(1:nload),1)=vnc;
-    b_v(bo(nload+1:nbus),1) = b_v(bo(nload+1:nbus),1)+rec_V2*vnc;
+    b_v(bo(1:g.ncl.nload),1)=vnc;
+    b_v(bo(g.ncl.nload+1:nbus),1) = b_v(bo(g.ncl.nload+1:nbus),1)+rec_V2*vnc;
     cur = cur + Y_gnc*vnc;% modify generator currents for nc loads
 end
 % note: the dc bus voltages are the equivalent HT bus voltages

@@ -3,22 +3,22 @@ function f=nm_if(k)
 %pst_var
 % copy of globals for highlighting - thad - 06/11/20
 
-% system variables
-global  basmva basrad syn_ref mach_ref sys_freq
-global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
-global  lmon_con
-
-% synchronous machine variables
-global  mac_con mac_pot mac_int ibus_con
-global  mac_ang mac_spd eqprime edprime psikd psikq
-global  curd curq curdg curqg fldcur
-global  psidpp psiqpp vex eterm theta ed eq 
-global  pmech pelect qelect
-global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
-global  n_mac n_em n_tra n_sub n_ib
-global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
-global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
-  
+% % system variables
+% global  basmva basrad syn_ref mach_ref sys_freq
+% global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
+% global  lmon_con
+% 
+% % synchronous machine variables
+% global  mac_con mac_pot mac_int ibus_con
+% global  mac_ang mac_spd eqprime edprime psikd psikq
+% global  curd curq curdg curqg fldcur
+% global  psidpp psiqpp vex eterm theta ed eq 
+% global  pmech pelect qelect
+% global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+% global  n_mac n_em n_tra n_sub n_ib
+% global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+% global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+%   
 % % excitation system variables
 % global  exc_con exc_pot n_exc
 % global  Efd V_R V_A V_As R_f V_FB V_TR V_B
@@ -34,8 +34,8 @@ global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
 % global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
 % global st3_TR st3_TR_idx st3_noTR_idx;
 
-% non-conforming load variables
-global  load_con load_pot nload
+% % non-conforming load variables
+% global  load_con load_pot nload
 
 % induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
@@ -73,10 +73,10 @@ global  n_tcscud dtcscud_idx  %user defined damping controls
 %global  lmod_con n_lmod lmod_idx
 %global  lmod_pot lmod_st dlmod_st
 %global  lmod_sig
-% reactive load modulation variables
-global  rlmod_con n_rlmod rlmod_idx
-global  rlmod_pot rlmod_st drlmod_st
-global  rlmod_sig
+% % reactive load modulation variables
+% global  rlmod_con n_rlmod rlmod_idx
+% global  rlmod_pot rlmod_st drlmod_st
+% global  rlmod_sig
 
 
 % pss variables

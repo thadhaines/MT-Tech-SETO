@@ -7,7 +7,7 @@ function f = svc_indx(svc_dc)
 % checks for user defined damping controls
 % f is a dummy variable
 f = 0;
-global svc_con load_con  n_svc  svc_idx svcll_idx % svc 
+global svc_con   n_svc  svc_idx svcll_idx % svc 
 global n_dcud dcud_idx  %user defined damping controls
 n_svc = 0;
 svc_idx = [];
@@ -22,7 +22,7 @@ if ~isempty(svc_con)
    end
    svcll_idx = find(svc_con(:,9)~=0);
    for j = 1:n_svc
-      index = find(svc_con(j,2)==load_con(:,1));
+      index = find(svc_con(j,2)== g.ncl.load_con(:,1));
       if ~isempty(index)
          svc_idx(j) = index;
       else

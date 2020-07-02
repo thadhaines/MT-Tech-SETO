@@ -34,8 +34,7 @@ function [P,Q,dP_states,dQ_states,P_statesIni,Q_statesIni] = pwrmod_dyn(P_states
 %   pwrmod_con = see system data file.
 % D. Trudnowski, 2015
 
-%global pwrmod_data pwrmod_con 
-global load_con bus_v
+
 global g
 
 %% Parameters
@@ -75,8 +74,8 @@ elseif Flag==1
     %Initial conditions
     for k=1:length(P)
         n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
-        m = find(g.pwr.pwrmod_con(k,1)==load_con(:,1));
-        if load_con(m,2)==1
+        m = find(g.pwr.pwrmod_con(k,1)==g.ncl.load_con(:,1));
+        if g.ncl.load_con(m,2)==1
             %Initial power injection
             P(k) = bus(n,4); %Real power 
             Q(k) = bus(n,5); %Reac power
@@ -129,7 +128,7 @@ elseif Flag==2
             if dP_states{k}(1) < dIpmin(k); dP_states{k}(1) = dIpmin(k); end %Rate limit
         end
         
-        VT = abs(bus_v(n,kSim)); %Voltage magnitude at the injection bus
+        VT = abs(g.sys.bus_v(n,kSim)); %Voltage magnitude at the injection bus
         dP_states{k}(2) = (-P_states{k}(2) + VT)/Tv(k);
         if P_states{k}(2)<=0.01; dP_states{k}(2) = 0; end %Limit set using anti-windup
     end

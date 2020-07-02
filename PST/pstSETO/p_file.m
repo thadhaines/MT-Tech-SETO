@@ -36,15 +36,16 @@ end
 if n_conv~=0
    dc_cont(0,2,2,bus,flag);
 end
+
 cur(:,2) = Y_gprf*int_volt; % network solution currents into generators       
-b_v(boprf(nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
-if nload~=0
-   vnc = v(boprf(1:nload),1);
+b_v(boprf(g.ncl.nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
+if g.ncl.nload~=0
+   vnc = v(boprf(1:g.ncl.nload),1);
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf,int_volt,vnc,1e-6,2,2);
    bvnc = full(V_rncprf*vnc);
-   b_v(boprf(1:nload),1) = vnc;
+   b_v(boprf(1:g.ncl.nload),1) = vnc;
    cur(:,2) = cur(:,2) + Y_gncprf*vnc;% modify currents for nc loads
-   b_v(boprf(nload+1:nbus),1) =  b_v(boprf(nload+1:nbus),1) + bvnc; % adjust voltages for nc loads
+   b_v(boprf(g.ncl.nload+1:nbus),1) =  b_v(boprf(g.ncl.nload+1:nbus),1) + bvnc; % adjust voltages for nc loads
 end
 v(g.sys.bus_int(bus(:,1)),2) = b_v;
 g.sys.bus_v(g.sys.bus_int(bus(:,1)),2) = b_v;

@@ -1038,11 +1038,11 @@ end
 
 %% initialize non-linear loads
 % if statement redundant - used in script... - thad 06/08/20
-if ~isempty(load_con)
+if ~isempty(g.ncl.load_con)
     disp('non-linear loads')
     vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);
 else
-    nload = 0;
+    g.ncl.nload = 0;
 end
 
 %% DC Stuff ? (5/22/20)

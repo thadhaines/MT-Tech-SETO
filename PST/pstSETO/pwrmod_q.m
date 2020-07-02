@@ -1,38 +1,34 @@
 function pwrmod_q(i,k,bus,flag)
-% Syntax: f = pwrmod_q(i,k,bus,flag)
-% Purpose: reac-power modulation model 
-%          with vectorized computation option
-%          NOTE - load modulation bus must be declared as a
-%                 non-conforming constant-power load bus
-% Input: i - power modulation number
-%            if i= 0, vectorized computation
-%        k - integer time
-%        bus - solved loadflow bus data
-%        flag - 0 - initialization
-%               1 - network interface computation
-%               2 - generator dynamics computation
+%PWRMOD_Q is a reactive-power modulation model.
+% PWRMOD_Q is a is a reactive-power modulation model with 
+% a vectorized computation option. Load modulation bus must be 
+% declared as a non-conforming constant-power load bus.
 %
-% Output: f is a dummy variable
-%                    
-
-% History (in reverse chronological order)
+% Syntax: pwrmod_p(i,k,bus,flag)
 %
-% Version:1
-% Date:Feb 2015
-% Author: Dan Trudnowski
+%   Input: 
+%   i - power modulation number
+%           0 for vectorized computation
+%   k - integer time (data index)
+%   flag -  0 - initialization
+%          	1 - network interface computation
+%          	2 - generator dynamics computation 
+%
+%   Output: 
+%   VOID
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   02/xx/15    xx:xx   Dan Trudnowski  Version 1.0
+%   07/02/20    14:15   Thad Haines     Revised format of globals and internal function documentation
 
-% power modulation variables
-% global pwrmod_con n_pwrmod pwrmod_q_st dpwrmod_q_st pwrmod_q_sig pwrmod_idx 
-global bus_int load_con
 global g
-% f = 0;% dummy variable
-% 
-% jay = sqrt(-1);
+
 if ~isempty(g.pwr.pwrmod_con)
    if flag == 0; % initialization
       if i~=0
-          jj = bus_int(g.pwr.pwrmod_con(i,1));
-          if (load_con(g.pwr.pwrmod_idx(i),2)==1 && load_con(g.pwr.pwrmod_idx(i),3)==1)
+          jj = g.sys.bus_int(g.pwr.pwrmod_con(i,1));
+          if (g.ncl.load_con(g.pwr.pwrmod_idx(i),2)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(i),3)==1)
              g.pwr.pwrmod_q_st(i,1) = bus(jj,5);
           else
              g.pwr.pwrmod_q_st(i,1) = bus(jj,5)/abs(bus(jj,2));
@@ -40,8 +36,8 @@ if ~isempty(g.pwr.pwrmod_con)
           clear jj
       else % vectorized calculation
           for ii=1:g.pwr.n_pwrmod
-              jj = bus_int(g.pwr.pwrmod_con(ii,1));
-              if (load_con(g.pwr.pwrmod_idx(ii),2)==1 && load_con(g.pwr.pwrmod_idx(ii),3)==1)
+              jj = g.sys.bus_int(g.pwr.pwrmod_con(ii,1));
+              if (g.ncl.load_con(g.pwr.pwrmod_idx(ii),2)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(ii),3)==1)
                  g.pwr.pwrmod_q_st(ii,1) = bus(jj,5);
               else
                  g.pwr.pwrmod_q_st(ii,1) = bus(jj,5)/abs(bus(jj,2));

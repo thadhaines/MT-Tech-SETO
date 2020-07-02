@@ -1,6 +1,6 @@
 %% Script to detect 'legacy' data input and adjust to new global g approach
 % Usage of script to more easily detect legacy global definitons
-% global g is already defined. Assumes data file strucutre does not change.
+% global g is already defined. Assumes data file structure does not change.
 %
 %   History:
 %   Date        Time    Engineer        Description
@@ -12,6 +12,7 @@
 %   06/18/20    14:21   Thad Haines     addition of mac_con and ibus_con
 %   06/30/20    10:18   Thad Haines     addition of pwrmod_con
 %   07/02/20    10:10   Thad Haines     addition of lmon_con
+%   07/02/20    13:15   Thad Haines     addition of load_con for ncl
 global g
 
 %% lmod
@@ -74,6 +75,13 @@ if exist('lmon_con','var')
     clear lmon_con;
 else
     g.sys.lmon_con = [];
+end
+%% load_con
+if exist('load_con','var')
+    g.ncl.load_con = load_con;
+    clear load_con;
+else
+    g.ncl.load_con = [];
 end
 %% Global for plot flag
 if exist('livePlotFlag','var')
