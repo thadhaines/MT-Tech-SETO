@@ -29,23 +29,20 @@ function rlmod(i,k,flag)
 %   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
 %   06/15/20    09:45   Thad Haines     Revised format of globals and internal function documentation
 
-% system variables
-global  basmva
-
 global g
 
 if ~isempty(g.rlmod.rlmod_con)
    if flag == 0 % initialization
       if i~=0
-         g.rlmod.rlmod_pot(i,1) = g.rlmod.rlmod_con(i,4)*g.rlmod.rlmod_con(i,3)/basmva;
+         g.rlmod.rlmod_pot(i,1) = g.rlmod.rlmod_con(i,4)*g.rlmod.rlmod_con(i,3)/g.sys.basmva;
          % max modulation on system base
-         g.rlmod.rlmod_pot(i,2) = g.rlmod.rlmod_con(i,5)*g.rlmod.rlmod_con(i,3)/basmva;
+         g.rlmod.rlmod_pot(i,2) = g.rlmod.rlmod_con(i,5)*g.rlmod.rlmod_con(i,3)/g.sys.basmva;
          % min modulation on system base
          g.rlmod.rlmod_st(i,1) = 0;
       else % vectorized calculation
-         g.rlmod.rlmod_pot(:,1) = g.rlmod.rlmod_con(:,4).*g.rlmod.rlmod_con(:,3)/basmva;
+         g.rlmod.rlmod_pot(:,1) = g.rlmod.rlmod_con(:,4).*g.rlmod.rlmod_con(:,3)/g.sys.basmva;
          % max modulation on system base
-         g.rlmod.rlmod_pot(:,2) = g.rlmod.rlmod_con(:,5).*g.rlmod.rlmod_con(:,3)/basmva;
+         g.rlmod.rlmod_pot(:,2) = g.rlmod.rlmod_con(:,5).*g.rlmod.rlmod_con(:,3)/g.sys.basmva;
          % min modulation on system base
          g.rlmod.rlmod_st(:,1) = zeros(g.rlmod.n_rlmod,1);
       end

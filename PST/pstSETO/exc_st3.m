@@ -37,10 +37,6 @@ function exc_st3(i,k,flag)
 %   06/19/20    11:34   Thad Haines     Revised format of globals and internal function documentation
 %   07/01/20    12:41   Thad Haines     Adjusted theta(n) to theta(n_bus) in calculation of vep per Ryan Elliot (line 131)
 
-
-% system variables
-global  psi_re psi_im cur_re cur_im bus_int
-
 % pss variables
 global pss_out 
 
@@ -61,7 +57,7 @@ if g.exc.n_st3~=0
         error('EXC_ST3: inappropriate exciter model')
       end
       n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
-      n_bus = bus_int(g.mac.mac_con(n,2)); % bus number
+      n_bus = g.sys.bus_int(g.mac.mac_con(n,2)); % bus number
       g.exc.Efd(i,1) = g.mac.vex(n,1);
       if g.exc.Efd(i,1) > g.exc.exc_con(i,18)
         error('EXC_ST3: Efd exceeds maximum in initialization')
@@ -69,8 +65,8 @@ if g.exc.n_st3~=0
       g.exc.exc_pot(i,1) = g.exc.exc_con(i,13)*cos(g.exc.exc_con(i,14)*pi/180);
       g.exc.exc_pot(i,2) = g.exc.exc_con(i,13)*sin(g.exc.exc_con(i,14)*pi/180);
       iterm = (g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))/(g.mac.eterm(n,1)...
-               *exp(-jay*g.mac.theta(n_bus,1)));
-      vep = g.mac.eterm(n,1)*exp(jay*g.mac.theta(n_bus,1))*(g.exc.exc_pot(i,1) + jay*g.exc.exc_pot(i,2));
+               *exp(-jay*g.sys.theta(n_bus,1)));
+      vep = g.mac.eterm(n,1)*exp(jay*g.sys.theta(n_bus,1))*(g.exc.exc_pot(i,1) + jay*g.exc.exc_pot(i,2));
       ve = vep+jay*(g.exc.exc_con(i,15)...
            + (g.exc.exc_pot(i,1)+jay*g.exc.exc_pot(i,2))*g.exc.exc_con(i,16))*iterm;
       V_E = abs(ve);
@@ -116,7 +112,7 @@ if g.exc.n_st3~=0
       F_EX = V_E;
       
       n = g.mac.mac_int(g.exc.exc_con(g.exc.st3_idx,2)); % machine number vector
-      n_bus = bus_int(g.mac.mac_con(n,2));%gen bus number vector
+      n_bus = g.sys.bus_int(g.mac.mac_con(n,2));%gen bus number vector
       g.exc.Efd(g.exc.st3_idx,1) = g.mac.vex(n,1);
       max_lim = find(g.exc.Efd(g.exc.st3_idx,1) > g.exc.exc_con(g.exc.st3_idx,18)); %check maximum limit
       if ~isempty(max_lim)
@@ -127,8 +123,8 @@ if g.exc.n_st3~=0
       g.exc.exc_pot(g.exc.st3_idx,1) = g.exc.exc_con(g.exc.st3_idx,13).*cos(g.exc.exc_con(g.exc.st3_idx,14)*pi/180);
       g.exc.exc_pot(g.exc.st3_idx,2) = g.exc.exc_con(g.exc.st3_idx,13).*sin(g.exc.exc_con(g.exc.st3_idx,14)*pi/180);
       iterm =(g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))./...
-             (g.mac.eterm(n,1).*exp(-jay*g.mac.theta(n_bus,1))).*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,1).*exp(jay*g.mac.theta(n_bus,1)).*(g.exc.exc_pot(g.exc.st3_idx,1) + jay*g.exc.exc_pot(g.exc.st3_idx,2));% corrected theta index to n_bus from n per Ryan - thad 07/01/20
+             (g.mac.eterm(n,1).*exp(-jay*g.sys.theta(n_bus,1))).*g.mac.mac_pot(n,1);
+      vep = g.mac.eterm(n,1).*exp(jay*g.sys.theta(n_bus,1)).*(g.exc.exc_pot(g.exc.st3_idx,1) + jay*g.exc.exc_pot(g.exc.st3_idx,2));% corrected theta index to n_bus from n per Ryan - thad 07/01/20
       ve = vep+jay*(g.exc.exc_con(g.exc.st3_idx,15)...
            + (g.exc.exc_pot(g.exc.st3_idx,1)+jay*g.exc.exc_pot(g.exc.st3_idx,2)).*g.exc.exc_con(g.exc.st3_idx,16)).*iterm;
       V_E = abs(ve);
@@ -206,11 +202,11 @@ if g.exc.n_st3~=0
   if flag == 1 % network interface computation
     if i~=0 %exciter-by-exciter calculation
       n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
-      n_bus = bus_int(g.mac.mac_con(n,2));
-      g.mac.curd(n,k) = sin(g.mac.mac_ang(n,k))*cur_re(n,k) - ...
-            cos(g.mac.mac_ang(n,k))*cur_im(n,k); % d-axis current
-      g.mac.curq(n,k) = cos(g.mac.mac_ang(n,k))*cur_re(n,k) + ...
-            sin(g.mac.mac_ang(n,k))*cur_im(n,k); % q-axis current
+      n_bus = g.sys.bus_int(g.mac.mac_con(n,2));
+      g.mac.curd(n,k) = sin(g.mac.mac_ang(n,k))*g.sys.cur_re(n,k) - ...
+            cos(g.mac.mac_ang(n,k))*g.sys.cur_im(n,k); % d-axis current
+      g.mac.curq(n,k) = cos(g.mac.mac_ang(n,k))*g.sys.cur_re(n,k) + ...
+            sin(g.mac.mac_ang(n,k))*g.sys.cur_im(n,k); % q-axis current
       g.mac.curdg(n,k) = g.mac.curd(n,k)*g.mac.mac_pot(n,1);
       g.mac.curqg(n,k) = g.mac.curq(n,k)*g.mac.mac_pot(n,1);
       E_Isat = g.mac.mac_pot(n,3)*g.mac.eqprime(n,1)^2 ...
@@ -245,8 +241,8 @@ if g.exc.n_st3~=0
       g.mac.pelect(n,k) = g.mac.eq(n,k)*g.mac.curq(n,k) + g.mac.ed(n,k)*g.mac.curd(n,k);
       g.mac.qelect(n,k) = g.mac.eq(n,k)*g.mac.curd(n,k) - g.mac.ed(n,k)*g.mac.curq(n,k);
       iterm = (g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))/...
-              (g.mac.eterm(n,1)*exp(-jay*g.mac.theta(n_bus,1)))*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,1)*exp(jay*g.mac.theta(n_bus,1))*(g.exc.exc_pot(i,1) + jay*g.exc.exc_pot(i,2));
+              (g.mac.eterm(n,1)*exp(-jay*g.sys.theta(n_bus,1)))*g.mac.mac_pot(n,1);
+      vep = g.mac.eterm(n,1)*exp(jay*g.sys.theta(n_bus,1))*(g.exc.exc_pot(i,1) + jay*g.exc.exc_pot(i,2));
       ve = vep+jay*(g.exc.exc_con(i,15)...
            + (g.exc.exc_pot(i,1)+jay*g.exc.exc_pot(i,2))*g.exc.exc_con(i,16))*iterm;
       V_E = abs(ve);
@@ -296,7 +292,7 @@ if g.exc.n_st3~=0
       end
       nst3_tra = find(nst3_tra~=0);
       nst3_sub = find(nst3_sub~=0);
-      n_bus = bus_int(g.mac.mac_con(n,2));
+      n_bus = g.sys.bus_int(g.mac.mac_con(n,2));
       
       V_E = zeros(g.exc.n_st3,1);
       iterm = V_E;
@@ -306,10 +302,10 @@ if g.exc.n_st3~=0
       E_Isat=V_E;
       vep=V_E;
       
-      g.mac.curd(n,k) = sin(g.mac.mac_ang(n,k)).*cur_re(n,k) - ...
-                  cos(g.mac.mac_ang(n,k)).*cur_im(n,k); % d-axis current
-      g.mac.curq(n,k) = cos(g.mac.mac_ang(n,k)).*cur_re(n,k) + ...
-                  sin(g.mac.mac_ang(n,k)).*cur_im(n,k); % q-axis current
+      g.mac.curd(n,k) = sin(g.mac.mac_ang(n,k)).*g.sys.cur_re(n,k) - ...
+                  cos(g.mac.mac_ang(n,k)).*g.sys.cur_im(n,k); % d-axis current
+      g.mac.curq(n,k) = cos(g.mac.mac_ang(n,k)).*g.sys.cur_re(n,k) + ...
+                  sin(g.mac.mac_ang(n,k)).*g.sys.cur_im(n,k); % q-axis current
       g.mac.curdg(n,k) = g.mac.curd(n,k).*g.mac.mac_pot(n,1);
       g.mac.curqg(n,k) = g.mac.curq(n,k).*g.mac.mac_pot(n,1);
       E_Isat(n) = g.mac.mac_pot(n,3).*g.mac.eqprime(n,k).^2 ...
@@ -358,8 +354,8 @@ if g.exc.n_st3~=0
       g.mac.pelect(n,k) = g.mac.eq(n,k).*g.mac.curq(n,k) + g.mac.ed(n,k).*g.mac.curd(n,k);
       g.mac.qelect(n,k) = g.mac.eq(n,k).*g.mac.curd(n,k) - g.mac.ed(n,k).*g.mac.curq(n,k);
       iterm =(g.mac.pelect(n,k)-jay*g.mac.qelect(n,k))./...
-             (g.mac.eterm(n,k).*exp(-jay*g.mac.theta(n_bus,k))).*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,k).*exp(jay*g.mac.theta(n_bus,k)).*(g.exc.exc_pot(g.exc.st3_idx,1)...
+             (g.mac.eterm(n,k).*exp(-jay*g.sys.theta(n_bus,k))).*g.mac.mac_pot(n,1);
+      vep = g.mac.eterm(n,k).*exp(jay*g.sys.theta(n_bus,k)).*(g.exc.exc_pot(g.exc.st3_idx,1)...
           + jay*g.exc.exc_pot(g.exc.st3_idx,2));
       ve = vep+jay*(g.exc.exc_con(g.exc.st3_idx,15)...
            + (g.exc.exc_pot(g.exc.st3_idx,1)+jay*g.exc.exc_pot(g.exc.st3_idx,2))...

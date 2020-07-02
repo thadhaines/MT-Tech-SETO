@@ -80,10 +80,13 @@ warning('*** Declare Global Variables')
     %% global structured array
     global g
 
-    %% system variables - 13
-    global  basmva basrad syn_ref mach_ref sys_freq
-    global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
-    global  lmon_con
+% %     %% system variables - 13
+% %     global  basmva basrad syn_ref mach_ref sys_freq
+% %     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
+% %     % lmon_con not used in non-linear sim...
+% %     global  lmon_con
+    
+    
     % todo: add theta to system variables (currently in g.mac.)
 
 %     %% synchronous machine variables  - 47
@@ -112,6 +115,25 @@ warning('*** Declare Global Variables')
 %     global dc_TF dc_TF_idx dc_TR dc_TR_idx
 %     global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
 %     global st3_TR st3_TR_idx st3_noTR_idx;
+    %% load modulation variables - 7
+    %global lmod_con % defined by user
+    %global n_lmod lmod_idx % initialized and created in lm_indx
+    %global lmod_sig lmod_st dlmod_st % initialized in s_simu
+    %global lmod_pot % created/initialized in lmod.m
+    % g.lmod.lmod_pot(:,1) = max, g.lmod.lmod_pot(:,2) = min
+    %global lmod_data % added by Trudnowski - doesn't appear to be used? maybe in new models?
+
+    % reactive load modulation variables - 7
+    %global  rlmod_con n_rlmod rlmod_idx
+    %global  rlmod_pot rlmod_st drlmod_st
+    %global  rlmod_sig
+    
+%     %% power injection variables - 10 - g.pwr.
+%     global  pwrmod_con n_pwrmod pwrmod_idx
+%     global  pwrmod_p_st dpwrmod_p_st
+%     global  pwrmod_q_st dpwrmod_q_st
+%     global  pwrmod_p_sig pwrmod_q_sig
+%     global  pwrmod_data
 
     %% non-conforming load variables - 3
     global  load_con load_pot nload
@@ -148,25 +170,7 @@ warning('*** Declare Global Variables')
     global  tcsc_sig tcsc_dsig
     global  n_tcscud dtcscud_idx  %user defined damping controls
 
-    %% load modulation variables - 7
-    %global lmod_con % defined by user
-    %global n_lmod lmod_idx % initialized and created in lm_indx
-    %global lmod_sig lmod_st dlmod_st % initialized in s_simu
-    %global lmod_pot % created/initialized in lmod.m
-    % g.lmod.lmod_pot(:,1) = max, g.lmod.lmod_pot(:,2) = min
-    %global lmod_data % added by Trudnowski - doesn't appear to be used? maybe in new models?
 
-    % reactive load modulation variables - 7
-    %global  rlmod_con n_rlmod rlmod_idx
-    %global  rlmod_pot rlmod_st drlmod_st
-    %global  rlmod_sig
-    
-%     %% power injection variables - 10 - g.pwr.
-%     global  pwrmod_con n_pwrmod pwrmod_idx
-%     global  pwrmod_p_st dpwrmod_p_st
-%     global  pwrmod_q_st dpwrmod_q_st
-%     global  pwrmod_p_sig pwrmod_q_sig
-%     global  pwrmod_data
     
     %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
@@ -258,26 +262,28 @@ end
 % assumes fBase defined in DataFile or earlier, sys_freq is defined as global in pst_var.
 if ~exist('Fbase','var')
     fprintf('*** Fbase Not defined - assuming 60 Hz base.\n')
-    sys_freq = 60;
+    g.sys.sys_freq = 60;
+    g.sys.Fbase = 60;
 elseif isnumeric(Fbase)
     fprintf('*** Fbase found - Frequency base is set to %3.3f Hz\n', Fbase) 
-    sys_freq = Fbase;
+    g.sys.sys_freq = Fbase;
+    g.sys.Fbase = Fbase;
 end
 
 % Handle variable input base MVA
 % assumes Sbase defined in DataFile or earlier, basmva is defined as global in pst_var.
 if ~exist('Sbase','var')
     fprintf('*** Sbase Not defined - assuming 100 MVA base.\n')
-    basmva = 100;
+    g.sys.basmva = 100;
 elseif isnumeric(Sbase)
     fprintf('*** Sbase found - Power base is set to %3.3f MVA\n', Sbase) 
-    basmva = Sbase;
+    g.sys.basmva = Sbase;
 end
 
 
 %% other init operations
-basrad = 2*pi*sys_freq; % default system frequency is 60 Hz
-syn_ref = 0 ;     % synchronous reference frame
+g.sys.basrad = 2*pi*g.sys.sys_freq; % default system frequency is 60 Hz
+g.sys.syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = []; % ignore infinite buses in transient simulation % should be global? -thad 06/15/20
 
 
@@ -507,16 +513,18 @@ end
 %% End of DC specific stuff? - continuation of zero intialization - 06/01/20 -thad
 
 v_p = z1;
-mac_ref = z1;  
-sys_ref = z1;
-bus_v = zeros(n_bus+1,k);
+mac_ref = z1;  % unsure of this use
+sys_ref = z1;   % unsure of this use - thad 07/02/20
 
-cur_re = z; 
-cur_im = z; 
-psi_re = z; 
-psi_im = z;
+g.sys.bus_v = zeros(n_bus+1,k);
 
-g.mac.theta = zeros(n_bus+1,k);
+g.sys.cur_re = z; 
+g.sys.cur_im = z; 
+g.sys.psi_re = z; 
+g.sys.psi_im = z;
+
+g.sys.theta = zeros(n_bus+1,k);
+
 g.mac.mac_ang = z; 
 g.mac.mac_spd = z; 
 g.mac.dmac_ang = z; 
@@ -757,7 +765,7 @@ else
     ivmmod_e_sig = zeros(1,k);
 end
 
-sys_freq = ones(1,k); % replaces variable for base frequency input... 5/21/20
+g.sys.sys_freq = ones(1,k); % replaces variable for base frequency input... 5/21/20
 
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
@@ -776,24 +784,24 @@ y_switch % calculates the reduced y matrices for the different switching conditi
 disp('initializing other models...')
 
 %% step 2: initialization
-g.mac.theta(1:n_bus,1) = bus(:,3)*pi/180;
-bus_v(1:n_bus,1) = bus(:,2).*exp(jay*g.mac.theta(1:n_bus,1));
+g.sys.theta(1:n_bus,1) = bus(:,3)*pi/180;
+g.sys.bus_v(1:n_bus,1) = bus(:,2).*exp(jay*g.sys.theta(1:n_bus,1));
 
 if n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of line current for svc damping controls
     for j=1:n_dcud
         l_num = svc_dc{j,3};
         svc_num = svc_dc{j,2};
-        from_bus = bus_int(line(l_num,1)); 
-        to_bus = bus_int(line(l_num,2));
-        svc_bn = bus_int(svc_con(svc_num,2));
+        from_bus = g.sys.bus_int(line(l_num,1)); 
+        to_bus = g.sys.bus_int(line(l_num,2));
+        svc_bn = g.sys.bus_int(svc_con(svc_num,2));
         
         if svc_bn~= from_bus&& svc_bn  ~= to_bus
             error('the svc is not at the end of the specified line');
         end
         
-        V1 = bus_v(from_bus,1);
-        V2 = bus_v(to_bus,1);
+        V1 = g.sys.bus_v(from_bus,1);
+        V2 = g.sys.bus_v(to_bus,1);
         R = line(l_num,3);
         X = line(l_num,4);
         B = line(l_num,5);
@@ -816,7 +824,7 @@ if n_tcscud ~=0 % Seems like this should be put in a seperate script - thad 06/0
     for j=1:n_tcscud
         b_num = tcsc_dc{j,3};
         tcsc_num = tcsc_dc{j,2};
-        td_sig(j,1) =abs (bus_v(bus_int(b_num),1));
+        td_sig(j,1) =abs (g.sys.bus_v(g.sys.bus_int(b_num),1));
     end
 end
 
@@ -826,18 +834,18 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
     Pi = bus(inv_ac_bus,6);
     Qr = bus(rec_ac_bus,7);
     Qi = bus(inv_ac_bus,7);
-    VLT= bus_v(ac_bus,1);
+    VLT= g.sys.bus_v(ac_bus,1);
     i_acr = (Pr-jay*Qr)./conj(VLT(r_idx));
     i_aci = (Pi - jay*Qi)./conj(VLT(i_idx));
     IHT(r_idx,1)=i_acr;
     IHT(i_idx,1)=i_aci;
     VHT(r_idx,1) = (VLT(r_idx) + jay*dcc_pot(:,2).*i_acr);
     VHT(i_idx,1) = (VLT(i_idx) + jay*dcc_pot(:,4).*i_aci);
-    bus_v(ac_bus,1) = VHT;
-    g.mac.theta(ac_bus,1) = angle(bus_v(ac_bus,1));
+    g.sys.bus_v(ac_bus,1) = VHT;
+    g.sys.theta(ac_bus,1) = angle(g.sys.bus_v(ac_bus,1));
     % modify the bus matrix to the HT buses
-    bus(ac_bus,2) = abs(bus_v(ac_bus,1));
-    bus(ac_bus,3) = g.mac.theta(ac_bus,1)*180/pi;
+    bus(ac_bus,2) = abs(g.sys.bus_v(ac_bus,1));
+    bus(ac_bus,3) = g.sys.theta(ac_bus,1)*180/pi;
     SHT = VHT.*conj(IHT);
     bus(ac_bus,6) = real(SHT);
     bus(ac_bus,7) = imag(SHT);
@@ -848,7 +856,7 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
             b_num1 = dcr_dc{j,3};
             b_num2 = dcr_dc{j,4};
             conv_num = dcr_dc{j,2};
-            angdcr(j,:) = g.mac.theta(bus_int(b_num1),1)-g.mac.theta(bus_int(b_num2),1);
+            angdcr(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
             dcrd_sig(j,:)=angdcr(j,:);
         end
     end
@@ -858,7 +866,7 @@ if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/2
             b_num1 = dci_dc{j,3};
             b_num2 = dci_dc{j,4};
             conv_num = dci_dc{j,2};
-            angdci(j,:) = g.mac.theta(bus_int(b_num1),1)-g.mac.theta(bus_int(b_num2),1);
+            angdci(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
             dcid_sig(j,:) = angdci(j,:);
         end
     end
@@ -867,7 +875,7 @@ end
 %% Flag = 0 == Initialization
 warning('*** Dynamic model initialization via functions/scripts:')
 flag = 0;
-bus_int = bus_intprf;% pre-fault system
+g.sys.bus_int = bus_intprf;% pre-fault system
 
 disp('generators')
 mac_sub(0,1,bus,flag); % first 
@@ -1043,7 +1051,7 @@ if ~isempty(dcsp_con)
     disp('dc converter specification')
     
     bus_sim = bus;
-    bus_int = bus_intprf;
+    g.sys.bus_int = bus_intprf;
     Y1 = Y_gprf;
     Y2 = Y_gncprf;
     Y3 = Y_ncgprf;
@@ -1098,7 +1106,7 @@ while (kt<=ktmax)
         end
         
         % mach_ref(k) = mac_ang(syn_ref,k);
-        mach_ref(k) = 0;
+        g.sys.mach_ref(k) = 0;
         g.mac.pmech(:,k+1) = g.mac.pmech(:,k);
         tmig(:,k+1) = tmig(:,k);
         
@@ -1129,7 +1137,7 @@ while (kt<=ktmax)
             %% fault cleared
             line_sim = line_pf2;
             bus_sim = bus_pf2;
-            bus_int = bus_intpf2;
+            g.sys.bus_int = bus_intpf2;
             Y1 = Y_gpf2;
             Y2 = Y_gncpf2;
             Y3 = Y_ncgpf2;
@@ -1146,7 +1154,7 @@ while (kt<=ktmax)
             %% near bus cleared
             line_sim = line_pf1;
             bus_sim = bus_pf1;
-            bus_int = bus_intpf1;
+            g.sys.bus_int = bus_intpf1;
             Y1 = Y_gpf1;
             Y2 = Y_gncpf1;
             Y3 = Y_ncgpf1;
@@ -1161,7 +1169,7 @@ while (kt<=ktmax)
             %% fault applied
             line_sim = line_f;
             bus_sim = bus_f;
-            bus_int = bus_intf;
+            g.sys.bus_int = bus_intf;
             Y1 = Y_gf;
             Y2 = Y_gncf;
             Y3 = Y_ncgf;
@@ -1176,7 +1184,7 @@ while (kt<=ktmax)
             %% pre fault
             line_sim = line;
             bus_sim = bus;
-            bus_int = bus_intprf;
+            g.sys.bus_int = bus_intprf;
             Y1 = Y_gprf;
             Y2 = Y_gncprf;
             Y3 = Y_ncgprf;
@@ -1211,7 +1219,7 @@ while (kt<=ktmax)
                 b_num1 = dcr_dc{jj,3};
                 b_num2 = dcr_dc{jj,4};
                 conv_num = dcr_dc{jj,2};
-                angdcr(jj,k) = (g.mac.theta(bus_int(b_num1),k)-g.mac.theta(bus_int(b_num2),k));
+                angdcr(jj,k) = (g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k));
                 dcrd_sig(jj,k)=angdcr(jj,k);
                 st_state = tot_states+1; 
                 dcr_states = dcr_dc{jj,7}; 
@@ -1229,7 +1237,7 @@ while (kt<=ktmax)
                 b_num1 = dci_dc{jj,3};
                 b_num2 = dci_dc{jj,4};
                 conv_num = dci_dc{jj,2};
-                angdci(jj,k)=g.mac.theta(bus_int(b_num1),k)-g.mac.theta(bus_int(b_num2),k);
+                angdci(jj,k)=g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k);
                 dcid_sig(jj,k)=(angdci(jj,k)-angdci(jj,k-1))/(t(k)-t(k-1));
                 st_state = tot_states+1; 
                 dci_states = dci_dc{jj,7}; 
@@ -1263,11 +1271,11 @@ while (kt<=ktmax)
             for jj=1:n_dcud
                 l_num = svc_dc{jj,3};
                 svc_num = svc_dc{jj,2};
-                from_bus = bus_int(line_sim(l_num,1)); 
-                to_bus = bus_int(line_sim(l_num,2));
-                svc_bn = bus_int(svc_con(svc_num,2));
-                V1 = bus_v(from_bus,k);
-                V2 = bus_v(to_bus,k);
+                from_bus = g.sys.bus_int(line_sim(l_num,1)); 
+                to_bus = g.sys.bus_int(line_sim(l_num,2));
+                svc_bn = g.sys.bus_int(svc_con(svc_num,2));
+                V1 = g.sys.bus_v(from_bus,k);
+                V2 = g.sys.bus_v(to_bus,k);
                 R = line_sim(l_num,3);
                 X = line_sim(l_num,4);
                 B = line_sim(l_num,5);
@@ -1289,13 +1297,14 @@ while (kt<=ktmax)
             % Thyristor Controlled Series compensator
             for jj=1:n_tcscud
                 b_num = tcsc_dc{jj,3};tcsc_num = tcsc_dc{jj,2};
-                td_sig(jj,k)=abs(bus_v(bus_int(b_num),k));
+                td_sig(jj,k)=abs(g.sys.bus_v(g.sys.bus_int(b_num),k));
             end
         end
         
         %% step 3b: compute dynamics and integrate
         flag = 2;
-        sys_freq(k) = 1.0; % why?... 5/21/20
+        %g.sys.sys_freq(k) = 1.0; % why?... 5/21/20 a
+        % initialized as all ones on line 764
         
         mpm_sig(k);
         
@@ -1320,7 +1329,7 @@ while (kt<=ktmax)
         tg_hydro(0,k,bus_sim,flag);
         
         if n_svc~=0
-            v_svc = abs(bus_v(bus_int(svc_con(:,2)),k));
+            v_svc = abs(g.sys.bus_v(g.sys.bus_int(svc_con(:,2)),k));
             if n_dcud~=0
                 tot_states=0;
                 for jj = 1:n_dcud
@@ -1530,7 +1539,7 @@ while (kt<=ktmax)
         % begining of solutions as j 
         flag = 1;
         % mach_ref(j) = mac_ang(syn_ref,j);
-        mach_ref(j) = 0;
+        g.sys.mach_ref(j) = 0;
         % perform network interface calculations again with predicted states
         mpm_sig(j);
         mac_ind(0,j,bus_sim,flag);
@@ -1548,7 +1557,7 @@ while (kt<=ktmax)
         if j >= sum(k_inc(1:3))+1
             % fault cleared
             bus_sim = bus_pf2;
-            bus_int = bus_intpf2;
+            g.sys.bus_int = bus_intpf2;
             Y1 = Y_gpf2;
             Y2 = Y_gncpf2;
             Y3 = Y_ncgpf2;
@@ -1560,7 +1569,7 @@ while (kt<=ktmax)
         elseif j >=sum(k_inc(1:2))+1
             % near bus cleared
             bus_sim = bus_pf1;
-            bus_int = bus_intpf1;
+            g.sys.bus_int = bus_intpf1;
             Y1 = Y_gpf1;
             Y2 = Y_gncpf1;
             Y3 = Y_ncgpf1;
@@ -1572,7 +1581,7 @@ while (kt<=ktmax)
         elseif j>=k_inc(1)+1
             % fault applied
             bus_sim = bus_f;
-            bus_int = bus_intf;
+            g.sys.bus_int = bus_intf;
             Y1 = Y_gf;
             Y2 = Y_gncf;
             Y3 = Y_ncgf;
@@ -1584,7 +1593,7 @@ while (kt<=ktmax)
         elseif k<k_inc(1)+1  % JHC - DKF thinks k should be j
             % pre fault
             bus_sim = bus;
-            bus_int = bus_intprf;
+            g.sys.bus_int = bus_intprf;
             Y1 = Y_gprf;
             Y2 = Y_gncprf;
             Y3 = Y_ncgprf;
@@ -1621,7 +1630,7 @@ while (kt<=ktmax)
                 b_num1 = dcr_dc{jj,3};
                 b_num2 = dcr_dc{jj,4};
                 conv_num = dcr_dc{jj,2};
-                angdcr(jj,j) = g.mac.theta(bus_int(b_num1),j)-g.mac.theta(bus_int(b_num2),j);
+                angdcr(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
                 dcrd_sig(jj,j)=angdcr(jj,j);
                 st_state = tot_states+1; 
                 dcr_states = dcr_dc{jj,7}; 
@@ -1638,7 +1647,7 @@ while (kt<=ktmax)
                 b_num1 = dci_dc{jj,3};
                 b_num2 = dci_dc{jj,4};
                 conv_num = dci_dc{jj,2};
-                angdci(jj,j) = g.mac.theta(bus_int(b_num1),j)-g.mac.theta(bus_int(b_num2),j);
+                angdci(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
                 dcid_sig(jj,j) = (angdci(jj,j)-angdci(jj,k))/(t(j)-t(k));
                 st_state = tot_states+1; 
                 dci_states = dci_dc{jj,7}; 
@@ -1666,11 +1675,11 @@ while (kt<=ktmax)
             % set the new line currents
             for jj=1:n_dcud
                 l_num = svc_dc{jj,3};svc_num = svc_dc{jj,2};
-                from_bus = bus_int(line_sim(l_num,1)); 
-                to_bus = bus_int(line_sim(l_num,2));
-                svc_bn = bus_int(svc_con(svc_num,2));
-                V1 = bus_v(from_bus,j);
-                V2 = bus_v(to_bus,j);
+                from_bus = g.sys.bus_int(line_sim(l_num,1)); 
+                to_bus = g.sys.bus_int(line_sim(l_num,2));
+                svc_bn = g.sys.bus_int(svc_con(svc_num,2));
+                V1 = g.sys.bus_v(from_bus,j);
+                V2 = g.sys.bus_v(to_bus,j);
                 R = line_sim(l_num,3);
                 X = line_sim(l_num,4);
                 B = line_sim(l_num,5);
@@ -1689,7 +1698,7 @@ while (kt<=ktmax)
             for jj=1:n_tcscud
                 b_num = tcsc_dc{jj,3};
                 tcsc_num = tcsc_dc{jj,2};
-                td_sig(jj,j) = abs(bus_v(bus_int(b_num),j));
+                td_sig(jj,j) = abs(g.sys.bus_v(g.sys.bus_int(b_num),j));
             end
         end
         
@@ -1726,7 +1735,7 @@ while (kt<=ktmax)
                         svc_sud(jj,j,flag,svc_dc{jj,1},d_sig(jj,j),ysvcmx,ysvcmn,xsvc_dc(st_state:tot_states,j));
                 end
             end
-            v_svc = abs(bus_v(bus_int(svc_con(:,2)),j));
+            v_svc = abs(g.sys.bus_v(g.sys.bus_int(svc_con(:,2)),j));
             bus_sim = svc(0,j,bus_sim,flag,v_svc);
         end
         
@@ -1925,8 +1934,8 @@ while (kt<=ktmax)
 end% end simulation loop
 
 % calculation of line currents post sim
-V1 = bus_v(bus_int(line(:,1)),:);
-V2 = bus_v(bus_int(line(:,2)),:);
+V1 = g.sys.bus_v(g.sys.bus_int(line(:,1)),:);
+V2 = g.sys.bus_v(g.sys.bus_int(line(:,2)),:);
 R = line(:,3); 
 X = line(:,4); 
 B = line(:,5);

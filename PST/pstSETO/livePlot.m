@@ -8,7 +8,7 @@ if (mod(k,25)==0)
     end
     
     % format bus voltage for plot
-    v_p(1:k)=abs(bus_v(bus_idx(1),1:k));
+    v_p(1:k)=abs(g.sys.bus_v(bus_idx(1),1:k));
     % plot the voltage of the faulted bus
     subplot(nPlt,1,1)
     plot(t(1:k),v_p(1:k),'r')

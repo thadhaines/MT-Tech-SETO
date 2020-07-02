@@ -44,7 +44,7 @@ clear varNames vName zeroTest
 modSigNL = g.exc.exc_sig;
 
 %% Save cleaned output data
-save('excT3NL.mat'); %Save all non-linear simulation outputs
+save('excT2NL.mat'); %Save all non-linear simulation outputs
 
 %% PST linear system creation
 clear all; close all;
@@ -71,8 +71,9 @@ end
 linSpd = y(:,5:6)'+1.0; % rotate into col vectors
 
 % collect pm.
-linPm = y(:,7:8)'+g.mac.pmech(:,1);% rotate to vector
-
+linPm = y(:,7:8)';% rotate to vector
+linPm(1,:)= linPm(1,:)+ g.mac.pmech(1,1);
+linPm(2,:)= linPm(2,:)+ g.mac.pmech(2,1);
 save excT2LIN.mat tL linV linSpd linPm modSig
 clear all
 

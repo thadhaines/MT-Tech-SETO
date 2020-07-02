@@ -31,11 +31,6 @@ function mac_sub(i,k,bus,flag)
 %   (c) Copyright 1991-1999 Joe H. Chow/Cherry Tree Scientific Software - All Rights Reserved
 %   06/19/20    10:16   Thad Haines     Revised format of globals and internal function documentation
 
-% system variables
-global  basmva basrad  mach_ref sys_freq
-global  bus_int
-global  psi_re psi_im cur_re cur_im
-
 global g
 
 jay = sqrt(-1);
@@ -59,8 +54,8 @@ if g.mac.n_sub~=0
                     g.mac.mac_con(i,15) = 999.0;
                 end %default subtransient time constant
 
-                busnum = bus_int(g.mac.mac_con(i,2)); % bus number
-                g.mac.mac_pot(i,1)=basmva/g.mac.mac_con(i,3); % scaled MVA base
+                busnum = g.sys.bus_int(g.mac.mac_con(i,2)); % bus number
+                g.mac.mac_pot(i,1)=g.sys.basmva/g.mac.mac_con(i,3); % scaled MVA base
                 g.mac.mac_pot(i,2)=1.0; % base kv
                 g.mac.mac_pot(i,8)=g.mac.mac_con(i,7)-g.mac.mac_con(i,4);
                 g.mac.mac_pot(i,9)=(g.mac.mac_con(i,8)-g.mac.mac_con(i,4))/g.mac.mac_pot(i,8);
@@ -80,7 +75,7 @@ if g.mac.n_sub~=0
                     /g.mac.mac_pot(i,13)*g.mac.mac_pot(i,15);
                 % extract bus information
                 g.mac.eterm(i,1) = bus(busnum,2);  % terminal bus voltage
-                g.mac.theta(busnum,1) = bus(busnum,3)*pi/180;
+                g.sys.theta(busnum,1) = bus(busnum,3)*pi/180;
                 % terminal bus angle in radians
                 g.mac.pelect(i,1) = bus(busnum,4)*g.mac.mac_con(i,22); % system base
                 % electrical output power, active
@@ -91,10 +86,10 @@ if g.mac.n_sub~=0
                 %on genenearor base
                 phi = atan2(g.mac.qelect(i,1),g.mac.pelect(i,1));
                 % power factor angle
-                v = g.mac.eterm(i,1)*exp(jay*g.mac.theta(busnum,1));
+                v = g.mac.eterm(i,1)*exp(jay*g.sys.theta(busnum,1));
                 % complex voltage
                 % in system reference frame
-                curr = curr*exp(jay*(g.mac.theta(busnum,1)-phi)); % complex current
+                curr = curr*exp(jay*(g.sys.theta(busnum,1)-phi)); % complex current
                 % in system reference frame
                 ei = v + (g.mac.mac_con(i,5)+jay*g.mac.mac_con(i,11))*curr;
                 g.mac.mac_ang(i,1) = atan2(imag(ei),real(ei));
@@ -134,9 +129,9 @@ if g.mac.n_sub~=0
                 g.mac.vex(i,1) = E_Isat + g.mac.mac_pot(i,6)*(g.mac.eqprime(i,1)-...
                     g.mac.psikd(i,1))+g.mac.mac_pot(i,7)*g.mac.curdg(i,1);
                 g.mac.fldcur(i,1) = g.mac.vex(i,1);
-                psi_re(i,1) = sin(g.mac.mac_ang(i,1)).*(-g.mac.psiqpp) + ...
+                g.sys.psi_re(i,1) = sin(g.mac.mac_ang(i,1)).*(-g.mac.psiqpp) + ...
                     cos(g.mac.mac_ang(i,1)).*g.mac.psidpp; % real part of psi
-                psi_im(i,1) = -cos(g.mac.mac_ang(i,1)).*(-g.mac.psiqpp) + ...
+                g.sys.psi_im(i,1) = -cos(g.mac.mac_ang(i,1)).*(-g.mac.psiqpp) + ...
                     sin(g.mac.mac_ang(i,1)).*g.mac.psidpp; % imag part of psi
             end
         else
@@ -158,8 +153,8 @@ if g.mac.n_sub~=0
                 g.mac.mac_con(g.mac.mac_sub_idx(notpp_idx),12) =...
                     g.mac.mac_con(g.mac.mac_sub_idx(notpp_idx),13);
             end
-            busnum = bus_int(g.mac.mac_con(g.mac.mac_sub_idx,2)); % bus number
-            g.mac.mac_pot(g.mac.mac_sub_idx,1) = basmva*ones(g.mac.n_sub,1)./g.mac.mac_con(g.mac.mac_sub_idx,3);
+            busnum = g.sys.bus_int(g.mac.mac_con(g.mac.mac_sub_idx,2)); % bus number
+            g.mac.mac_pot(g.mac.mac_sub_idx,1) = g.sys.basmva*ones(g.mac.n_sub,1)./g.mac.mac_con(g.mac.mac_sub_idx,3);
             % scaled MVA base
             g.mac.mac_pot(g.mac.mac_sub_idx,2) = ones(g.mac.n_sub,1); % base kv
             g.mac.mac_pot(g.mac.mac_sub_idx,8)=g.mac.mac_con(g.mac.mac_sub_idx,7)-g.mac.mac_con(g.mac.mac_sub_idx,4);
@@ -182,7 +177,7 @@ if g.mac.n_sub~=0
                 ./g.mac.mac_pot(g.mac.mac_sub_idx,13).*g.mac.mac_pot(g.mac.mac_sub_idx,15);
             % extract bus information
             g.mac.eterm(g.mac.mac_sub_idx,1) = bus(busnum,2);  % terminal bus voltage
-            g.mac.theta(busnum,1) = bus(busnum,3)*pi/180;
+            g.sys.theta(busnum,1) = bus(busnum,3)*pi/180;
             % terminal bus angle in radians
             g.mac.pelect(g.mac.mac_sub_idx,1) = bus(busnum,4).*g.mac.mac_con(g.mac.mac_sub_idx,22);
             % electrical output power, active
@@ -193,10 +188,10 @@ if g.mac.n_sub~=0
             % current magnitude on generator base
             phi = atan2(g.mac.qelect(g.mac.mac_sub_idx,1),g.mac.pelect(g.mac.mac_sub_idx,1));
             % power factor angle
-            v = g.mac.eterm(g.mac.mac_sub_idx,1).*exp(jay*g.mac.theta(busnum,1));
+            v = g.mac.eterm(g.mac.mac_sub_idx,1).*exp(jay*g.sys.theta(busnum,1));
             % voltage in real and imaginary parts
             % in system reference frame
-            curr = curr.*exp(jay*(g.mac.theta(busnum,1)-phi));
+            curr = curr.*exp(jay*(g.sys.theta(busnum,1)-phi));
             % complex current in system reference frame
             ei = v + (g.mac.mac_con(g.mac.mac_sub_idx,5)+jay*g.mac.mac_con(g.mac.mac_sub_idx,11)).*curr;
             % voltage behind sub-transient reactance in system frame
@@ -248,9 +243,9 @@ if g.mac.n_sub~=0
             g.mac.vex(g.mac.mac_sub_idx,1) = E_Isat + g.mac.mac_pot(g.mac.mac_sub_idx,6).*(g.mac.eqprime(g.mac.mac_sub_idx,1)-...
                 g.mac.psikd(g.mac.mac_sub_idx,1))+g.mac.mac_pot(g.mac.mac_sub_idx,7).*g.mac.curdg(g.mac.mac_sub_idx,1);
             g.mac.fldcur(g.mac.mac_sub_idx,1) = g.mac.vex(g.mac.mac_sub_idx,1);
-            psi_re(g.mac.mac_sub_idx,1) = sin(g.mac.mac_ang(g.mac.mac_sub_idx,1)).*(-g.mac.psiqpp) + ...
+            g.sys.psi_re(g.mac.mac_sub_idx,1) = sin(g.mac.mac_ang(g.mac.mac_sub_idx,1)).*(-g.mac.psiqpp) + ...
                 cos(g.mac.mac_ang(g.mac.mac_sub_idx,1)).*g.mac.psidpp; % real part of psi
-            psi_im(g.mac.mac_sub_idx,1) = -cos(g.mac.mac_ang(g.mac.mac_sub_idx,1)).*(-g.mac.psiqpp) + ...
+            g.sys.psi_im(g.mac.mac_sub_idx,1) = -cos(g.mac.mac_ang(g.mac.mac_sub_idx,1)).*(-g.mac.psiqpp) + ...
                 sin(g.mac.mac_ang(g.mac.mac_sub_idx,1)).*g.mac.psidpp; % imag part of psi
             % psi is in system base and is the voltage behind xpp
         end
@@ -261,29 +256,29 @@ if g.mac.n_sub~=0
             % check for subsynchronous machine
             sub = find(g.mac.mac_sub_idx == i,1);
             if ~isempty(sub)
-                g.mac.mac_ang(i,k) = g.mac.mac_ang(i,k) - mach_ref(k);
+                g.mac.mac_ang(i,k) = g.mac.mac_ang(i,k) - g.sys.mach_ref(k);
                 % wrt machine referencek
                 g.mac.psidpp = g.mac.mac_pot(i,9)*g.mac.eqprime(i,k) + ...
                     g.mac.mac_pot(i,10)*g.mac.psikd(i,k);
                 g.mac.psiqpp = g.mac.mac_pot(i,14)*g.mac.edprime(i,k) + ...
                     g.mac.mac_pot(i,15)*g.mac.psikq(i,k);
-                psi_re(i,k) = sin(g.mac.mac_ang(i,k))*(-g.mac.psiqpp) + ...
+                g.sys.psi_re(i,k) = sin(g.mac.mac_ang(i,k))*(-g.mac.psiqpp) + ...
                     cos(g.mac.mac_ang(i,k))*g.mac.psidpp; % real part of psi
-                psi_im(i,k) = -cos(g.mac.mac_ang(i,k))*(-g.mac.psiqpp) + ...
+                g.sys.psi_im(i,k) = -cos(g.mac.mac_ang(i,k))*(-g.mac.psiqpp) + ...
                     sin(g.mac.mac_ang(i,k))*g.mac.psidpp; % imag part of psi
             end
         else
             % vectorized computation
 
-            g.mac.mac_ang(g.mac.mac_sub_idx,k) = g.mac.mac_ang(g.mac.mac_sub_idx,k)-mach_ref(k)*ones(g.mac.n_sub,1);
+            g.mac.mac_ang(g.mac.mac_sub_idx,k) = g.mac.mac_ang(g.mac.mac_sub_idx,k)-g.sys.mach_ref(k)*ones(g.mac.n_sub,1);
             % wrt machine reference
             g.mac.psidpp = g.mac.mac_pot(g.mac.mac_sub_idx,9).*g.mac.eqprime(g.mac.mac_sub_idx,k) + ...
                 g.mac.mac_pot(g.mac.mac_sub_idx,10).*g.mac.psikd(g.mac.mac_sub_idx,k);
             g.mac.psiqpp = g.mac.mac_pot(g.mac.mac_sub_idx,14).*g.mac.edprime(g.mac.mac_sub_idx,k) + ...
                 g.mac.mac_pot(g.mac.mac_sub_idx,15).*g.mac.psikq(g.mac.mac_sub_idx,k);
-            psi_re(g.mac.mac_sub_idx,k) = sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*(-g.mac.psiqpp) + ...
+            g.sys.psi_re(g.mac.mac_sub_idx,k) = sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*(-g.mac.psiqpp) + ...
                 cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.mac.psidpp; % real part of psi
-            psi_im(g.mac.mac_sub_idx,k) = -cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*(-g.mac.psiqpp) + ...
+            g.sys.psi_im(g.mac.mac_sub_idx,k) = -cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*(-g.mac.psiqpp) + ...
                 sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.mac.psidpp; % imag part of psi
         end
         % end of interface
@@ -298,10 +293,10 @@ if g.mac.n_sub~=0
                     g.mac.mac_pot(i,15)*g.mac.psikq(i,k);
                 g.mac.psidpp = g.mac.mac_pot(i,9)*g.mac.eqprime(i,k) + ...
                     g.mac.mac_pot(i,10)*g.mac.psikd(i,k);
-                g.mac.curd(i,k) = sin(g.mac.mac_ang(i,k))*cur_re(i,k) - ...
-                    cos(g.mac.mac_ang(i,k))*cur_im(i,k); % d-axis current
-                g.mac.curq(i,k) = cos(g.mac.mac_ang(i,k))*cur_re(i,k) + ...
-                    sin(g.mac.mac_ang(i,k))*cur_im(i,k); % q-axis current
+                g.mac.curd(i,k) = sin(g.mac.mac_ang(i,k))*g.sys.cur_re(i,k) - ...
+                    cos(g.mac.mac_ang(i,k))*g.sys.cur_im(i,k); % d-axis current
+                g.mac.curq(i,k) = cos(g.mac.mac_ang(i,k))*g.sys.cur_re(i,k) + ...
+                    sin(g.mac.mac_ang(i,k))*g.sys.cur_im(i,k); % q-axis current
                 g.mac.curdg(i,k) = g.mac.curd(i,k)*g.mac.mac_pot(i,1);
                 g.mac.curqg(i,k) = g.mac.curq(i,k)*g.mac.mac_pot(i,1);
                 mcurmag = abs(g.mac.curdg(i,k) + jay*g.mac.curqg(i,k));
@@ -328,11 +323,11 @@ if g.mac.n_sub~=0
                 g.mac.eterm(i,k) = sqrt(g.mac.ed(i,k)^2+g.mac.eq(i,k)^2);
                 g.mac.pelect(i,k) = g.mac.eq(i,k)*g.mac.curq(i,k) + g.mac.ed(i,k)*g.mac.curd(i,k);
                 g.mac.qelect(i,k) = g.mac.eq(i,k)*g.mac.curd(i,k) - g.mac.ed(i,k)*g.mac.curq(i,k);
-                g.mac.dmac_ang(i,k) = basrad*(g.mac.mac_spd(i,k)-1.);
+                g.mac.dmac_ang(i,k) = g.sys.basrad*(g.mac.mac_spd(i,k)-1.);
                 Te = g.mac.pelect(i,k)*g.mac.mac_pot(i,1) + g.mac.mac_con(i,5)*mcurmag*mcurmag;
                 g.mac.dmac_spd(i,k) = (g.mac.pmech(i,k)+g.mac.pm_sig(i,k)-Te...
                     -g.mac.mac_con(i,17)*(g.mac.mac_spd(i,k)-1)...
-                    -g.mac.mac_con(i,18)*(g.mac.mac_spd(i,k)-sys_freq(k)))...
+                    -g.mac.mac_con(i,18)*(g.mac.mac_spd(i,k)-g.sys.sys_freq(k)))... % sys freq always one...
                     /(2*g.mac.mac_con(i,16));
             end
         else
@@ -342,10 +337,10 @@ if g.mac.n_sub~=0
                 g.mac.mac_pot(g.mac.mac_sub_idx,15).*g.mac.psikq(g.mac.mac_sub_idx,k);
             g.mac.psidpp = g.mac.mac_pot(g.mac.mac_sub_idx,9).*g.mac.eqprime(g.mac.mac_sub_idx,k) + ...
                 g.mac.mac_pot(g.mac.mac_sub_idx,10).*g.mac.psikd(g.mac.mac_sub_idx,k);
-            g.mac.curd(g.mac.mac_sub_idx,k) = sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*cur_re(g.mac.mac_sub_idx,k) - ...
-                cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*cur_im(g.mac.mac_sub_idx,k); % d-axis current
-            g.mac.curq(g.mac.mac_sub_idx,k) = cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*cur_re(g.mac.mac_sub_idx,k) + ...
-                sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*cur_im(g.mac.mac_sub_idx,k); % q-axis current
+            g.mac.curd(g.mac.mac_sub_idx,k) = sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.sys.cur_re(g.mac.mac_sub_idx,k) - ...
+                cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.sys.cur_im(g.mac.mac_sub_idx,k); % d-axis current
+            g.mac.curq(g.mac.mac_sub_idx,k) = cos(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.sys.cur_re(g.mac.mac_sub_idx,k) + ...
+                sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.sys.cur_im(g.mac.mac_sub_idx,k); % q-axis current
             g.mac.curdg(g.mac.mac_sub_idx,k) = g.mac.curd(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1);
             g.mac.curqg(g.mac.mac_sub_idx,k) = g.mac.curq(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1);
             mcurmag = abs(g.mac.curdg(g.mac.mac_sub_idx,k)+jay*g.mac.curqg(g.mac.mac_sub_idx,k));
@@ -373,11 +368,11 @@ if g.mac.n_sub~=0
             g.mac.eterm(g.mac.mac_sub_idx,k) = sqrt(g.mac.ed(g.mac.mac_sub_idx,k).^2+g.mac.eq(g.mac.mac_sub_idx,k).^2);
             g.mac.pelect(g.mac.mac_sub_idx,k) = g.mac.eq(g.mac.mac_sub_idx,k).*g.mac.curq(g.mac.mac_sub_idx,k) + g.mac.ed(g.mac.mac_sub_idx,k).*g.mac.curd(g.mac.mac_sub_idx,k);
             g.mac.qelect(g.mac.mac_sub_idx,k) = g.mac.eq(g.mac.mac_sub_idx,k).*g.mac.curd(g.mac.mac_sub_idx,k) - g.mac.ed(g.mac.mac_sub_idx,k).*g.mac.curq(g.mac.mac_sub_idx,k);
-            g.mac.dmac_ang(g.mac.mac_sub_idx,k) = basrad*(g.mac.mac_spd(g.mac.mac_sub_idx,k)-ones(g.mac.n_sub,1));
+            g.mac.dmac_ang(g.mac.mac_sub_idx,k) = g.sys.basrad*(g.mac.mac_spd(g.mac.mac_sub_idx,k)-ones(g.mac.n_sub,1));
             Te = g.mac.pelect(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1) + g.mac.mac_con(g.mac.mac_sub_idx,5).*mcurmag.*mcurmag;
             g.mac.dmac_spd(g.mac.mac_sub_idx,k) = (g.mac.pmech(g.mac.mac_sub_idx,k)+ g.mac.pm_sig(g.mac.mac_sub_idx,k)-Te...
                 -g.mac.mac_con(g.mac.mac_sub_idx,17).*(g.mac.mac_spd(g.mac.mac_sub_idx,k)-ones(g.mac.n_sub,1))...
-                -g.mac.mac_con(g.mac.mac_sub_idx,18).*(g.mac.mac_spd(g.mac.mac_sub_idx,k)-sys_freq(k)...
+                -g.mac.mac_con(g.mac.mac_sub_idx,18).*(g.mac.mac_spd(g.mac.mac_sub_idx,k)-g.sys.sys_freq(k)...
                 *ones(g.mac.n_sub,1)))./(2*g.mac.mac_con(g.mac.mac_sub_idx,16));
         end
         %end rate calculation

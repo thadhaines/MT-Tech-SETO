@@ -30,23 +30,21 @@ function lmod(i,k,flag)
 %   05/28/20    09:45   Thad Haines     Revised format of globals and internal function documentation
 
 % system variables
-global  basmva
-
 global g
 
 if ~isempty(g.lmod.lmod_con)
     if flag == 0 % initialization
         if i~=0
             % max modulation on system base
-            g.lmod.lmod_pot(i,1) = g.lmod.lmod_con(i,4)*g.lmod.lmod_con(i,3)/basmva;
+            g.lmod.lmod_pot(i,1) = g.lmod.lmod_con(i,4)*g.lmod.lmod_con(i,3)/g.sys.basmva;
             % min modulation on system base
-            g.lmod.lmod_pot(i,2) = g.lmod.lmod_con(i,5)*g.lmod.lmod_con(i,3)/basmva;
+            g.lmod.lmod_pot(i,2) = g.lmod.lmod_con(i,5)*g.lmod.lmod_con(i,3)/g.sys.basmva;
             g.lmod.lmod_st(i,1) = 0;
         else % vectorized calculation
             % max modulation on system base
-            g.lmod.lmod_pot(:,1) = g.lmod.lmod_con(:,4).*g.lmod.lmod_con(:,3)/basmva;
+            g.lmod.lmod_pot(:,1) = g.lmod.lmod_con(:,4).*g.lmod.lmod_con(:,3)/g.sys.basmva;
             % min modulation on system base
-            g.lmod.lmod_pot(:,2) = g.lmod.lmod_con(:,5).*g.lmod.lmod_con(:,3)/basmva;
+            g.lmod.lmod_pot(:,2) = g.lmod.lmod_con(:,5).*g.lmod.lmod_con(:,3)/g.sys.basmva;
             g.lmod.lmod_st(:,1) = zeros(g.lmod.n_lmod,1);
         end
     end

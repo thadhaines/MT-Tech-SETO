@@ -12,9 +12,11 @@
 % errors in line to line, line to ground and line to line to ground corrected
 
 % create pre-fault admittance matrix
-if ~isempty(load_con);nload = length(load_con(:,1));end
+if ~isempty(load_con)
+    nload = length(load_con(:,1));
+end
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
-bus_intprf = bus_int;% store the internal bus numbers for the pre_fault system
+bus_intprf = g.sys.bus_int;% store the internal bus numbers for the pre_fault system
 nbus = length(bus(:,1));
 % create fault on matrices
 bus_f = bus;
@@ -82,7 +84,7 @@ end
 % form fault on reduced matrices
 [Y_gf,Y_gncf,Y_ncgf,Y_ncf,V_rgf,V_rncf,bof] = red_ybus(bus_f,line_f);   % fault-on
 % admittance matrix
-bus_intf = bus_int;
+bus_intf = g.sys.bus_int;
 %second switching point, clear fault at near end/add new line
 if f_type<4
    f_farbus = sw_con(2,3);
@@ -111,7 +113,7 @@ if f_type<4
    [Y_gpf1,Y_gncpf1,Y_ncgpf1,Y_ncpf1,V_rgpf1,V_rncpf1,bopf1]...
       = red_ybus(bus_pf1,line_pf1);  % post-fault
    % admittance matrix
-   bus_intpf1 = bus_int;
+   bus_intpf1 = g.sys.bus_int;
 elseif f_type==4|f_type==5|f_type==6;
    % fault type is 4 or 5, 6 no change in system structure
    % set post fault data to fault data (bus_pf1 = bus_f)
@@ -147,7 +149,7 @@ if f_type<4
    [Y_gpf2,Y_gncpf2,Y_ncgpf2,Y_ncpf2,V_rgpf2,V_rncpf2,bopf2]...
       = red_ybus(bus_pf2,line_pf2);  % post-fault
    % admittance matrix
-   bus_intpf2 = bus_int;
+   bus_intpf2 = g.sys.bus_int;
 else
    % load type = 4 or 5, 6 or 7
    % no change in system structure
