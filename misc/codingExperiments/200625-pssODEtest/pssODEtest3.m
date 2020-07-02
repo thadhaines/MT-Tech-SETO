@@ -5,7 +5,7 @@ close all;clear;format compact;clc
 % pkg load signal
 % solverSelection = {'ode45', 'ode23', 'ode15s'}; % OCTAVE
 %%    %
-printFigs = 0;
+printFigs = 1;
 solverSelection = {'ode45', 'ode23', 'ode113','ode15s','ode23s','ode23t','ode23tb'}; % MATLAB
 
 % 'ode15i' requires derivative at t=0... more thought required - availabe in octave aswell
@@ -61,14 +61,28 @@ for slnNum = 1:length(solverSelection)
     
     %% plotting fixed vs variable results
     figure
-    subplot(2,1,1)
+    % detail of event
+    subplot(3,1,1)
     plot(tL,yL, 'r')
     hold on
     plot(tCombined,yCombined,'--','color','black')
     nPfix = length(tL);
     nPvar = length(tCombined);
     legend( {['Fixed time step (',int2str(nPfix),' points)'];...
-        ['Variable time step (',int2str(nPvar),' points)']})
+        ['Variable time step (',int2str(nPvar),' points)']},'location','east')
+    title(['System Output  - Event- ',odeName])
+    xlim([0.95,1.25])
+    set(gca,'fontsize',13); % font size
+    
+    % full time
+    subplot(3,1,2)
+    plot(tL,yL, 'r')
+    hold on
+    plot(tCombined,yCombined,'--','color','black')
+    nPfix = length(tL);
+    nPvar = length(tCombined);
+%     legend( {['Fixed time step (',int2str(nPfix),' points)'];...
+%         ['Variable time step (',int2str(nPvar),' points)']})
     title(['System Output - ',odeName])
     set(gca,'fontsize',13); % font size
     
@@ -78,14 +92,14 @@ for slnNum = 1:length(solverSelection)
         tStep(tNdx-1) = tCombined(tNdx)-tCombined(tNdx-1);
     end
     
-    subplot(2,1,2)
+    subplot(3,1,3)
     stairs(tCombined,tStep)
     title(['Variable Time Step Size- ',odeName])
     set(gca,'fontsize',13); % font size
     
-    %temp = gcf;
-    %newPos = temp.Position + [0, 0, temp.Position(3), 0]; % double width
-    %set(gcf,'Position',newPos)
+    temp = gcf;
+    newPos = temp.Position + [0, 0, temp.Position(3), 0]; % double width
+    set(gcf,'Position',newPos)
     
     % pdf output code
     if printFigs
@@ -114,9 +128,9 @@ for slnNum = 1:length(solverSelection)
     ylim([0,ymax])
     set(gca,'fontsize',13); % font size
     
-    %temp = gcf;
-    %newPos = temp.Position + [0, 0, temp.Position(3), 0]; % double width
-    %set(gcf,'Position',newPos)
+    temp = gcf;
+    newPos = temp.Position + [0, 0, temp.Position(3), 0]; % double width
+    set(gcf,'Position',newPos)
     
     
     % pdf output code
