@@ -129,13 +129,13 @@ for k = 1:g.mac.n_mac
       end
    end
    %pss
-   if ~isempty(pss_con)
+   if ~isempty(g.pss.pss_con)
       k_pss = find(g.mac.mac_int(mac_pss)==k);
       s_T4 = 0;
       if ~isempty(k_pss)
          k_p = find(mac_pss==k);
-         if ~isempty(pss_T4_idx)
-             s_T4 =sum( pss_T4_idx == k_p);
+         if ~isempty(g.pss.pss_T4_idx)
+             s_T4 =sum( g.pss.pss_T4_idx == k_p);
          else
              s_T4=0;
          end

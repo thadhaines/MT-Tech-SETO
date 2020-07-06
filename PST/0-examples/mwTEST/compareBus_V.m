@@ -5,36 +5,38 @@ function  compareBus_V( caseA, caseB, printFigs )
 
 % load data from case A
 load(caseA)
-% if exist('g', 'var')
-%     % handle global variable
-%     tA = g.sys.t;
-%     if isfield(g,'mac')
-%         varA = g.mac.mac_spd;
-%     else
-%         varA = mac_spd;
-%     end
-% else
+if exist('g', 'var')
+    % handle global variable
+    if isfield(g,'sys')
+        tA = g.sys.t;
+        varA = g.sys.bus_v;
+    else
+        tA = t;
+        varA = bus_v;
+    end
+else
     tA = t;
     varA = bus_v;
-% end
+end
 
 % clear unrequried vars
 clearvars -except tA varA caseA caseB printFigs
 
 % load data from case B
 load(caseB)
-% if exist('g', 'var')
-%     % handle global variable
-%     tB = g.sys.t;
-%     if isfield(g,'mac')
-%         varB = g.mac.mac_spd;
-%     else
-%         varB = mac_spd;
-%     end
-% else
+if exist('g', 'var')
+    % handle global variable
+    if isfield(g,'sys')
+        tB = g.sys.t;
+        varB = g.sys.bus_v;
+    else
+        tB = t;
+        varB = bus_v;
+    end
+else
     tB = t;
     varB = bus_v;
-% end
+end
 
 % manipulate case names for labels
 nameA = strsplit(caseA,'.');
@@ -64,7 +66,7 @@ xlabel('Time [sec]')
 % pdf output code
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([nameA,nameB],'-pdf'); % to print fig
+    export_fig([nameA,nameB,'BusV'],'-png'); % to print fig
 end
 
 end

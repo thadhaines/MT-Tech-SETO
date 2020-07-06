@@ -66,8 +66,8 @@
 % Copyright - Joe Chow/Cherry Tree Scientific Software 1991-1997
 %
 
-clear 
-clear global
+% clear 
+% clear global
 tic % start timer
 %close %graphics windows
 % set up global variables
@@ -131,10 +131,16 @@ tic % start timer
 % % non-conforming load variables
 % global  load_con load_pot nload
 
+% % simulation control
+% global sw_con  scr_con
+
+% % pss variables
+% global  pss_con pss_pot pss_mb_idx pss_exc_idx
+% global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
+% global  pss_idx n_pss pss_sp_idx pss_p_idx;
+% global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
 
 %% Non converted globals
-
-
 % induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
 global  motbus ind_int mld_con n_mot t_mot
@@ -167,19 +173,10 @@ global  B_tcsc dB_tcsc
 global  tcsc_sig tcsc_dsig
 global  n_tcscud dtcscud_idx  %user defined damping controls
 
-
-% pss variables
-global  pss_con pss_pot pss_mb_idx pss_exc_idx
-global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
-global  pss_idx n_pss pss_sp_idx pss_p_idx;
-global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
-
 % DeltaP/omega filter variables
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
-
-
 
 %HVDC link variables
 global  dcsp_con  dcl_con  dcc_con
@@ -199,15 +196,9 @@ global di_dcr  di_dci  dv_dcc
 global v_conr dv_conr  
 %inverter
 global v_coni dv_coni
-
-% simulation control
-global sw_con  scr_con
-
+% 
 % pss design
 global  netg_con  stab_con
-
-% end copied from pst_far
-
 
 %global  lmod_sig lmod_data 
 % ivmmod
@@ -294,7 +285,7 @@ g.exc.n_dc = 0;
 g.exc.n_smp = 0;
 g.exc.n_st3 = 0;
 
-n_pss= 0;
+g.pss.n_pss= 0;
 n_dpw = 0;
 
 g.tg.n_tg = 0;
@@ -335,18 +326,20 @@ if g.mac.n_ib~=0
       end
    end
    % remove pss
-   if ~isempty(pss_con)
-      n_pss = length(pss_con(:,1));
-      net_idx = zeros(n_pss,1);
+   if ~isempty(g.pss.pss_con)
+      g.pss.n_pss = length(g.pss.pss_con(:,1));
+      net_idx = zeros(g.pss.n_pss,1);
       for j = 1:g.mac.n_ib
-         net_idx = net_idx | pss_con(:,2) == g.mac.mac_con(g.mac.mac_ib_idx(j),1);
+         net_idx = net_idx | g.pss.pss_con(:,2) == g.mac.mac_con(g.mac.mac_ib_idx(j),1);
       end
       if length(net_idx)==1
-         if net_idx == 1;pss_con = [];end
+         if net_idx == 1
+             g.pss.pss_con = [];
+         end
       else
          perm = diag(~net_idx);
          perm = perm(~net_idx,:);
-         pss_con = perm*pss_con;
+         g.pss.pss_con = perm*g.pss.pss_con;
       end
    end
       % remove deltaP/omega filter
@@ -391,11 +384,11 @@ else
 end
 
 mac_pss=0;
-if ~isempty(pss_con)
+if ~isempty(g.pss.pss_con)
    pss_indx;%identifies power system stabilizers
-   mac_pss= g.mac.mac_int(pss_con(:,2));
+   mac_pss= g.mac.mac_int(g.pss.pss_con(:,2));
 else
-   n_pss=0;
+   g.pss.n_pss=0;
 end
 mac_dpw=0;
 if ~isempty(dpw_con)
@@ -530,7 +523,7 @@ dpw_state = state;
 tg_state = state;
 state = zeros(g.mac.n_mac+n_mot+n_ig+n_svc+n_tcsc ...
     +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+n_dcl,1);
-max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*n_pss+ 6*n_dpw ...
+max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
     + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
     2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
@@ -632,16 +625,17 @@ if g.exc.n_exc~=0
    g.exc.dV_R =zeros(g.exc.n_exc,2);
    g.exc.dEfd = zeros(g.exc.n_exc,2);
    g.exc.dR_f = zeros(g.exc.n_exc,2);
-   pss_out = zeros(g.exc.n_exc,2);
+   
+   g.pss.pss_out = zeros(g.exc.n_exc,2);
 end
 
-if n_pss~=0
-   pss1 = zeros(n_pss,2);
-   pss2 = zeros(n_pss,2);
-   pss3 = zeros(n_pss,2);
-   dpss1 = zeros(n_pss,2);
-   dpss2 =zeros(n_pss,2);
-   dpss3 =zeros(n_pss,2);
+if g.pss.n_pss~=0
+   g.pss.pss1 = zeros(g.pss.n_pss,2);
+   g.pss.pss2 = zeros(g.pss.n_pss,2);
+   g.pss.pss3 = zeros(g.pss.n_pss,2);
+   g.pss.dpss1 = zeros(g.pss.n_pss,2);
+   g.pss.dpss2 =zeros(g.pss.n_pss,2);
+   g.pss.dpss3 =zeros(g.pss.n_pss,2);
 end
 if n_dpw~=0
    sdpw1 = zeros(n_dpw,2);
@@ -832,10 +826,10 @@ if g.exc.n_exc~=0
 end
 
 %pss
-if n_pss~=0
-   pss1(:,2)=pss1(:,1);
-   pss2(:,2)=pss2(:,1);
-   pss3(:,2)=pss3(:,1);
+if g.pss.n_pss~=0
+   g.pss.pss1(:,2)=g.pss.pss1(:,1);
+   g.pss.pss2(:,2)=g.pss.pss2(:,1);
+   g.pss.pss3(:,2)=g.pss.pss3(:,1);
 end
 % DeltaP/omega filter
 if n_dpw~=0

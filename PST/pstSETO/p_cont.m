@@ -9,6 +9,7 @@
 % All right reserved
 % step 3: perform 0.1% perturbation on each state in turn
 
+
 vr_input = 0;
 pr_input = 0;
 c_state = 0;
@@ -84,7 +85,7 @@ for k = 1:g.mac.n_mac
          p_exc    
       end
       %pss
-      if ~isempty(pss_con)
+      if ~isempty(g.pss.pss_con)
          p_pss
       end
       if ~isempty(dpw_con)

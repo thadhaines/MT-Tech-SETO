@@ -8,11 +8,11 @@
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
 \chead{Documentation of PSS using global g\\ }
-\lhead{Research \\ 6/29/20}
+\lhead{Research \\ 07/06/20}
 
 
 \begin{document}
-The purpose of this document is to record what was done to enable \verb|pss| PST models ver2 and ver3 to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+The purpose of this document is to record what was done to enable \verb|pss| PST model from version 3 to use the structured global variable \verb|g| and other `clean up' actions taken. \\
 Each paragraph describes the required changes to the PST file.
 
 Initial globals:
@@ -22,7 +22,8 @@ Initial globals:
     global  pss_con pss_pot pss_mb_idx pss_exc_idx
     global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
     global  pss_idx n_pss pss_sp_idx pss_p_idx;
-    global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+    global  pss_T  pss_T2 pss_T4 pss_T4_idx  
+    global pss_noT4_idx % misspelled in pss_indx as pss_noT4
 \end{verbatim}
 
 Modified globals:
@@ -30,32 +31,81 @@ Modified globals:
 global g
 \end{verbatim}
 
+\paragraph{Non-Linear files}\line(1,0){300}
 %===============================================================================
-\paragraph{XXX\_indx}
+\paragraph{exc\_dc12}
 	\begin{itemize}
-		\item ...
+		\item alteration of system globals to use \verb|g.pss| structure
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{exc\_st3}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.pss| structure
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{handleNewGlobals}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.pss| structure
+		\item alteration of system globals to use \verb|g.sys.sw_con|
+		\item addition of pssGainFix
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{pss}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.pss| and \verb|g.sys| structure
+		\item Revised format of internal function documentation
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{pss\_indx}
+	\begin{itemize}
+		\item Revised format of internal function documentation
+		\item alteration of system globals to use \verb|g.pss| structure
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{smpexc}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.pss| structure
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{smppi}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.pss| structure
 	\end{itemize}
 
 %===============================================================================
-\paragraph{handleNewGlobals.m}
+\paragraph{s\_simu\_Batch}
 	\begin{itemize}
-		\item Addition of if statement to properly handle legacy data inputs
-	\end{itemize}
-
-
-%===============================================================================
-\paragraph{s\_simu\_Batch.m}
-	\begin{itemize}
-		\item ...
+		\item alteration of system globals to use \verb|g.pss| structure
+		\item correction to sdpw* corrector integration
 	\end{itemize}
 
 %===============================================================================
-\paragraph{...}
+\paragraph{y\_switch}
 	\begin{itemize}
-		\item ...
+		\item alteration of system globals to use \verb|g.sys.sw_con|
 	\end{itemize}
+	
+	
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300} \ \\
+
 
 %===============================================================================
-
+Alteration of system globals to use \verb|g.pss| structure
+	\begin{itemize}
+		\item \verb|ns_file|
+		\item \verb|p_cont|
+		\item \verb|p_file|
+		\item \verb|p_m_file|
+		\item \verb|P_pss|
+		\item \verb|svm_mgen_Batch|
+	\end{itemize}
+	
 
 \end{document}

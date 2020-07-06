@@ -1,11 +1,10 @@
 % pss test
-
 clear all; close all; clc
 
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstV2p3';% 'pstV3P1';%   'pstSETO'; %
+pstVer = 'pstSETO'; % 'pstV2p3';% 'pstV3P1';%   
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -32,6 +31,10 @@ copyfile('d_smallLoadStep.m',[PSTpath 'DataFile.m']); % copy system data file to
 % Handle load modulation file placement etc...
 delete([PSTpath 'ml_sig.m']); % ensure ml_sig file is empty
 copyfile('ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
+
+% copyfile('ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
+
+pssGainFix = 1;
 
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
@@ -60,6 +63,8 @@ save('loadStepNONLIN.mat'); %Save simulation outputs
 
 %% PST linear system creation
 clear all; close all;
+
+pssGainFix = 1;
 svm_mgen_Batch
 
 %%  
@@ -86,9 +91,11 @@ end
 linSpd = y(:,5:6)'+ 1.0; % rotate into col vectors
 
 % collect pm...
-linPm = y(:,7:8)'+g.mac.pmech(:,1);% rotate to vector
+linPm = y(:,7:8)';% rotate to vector
+linPm(1,:)= linPm(1,:)+ g.mac.pmech(1,1);
+linPm(2,:)= linPm(2,:)+ g.mac.pmech(2,1);
 
-%linPm = y(:,7:8)'+pmech(:,1);% rotate to vector
+
 save linResults.mat tL linV linSpd modSig linPm
 
 %% Clean up load modulation file alterations...
@@ -153,7 +160,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(bus_v(busN,:)),'--')
+    plot(t,abs(g.sys.bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end

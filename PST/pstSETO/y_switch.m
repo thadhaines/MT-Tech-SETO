@@ -22,9 +22,9 @@ nbus = length(bus(:,1));
 % create fault on matrices
 bus_f = bus;
 line_f = line;
-f_type = sw_con(2,6);
+f_type = g.sys.sw_con(2,6);
 if f_type <4|f_type==7
-   f_nearbus = sw_con(2,2);
+   f_nearbus = g.sys.sw_con(2,2);
    bus_idx = find(bus_f(:,1)==f_nearbus);
    if isempty(bus_idx)
       error('faulted bus not specified correctly')
@@ -34,17 +34,17 @@ if f_type <4|f_type==7
       bf = 1.0/1e-7;
    elseif f_type ==1
       % line to ground fault zf = zn*z0/(zn+z0)
-      xf = sw_con(2,4)*sw_con(2,5)/(sw_con(2,4) + sw_con(2,5));
+      xf = g.sys.sw_con(2,4)*g.sys.sw_con(2,5)/(g.sys.sw_con(2,4) + g.sys.sw_con(2,5));
       xf = max(xf,1e-7);
       bf = 1.0/xf;
    elseif f_type == 2
       % line to line to ground  zf = zn + z0
-      xf = sw_con(2,4) + sw_con(2,5);
+      xf = g.sys.sw_con(2,4) + g.sys.sw_con(2,5);
       xf = max(xf,1e-7);
       bf = 1.0/xf;
    elseif f_type==3
       %line to line  zf = zn
-      xf = sw_con(2,4);
+      xf = g.sys.sw_con(2,4);
       xf = max(xf,1e-7);
       bf = 1.0/xf; 
    end
@@ -52,9 +52,9 @@ if f_type <4|f_type==7
 end
 if f_type == 4
    % remove line with no fault
-   f_nearbus = sw_con(2,2);
+   f_nearbus = g.sys.sw_con(2,2);
    bus_idx = find(bus_f(:,1)==f_nearbus);
-   f_farbus =  sw_con(2,3);
+   f_farbus =  g.sys.sw_con(2,3);
    line_idx = find((line_f(:,1)==f_nearbus&line_f(:,2)==f_farbus)...
       |(line_f(:,2)==f_nearbus&line_f(:,1)==f_farbus));
    %choose first instance of line
@@ -66,7 +66,7 @@ if f_type == 4
 end
 if f_type == 5
    %loss of load
-   f_nearbus = sw_con(2,2);
+   f_nearbus = g.sys.sw_con(2,2);
    bus_idx = find(bus_f(:,1)==f_nearbus);
    if isempty(bus_idx)
       error('can not find faulted bus in bus data')
@@ -76,7 +76,7 @@ if f_type == 5
 end
 if f_type == 6;
    %no fault  
-   f_nearbus = sw_con(2,2);
+   f_nearbus = g.sys.sw_con(2,2);
    bus_idx = find(bus_f(:,1)==f_nearbus);
    if isempty(bus_idx)
       error('can not find faulted bus in bus data')
@@ -88,7 +88,7 @@ end
 bus_intf = g.sys.bus_int;
 %second switching point, clear fault at near end/add new line
 if f_type<4
-   f_farbus = sw_con(2,3);
+   f_farbus = g.sys.sw_con(2,3);
    line_pf1 = line;
    bus_pf1 = bus;
    line_idx = find((line_pf1(:,1)==f_nearbus & line_pf1(:,2)==f_farbus)...

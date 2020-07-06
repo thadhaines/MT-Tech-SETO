@@ -1,0 +1,33 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of pssGainFix\\ }
+\lhead{Research \\7/06/20}
+
+\usepackage{setspace}
+\begin{document}
+\onehalfspacing
+\paragraph{PSS Gain Fix} \ \\
+The washout time constant adjustment that occured between version 2 and 3 of PST requires a minor adjustment to the \verb|d_| file \verb|pss_con| for results to match.
+
+The adjustment carried out by setting a \verb|pssGainFix| flag to one is: \\ \verb|pss_con(:,3) = pss_con(:,3)./pss_con(:,4);|
+
+\paragraph{Unfixed Comparisons} \ \\
+Note that this is the default action taken. 
+
+\includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSLBusV} %
+\includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSLPSSout}
+
+\paragraph{Fixed Comparisons}\ \\
+As the PSS model parameters were from version 2, the PSS gain fix allows for the same results to occur between versions.
+
+
+\includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSwGainFixLBusV} %
+\includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSwGainFixLPSSout}
+\end{document}

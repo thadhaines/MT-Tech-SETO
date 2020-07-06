@@ -31,14 +31,8 @@ function smpexc(i,k,flag)
 %   01/29/99    08:51   -               Error Correction in non-vector dynamics calculation
 %                                       Efd(i,k) = exc_cin(i,9); changed to Efd(i,k) = exc_con(i,9);
 %   06/19/20    10:34   Thad Haines     Revised format of globals and internal function documentation
+%   07/06/20    14:09   Thad Haines     Completion of global g alterations
 
-% system variables
-global  psi_re psi_im cur_re cur_im
-
-% pss variables
-global pss_out 
-
-% Combined global
 global g
 
 if i ~= 0
@@ -46,10 +40,6 @@ if i ~= 0
     error('SMPEXC: inappropriate exciter model')
   end
 end
-
-% removed -thad 06/17/20
-%[nexc dum] =size(g.exc.exc_con);
-%jay = sqrt(-1);
 
 if flag == 0 % initialization
    if i ~= 0  % scalar computation
@@ -93,9 +83,9 @@ if flag == 1 % network interface computation
      else
        if g.exc.exc_con(i,6)==0
          g.mac.vex(n,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
-                   + pss_out(i,k))*g.exc.exc_con(i,4);
+                   + g.pss.pss_out(i,k))*g.exc.exc_con(i,4);
        else
-         g.exc.V_A(i,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)+pss_out(i,k))...
+         g.exc.V_A(i,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)+g.pss.pss_out(i,k))...
                   *g.exc.exc_pot(i,5) + (1.-g.exc.exc_pot(i,5))*g.exc.V_As(i,k);
          g.mac.vex(n,k) = g.exc.V_A(i,k)*g.exc.exc_con(i,4);
        end
@@ -111,7 +101,7 @@ if flag == 1 % network interface computation
           g.mac.vex(n_nTATB,k) = (g.exc.exc_sig(g.exc.smp_idx(not_TATB),k)...
                            +g.exc.exc_pot(g.exc.smp_idx(not_TATB),3)-...
                            g.exc.V_TR(g.exc.smp_idx(not_TATB),k) + ...
-                           pss_out(g.exc.smp_idx(not_TATB),k))...
+                           g.pss.pss_out(g.exc.smp_idx(not_TATB),k))...
                            .*g.exc.exc_con(g.exc.smp_idx(not_TATB),4);
         end
        
@@ -122,7 +112,7 @@ if flag == 1 % network interface computation
            g.exc.V_A(g.exc.smp_idx(TB),k) = (g.exc.exc_sig(g.exc.smp_idx(TB),k)...
                                 +g.exc.exc_pot(g.exc.smp_idx(TB),3)...
                                 -g.exc.V_TR(g.exc.smp_idx(TB),k)...
-                                +pss_out(g.exc.smp_idx(TB),k))...
+                                +g.pss.pss_out(g.exc.smp_idx(TB),k))...
                                 .*g.exc.exc_pot(g.exc.smp_idx(TB),5) + ...
                                 (ones(length(TB),1)-...
                                 g.exc.exc_pot(g.exc.smp_idx(TB),5)).*g.exc.V_As(g.exc.smp_idx(TB),k);
@@ -149,7 +139,7 @@ if flag == 2 % exciter dynamics calculation
         g.exc.dV_TR(i,k)=(g.mac.eterm(n,k)-g.exc.V_TR(i,k))/g.exc.exc_con(i,3);
      end
      err = g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
-           + pss_out(i,k);	
+           + g.pss.pss_out(i,k);	
      if g.exc.exc_con(i,6) == 0 % no leadlag
         g.exc.dV_As(i,k) = 0;
         g.exc.V_As(i,k) = err;
@@ -208,7 +198,7 @@ if flag == 2 % exciter dynamics calculation
          err = g.exc.exc_sig(g.exc.smp_idx,k) ...
                + g.exc.exc_pot(g.exc.smp_idx,3)...
                - g.exc.V_TR(g.exc.smp_idx,k)...
-               + pss_out(g.exc.smp_idx,k);
+               + g.pss.pss_out(g.exc.smp_idx,k);
          no_TB = g.exc.smp_noTB_idx;
          if ~isempty(no_TB)
            g.exc.dV_As(g.exc.smp_idx(no_TB),k) = zeros(length(no_TB),1);

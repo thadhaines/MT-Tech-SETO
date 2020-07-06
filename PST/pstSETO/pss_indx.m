@@ -1,39 +1,43 @@
-function f = pss_indx;
-% syntax: f = pss_indx  
-% 8:03 AM 23/10/97
-% Version:  1.2
-% Author: Graham Rogers
-% Date: August 1997
-% Purpose: Forms indexes for the pss
-%          determines indexs for the generators and exciters to which pss are connected 
-% (c) Copyright Joe Chow/Cherry Tree Scientific Software 1997
-%     All Rights Reserved
-f=0;
-global  pss_con pss_pot 
-%global mac_con mac_int exc_con; converted to g
-
-global pss_idx n_pss pss_sp_idx pss_p_idx pss_mb_idx pss_exc_idx;
-global pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+function pss_indx
+%PSS_INDX forms indexes for the pss
+% PSS_INDX Forms indexes for the pss and determines indexs for
+% the generators and exciters to which pss are connected.
+%
+% Syntax: pss_indx
+%
+%   Input: 
+%   VOID
+%
+%   Output: 
+%   VOID
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   08/xx/97    xx:xx   Graham Rogers   Version 1.2
+%   (c) Copyright Joe Chow/Cherry Tree Scientific Software 1997 All Rights Reserved
+%   07/06/20    14:02   Thad Haines     Revised format of globals and internal function documentation
 
 global g
 
-if ~isempty(pss_con)
-  pss_idx = find(pss_con(:,1)==1|pss_con(:,1)==2);
-  n_pss = length(pss_idx);
-  pss_mb_idx = g.mac.mac_int(round(pss_con(:,2)));
-  for jpss = 1:n_pss
-     pss_exc_idx(jpss) = find(round(pss_con(jpss,2))==round(g.exc.exc_con(:,2))); 
-     if isempty(pss_exc_idx(jpss));error('you must have an exciter at the same generator as a pss');end  
+if ~isempty(g.pss.pss_con)
+  g.pss.pss_idx = find(g.pss.pss_con(:,1)==1|g.pss.pss_con(:,1)==2);
+  g.pss.n_pss = length(g.pss.pss_idx);
+  g.pss.pss_mb_idx = g.mac.mac_int(round(g.pss.pss_con(:,2)));
+  for jpss = 1:g.pss.n_pss
+     g.pss.pss_exc_idx(jpss) = find(round(g.pss.pss_con(jpss,2))==round(g.exc.exc_con(:,2))); 
+     if isempty(g.pss.pss_exc_idx(jpss))
+         error('you must have an exciter at the same generator as a pss');
+     end  
   end
-  if n_pss~=0
-     pss_T = pss_con(pss_idx,4);
-     pss_T2 = pss_con(pss_idx,6);
-     pss_T4 = pss_con(pss_idx,8);
-     pss_T4_idx = find(pss_T4>0.001);
-     pss_noT4 = find(pss_T4<0.001);
-     pss_sp_idx = find(pss_con(pss_idx,1)==1);
-     pss_p_idx = find(pss_con(pss_idx,1)==2);
+  if g.pss.n_pss~=0
+     g.pss.pss_T = g.pss.pss_con(g.pss.pss_idx,4);
+     g.pss.pss_T2 = g.pss.pss_con(g.pss.pss_idx,6);
+     g.pss.pss_T4 = g.pss.pss_con(g.pss.pss_idx,8);
+     g.pss.pss_T4_idx = find(g.pss.pss_T4>0.001);
+     g.pss.pss_noT4_idx = find(g.pss.pss_T4<0.001);
+     g.pss.pss_sp_idx = find(g.pss.pss_con(g.pss.pss_idx,1)==1);
+     g.pss.pss_p_idx = find(g.pss.pss_con(g.pss.pss_idx,1)==2);
   end
 else
-  n_pss = 0;
+  g.pss.n_pss = 0;
 end

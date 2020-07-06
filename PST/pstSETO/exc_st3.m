@@ -36,11 +36,8 @@ function exc_st3(i,k,flag)
 %                                       functions
 %   06/19/20    11:34   Thad Haines     Revised format of globals and internal function documentation
 %   07/01/20    12:41   Thad Haines     Adjusted theta(n) to theta(n_bus) in calculation of vep per Ryan Elliot (line 131)
+%   07/06/20    13:50   Thad Haines     Completion of global g alterations
 
-% pss variables
-global pss_out 
-
-% combined global
 global g
 
 jay = sqrt(-1);
@@ -409,7 +406,7 @@ if g.exc.n_st3~=0
         g.exc.dV_TR(i,k) = (-g.exc.V_TR(i,k)+g.mac.eterm(n,k))/g.exc.exc_con(i,3);
       end
       V_I = g.exc.exc_sig(i,k) + g.exc.exc_pot(i,3) - g.exc.V_TR(i,k);
-      V_I = V_I + pss_out(i,k);
+      V_I = V_I + g.pss.pss_out(i,k);
       V_I = min(g.exc.exc_con(i,10),max(V_I,g.exc.exc_con(i,11)));
       if g.exc.exc_con(i,6) == 0 % no leadlag
         g.exc.dV_As(i,k) = 0;
@@ -457,7 +454,7 @@ if g.exc.n_st3~=0
                              ./g.exc.exc_con(g.exc.st3_idx(TR),3);
       end  
       V_I = g.exc.exc_sig(g.exc.st3_idx,k) + g.exc.exc_pot(g.exc.st3_idx,3) - g.exc.V_TR(g.exc.st3_idx,k);
-      V_I = V_I + pss_out(g.exc.st3_idx,k);
+      V_I = V_I + g.pss.pss_out(g.exc.st3_idx,k);
       V_I = min(g.exc.exc_con(g.exc.st3_idx,10),max(V_I,g.exc.exc_con(g.exc.st3_idx,11)));
 
  

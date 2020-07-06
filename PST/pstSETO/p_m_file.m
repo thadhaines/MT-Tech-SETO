@@ -23,6 +23,7 @@
 %           svc added 
 % Copyright: Joe Chow/Cherry Tree Scientific Software 1991 to 1997, All rights reserved
 
+
 k_row = 1;
 exc_count = 0;
 pss_count = 0;
@@ -99,19 +100,19 @@ for k = 1:g.mac.n_mac
                k_row = k_row + 1;
                p_mat(k_row,k_cpss) = 1;  
             end
-            k_cpss = k_cpss + n_pss;     
+            k_cpss = k_cpss + g.pss.n_pss;     
             if pss2_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_cpss) = 1;
             end
-            k_cpss = k_cpss + n_pss;     
+            k_cpss = k_cpss + g.pss.n_pss;     
             if pss3_state(k)~=0
                k_row = k_row + 1;
                p_mat(k_row,k_cpss) = 1;
             end 
          end 
       end
-      k_col = 6*g.mac.n_mac+5*g.exc.n_exc+3*n_pss;
+      k_col = 6*g.mac.n_mac+5*g.exc.n_exc+3*g.pss.n_pss;
 
       if mac_dpw~=0
          k_dpw = find(mac_dpw==k);
@@ -138,7 +139,7 @@ for k = 1:g.mac.n_mac
             p_mat(k_row,k_cdpw) = 1;  
          end 
       end
-      k_col= 6*g.mac.n_mac+5*g.exc.n_exc+3*n_pss+6*n_dpw;    
+      k_col= 6*g.mac.n_mac+5*g.exc.n_exc+3*g.pss.n_pss+6*n_dpw;    
       % governors
       if mac_tg ~=0
          k_tg = find(mac_tg == k);
@@ -186,7 +187,7 @@ end
 
 % p_mat for induction motors
 
-k_colg = 6*g.mac.n_mac+5*g.exc.n_exc+3*n_pss+6*n_dpw...
+k_colg = 6*g.mac.n_mac+5*g.exc.n_exc+3*g.pss.n_pss+6*n_dpw...
     +5*(g.tg.n_tg + g.tg.n_tgh);
 k_col = k_colg;
 if n_mot~=0
@@ -200,7 +201,7 @@ if n_mot~=0
       k_row = k_row+1;
       k_col = k_col+n_mot;
       p_mat(k_row,k_col) = 1;
-      k_col =6*g.mac.n_mac+5*g.exc.n_exc+3*n_pss+5*(g.tg.n_tg+g.tg.n_tgh);
+      k_col =6*g.mac.n_mac+5*g.exc.n_exc+3*g.pss.n_pss+5*(g.tg.n_tg+g.tg.n_tgh);
    end
 end
 
@@ -217,7 +218,7 @@ if n_ig~=0
       k_row = k_row+1;
       k_col = k_col+n_ig;
       p_mat(k_row,k_col) = 1;
-      k_col =6*g.mac.n_mac+5*g.exc.n_exc+3*n_pss ...
+      k_col =6*g.mac.n_mac+5*g.exc.n_exc+3*g.pss.n_pss ...
           +5*(g.tg.n_tg+g.tg.n_tgh)+3*n_mot;
    end
 end

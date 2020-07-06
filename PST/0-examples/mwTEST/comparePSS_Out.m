@@ -7,7 +7,11 @@ function  comparePSS_Out( caseA, caseB, printFigs )
 load(caseA)
 if exist('g', 'var')
     % handle global variable
-    tA = g.sys.t;
+    if isfield(g,'sys')
+        tA = g.sys.t;
+    else
+        tA = t;
+    end
     if isfield(g,'pss')
         varA = g.pss.pss_out;
     else
@@ -25,7 +29,11 @@ clearvars -except tA varA caseA caseB printFigs
 load(caseB)
 if exist('g', 'var')
     % handle global variable
-    tB = g.sys.t;
+    if isfield(g,'sys')
+        tB = g.sys.t;
+    else
+        tB = t;
+    end
     if isfield(g,'pss')
         varB = g.pss.pss_out;
     else
@@ -35,7 +43,6 @@ else
     tB = t;
     varB = pss_out;
 end
-
 % manipulate case names for labels
 nameA = strsplit(caseA,'.');
 nameA = nameA{1};
@@ -64,7 +71,7 @@ xlabel('Time [sec]')
 % pdf output code
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([nameA,nameB],'-pdf'); % to print fig
+    export_fig([nameA,nameB,'PSSout'],'-png'); % to print fig
 end
 
 end

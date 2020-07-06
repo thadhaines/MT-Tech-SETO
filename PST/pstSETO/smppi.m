@@ -23,12 +23,7 @@ function smppi(i,k,flag)
 %   09/xx/99    xx:xx   Graham Rogers   Version 1.0
 %   (c) Copyright 1999 Joe H. Chow/Cherry Tree Scientific Software - All Rights Reserved
 %   06/19/20    10:34   Thad Haines     Revised format of globals and internal function documentation
-
-% system variables
-global  psi_re psi_im cur_re cur_im
-
-% pss variables
-global pss_out 
+%   07/06/20    14:09   Thad Haines     Completion of global g alterations
 
 global g
 
@@ -37,9 +32,6 @@ if i ~= 0
       error('SMPPI: inappropriate exciter model')
    end
 end
-
-%[nexc dum] =size(exc_con); -commented out, not used -thad
-%jay = sqrt(-1); -commented out, not used -thad
 
 if flag == 0 % initialization
    if i ~= 0  % scalar computation
@@ -82,7 +74,7 @@ if flag == 2 % exciter dynamics calculation
          g.exc.dV_TR(i,k)=(g.mac.eterm(n,k)-g.exc.V_TR(i,k))/g.exc.exc_con(i,3);
       end
       err = g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...
-         + pss_out(i,k);
+         + g.pss.pss_out(i,k);
       g.exc.dV_As(i,k) = err*g.exc.exc_con(i,4);
       g.exc.dEfd(i,k) = (-g.exc.Efd(i,k)+g.exc.V_A(i,k)+g.exc.exc_con(i,6)*err)...
          /g.exc.exc_con(i,5);
@@ -124,7 +116,7 @@ if flag == 2 % exciter dynamics calculation
          end
          % error defined for all simple exciters
          err = g.exc.exc_sig(g.exc.smppi_idx,k)+g.exc.exc_pot(g.exc.smppi_idx,3)...
-             -g.exc.V_TR(g.exc.smppi_idx,k) + pss_out(g.exc.smppi_idx,k);
+             -g.exc.V_TR(g.exc.smppi_idx,k) + g.pss.pss_out(g.exc.smppi_idx,k);
          g.exc.dV_As(g.exc.smppi_idx,k) = err*g.exc.exc_con(g.exc.smppi_idx,4);
          g.exc.dEfd(g.exc.smppi_idx,k) = (-g.exc.Efd(g.exc.smppi_idx,k)...
              +g.exc.V_As(g.exc.smppi_idx,k)+g.exc.exc_con(g.exc.smppi_idx,6)*err)...
