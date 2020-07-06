@@ -77,17 +77,13 @@ jay = sqrt(-1);
 
 warning('*** Declare Global Variables')
 
-    %% global structured array
-    global g
+% Old globals from pst_var
 
 % %     %% system variables - 13
 % %     global  basmva basrad syn_ref mach_ref sys_freq
 % %     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
 % %     % lmon_con not used in non-linear sim...
 % %     global  lmon_con
-    
-    
-    % todo: add theta to system variables (currently in g.mac.)
 
 %     %% synchronous machine variables  - 47
 %     global  mac_con mac_pot mac_int ibus_con
@@ -135,9 +131,26 @@ warning('*** Declare Global Variables')
 %     global  pwrmod_p_sig pwrmod_q_sig
 %     global  pwrmod_data
 
-    %% non-conforming load variables - 3
-    global  load_con load_pot nload
+%     %% non-conforming load variables - 3
+%     global  load_con load_pot nload
 
+    %% turbine-governor variables -17
+    %global  tg_con tg_pot
+    %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+    %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+    
+    %% simulation control - 1
+%     global sw_con  %scr_con not used
+
+%     %% pss variables - 21
+%     global  pss_con pss_pot pss_mb_idx pss_exc_idx
+%     global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
+%     global  pss_idx n_pss pss_sp_idx pss_p_idx;
+%     global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+    
+    %% ivm variables - 5
+    global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
+    
     %% induction motor variables - 21
     global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
     global  motbus ind_int mld_con n_mot t_mot
@@ -169,27 +182,11 @@ warning('*** Declare Global Variables')
     global  B_tcsc dB_tcsc
     global  tcsc_sig tcsc_dsig
     global  n_tcscud dtcscud_idx  %user defined damping controls
-
-
     
-    %% ivm variables - 5
-    global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-
-    %% pss variables - 21
-    global  pss_con pss_pot pss_mb_idx pss_exc_idx
-    global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
-    global  pss_idx n_pss pss_sp_idx pss_p_idx;
-    global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
-
     %% DeltaP/omega filter variables - 21
     global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
     global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
     global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
-
-    %% turbine-governor variables -17
-    %global  tg_con tg_pot
-    %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
-    %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
 
     %% HVDC link variables - 63
     global  dcsp_con  dcl_con  dcc_con
@@ -210,13 +207,13 @@ warning('*** Declare Global Variables')
     %inverter
     global v_coni dv_coni
     
-    %% simulation control - 2
-    global sw_con  scr_con
 
     %% pss design - 3
     global ibus_con  netg_con  stab_con
+    
+    %% global structured array
+    global g
 
-%pst_var % set up global variables
 
 %% meant to be dc globals? 06/08/20 - thad
 svc_dc=[];
@@ -251,11 +248,9 @@ handleNewGlobals
 if isempty(g.mac.mac_con)
     error('mac_con is Empty - invalid/incomplete input data.')
 end
-if isempty(sw_con)
+if isempty(g.sys.sw_con)
     error('sw_con is Empty - simulation has no switching data.')
 end
-
-
 
 %% Allow Fbase and Sbase to be defined in batch runs
 % Handle varaible input system frequency
@@ -280,12 +275,10 @@ elseif isnumeric(Sbase)
     g.sys.basmva = Sbase;
 end
 
-
 %% other init operations
 g.sys.basrad = 2*pi*g.sys.sys_freq; % default system frequency is 60 Hz
 g.sys.syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = []; % ignore infinite buses in transient simulation % should be global? -thad 06/15/20
-
 
 %% solve for loadflow - loadflow parameter
 warning('*** Solve initial loadflow')
@@ -348,10 +341,10 @@ end
 
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
-tswitch(1) = sw_con(1,1);
+tswitch(1) = g.sys.sw_con(1,1);
 k = 1;
 kdc = 1;
-n_switch = length(sw_con(:,1));
+n_switch = length(g.sys.sw_con(:,1));
 k_inc = zeros(n_switch-1,1);
 k_incdc = k_inc;
 t_switch = zeros(n_switch,1);
@@ -359,19 +352,19 @@ h = t_switch;
 h_dc = h;
 
 for sw_count = 1:n_switch-1
-    h(sw_count) = sw_con(sw_count,7);%specified time step
+    h(sw_count) = g.sys.sw_con(sw_count,7);%specified time step
     
     if h(sw_count)==0
         h(sw_count) = 0.01;
     end % default time step
     
-    k_inc(sw_count) = fix((sw_con(sw_count+1,1)-sw_con(sw_count,1))/h(sw_count));%nearest lower integer
+    k_inc(sw_count) = fix((g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/h(sw_count));%nearest lower integer
     
     if k_inc(sw_count)==0
         k_inc(sw_count)=1;
     end% minimum 1
     
-    h(sw_count) = (sw_con(sw_count+1,1)-sw_con(sw_count,1))/k_inc(sw_count);%step length
+    h(sw_count) = (g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/k_inc(sw_count);%step length
     h_dc(sw_count) = h(sw_count)/10;
     k_incdc(sw_count) = 10*k_inc(sw_count);
     t_switch(sw_count+1) = t_switch(sw_count) +  k_inc(sw_count)*h(sw_count);
@@ -390,7 +383,7 @@ end
 
 k = sum(k_inc)+1; % k is the total number of time steps in the simulation
 
-t(k) = sw_con(n_switch,1);
+t(k) = g.sys.sw_con(n_switch,1);
 n = size(g.mac.mac_con, 1) ;
 n_bus = length(bus(:,1));
 
@@ -574,16 +567,16 @@ clear totGovs z_tg
 %
 
 z_pss = zeros(1,k);
-if n_pss~=0
-    z_pss = zeros(n_pss,k);
+if g.pss.n_pss~=0
+    z_pss = zeros(g.pss.n_pss,k);
 end
 
-pss1 = z_pss; 
-pss2 = z_pss; 
-pss3 = z_pss;
-dpss1 = z_pss; 
-dpss2 = z_pss; 
-dpss3 = z_pss;
+g.pss.pss1 = z_pss; 
+g.pss.pss2 = z_pss; 
+g.pss.pss3 = z_pss;
+g.pss.dpss1 = z_pss; 
+g.pss.dpss2 = z_pss; 
+g.pss.dpss3 = z_pss;
 
 z_dpw = zeros(1,k);
 if n_dpw~=0
@@ -625,7 +618,7 @@ g.exc.dV_As = ze;
 g.exc.dEfd = ze; 
 g.exc.dR_f = ze;
 
-pss_out = ze; % seems related to pss more than exciters - thad 06/17/20
+g.pss.pss_out = ze; % seems related to pss more than exciters - thad 06/17/20
 
 %% machine zeros?..
 vdp = zm; 
@@ -1489,9 +1482,10 @@ while (kt<=ktmax)
         sdpw4(:,j) = sdpw4(:,k) + h_sol*dsdpw4(:,k);
         sdpw5(:,j) = sdpw5(:,k) + h_sol*dsdpw5(:,k);
         sdpw6(:,j) = sdpw6(:,k) + h_sol*dsdpw6(:,k);
-        pss1(:,j) = pss1(:,k) + h_sol*dpss1(:,k);
-        pss2(:,j) = pss2(:,k) + h_sol*dpss2(:,k);
-        pss3(:,j) = pss3(:,k) + h_sol*dpss3(:,k);
+        
+        g.pss.pss1(:,j) = g.pss.pss1(:,k) + h_sol*g.pss.dpss1(:,k);
+        g.pss.pss2(:,j) = g.pss.pss2(:,k) + h_sol*g.pss.dpss2(:,k);
+        g.pss.pss3(:,j) = g.pss.pss3(:,k) + h_sol*g.pss.dpss3(:,k);
         
         % modified to g - thad
         g.tg.tg1(:,j) = g.tg.tg1(:,k) + h_sol*g.tg.dtg1(:,k);
@@ -1873,15 +1867,17 @@ while (kt<=ktmax)
         g.exc.R_f(:,j) = g.exc.R_f(:,k) + h_sol*(g.exc.dR_f(:,k)+g.exc.dR_f(:,j))/2.;
         g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*(g.exc.dV_TR(:,k)+g.exc.dV_TR(:,j))/2.;
         
-        sdpw11(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
-        sdpw12(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
-        sdpw13(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
-        sdpw14(:,j) = sdpw4(:,k) +h_sol*(dsdpw4(:,k)+dsdpw4(:,j))/2.;
-        sdpw15(:,j) = sdpw5(:,k) +h_sol*(dsdpw5(:,k)+dsdpw5(:,j))/2.;
-        sdpw16(:,j) = sdpw6(:,k) +h_sol*(dsdpw6(:,k)+dsdpw6(:,j))/2.;
-        pss1(:,j) = pss1(:,k) +h_sol*(dpss1(:,k)+dpss1(:,j))/2.;
-        pss2(:,j) = pss2(:,k) +h_sol*(dpss2(:,k)+dpss2(:,j))/2.;
-        pss3(:,j) = pss3(:,k) +h_sol*(dpss3(:,k)+dpss3(:,j))/2.;
+        % removed extra 1 in global names. - thad 07/06/20
+        sdpw1(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
+        sdpw2(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
+        sdpw3(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
+        sdpw4(:,j) = sdpw4(:,k) +h_sol*(dsdpw4(:,k)+dsdpw4(:,j))/2.;
+        sdpw5(:,j) = sdpw5(:,k) +h_sol*(dsdpw5(:,k)+dsdpw5(:,j))/2.;
+        sdpw6(:,j) = sdpw6(:,k) +h_sol*(dsdpw6(:,k)+dsdpw6(:,j))/2.;
+        
+        g.pss.pss1(:,j) = g.pss.pss1(:,k) +h_sol*(g.pss.dpss1(:,k)+g.pss.dpss1(:,j))/2.;
+        g.pss.pss2(:,j) = g.pss.pss2(:,k) +h_sol*(g.pss.dpss2(:,k)+g.pss.dpss2(:,j))/2.;
+        g.pss.pss3(:,j) = g.pss.pss3(:,k) +h_sol*(g.pss.dpss3(:,k)+g.pss.dpss3(:,j))/2.;
         
         % modified to g
         g.tg.tg1(:,j) = g.tg.tg1(:,k) + h_sol*(g.tg.dtg1(:,k) + g.tg.dtg1(:,j))/2.;
@@ -1972,42 +1968,3 @@ dv_dcc= dv_dcc(:,1:length(t_dc));
 v_dcc= v_dcc(:,1:length(t_dc));
 di_dci= di_dci(:,1:length(t_dc));
 di_dcr=di_dcr(:,1:length(t_dc));
-
-%% tidy workspace.... Oh, were more than 340 globals were a bad idea? - thad
-clear B H_sum IHT  R  SHT   VLT
-clear V_rgf V_rgpf1 V_rgpf2 V_rgprf V_rncf V_rncpf1 V_rncpf2 V_rncprf Vdc_ref
-clear Vr1 Vr2 X Y1 Y2 Y3 Y4
-clear Y_gf Y_gncf Y_gncpf1 Y_gncpf2 Y_gncprf Y_gpf1
-clear Y_gpf2 Y_gprf Y_ncf Y_ncgf Y_ncgpf1 Y_ncgpf2 Y_ncgprf Y_ncpf1 Y_ncpf2 Y_ncprf
-clear ac_bus ac_line ans b_num1 b_num2  bo bof bopf1 bopf2 boprf
-clear bus_ang bus_f bus_idx bus_int bus_intf bus_intpf1 bus_intpf2 bus_intprf
-clear bus_pf1 bus_pf2 bus_sim  cap_idx conv_num  dc2_idx dc_TA  dc_TA_idx
-clear dc_TB dc_TB_idx dc_TE dc_TE_idx dc_TF dc_TF_idx dc_TR dc_TR_idx
-clear dc_idx dc_noTB_idx dc_noTE_idx dc_noTR_idx dc_pot dcc_con
-clear dcc_pot dci_dc dciud_idx dcl_con  dcli_idx dcr_dc dcr_states dcrud_idx
-clear dcsp_con dcud_idx dfile dpw_Td_idx dpw_con dpw_idx dpw_mb_idx
-%clear dpw_pot dpw_pss_idx dtcscud_idx  dummy et ets exc_con exc_pot
-clear dpw_pot dpw_pss_idx dtcscud_idx  dummy et ets
-% JHC 1/19/2017 keep exc_pot for Vref and exc_con for K_E
-clear f f_nearbus f_type flag h h_sol i i_aci i_acr i_dcinj
-clear i_idx i_plot ibus_con idig idmot igbus igen_con igen_int igen_pot ind_con
-clear ind_int ind_pot inv_ac_bus inv_ac_line inv_par iqig iqmot
-clear j jay jj k k_end k_inc k_start k_tot ks kt
-clear ktmax l_cap l_no_cap lfile line_f line_flw line_par line_pf1 line_pf2 line_sim
-clear lmod_con lmod_idx lmod_pot lmon_con  load_con load_pot lswitch lt mac_con mac_em_idx
-clear mac_ib_em mac_ib_idx mac_ib_sub mac_ib_tra mac_int  mac_pot mac_sub_idx mac_tra_idx
-clear mld_con motbus n n_bus n_conv n_dc n_dc2 n_dcl n_dcud n_dpw n_em n_exc n_ib n_ib_em
-clear n_ib_sub n_ib_tra n_ig n_lmod n_mac n_mot n_pm n_pss n_rlmod n_smp n_st3 n_sub n_svc
-clear n_switch n_tcsc n_tcscud n_tg n_tgh n_tra nbus
-clear ndci_ud ndcr_ud netg_con ngm nload no_cap_idx no_ind_idx not_ib_idx
-clear ntot pathname  phi pig plot_now psidpp psiqpp pss_T pss_T2 pss_T4  pss_T4_idx pss_con
-clear pss_exc_idx pss_idx pss_mb_idx pss_noT4_idx pss_p_idx pss_pot pss_sp_idx r_idx
-clear rec_ac_bus rec_ac_line rec_num rec_par ric_idx rlmod_con rlmod_idx rlmod_pot rpc_idx scr_con sel
-clear smp_TA smp_TA_idx smp_TB smp_TB_idx smp_TR smp_TR_idx smp_idx smp_noTA_idx smp_noTB_idx
-clear smp_no_TR_idx st3_TA st3_TA_idx st3_TB st3_TB_idx st3_TR st3_TR_idx st3_idx st3_noTA_idx
-clear st3_noTB_idx st3_noTR_idx st_state stab_con sv svc_con svc_dc
-clear svc_idx svc_pot svcll_idx sw_con sw_count syn_ref t_init t_switch tap
-clear tapi tapr tcsc_con tcsc_dc tcsct_idx  tcsvf_idx tg_con tg_idx tg_pot
-clear tg_sig tgh_idx timestep tload tmax tmaxi tmaxr tmin tmini tminr
-clear tot_states tstep tstepi tstepr tswitch vdig vdmot vnc vqig vqmot ydcrmn ydcrmx
-clear z z1 z_dpw z_pss z_tg zdc zdcl ze zig zm

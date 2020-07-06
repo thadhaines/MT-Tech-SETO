@@ -13,6 +13,9 @@
 %   06/30/20    10:18   Thad Haines     addition of pwrmod_con
 %   07/02/20    10:10   Thad Haines     addition of lmon_con
 %   07/02/20    13:15   Thad Haines     addition of load_con for ncl
+%   07/06/20    09:30   Thad Haines     addition of sw_con
+%   07/06/20    11:15   Thad Haines     addition of pss_con and gain fix
+
 global g
 
 %% lmod
@@ -83,6 +86,32 @@ if exist('load_con','var')
 else
     g.ncl.load_con = [];
 end
+%% sw_con
+if exist('sw_con','var')
+    g.sys.sw_con = sw_con;
+    clear sw_con;
+else
+    g.sys.sw_con = [];
+end
+
+%% pss
+if exist('pss_con','var')
+    % account for washout gain alteration between version 2 and 3
+    if exist('pssGainFix','var')
+        if pssGainFix
+            pss_con(:,3) = pss_con(:,3)./pss_con(:,4);
+        end
+    else
+        pssGainFix = 0;
+    end
+    g.pss.pss_con = pss_con;
+    g.pss.pssGainFix = pssGainFix;
+    clear pss_con pssGainFix
+else
+    g.pss.pss_con = [];
+    g.pss.pssGainFix = nan;
+end
+
 %% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;

@@ -516,11 +516,11 @@ end
 % %  8      2nd lag time const T4 (sec)
 % %  9      max output limit (pu)
 % %  10     min output limit (pu)
-% pss_con = [];
-% for k=1:length(pssGen)
-% %                   type gen#      K  Tw T1   T2   T3   T4    max min
-%     pss_con(k,:) = [1    pssGen(k) 20 2  0.25 0.04 0.2  0.03  0.1 -0.1];
-% end
+pss_con = [];
+for k=1:length(pssGen)
+%                   type gen#      K  Tw T1   T2   T3   T4    max min
+    pss_con(k,:) = [1    pssGen(k) 20 2  0.25 0.04 0.2  0.03  0.1 -0.1];
+end
 
 %Gens 1, 2, 13, 14, and 26, 
 

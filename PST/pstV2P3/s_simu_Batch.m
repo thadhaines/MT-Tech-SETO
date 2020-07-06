@@ -154,9 +154,9 @@ jay = sqrt(-1);
     global  n_tcscud dtcscud_idx  %user defined damping controls
 
     %% load modulation variables % replaced with g.lmod.xxx -thad
-    %global  lmod_con n_lmod lmod_idx
-    %global  lmod_pot lmod_st dlmod_st
-    %global  lmod_sig lmod_data
+    global  lmod_con n_lmod lmod_idx
+    global  lmod_pot lmod_st dlmod_st
+    global  lmod_sig lmod_data
     
     % reactive load modulation variables
     global  rlmod_con n_rlmod rlmod_idx
@@ -248,12 +248,6 @@ if isempty(mac_con)
 end
 if isempty(sw_con)
     error('sw_con is Empty - simulation has no switching data.')
-end
-
-% Handle legacy d_files
-if exist('lmod_con','var')
-    g.lmod.lmod_con = lmod_con;
-    clear lmod_con
 end
 
 % Handle varaible input system frequency
@@ -371,8 +365,6 @@ for kk=1:10;kdc=kdc+1;t_dc(kdc)=t_dc(kdc-1)+h_dc(sw_count);end
 k = sum(k_inc)+1; % k is the total number of time steps in the simulation
 
 t(k) = sw_con(n_switch,1);
-% add time array t to global g - thad
-g.sys.t = t;
 
 [n ~]=size(mac_con) ;
 n_bus = length(bus(:,1));
@@ -672,27 +664,27 @@ else
     td_sig = zeros(1,k);
 end
 
-% if n_lmod ~= 0 % orginal code -thad
-%     lmod_st = zeros(n_lmod,k);
-%     dlmod_st = lmod_st;
-%     lmod_sig = lmod_st;
-% else
-%     lmod_st = zeros(1,k);
-%     dlmod_st = lmod_st;
-%     lmod_sig = lmod_st;
-% end
-
-if g.lmod.n_lmod ~= 0
-    % initialize zeros for all states and signals associated with lmod
-    g.lmod.lmod_st = zeros(g.lmod.n_lmod,k);
-    g.lmod.dlmod_st = g.lmod.lmod_st;
-    g.lmod.lmod_sig = g.lmod.lmod_st;
+if n_lmod ~= 0 % orginal code -thad
+    lmod_st = zeros(n_lmod,k);
+    dlmod_st = lmod_st;
+    lmod_sig = lmod_st;
 else
-    % initialize single row of zeros ( may be un necessary) - thad
-    g.lmod.lmod_st = zeros(1,k);
-    g.lmod.dlmod_st = g.lmod.lmod_st;
-    g.lmod.lmod_sig = g.lmod.lmod_st;
+    lmod_st = zeros(1,k);
+    dlmod_st = lmod_st;
+    lmod_sig = lmod_st;
 end
+
+% if g.lmod.n_lmod ~= 0
+%     % initialize zeros for all states and signals associated with lmod
+%     g.lmod.lmod_st = zeros(g.lmod.n_lmod,k);
+%     g.lmod.dlmod_st = g.lmod.lmod_st;
+%     g.lmod.lmod_sig = g.lmod.lmod_st;
+% else
+%     % initialize single row of zeros ( may be un necessary) - thad
+%     g.lmod.lmod_st = zeros(1,k);
+%     g.lmod.dlmod_st = g.lmod.lmod_st;
+%     g.lmod.lmod_sig = g.lmod.lmod_st;
+% end
 
 if n_rlmod ~= 0
     rlmod_st = zeros(n_rlmod,k);
@@ -951,7 +943,7 @@ end
 
 %% initialize load modulation control
 %if ~isempty(lmod_con) % original line - thad
-if ~isempty(g.lmod.lmod_con)
+if ~isempty(lmod_con)
     disp('load modulation')
     lmod(0,1,flag); % removed bus - thad
 end
@@ -1246,7 +1238,7 @@ while (kt <= ktmax)
         %% fancier live plotting ~~ (1x = no plot) (1.17x if % 50) (1.37x if & 10) SLOWER -thad
         livePlot = 1; % for possible fugure sim flags
         if (mod(k,10)==0) && livePlot
-            if ~isempty(g.lmod.lmod_con) || ~isempty(pwrmod_con)
+            if ~isempty(lmod_con) || ~isempty(pwrmod_con)
                 nPlt = 3;
             else
                 nPlt = 2;
@@ -1273,9 +1265,9 @@ while (kt <= ktmax)
             ylabel('Speed [PU]');
             
             % plot load moduation (if present)
-            if ~isempty(g.lmod.lmod_con)
+            if ~isempty(lmod_con)
                 subplot(nPlt,1,3)
-                plot(t(1:k),g.lmod.lmod_st(1:k))
+                plot(t(1:k),lmod_st(1:k))
                 title('System Real Load Modulation');
                 xlabel('Time [sec]');
                 ylabel('MW [PU]');
@@ -1353,8 +1345,8 @@ while (kt <= ktmax)
             tcsc(0,k,bus_sim,flag);
         end
         
-        if g.lmod.n_lmod~=0
-            ml_sig(k); % removed t - thad
+        if n_lmod~=0
+            ml_sig(t, k);
             lmod(0,k,flag); % removed bus - thad
         end
         if n_rlmod~=0
@@ -1493,8 +1485,8 @@ while (kt <= ktmax)
         B_tcsc(:,j) = B_tcsc(:,k) + h_sol*dB_tcsc(:,k);
         xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol* dxtcsc_dc(:,k);
         
-        %lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k); % original line - thad
-        g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
+        lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k); % original line - thad
+%         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
         
         rlmod_st(:,j) = rlmod_st(:,k)+h_sol*drlmod_st(:,k);
         pwrmod_p_st(:,j) = pwrmod_p_st(:,k)+h_sol*dpwrmod_p_st(:,k);
@@ -1723,8 +1715,8 @@ while (kt <= ktmax)
             tcsc(0,j,bus_sim,flag);
         end
         
-        if g.lmod.n_lmod~=0
-            ml_sig(j); % removed t - thad
+        if n_lmod~=0
+            ml_sig(t,j); 
             lmod(0,j,flag); % removed bus - thad
         end
         if n_rlmod~=0
@@ -1858,8 +1850,8 @@ while (kt <= ktmax)
         B_tcsc(:,j) = B_tcsc(:,k) + h_sol*(dB_tcsc(:,j) + dB_tcsc(:,k))/2.;
         xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;
         
-        %lmod_st(:,j) = lmod_st(:,k) + h_sol*(dlmod_st(:,j) + dlmod_st(:,k))/2.; % original line -thad
-        g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
+        lmod_st(:,j) = lmod_st(:,k) + h_sol*(dlmod_st(:,j) + dlmod_st(:,k))/2.; % original line -thad
+%         g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
         
         rlmod_st(:,j) = rlmod_st(:,k) + h_sol*(drlmod_st(:,j) + drlmod_st(:,k))/2.;
         

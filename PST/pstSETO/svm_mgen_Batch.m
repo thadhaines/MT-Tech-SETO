@@ -66,8 +66,8 @@
 % Copyright - Joe Chow/Cherry Tree Scientific Software 1991-1997
 %
 
-clear 
-clear global
+% clear 
+% clear global
 tic % start timer
 %close %graphics windows
 % set up global variables
@@ -199,9 +199,9 @@ global di_dcr  di_dci  dv_dcc
 global v_conr dv_conr  
 %inverter
 global v_coni dv_coni
-
-% simulation control
-global sw_con  scr_con
+% 
+% % simulation control
+% global sw_con  scr_con
 
 % pss design
 global  netg_con  stab_con

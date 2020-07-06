@@ -101,7 +101,7 @@ if n_tcsc~=0
    f=tcsc(0,2,bus,flag);
 end
 if n_lmod~=0 
-   f = lmod(0,2,bus,flag);
+   lmod(0,2,flag);
 end
 if n_rlmod~=0 
    f = rlmod(0,2,bus,flag);

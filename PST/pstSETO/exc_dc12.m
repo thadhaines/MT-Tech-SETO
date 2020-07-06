@@ -37,12 +37,7 @@ function exc_dc12(i,k,flag)
 %   07/02/98    xx:xx   GJR             Corrected error with no_TE
 %   12/17/15    xx:xx   JHC             Corrected error on satuation block
 %   06/19/20    11:13   Thad Haines     Revised format of globals and internal function documentation
-
-% pss variables
-global pss_out
-
-% machine variables
-%global  mac_int vex eterm
+%   07/06/20    13:48   Thad Haines     Completion of global g alteration
 
 global g
 
@@ -53,8 +48,6 @@ if i ~= 0
     end
 end
 
-% [nexc dum] =size(exc_con);
-% jay = sqrt(-1);
 if flag == 0 % initialization
     if i ~= 0  % scalar computation
         n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
@@ -241,7 +234,7 @@ if flag == 2 % exciter dynamics calculation
         end
         g.exc.V_FB(i,k) = g.exc.exc_pot(i,5)*(g.exc.Efd(i,k)-g.exc.R_f(i,k));
         err = g.exc.exc_sig(i,k) - g.exc.V_FB(i,k) + g.exc.exc_pot(i,3) - g.exc.V_TR(i,k);
-        err = err + pss_out(i,k);
+        err = err + g.pss.pss_out(i,k);
         if g.exc.exc_con(i,6) == 0 % no leadlag
             g.exc.dV_As(i,k) = 0;
             g.exc.V_As(i,k) = err;
@@ -311,7 +304,7 @@ if flag == 2 % exciter dynamics calculation
                 .*(g.exc.Efd(g.exc.dc_idx,k)-g.exc.R_f(g.exc.dc_idx,k));
             err = g.exc.exc_sig(g.exc.dc_idx,k) - g.exc.V_FB(g.exc.dc_idx,k)...
                 + g.exc.exc_pot(g.exc.dc_idx,3) - g.exc.V_TR(g.exc.dc_idx,k);
-            err = err + pss_out(g.exc.dc_idx,k);
+            err = err + g.pss.pss_out(g.exc.dc_idx,k);
             no_TB = g.exc.dc_noTB_idx;
             if ~isempty(no_TB)
                 g.exc.dV_As(g.exc.dc_idx(no_TB),k) = zeros(length(no_TB),1);

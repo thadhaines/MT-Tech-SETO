@@ -1,4 +1,4 @@
-function ml_sig(k)
+function ml_sig(t, k)
 % Syntax: f = ml_sig(t,k)
 %4:40 PM 15/08/97
 % defines modulation signal for lmod control
@@ -13,13 +13,13 @@ global g
 %fprintf('%4.4f \t %d\n', t(k), k); % DEBUG
 if n_lmod~=0
 %if n_lmod~=0
-    if g.sys.t(k) > 1
+    if t(k) > 1
         % load step
         lmod_sig(1,k) = 0.01; % modify first load only
         
         %lmod_sig(1,k) = 0.01; % modify first load only
     end
-    if g.sys.t(k) > 10
+    if t(k) > 10
         % load step
         lmod_sig(1,k) = 0.0; % modify first load only
         
