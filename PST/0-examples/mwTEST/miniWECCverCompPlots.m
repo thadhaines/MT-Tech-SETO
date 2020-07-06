@@ -25,7 +25,7 @@ compareBus_Angle( 'pstSETOnoPSSL.mat', 'pstV3p1noPSSL.mat', printFigs )
 %% pss gain fix test
 % Note: ver 2.3 does nothing to fix gain but seto version performs 
 % required multiplication
-printFigs = 1;
+printFigs = 0;
 compareBus_V( 'pstV2P3PSSL.mat', 'pstSETOPSSwGainFixL.mat', printFigs )
 compareBus_V( 'pstV2P3PSSL.mat', 'pstSETOPSSL.mat', printFigs )
 

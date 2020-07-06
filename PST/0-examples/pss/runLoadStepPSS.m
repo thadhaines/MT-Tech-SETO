@@ -1,5 +1,4 @@
 % pss test
-
 clear all; close all; clc
 
 %% Add pst path to MATLAB
@@ -65,7 +64,7 @@ save('loadStepNONLIN.mat'); %Save simulation outputs
 %% PST linear system creation
 clear all; close all;
 
-pssGainFix = 0;
+pssGainFix = 1;
 svm_mgen_Batch
 
 %%  

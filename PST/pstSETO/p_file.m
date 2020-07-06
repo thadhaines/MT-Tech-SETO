@@ -8,7 +8,6 @@
 % All Rights Reserved
 % step 3a: network solution
 
-%% Original globals block condensed into g...
 
 flag = 1;
 %generators
@@ -131,7 +130,7 @@ telect(:,2) = g.mac.pelect(:,2).*g.mac.mac_pot(:,1) ...
 d_vector = zeros(max_state,1);
 mac_state = 6*g.mac.n_mac;
 exc_state = mac_state+5*g.exc.n_exc;
-pss_state = exc_state + 3*n_pss;
+pss_state = exc_state + 3*g.pss.n_pss;
 dpw_state = pss_state +6*n_dpw;
 d_vector(1:g.mac.n_mac) = g.mac.dmac_ang(:,2);
 d_vector(g.mac.n_mac+1:2*g.mac.n_mac) = g.mac.dmac_spd(:,2);
@@ -149,10 +148,10 @@ if g.exc.n_exc~=0
    d_vector(mac_state+ 1 + 4*nEXC :mac_state+ 5*nEXC) = g.exc.dR_f(:,2);
 end
 
-if n_pss~=0
-   d_vector(exc_state+1:exc_state+n_pss) = dpss1(:,2);
-   d_vector(exc_state+n_pss+1:exc_state+2*n_pss) = dpss2(:,2);
-   d_vector(exc_state+2*n_pss+1:exc_state+3*n_pss) = dpss3(:,2);
+if g.pss.n_pss~=0
+   d_vector(exc_state+1:exc_state+g.pss.n_pss) = g.pss.dpss1(:,2);
+   d_vector(exc_state+g.pss.n_pss+1:exc_state+2*g.pss.n_pss) = g.pss.dpss2(:,2);
+   d_vector(exc_state+2*g.pss.n_pss+1:exc_state+3*g.pss.n_pss) = g.pss.dpss3(:,2);
 end
 if n_dpw~=0
    d_vector(pss_state+1:pss_state+n_dpw) = dsdpw1(:,2);
@@ -412,13 +411,13 @@ if g.exc.n_exc ~= 0
    g.exc.R_f(:,2)=g.exc.R_f(:,1);
    g.exc.dR_f(:,2) = g.exc.dR_f(:,1);
 end
-if n_pss~=0
-   pss1(:,2)=pss1(:,1);
-   pss2(:,2)=pss2(:,1);
-   pss3(:,2)=pss3(:,1);
-   dpss1(:,2)=dpss1(:,1);
-   dpss2(:,2)=dpss2(:,1);
-   dpss3(:,2)=dpss3(:,1);
+if g.pss.n_pss~=0
+   g.pss.pss1(:,2)= g.pss.pss1(:,1);
+   g.pss.pss2(:,2)= g.pss.pss2(:,1);
+   g.pss.pss3(:,2)= g.pss.pss3(:,1);
+   g.pss.dpss1(:,2)= g.pss.dpss1(:,1);
+   g.pss.dpss2(:,2)= g.pss.dpss2(:,1);
+   g.pss.dpss3(:,2)= g.pss.dpss3(:,1);
 end
 if n_dpw~=0
    sdpw1(:,2)=sdpw1(:,1);
