@@ -5,7 +5,7 @@ close all;clear;format compact;clc
 % pkg load signal
 % solverSelection = {'ode45', 'ode23', 'ode15s'}; % OCTAVE
 %%    %
-printFigs = 1;
+printFigs = 0;
 solverSelection = {'ode45', 'ode23', 'ode113','ode15s','ode23s','ode23t','ode23tb'}; % MATLAB
 
 % 'ode15i' requires derivative at t=0... more thought required - availabe in octave aswell

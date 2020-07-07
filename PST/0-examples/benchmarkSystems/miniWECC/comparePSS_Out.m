@@ -58,7 +58,7 @@ plot(tB, varB, '--', 'linewidth',1.5)
 
 title({'PSS Out Comparison'; [nameA,' (solid) - ', nameB, ' (dashed)']})
 
-ylabel('Speed [PU]')
+ylabel('Output')
 xlabel('Time [sec]')
 
 % plot absolute difference

@@ -6,13 +6,13 @@
 %
 
 clear all; close all; clc
-caseName = 'PSSwGainFix';
+caseName = 'PSS';
 scenario = 'L';% L line, F colstrip faul, C cascade?
 
 %% Add pst path to MATLAB
 % generate relative path generically
-folderDepth = 2; % depth of current directory from main PST directory
-pstVer =    'pstV3p1'; %  'pstV2P3'; %'pstSETO';% 
+folderDepth = 3; % depth of current directory from main PST directory
+pstVer =   'pstV2P3'; % 'pstSETO';% 'pstV3p1'; %  
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -53,7 +53,7 @@ end
 % copyfile('mtg_sig_PrefStep.m',[PSTpath 'mtg_sig.m']); % copy simulation specific data file to batch run location
 
 livePlotFlag = 1;
-pssGainFix = 1;
+pssGainFix = 0;
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
 %% Clean up modulation file alterations.

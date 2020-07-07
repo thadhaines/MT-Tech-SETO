@@ -64,7 +64,7 @@ xlabel('Time [sec]')
 % pdf output code
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([nameA,nameB],'-pdf'); % to print fig
+    export_fig([nameA,nameB,'MacSpd'],'-pdf'); % to print fig
 end
 
 end
