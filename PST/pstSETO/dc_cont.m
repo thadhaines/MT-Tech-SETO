@@ -1,4 +1,4 @@
-function f = dc_cont(i,k,kdc,bus,flag)
+function dc_cont(i,k,kdc,bus,flag)
 % Syntax  f = dc_cont(i,k,kdc,bus,flag)
 % 5:10 PM 15/08/97
 % Purpose - models hvdc pole controls
@@ -25,6 +25,9 @@ function f = dc_cont(i,k,kdc,bus,flag)
 % Date:     April 1997
 % Author:   Graham Rogers
 
+global dcc_con
+% check that dc controls are defined
+if ~isempty(dcc_con)
 %define global variables
 global  basmva  bus_v
 global  dcsp_con  dcl_con dcc_con 
@@ -42,12 +45,6 @@ global dv_conr
 global v_coni
 global dv_coni 
 
-
-
-jay = sqrt(-1);
-f = 0;
-% check that dc controls are defined
-if ~isempty(dcc_con)
    if flag == 0
       % initialize controls
       if i == 0 

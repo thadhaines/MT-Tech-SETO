@@ -26,6 +26,8 @@
 				\footnotesize
 					\item system variables
 					\item non-conforming loads
+					\item Simulation control
+					\item PSS
 				\end{itemize}
 		%\end{multicols}
 		\end{minipage}
@@ -34,9 +36,9 @@
 	%	\item Conceptual work on \verb|lmon| - a line flow montior for non-linear simulation
 		%\item Collected thoughts on AGC.
 		%\item Started work on batch unit testing
-		\item ODE test for variable time step
-		\item Found note about PSS gain - Same as Ryan info.
-		
+		\item ODE test for variable time step\
+		\item Created and tested \verb|pssGainFix| for pss model differences between version 2 and 3 based on manual and Ryan info.
+		\item Fixed corrector integration in s\_simu\_Batch of dpw states
 		\item created MATLAB plot functions to compare PST data
 		\item GitHub updated:\\
 	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
@@ -52,12 +54,39 @@
 			\item Plan for variable time step methods
 			\item Investigate power electronics-based models (REGC - Matt)
 	\end{itemize}
+	
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+	\item Requirements for variable step methods
+	\item PST modeling of transformers?
+	\item Deadlines of any sort?
+	\end{enumerate}
+
+\vfill\null
+\columnbreak
 
 	
 \paragraph{Current Tasks:}
 	\begin{enumerate}
 		\itemsep 0em 
 		\item Continue to cast globals to structured g
+		\begin{minipage}{\linewidth}
+				\begin{multicols}{2}
+						\begin{itemize}
+				\itemsep0em 
+						\footnotesize
+							\item IVM
+							\item SVC
+							\item TCSC
+							\item HVDC
+							\item pss design
+							\item Induction motor
+							\item Induction Generator
+							\item delta P omega filter
+						\end{itemize}
+				\end{multicols}
+				\end{minipage}
 		\item Test models in both non-linear and linear simulations
 		\item Explore/Create example cases
 		\item Get code/cases from Ryan
@@ -71,26 +100,19 @@
 		\item Investigate Octave compatibility
 \end{enumerate}
 
-\vfill\null
-\columnbreak
-
-\paragraph{Possible Future Tasks:} % Maybe good ideas?
-	\begin{enumerate}
-		\item Investigate Sandia integrator stability methods.	
-		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
-	\end{enumerate}
 
 
 \paragraph{Coding Thoughts:} 
 	\begin{enumerate}
 
 		\itemsep 0em 
-		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category that contain PST arrays used for vector calculations. ex: \verb|g.lmod.lmod_con|, \verb|g.sys.t|
-		\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
-		This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
-		Would enable addition of area definitions to models.
-		\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
-		Possibly employ \verb|feval| for a more dynamic calculation routine.
+		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category.
+		\item Create new \verb|s_simu_Batch| style script that functionalizes the newtork and dynamic calculations so that standard MATLAB ODE solvers may be used.
+		%\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+	%	This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+	%	Would enable addition of area definitions to models.
+	%	\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+	%	Possibly employ \verb|feval| for a more dynamic calculation routine.
 		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (use flags)
 		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
 		\item Generate comparison scripts to verify simulated results match after code changes.
@@ -98,12 +120,6 @@
 	
 
 
-\paragraph{Current Questions:}
-	\begin{enumerate}
-	\itemsep0em 
-	\item Requirements for variable step methods
-	\item PST modeling of transformers?
-	\end{enumerate}
 
 
 
@@ -113,6 +129,14 @@
 
 
 \begin{comment}
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
+	\end{enumerate}
+
+
+
 		\item PST modeling of faults: \\
 		Uses alternate Y matrices? \\
 		Creates fault bus?

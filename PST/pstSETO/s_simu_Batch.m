@@ -877,7 +877,7 @@ mac_em(0,1,bus,flag);
 mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
 
 disp('generator controls')
-dpwf(0,1,bus,flag);
+dpwf(0,1,flag);
 pss(0,1,flag);
 
 % exciters
@@ -1122,7 +1122,7 @@ while (kt<=ktmax)
         mac_em(0,k,bus_sim,flag);
         mac_ivm(0,k,bus_sim,flag); 
         
-        mdc_sig(t(k),k); % dc controls mod signals
+        mdc_sig(k); % dc controls mod signals
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag); % Models the action of HVDC link pole controllers
         
         %% Calculate current injections and bus voltages and angles
@@ -1245,7 +1245,7 @@ while (kt<=ktmax)
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
         
         %% network interface for control models
-        dpwf(0,k,bus_sim,flag);
+        dpwf(0,k,flag);
         
         mexc_sig(k);
         smpexc(0,k,flag);
@@ -1308,7 +1308,7 @@ while (kt<=ktmax)
         mac_tra(0,k,bus_sim,flag);
         mac_em(0,k,bus_sim,flag);
         
-        dpwf(0,k,bus_sim,flag);
+        dpwf(0,k,flag);
         pss(0,k,flag);
         
         mexc_sig(k);
@@ -1447,7 +1447,7 @@ while (kt<=ktmax)
         
         
         %% integrate dc at ten times rate (DC Stuff? 5/14/20)
-        mdc_sig(t(k),k);
+        mdc_sig(k);
         if n_conv~=0
             hdc_sol = h_sol/10;
             for kk = 1:10
@@ -1476,12 +1476,15 @@ while (kt<=ktmax)
         g.exc.R_f(:,j) = g.exc.R_f(:,k) + h_sol*g.exc.dR_f(:,k);
         g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*g.exc.dV_TR(:,k);
         
-        sdpw1(:,j) = sdpw1(:,k) + h_sol*dsdpw1(:,k);
-        sdpw2(:,j) = sdpw2(:,k) + h_sol*dsdpw2(:,k);
-        sdpw3(:,j) = sdpw3(:,k) + h_sol*dsdpw3(:,k);
-        sdpw4(:,j) = sdpw4(:,k) + h_sol*dsdpw4(:,k);
-        sdpw5(:,j) = sdpw5(:,k) + h_sol*dsdpw5(:,k);
-        sdpw6(:,j) = sdpw6(:,k) + h_sol*dsdpw6(:,k);
+        if n_dpw ~= 0
+            % only calculate if dpw filter is used
+            sdpw1(:,j) = sdpw1(:,k) + h_sol*dsdpw1(:,k);
+            sdpw2(:,j) = sdpw2(:,k) + h_sol*dsdpw2(:,k);
+            sdpw3(:,j) = sdpw3(:,k) + h_sol*dsdpw3(:,k);
+            sdpw4(:,j) = sdpw4(:,k) + h_sol*dsdpw4(:,k);
+            sdpw5(:,j) = sdpw5(:,k) + h_sol*dsdpw5(:,k);
+            sdpw6(:,j) = sdpw6(:,k) + h_sol*dsdpw6(:,k);
+        end
         
         g.pss.pss1(:,j) = g.pss.pss1(:,k) + h_sol*g.pss.dpss1(:,k);
         g.pss.pss2(:,j) = g.pss.pss2(:,k) + h_sol*g.pss.dpss2(:,k);
@@ -1494,22 +1497,40 @@ while (kt<=ktmax)
         g.tg.tg4(:,j) = g.tg.tg4(:,k) + h_sol*g.tg.dtg4(:,k);
         g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*g.tg.dtg5(:,k);
         
-        vdp(:,j) = vdp(:,k) + h_sol*dvdp(:,k);
-        vqp(:,j) = vqp(:,k) + h_sol*dvqp(:,k);
-        slip(:,j) = slip(:,k) + h_sol*dslip(:,k);
-        vdpig(:,j) = vdpig(:,k) + h_sol*dvdpig(:,k);
-        vqpig(:,j) = vqpig(:,k) + h_sol*dvqpig(:,k);
-        slig(:,j) = slig(:,k) + h_sol*dslig(:,k);
-        B_cv(:,j) = B_cv(:,k) + h_sol*dB_cv(:,k);
-        B_con(:,j) = B_con(:,k) + h_sol*dB_con(:,k);
-        xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol* dxsvc_dc(:,k);
-        B_tcsc(:,j) = B_tcsc(:,k) + h_sol*dB_tcsc(:,k);
-        xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol* dxtcsc_dc(:,k);
+        % induction motor integrations
+        if n_mot ~= 0
+            vdp(:,j) = vdp(:,k) + h_sol*dvdp(:,k);
+            vqp(:,j) = vqp(:,k) + h_sol*dvqp(:,k);
+            slip(:,j) = slip(:,k) + h_sol*dslip(:,k);
+        end
         
-        %lmod_st(:,j) = lmod_st(:,k) + h_sol*dlmod_st(:,k); % original line - thad
-        g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
-        g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+h_sol*g.rlmod.drlmod_st(:,k);
+        % induction generator integrations
+        if n_ig ~=0
+            vdpig(:,j) = vdpig(:,k) + h_sol*dvdpig(:,k);
+            vqpig(:,j) = vqpig(:,k) + h_sol*dvqpig(:,k);
+            slig(:,j) = slig(:,k) + h_sol*dslig(:,k);
+        end
         
+        % svc
+        if n_svc ~= 0
+            B_cv(:,j) = B_cv(:,k) + h_sol*dB_cv(:,k);
+            B_con(:,j) = B_con(:,k) + h_sol*dB_con(:,k);
+            xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol* dxsvc_dc(:,k);
+        end
+        
+        %tcsc
+        if n_tcsc ~= 0
+            B_tcsc(:,j) = B_tcsc(:,k) + h_sol*dB_tcsc(:,k);
+            xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol* dxtcsc_dc(:,k);
+        end
+        
+        if g.lmod.n_lmod~=0
+            g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
+        end
+        
+        if g.rlmod.n_rlmod~=0
+            g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+h_sol*g.rlmod.drlmod_st(:,k);
+        end
         %% Copied from v2.3 - 06/01/20 - thad
         g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*g.pwr.dpwrmod_p_st(:,k);
         g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*g.pwr.dpwrmod_q_st(:,k);
@@ -1544,7 +1565,7 @@ while (kt<=ktmax)
         mac_ivm(0,j,bus_sim,flag); 
         
         % assume Vdc remains unchanged for first pass through dc controls interface
-        mdc_sig(t(j),j);
+        mdc_sig(j);
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
         
         % Calculate current injections and bus voltages and angles
@@ -1655,13 +1676,16 @@ while (kt<=ktmax)
         
         %% network interface for control models - 'corrector' step
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
-        dpwf(0,j,bus_sim,flag);
+        
+        dpwf(0,j,flag);
         pss(0,j,flag);
-        mexc_sig(j);
+        
+        mexc_sig(j); % modulation
         smpexc(0,j,flag);
         smppi(0,j,flag);
         exc_st3(0,j,flag);
         exc_dc12(0,j,flag);
+        
         tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
@@ -1703,19 +1727,22 @@ while (kt<=ktmax)
         mac_sub(0,j,bus_sim,flag);
         mac_tra(0,j,bus_sim,flag);
         mac_em(0,j,bus_sim,flag);
-        dpwf(0,j,bus_sim,flag);
+        
+        dpwf(0,j,flag);
         pss(0,j,flag);
-        mexc_sig(j);
+        
+        mexc_sig(j); % modulation
         smpexc(0,j,flag);
         smppi(0,j,flag);
         exc_st3(0,j,flag);
         exc_dc12(0,j,flag);
-        mtg_sig(j);
+        
+        mtg_sig(j);% modulation
         tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
         if n_svc~=0
-            msvc_sig(t(j),j);
+            msvc_sig(t(j),j);% modulation
             if n_dcud~=0
                 tot_states=0;
                 for jj = 1:n_dcud
@@ -1734,7 +1761,7 @@ while (kt<=ktmax)
         end
         
         if n_tcsc~=0
-            mtcsc_sig(t(j),j); % this has changed since v 2.3...
+            mtcsc_sig(t(j),j); % this has changed since v 2.3... % modulation
             if n_tcscud~=0
                 tot_states=0;
                 for jj = 1:n_tcscud
@@ -1753,11 +1780,11 @@ while (kt<=ktmax)
         
         % modified to handle g - thad 06/01/20
         if g.lmod.n_lmod~=0
-            ml_sig(j); % removed t - thad
+            ml_sig(j); % removed t - thad % modulation
             lmod(0,j,flag); % removed bus - thad
         end
         if g.rlmod.n_rlmod~=0
-            rml_sig(j);
+            rml_sig(j); % modulation
             rlmod(0,j,flag);
         end
         
@@ -1868,12 +1895,15 @@ while (kt<=ktmax)
         g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*(g.exc.dV_TR(:,k)+g.exc.dV_TR(:,j))/2.;
         
         % removed extra 1 in global names. - thad 07/06/20
-        sdpw1(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
-        sdpw2(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
-        sdpw3(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
-        sdpw4(:,j) = sdpw4(:,k) +h_sol*(dsdpw4(:,k)+dsdpw4(:,j))/2.;
-        sdpw5(:,j) = sdpw5(:,k) +h_sol*(dsdpw5(:,k)+dsdpw5(:,j))/2.;
-        sdpw6(:,j) = sdpw6(:,k) +h_sol*(dsdpw6(:,k)+dsdpw6(:,j))/2.;
+        if n_dpw ~= 0
+            % only calculate if dpw filter is used
+            sdpw1(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
+            sdpw2(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
+            sdpw3(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
+            sdpw4(:,j) = sdpw4(:,k) +h_sol*(dsdpw4(:,k)+dsdpw4(:,j))/2.;
+            sdpw5(:,j) = sdpw5(:,k) +h_sol*(dsdpw5(:,k)+dsdpw5(:,j))/2.;
+            sdpw6(:,j) = sdpw6(:,k) +h_sol*(dsdpw6(:,k)+dsdpw6(:,j))/2.;
+        end
         
         g.pss.pss1(:,j) = g.pss.pss1(:,k) +h_sol*(g.pss.dpss1(:,k)+g.pss.dpss1(:,j))/2.;
         g.pss.pss2(:,j) = g.pss.pss2(:,k) +h_sol*(g.pss.dpss2(:,k)+g.pss.dpss2(:,j))/2.;
@@ -1886,33 +1916,54 @@ while (kt<=ktmax)
         g.tg.tg4(:,j) = g.tg.tg4(:,k) + h_sol*(g.tg.dtg4(:,k) + g.tg.dtg4(:,j))/2.;
         g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*(g.tg.dtg5(:,k) + g.tg.dtg5(:,j))/2.;
         
-        vdp(:,j) = vdp(:,k) + h_sol*(dvdp(:,j) + dvdp(:,k))/2.;
-        vqp(:,j) = vqp(:,k) + h_sol*(dvqp(:,j) + dvqp(:,k))/2.;
-        slip(:,j) = slip(:,k) + h_sol*(dslip(:,j) + dslip(:,k))/2.;
-        vdpig(:,j) = vdpig(:,k) + h_sol*(dvdpig(:,j) + dvdpig(:,k))/2.;
-        vqpig(:,j) = vqpig(:,k) + h_sol*(dvqpig(:,j) + dvqpig(:,k))/2.;
-        slig(:,j) = slig(:,k) + h_sol*(dslig(:,j) + dslig(:,k))/2.;
-        B_cv(:,j) = B_cv(:,k) + h_sol*(dB_cv(:,j) + dB_cv(:,k))/2.;
-        B_con(:,j) = B_con(:,k) + h_sol*(dB_con(:,j) + dB_con(:,k))/2.;
-        xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol*(dxsvc_dc(:,j) + dxsvc_dc(:,k))/2.;
-        B_tcsc(:,j) = B_tcsc(:,k) + h_sol*(dB_tcsc(:,j) + dB_tcsc(:,k))/2.;
-        xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;  
+        % induction motor integrations
+        if n_mot ~= 0
+            vdp(:,j) = vdp(:,k) + h_sol*(dvdp(:,j) + dvdp(:,k))/2.;
+            vqp(:,j) = vqp(:,k) + h_sol*(dvqp(:,j) + dvqp(:,k))/2.;
+            slip(:,j) = slip(:,k) + h_sol*(dslip(:,j) + dslip(:,k))/2.;
+        end
         
-        % modified to g
-        g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
-        g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
+        % induction generator integrations
+        if n_ig ~=0
+            vdpig(:,j) = vdpig(:,k) + h_sol*(dvdpig(:,j) + dvdpig(:,k))/2.;
+            vqpig(:,j) = vqpig(:,k) + h_sol*(dvqpig(:,j) + dvqpig(:,k))/2.;
+            slig(:,j) = slig(:,k) + h_sol*(dslig(:,j) + dslig(:,k))/2.;
+        end
+        
+        % svc
+        if n_svc ~= 0
+            B_cv(:,j) = B_cv(:,k) + h_sol*(dB_cv(:,j) + dB_cv(:,k))/2.;
+            B_con(:,j) = B_con(:,k) + h_sol*(dB_con(:,j) + dB_con(:,k))/2.;
+            xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol*(dxsvc_dc(:,j) + dxsvc_dc(:,k))/2.;
+        end
+        
+        %tcsc
+        if n_tcsc ~= 0
+            B_tcsc(:,j) = B_tcsc(:,k) + h_sol*(dB_tcsc(:,j) + dB_tcsc(:,k))/2.;
+            xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;  
+        end
+        
+        if g.lmod.n_lmod~=0
+            g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
+        end
+        if g.rlmod.n_rlmod~=0
+            g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
+        end
         
         % Copied from v2.3 - 06/01/20 - thad
         g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*(g.pwr.dpwrmod_p_st(:,j) + g.pwr.dpwrmod_p_st(:,k))/2;
         g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*(g.pwr.dpwrmod_q_st(:,j) + g.pwr.dpwrmod_q_st(:,k))/2;
         if g.pwr.n_pwrmod~=0
             for index=1:g.pwr.n_pwrmod
+                % make global? -thad 07/06/20
                 pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*(dpwrmod_p_sigst{index}(:,j) + dpwrmod_p_sigst{index}(:,k))/2;
                 pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*(dpwrmod_q_sigst{index}(:,j) + dpwrmod_q_sigst{index}(:,k))/2;
             end
         end
+        
         if n_ivm~=0
             for index=1:n_ivm
+                % make global? -thad 07/06/20
                 ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
                 ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
             end

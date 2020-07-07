@@ -1,6 +1,6 @@
 % Example of miniwecc test
-% pstV2P3 - seems to work - 49.5469 (59.3868s) L
-% pstSETO - seems to work - 24.097 (37.0102s) L
+% pstV2P3 - seems to work - 50.5244 (59.3868s) L
+% pstSETO - seems to work - 18.9074 (37.0102s) L
 % pstV3p1 - seems to work - 50.2106 (58.7085s) L
 % PSTv3 - has no batch run.... assumed the same as v3p1.
 %
@@ -12,7 +12,7 @@ scenario = 'L';% L line, F colstrip faul, C cascade?
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =   'pstSETO';%  'pstV3p1'; %  'pstV2P3'; 
+pstVer =    'pstV3p1'; %  'pstV2P3'; %'pstSETO';% 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -51,6 +51,7 @@ end
 % copyfile([PSTpath 'mtg_sig.m'],[PSTpath 'mtg_sig_ORIG_TMP.m']); % save copy of original ml_sig file
 % delete([PSTpath 'mtg_sig.m']); % ensure ml_sig file is empty
 % copyfile('mtg_sig_PrefStep.m',[PSTpath 'mtg_sig.m']); % copy simulation specific data file to batch run location
+
 livePlotFlag = 1;
 pssGainFix = 1;
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings

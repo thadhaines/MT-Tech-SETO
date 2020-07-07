@@ -1,9 +1,8 @@
-function f = rml_sig(t,k)
+function rml_sig(k)
 % Syntax: f = rml_sig(t,k)
 %5:43 PM 27/8/97
 % defines modulation signal for rlmod control
 % global rlmod_sig n_rlmod
-f=0; %dummy variable
 % rlmod_sig(:,k)=zeros(n_rlmod,1);
 %if n_rlmod~=0
 %    rlmod_sig(:,k)=zeros(n_rlmod,1);

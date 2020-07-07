@@ -1,4 +1,4 @@
-function [f] = dpwf(i,k,bus,flag)
+function dpwf(i,k,flag)
 % Syntax: [f] = dpwf(i,k,bus,flag)
 % 10:51 am July 8, 1998
 %
@@ -24,14 +24,15 @@ function [f] = dpwf(i,k,bus,flag)
 % Date: July 1998
 % Author:   Graham Rogers
 % (c) copyright Cherry Tree Scientific Software 1998 - All rights reserved
+global n_dpw
 
+if n_dpw~=0
 % deltaP/w variables 
-global  dpw_con dpw_pot dpw_out dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx
+global  dpw_con dpw_pot dpw_out dpw_pss_idx dpw_mb_idx dpw_idx dpw_Td_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
 global  mac_con mac_int mac_spd pelect basmva 
-f=0;
-if n_dpw~=0
+    
    jay = sqrt(-1);   
    if flag == 0; % initialization
       if i ~= 0  % scalar computation
