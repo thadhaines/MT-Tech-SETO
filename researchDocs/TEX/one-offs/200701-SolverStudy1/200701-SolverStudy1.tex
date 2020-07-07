@@ -8,7 +8,7 @@
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
 \chead{MATLAB variable step ode solver \\ Compared to fixed step lsim using a state space PSS model}
-\lhead{Research \\ 6/30/20}
+\lhead{Research \\ 7/01/20}
 
 \usepackage{minted}
 \usepackage{setspace}
@@ -16,15 +16,50 @@
 \usepackage{multicol}
 \begin{document}
 \onehalfspacing
-\paragraph{Step Results of a 3rd Order State Space System} \ \\
-The previous ODE45 comparison study code was altered to test a variety of variable step MATLAB ode solvers.
-Simulation time was set to one minute so that step time variations could be observed post disturbance.
-It should be noted that max step size was limited to 20 seconds.
+\paragraph{Step of a 3rd Order State Space System} \ \\
+The previous ODE45 comparison study of a step input to a PSS model was altered to test a variety of variable step MATLAB ode solvers.
+Simulation time was set to one minute so that step time variations could be observed after a disturbance.
+It should be noted that maximum step size was limited to 20 seconds (20,000 ms).
 
+\paragraph{Summary} \ \\
+The table below shows the number of steps each method took for a 60 second simulation, the maximum step size post-step event, the magnitude of the steady state error, and if the method is Octave compatible.
+Full result plots are presented in the following pages.
+
+\begin{table}[!ht]
+	\centering
+	\begin{tabular}{@{} L{2cm} 
+	R{2cm} R{4cm}  R{3cm} C{3cm}@{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+Method & 	Number of Steps & 	 Max Step Post Disturbance [ms]	& SS Error Magnitude & Octave compatible\\ \midrule
+Fixed & 14,401 & $\approx$4 & - & *\\
+ODE45 & 2,426 & 30 & $10^{-4}$ & *\\
+ODE23 & 803 & 75 & $10^{-4}$ & * \\
+ODE113 & 1,298 & 75 & $10^{-4}$\\
+ODE15s & 71 & 20,000 & $10^{-8}$ & *\\
+ODE23s & 45 & 20,000 & $10^{-9}$\\
+ODE23t & 72 & $\approx$17,000 & $10^{-9}$\\
+ODE23tb & 49 & 20,000 & $10^{-8}$\\
+
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Observations of Note}
+\begin{enumerate}
+\item All ODE methods greatly reduce the number of required steps.
+\item ODE15s, ODE23s, and ODE23tb reached the maximum allowed step size of 20 seconds.
+\item Steady state error for ODE45, ODE23, and ODE113 was approximately 4 orders of magnitude larger than all other methods and step size stayed below 75 ms.
+\item ODE23s used the least amount of steps and had one of the smallest steady state errors.
+\item ODE15s appears to be the most appropriate Octave compatible solver.
+\end{enumerate}
+
+\pagebreak
 
 \foreach \name in {ode45, ode23, ode113, ode15s, ode23s, ode23t, ode23tb}{
 \subparagraph{\name} \ \\
-\includegraphics[width=\linewidth]{step\name}
+\includegraphics[width=\linewidth]{step\name} \\
 
 \includegraphics[width=\linewidth]{stepDetail\name}
 \pagebreak

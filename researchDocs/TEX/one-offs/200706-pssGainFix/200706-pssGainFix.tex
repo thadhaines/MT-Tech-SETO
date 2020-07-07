@@ -14,18 +14,21 @@
 \begin{document}
 \onehalfspacing
 \paragraph{PSS Gain Fix} \ \\
-The washout time constant adjustment that occured between version 2 and 3 of PST requires a minor adjustment to the \verb|d_| file \verb|pss_con| for results to match.
+The PSS washout time constant `correction' that occurred between PST version 2 and 3 requires a minor adjustment to the \verb|d_| file \verb|pss_con| for appropriate model behavior between versions.
 
 The adjustment carried out by setting a \verb|pssGainFix| flag to one is: \\ \verb|pss_con(:,3) = pss_con(:,3)./pss_con(:,4);|
 
-\paragraph{Unfixed Comparisons} \ \\
-Note that this is the default action taken. 
+\paragraph{Standard Comparison} \ \\
+A miniWECC line trip was simulated to show the default differences between PST version 2 and 3 (SETO).\\
+
 
 \includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSLBusV} %
 \includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSLPSSout}
 
-\paragraph{Fixed Comparisons}\ \\
-As the PSS model parameters were from version 2, the PSS gain fix allows for the same results to occur between versions.
+\paragraph{Fixed Comparison}\ \\
+Turning the \verb|pssGainFix| flag on fixes the immediate differences between the PST model versions.
+Noise on the order of $10^{-14}$ to $10^{-13}$  occured after about 8.5 seconds.
+This is believed to be due to division rounding.\\
 
 
 \includegraphics[width=.5\linewidth]{pstV2P3PSSLpstSETOPSSwGainFixLBusV} %

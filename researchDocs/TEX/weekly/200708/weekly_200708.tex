@@ -18,7 +18,7 @@
 \paragraph{Recent Progress:}
 	\begin{enumerate}
 		\itemsep0em 
-		\item Global g, linear \& non-linear functionality for:
+		\item Global g, linear \& non-linear functionality added for:
 		\begin{minipage}{\linewidth}
 		%\begin{multicols}{2}
 				\begin{itemize}
@@ -26,7 +26,7 @@
 				\footnotesize
 					\item system variables
 					\item non-conforming loads
-					\item Simulation control
+					\item simulation control
 					\item PSS
 				\end{itemize}
 		%\end{multicols}
@@ -37,9 +37,9 @@
 		%\item Collected thoughts on AGC.
 		%\item Started work on batch unit testing
 		\item ODE test for variable time step\
-		\item Created and tested \verb|pssGainFix| for pss model differences between version 2 and 3 based on manual and Ryan info.
+		\item Created and tested \verb|pssGainFix| for pss model differences between version 2 and 3 based on user manual and Ryan info.
 		\item Fixed corrector integration in s\_simu\_Batch of dpw states
-		\item created MATLAB plot functions to compare PST data
+		\item Created more MATLAB plot functions to compare PST data
 		\item GitHub updated:\\
 	{\footnotesize	\verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
 	\end{enumerate}
@@ -48,7 +48,7 @@
 \paragraph{Sandia Action Items:}
 	\begin{itemize}
 		\itemsep 0em 
-			\item Continue development of pwrmod and ivmmod models and their implementation in PST.
+			\item Continue development of pwrmod / ivmmod models and their implementation in PST.
 			%\item Be aware of multi rate methods % mostly TAMU/Power world
 			\item Decide on PST base version (3.1$\longrightarrow$SETO)
 			\item Plan for variable time step methods
@@ -58,8 +58,20 @@
 \paragraph{Current Questions:}
 	\begin{enumerate}
 	\itemsep0em 
-	\item Requirements for variable step methods
+	\item Requirements for variable step methods:
+		\begin{minipage}{\linewidth}
+			\begin{itemize}
+				\itemsep0em 
+				\footnotesize
+				\item Functionalized Network solution
+				\item Functionalized Derivative calculation
+				\item Functionalized collection and return of calculated derivatives
+				\item `outputfunction' that handles logging of correct output values and indexing
+				\item updated scheduler to run simulation in `blocks' between known events.
+			\end{itemize}
+		\end{minipage}
 	\item PST modeling of transformers?
+	\item Play in data for variable solar irradiance?
 	\item Deadlines of any sort?
 	\end{enumerate}
 
@@ -70,7 +82,7 @@
 \paragraph{Current Tasks:}
 	\begin{enumerate}
 		\itemsep 0em 
-		\item Continue to cast globals to structured g
+		\item Remaining model globals to structure:
 		\begin{minipage}{\linewidth}
 				\begin{multicols}{2}
 						\begin{itemize}
@@ -81,18 +93,31 @@
 							\item TCSC
 							\item HVDC
 							\item pss design
-							\item Induction motor
+							\item Induction Motor
 							\item Induction Generator
 							\item delta P omega filter
 						\end{itemize}
 				\end{multicols}
 				\end{minipage}
-		\item Test models in both non-linear and linear simulations
+		\item Test models in non-linear and linear simulations
 		\item Explore/Create example cases
 		\item Get code/cases from Ryan
 		\item Think about AGC implementation.
+		\begin{minipage}{\linewidth}
+				%\begin{multicols}{2}
+						\begin{itemize}
+				\itemsep0em 
+						\footnotesize
+				\item Create \verb|area_con| and \verb|agc_con|
+				\item Calculate interchanged line flows each timestep
+				\item Calculate Area/System Average Frequency
+				\item Distributed ACE $\longrightarrow$ a step to governor pref via \verb|mtg_sig|?
+							
+						\end{itemize}
+				%\end{multicols}
+				\end{minipage}
 		\item Think about using standard ODE solvers
-		\item think about cleaning up or flowcharting svm\_mgen\_Batch
+		\item Think about cleaning up or flowcharting svm\_mgen\_Batch
 		%\item Reference Trudnowski code for `structured array, functionalized' approach.
 		%\item Reference Stajcar code for basic transient stability simulation flow.
 		\item Work on understanding PST operation
