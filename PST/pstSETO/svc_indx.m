@@ -1,14 +1,16 @@
-function f = svc_indx(svc_dc)
+function svc_indx(svc_dc)
 % syntax: f = svc_indx
 % 12:00 PM 8/8/97
 % determines the relationship between svc and nc loads
 % checks for svc
 % determines number of SVCs
 % checks for user defined damping controls
-% f is a dummy variable
-f = 0;
+
 global svc_con   n_svc  svc_idx svcll_idx % svc 
 global n_dcud dcud_idx  %user defined damping controls
+
+global g
+
 n_svc = 0;
 svc_idx = [];
 dcud_idx = [];

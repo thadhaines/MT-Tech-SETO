@@ -1,6 +1,6 @@
 function  compareBus_V( caseA, caseB, printFigs )
 %COMPAREBUS_V plotbus voltage comparison from PST data
-%   Plot bus voltage from two case of PST data. Assumes time vector is the 
+%   Plot bus voltage from two case of PST data. Assumes time vector is the
 %   same, but accomodates for global variable.
 
 % load data from case A
@@ -9,7 +9,12 @@ if exist('g', 'var')
     % handle global variable
     if isfield(g,'sys')
         tA = g.sys.t;
-        varA = g.sys.bus_v;
+        if isfield(g.sys, 'bus_v')
+            varA = g.sys.bus_v;
+        else
+            varA = bus_v;
+        end
+        
     else
         tA = t;
         varA = bus_v;
@@ -28,8 +33,11 @@ if exist('g', 'var')
     % handle global variable
     if isfield(g,'sys')
         tB = g.sys.t;
-        varB = g.sys.bus_v;
-    else
+        if isfield(g.sys, 'bus_v')
+            varB = g.sys.bus_v;
+        else
+            varB = bus_v;
+        end
         tB = t;
         varB = bus_v;
     end

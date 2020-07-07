@@ -72,7 +72,7 @@ if n_conv ~=0
    i_dc(i_idx,2) = i_dci(:,2);
 end
 % DeltaP/omega filter
-dpwf(0,2,bus,flag);
+dpwf(0,2,flag);
 % pss
 pss(0,2,flag);
 % exciters

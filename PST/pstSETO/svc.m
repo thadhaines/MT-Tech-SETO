@@ -43,8 +43,7 @@ function [bus_new] = svc(i,k,bus,flag,v_sbus)
 % Author:   Joe H. Chow
 % Date:     June 1991
 
-% system variables
-global  basmva bus_int
+global g
 
 % svc variables
 global  svc_con n_svc svc_idx svcll_idx
@@ -57,11 +56,11 @@ jay = sqrt(-1);
 if ~isempty(svc_con)
    if flag == 0; % initialization
       if i~=0
-         svc_pot(i,1) = svc_con(i,4)*svc_con(i,3)/basmva;
+         svc_pot(i,1) = svc_con(i,4)*svc_con(i,3)/g.sys.basmva;
          % B_cv max on system base
-         svc_pot(i,2) = svc_con(i,5)*svc_con(i,3)/basmva;
+         svc_pot(i,2) = svc_con(i,5)*svc_con(i,3)/g.sys.basmva;
          % B_cv min on system base
-         j = bus_int(svc_con(i,2)); % bus number
+         j = g.sys.bus_int(svc_con(i,2)); % bus number
          B_cv(i,1) = bus(j,5)/(bus(j,2).*bus(j,2)); % initial B_cv based on generation
          bus_new(j,5) = 0;
          if B_cv(i,1) > svc_pot(i,1)
@@ -80,11 +79,11 @@ if ~isempty(svc_con)
          end
          B_con(i,1) = B_cv(i,1)*(1-svc_pot(i,5))/svc_con(i,6);
       else % vectorized calculation
-         svc_pot(:,1) = svc_con(:,4).*svc_con(:,3)/basmva;
+         svc_pot(:,1) = svc_con(:,4).*svc_con(:,3)/g.sys.basmva;
          % B_cv max on system base
-         svc_pot(:,2) = svc_con(:,5).*svc_con(:,3)/basmva;
+         svc_pot(:,2) = svc_con(:,5).*svc_con(:,3)/g.sys.basmva;
          % B_cv min on system base
-         jsvc = bus_int(svc_con(:,2)); % bus number
+         jsvc = g.sys.bus_int(svc_con(:,2)); % bus number
          B_cv(:,1) = bus(jsvc,5)./(bus(jsvc,2).*bus(jsvc,2)); % initial B_cv
          bus_new(jsvc,5) = zeros(n_svc,1);
          testmxlmt=max( B_cv(:,1) > svc_pot(:,1));

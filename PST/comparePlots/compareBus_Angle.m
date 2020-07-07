@@ -9,7 +9,7 @@ if exist('g', 'var')
     % handle global variable
     tA = g.sys.t;
     if isfield(g,'mac')
-        varA = g.mac.theta;
+        varA = g.sys.theta;
     else
         varA = theta;
     end
@@ -27,13 +27,13 @@ if exist('g', 'var')
     % handle global variable
     tB = g.sys.t;
     if isfield(g,'mac')
-        varB = g.mac.theta;
+        varB = g.sys.theta;
     else
         varB = theta;
     end
 else
     tB = t;
-    varB = bus_v;
+    varB = theta;
 end
 
 % manipulate case names for labels
