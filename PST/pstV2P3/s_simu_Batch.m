@@ -1341,7 +1341,7 @@ while (kt <= ktmax)
                         tcsc_sud(jj,k,flag,tcsc_dc{jj,1},td_sig(jj,k),ytcscmx,ytcscmn,xtcsc_dc(st_state:tot_states,k));
                 end
             end
-            mtcsc_sig(t,k);
+            mtcsc_sig(t(k),k);
             tcsc(0,k,bus_sim,flag);
         end
         
@@ -1701,7 +1701,7 @@ while (kt <= ktmax)
             bus_sim = svc(0,j,bus_sim,flag,v_svc);
         end
         if n_tcsc~=0
-            mtcsc_sig(t,j);
+            mtcsc_sig(t(j),j);
             if n_tcscud~=0
                 tot_states=0;
                 for jj = 1:n_tcscud

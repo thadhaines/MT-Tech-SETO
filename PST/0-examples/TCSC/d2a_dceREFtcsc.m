@@ -32,7 +32,7 @@ bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0  -99.0  22
 	13 0.9899  -31.8  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  500.0  1.5  .5;
         14 0.95    -38    0.00   0.00  17.67 1.00  0.00  0.00 3  0.0   0.0  115.0  1.05 .95; 
 	20 0.9876    2.1  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
-       101 1.05    -19.3  0.00   8.00  0.00  0.00  0.00  0.00 2  99.0  -99.0  500.0  1.5  .5; % SVC is on gen bus
+       101 1.05    -19.3  0.00   8.00  0.00  0.00  0.00  0.00 2  99.0  -99.0  500.0  1.5  .5;
        110 1.0125  -13.4  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
        120 0.9938  -23.6  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5 ];
 
@@ -145,9 +145,11 @@ tg_con = [...
 % col 5           fraction const reactive current load
 
 load_con = [...
+1   0   0   0   0; % required for tcsc
+10   0   0   0   0; % required for tcsc
 4   0  0   .5  0;
 14  0  0   .5  0;
-101 0  0   0  0]; % SVC
+101 0  0   0  0];
 disp('0.5 constant current load, svc at bus 101')
 
 %svc
@@ -160,6 +162,19 @@ disp('0.5 constant current load, svc at bus 101')
 % col 7		  regulator time constant (s)
 
 svc_con = [1  101  600  1  0  10  0.05];
+
+% TCSC data
+% col 1 tcsc number   
+% col 2 from bus number
+% col 3 to bus number
+% col 4 regulator gain
+% col 5 regulator time constant (s)
+% col 6 maximum susceptance Bcvmax(pu)
+% col 7 minimum susceptance Bcvmin(pu)
+
+tcsc_con = [...
+1  1  10  1  0.1  0.05  -0.05 ; 
+];
 
 %Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
@@ -195,6 +210,5 @@ sw_con = [...
 0.50 0    0    0    0    0    0.01; % increase time step 
 1.0  0    0    0    0    0    0.01; % increase time step
 10.0  0    0    0    0    0    0]; % end simulation
-
 % monitor all line flows
 lmon_con = [1:length(line(:,1))]';
