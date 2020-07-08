@@ -117,8 +117,8 @@ delete('sim_fle.mat')
 figure
 hold on
 plot(tL,modSig)
-plot(t,svc_sig,'--')
-%plot(t,pm_sig,'--')
+% plot(t,svc_sig,'--')
+plot(t,g.svc.svc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Governor Pref Modulation Signal')
 

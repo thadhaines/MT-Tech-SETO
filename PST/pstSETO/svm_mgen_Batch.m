@@ -139,6 +139,19 @@ tic % start timer
 % global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
 % global  pss_idx n_pss pss_sp_idx pss_p_idx;
 % global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+%
+%     %% svc variables - 13
+%     global  svc_con n_svc svc_idx svc_pot svcll_idx
+%     global  svc_sig
+%     % svc user defined damping controls
+%     global n_dcud dcud_idx svc_dsig
+%     global svc_dc % user damping controls?
+%     global dxsvc_dc xsvc_dc
+%     %states
+%     global B_cv B_con
+%     %dstates
+%     global dB_cv dB_con
+%     
 
 %% Non converted globals
 % induction motor variables
@@ -156,16 +169,6 @@ global  igen_int igbus n_ig
 global  vdpig vqpig slig 
 %dstates
 global dvdpig dvqpig dslig
-
-% svc variables
-global  svc_con n_svc svc_idx svc_pot svcll_idx
-global  svc_sig
-% svc user defined damping controls
-global n_dcud dcud_idx svc_dsig
-%states
-global B_cv B_con
-%dstates
-global dB_cv dB_con
 
 % tcsc variables
 global  tcsc_con n_tcsc tcsvf_idx tcsct_idx 
@@ -214,7 +217,7 @@ jay = sqrt(-1);
 % load input data from m.file
 disp('linearized model development by perturbation of the non-linear model')
 %set user defined SVC and TCSC models to empty 
-svc_dc = [];
+g.svc.svc_dc = [];
 dci_dc=[]; dcr_dc=[];
 % input data file
 % [dfile,pathname]=uigetfile('d*.m','Select Data File');
@@ -291,7 +294,7 @@ n_dpw = 0;
 g.tg.n_tg = 0;
 g.tg.n_tgh = 0;
 
-n_svc = 0;
+g.svc.n_svc = 0;
 n_tcsc = 0;
 
 g.lmod.n_lmod = 0;
@@ -304,7 +307,7 @@ mac_indx;% identifies generators
 ntot = g.mac.n_mac+n_mot+n_ig;
 ngm = g.mac.n_mac+n_mot;
 g.mac.pm_sig = zeros(g.mac.n_mac,2);
-mac_exc=0;
+% mac_exc=0;
 % check for infinite buses
 if g.mac.n_ib~=0
    %remove controls associated with infinite bus generators
@@ -408,11 +411,11 @@ else
    g.tg.n_tg =0;
    g.tg.n_tgh = 0;
 end
-if ~isempty(svc_con)~=0
-   svc_dc=[];
-   svc_indx(svc_dc);
+if ~isempty(g.svc.svc_con)~=0
+   g.svc.svc_dc=[];
+   svc_indx();
 else
-   n_svc = 0;
+   g.svc.n_svc = 0;
 end
 tcsc_dc=[];n_tcscud=0;
 if ~isempty(tcsc_con)
@@ -461,15 +464,15 @@ end
 bus = mac_igen(0,1,bus,0);
 
 %initialize svc
-if n_svc ~=0
-   B_cv = zeros(n_svc,2);
-   dB_cv = zeros(n_svc,2);
-   B_con = zeros(n_svc,2);
-   dB_con = zeros(n_svc,2);
-   if n_dcud~=0
+if g.svc.n_svc ~=0
+   g.svc.B_cv = zeros(g.svc.n_svc,2);
+   g.svc.dB_cv = zeros(g.svc.n_svc,2);
+   g.svc.B_con = zeros(g.svc.n_svc,2);
+   g.svc.dB_con = zeros(g.svc.n_svc,2);
+   if g.svc.n_dcud~=0
       error('user defined svc damping control not allowed in small signal simulation')
    else
-      svc_dsig = zeros(n_svc,2);
+      g.svc.svc_dsig = zeros(g.svc.n_svc,2);
    end
 end
 bus = svc(0,1,bus,0);
@@ -521,11 +524,11 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(g.mac.n_mac+n_mot+n_ig+n_svc+n_tcsc ...
+state = zeros(g.mac.n_mac+n_mot+n_ig+g.svc.n_svc+n_tcsc ...
     +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+n_dcl,1);
 max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
     + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
-    2*n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
+    2*g.svc.n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 g.sys.theta(:,1) = bus(:,3)*pi/180;
@@ -558,10 +561,10 @@ if g.tg.n_tg ~=0||g.tg.n_tgh ~= 0
 else
    g.tg.tg_sig = zeros(1,2);
 end
-if n_svc ~=0
-   svc_sig = zeros(n_svc,2);
+if g.svc.n_svc ~=0
+   g.svc.svc_sig = zeros(g.svc.n_svc,2);
 else
-   svc_sig = zeros(1,2);
+   g.svc.svc_sig = zeros(1,2);
 end
 if n_tcsc ~=0
    tcsc_sig = zeros(n_tcsc,2);
@@ -860,9 +863,9 @@ if n_ig~=0
    slig(:,2) = slig(:,1);
    tmig(:,2) = tmig(:,1);
 end
-if n_svc ~= 0
-   B_cv(:,2) = B_cv(:,1);
-   B_con(:,2) = B_con(:,1);
+if g.svc.n_svc ~= 0
+   g.svc.B_cv(:,2) = g.svc.B_cv(:,1);
+   g.svc.B_con(:,2) = g.svc.B_con(:,1);
 end
 if n_tcsc ~= 0
    B_tcsc(:,2) = B_tcsc(:,1);
@@ -892,7 +895,7 @@ g.mac.pmech(:,2) = g.mac.pmech(:,1);
 g.mac.vex(:,2) = g.mac.vex(:,1);
 g.exc.exc_sig(:,2) = g.exc.exc_sig(:,1);
 g.tg.tg_sig(:,2) = g.tg.tg_sig(:,1);
-svc_sig(:,2) = svc_sig(:,1);
+g.svc.svc_sig(:,2) = g.svc.svc_sig(:,1);
 tcsc_sig(:,2) = tcsc_sig(:,1);
 g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 g.rlmod.rlmod_sig(:,2) = g.rlmod.rlmod_sig(:,1);
@@ -980,7 +983,9 @@ if isempty(g.mac.ibus_con)
       if g.exc.n_exc~=0
           b_vr = p_ang*b_vr;
       end
-      if n_svc~=0;b_svc = p_ang*b_svc;end
+      if g.svc.n_svc~=0
+          b_svc = p_ang*b_svc;
+      end
       if n_tcsc~=0;b_tcsc = p_ang*b_tcsc;end
       if g.lmod.n_lmod~=0
           b_lmod = p_ang*b_lmod;
