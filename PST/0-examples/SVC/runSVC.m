@@ -1,10 +1,14 @@
-% pss test
+% svc test
+% Tested as working in all Versions
+% output the same in all versions
+% commented out g.xxx variables required for SETO runs
+
 clear all; close all; clc
 
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =    'pstV3P1';% 'pstSETO'; % 'pstV2p3';% 
+pstVer =    'pstSETO'; %  'pstV2p3';% 'pstV3P1';% 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -21,10 +25,15 @@ clear folderDepth pathParts pNdx PSTpath
 clear all; close all; clc
 load PSTpath.mat
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
-copyfile('d2a_dce.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
+copyfile('d2a_dceREF.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
+% move modulation file
+copyfile('msvc_sig _SmallStep.m',[PSTpath 'msvc_sig.m']); % copy system data file to batch run location
 pssGainFix = 1;
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+
+% reset modulation file
+copyfile([PSTpath 'msvc_sig_ORIG.m'],[PSTpath 'msvc_sig.m']); % copy system data file to batch run location
 
 %% Simulation variable cleanup
 % Clear any varables that contain only zeros
@@ -49,105 +58,117 @@ clear varNames vName zeroTest
 %% Save cleaned output data
 save([pstVer,'SVCnonLIN.mat']); %Save simulation outputs
 
-% %% PST linear system creation
-% clear all; close all;
-% 
-% pssGainFix = 1;
-% svm_mgen_Batch
-% 
-% %% MATLAB linear system creation using linearized PST results
-% tL = (0:0.001:20); % time to match PST d file time
-% modSig=zeros(1,size(tL,2)); % create blank mod signal same length as tL vector
-% modSig(find(tL> 1.0 ))= 0.01; % mirror logic from exciterModSig into input vector
-% modSig(find(tL>10))= 0; % mirror logic from exciterModSig into input vector
-% 
-% bsys = b_lmod;
-% csys = [c_v;c_spd;c_pm];
-% G = ss(a_mat,bsys,csys,zeros(size(csys,1),size(bsys,2))); % create system using pst matricies
-% 
-% y = lsim(G,modSig,tL); % run input into state space system
-% 
-% % collect bus voltage magnitudes and adjust by initial conditions
-% linV = y(:,1:4)'; % rotate into col vectors
-% for busN = 1:size(linV,1)
-%     linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
-% end
-% 
-% % collect machine speeds and adjust by initial condition
-% linSpd = y(:,5:6)'+ 1.0; % rotate into col vectors
-% 
-% % collect pm...
-% linPm = y(:,7:8)';% rotate to vector
-% linPm(1,:)= linPm(1,:)+ g.mac.pmech(1,1);
-% linPm(2,:)= linPm(2,:)+ g.mac.pmech(2,1);
-% 
-% 
-% save linResults.mat tL linV linSpd modSig linPm
-%
-% %% Clean up load modulation file alterations...
-% 
-% 
-% %% temp file clean up
-% delete('PSTpath.mat')
-% delete('sim_fle.mat')
-% 
-% %% plot comparisons
-% load loadStepNONLIN.mat
-% load linResults.mat
-% 
-% %% compare mod inputs
-% figure
-% hold on
-% plot(tL,modSig)
-% plot(t,g.lmod.lmod_sig,'--')
-% %plot(t,pm_sig,'--')
-% legend('Linear','Non-Linear','location','best')
-% title('Governor Pref Modulation Signal')
-% 
-% 
-% %% compare machine speeds
-% figure
-% hold on
-% legNames={};
-% for busN=1:size(linSpd,1)
-%     plot(tL,linSpd(busN,:))
-%     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-%     plot(t,g.mac.mac_spd(busN,:),'--')
-%     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
-%     
-% end
-% legend(legNames,'location','best')
-% title('Machine Speeds')
-% xlabel('Time [sec]')
-% ylabel('Speed [PU]')
-% 
-% %% compare machine power
-% figure
-% hold on
-% legNames={};
-% for busN=1:size(linPm,1)
-%     plot(tL,linPm(busN,:))
-%     legNames{end+1}= ['Gen Pm ', int2str(busN), ' Linear'];
-%     plot(t,g.mac.pmech(busN,:),'--')
-%     legNames{end+1}= ['Gen Pm ', int2str(busN), ' non-Linear'];
-% end
-% legend(legNames,'location','best')
-% title('Machine Mechanical Power')
-% xlabel('Time [sec]')
-% ylabel('Mechanical Power [PU MW]')
-% 
-% %% compare bus voltage magnitude
-% figure
-% hold on
-% legNames={};
-% for busN=1:size(linV,1)
-%     plot(tL,linV(busN,:))
-%     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-%     plot(t,abs(g.sys.bus_v(busN,:)),'--')
-%     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
-%     
-% end
-% legend(legNames,'location','best')
-% title('Bus Voltage Magnitude')
-% xlabel('Time [sec]')
-% ylabel('Voltage [PU]')
+%% PST linear system creation
+clear all; close all;
+
+pssGainFix = 1;
+svm_mgen_Batch
+
+%% MATLAB linear system creation using linearized PST results
+tL = (0:0.001:10); % time to match PST d file time
+modSig=zeros(1,size(tL,2)); % create blank mod signal same length as tL vector
+modSig(find(tL>= 0.5 ))= 0.01; % mirror logic from exciterModSig into input vector
+modSig(find(tL>= 1.5))= 0; % mirror logic from exciterModSig into input vector
+
+bsys = b_svc;
+csys = [c_v;c_spd;c_pm];
+G = ss(a_mat,bsys,csys,zeros(size(csys,1),size(bsys,2))); % create system using pst matricies
+
+y = lsim(G,modSig,tL); % run input into state space system
+
+% collect bus voltage magnitudes and adjust by initial conditions
+linV = y(:,1:size(c_v,1))'; % rotate into col vectors
+for busN = 1:size(linV,1)
+    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
+end
+
+% collect machine speeds and adjust by initial condition
+spdStart = size(c_v,1)+1;
+spdEnd = spdStart + size(c_spd,1)-1;
+linSpd = y(:,spdStart:spdEnd )'+ 1.0; % rotate into col vectors
+
+% collect pm...
+pmStart = spdEnd+1;
+linPm = y(:,pmStart:end)';% rotate to vector
+
+% required adjustments
+load PSTpath.mat
+name = [pstVer,'SVCnonLIN.mat'];
+feval('load', name)
+
+for pmAdj = 1:size(linPm,1)
+    linPm(pmAdj,:)= linPm(pmAdj,:)+ g.mac.pmech(pmAdj,1);
+%     linPm(pmAdj,:)= linPm(pmAdj,:)+ pmech(pmAdj,1);
+end
+
+save linResults.mat tL linV linSpd modSig linPm
+
+%% plot comparisons
+load PSTpath.mat
+name = [pstVer,'SVCnonLIN.mat'];
+feval('load', name)
+load linResults.mat
+
+%% temp file clean up
+delete('PSTpath.mat')
+delete('sim_fle.mat')
+
+%% compare mod inputs
+figure
+hold on
+plot(tL,modSig)
+plot(t,svc_sig,'--')
+%plot(t,pm_sig,'--')
+legend('Linear','Non-Linear','location','best')
+title('Governor Pref Modulation Signal')
+
+
+%% compare machine speeds
+figure
+hold on
+legNames={};
+for busN=1:size(linSpd,1)
+    plot(tL,linSpd(busN,:))
+    legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
+    plot(t,g.mac.mac_spd(busN,:),'--')
+%      plot(t,mac_spd(busN,:),'--')
+    legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
+    
+end
+legend(legNames,'location','best')
+title('Machine Speeds')
+xlabel('Time [sec]')
+ylabel('Speed [PU]')
+
+%% compare machine power
+figure
+hold on
+legNames={};
+for busN=1:size(linPm,1)
+    plot(tL,linPm(busN,:))
+    legNames{end+1}= ['Gen Pm ', int2str(busN), ' Linear'];
+    plot(t,g.mac.pmech(busN,:),'--')
+%     plot(t,pmech(busN,:),'--')
+    legNames{end+1}= ['Gen Pm ', int2str(busN), ' non-Linear'];
+end
+legend(legNames,'location','best')
+title('Machine Mechanical Power')
+xlabel('Time [sec]')
+ylabel('Mechanical Power [PU MW]')
+
+%% compare bus voltage magnitude
+figure
+hold on
+legNames={};
+for busN=1:size(linV,1)
+    plot(tL,linV(busN,:))
+    legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
+    plot(t,abs(g.sys.bus_v(busN,:)),'--')
+%     plot(t,abs(bus_v(busN,:)),'--')
+    legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
+    
+end
+legend(legNames,'location','best')
+title('Bus Voltage Magnitude')
+xlabel('Time [sec]')
+ylabel('Voltage [PU]')

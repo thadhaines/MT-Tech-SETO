@@ -90,7 +90,7 @@ mac_tra(0,2,bus,flag);
 mac_sub(0,2,bus,flag); 
 mac_ind(0,2,bus,flag); 
 mac_igen(0,2,bus,flag);
-dpwf(0,2,bus,flag);
+dpwf(0,2,flag);
 pss(0,2,flag);
 
 smpexc(0,2,flag);
