@@ -28,7 +28,7 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d2a_dceREF.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % move modulation file
-copyfile('msvc_sig _SmallStep.m',[PSTpath 'msvc_sig.m']); % copy system data file to batch run location
+copyfile('msvc_sig_SmallStepG.m',[PSTpath 'msvc_sig.m']); % copy system data file to batch run location
 pssGainFix = 1;
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
@@ -117,8 +117,8 @@ delete('sim_fle.mat')
 figure
 hold on
 plot(tL,modSig)
-plot(t,svc_sig,'--')
-%plot(t,pm_sig,'--')
+% plot(t,svc_sig,'--')
+plot(t,g.svc.svc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Governor Pref Modulation Signal')
 

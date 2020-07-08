@@ -1,0 +1,85 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of Static VAR Compensator using global g\\ }
+\lhead{Research \\7/08/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable SVC in PST to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+It should be noted that there appears to be user defined SVC damping control functionality that is not fully implemented or documented.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+    %% svc variables - 13
+    global  svc_con n_svc svc_idx svc_pot svcll_idx
+    global  svc_sig
+    % svc user defined damping controls
+    global n_dcud dcud_idx svc_dsig
+    global svc_dc % user damping controls?
+    global dxsvc_dc xsvc_dc
+    %states
+    global B_cv B_con
+    %dstates
+    global dB_cv dB_con
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{handleNewGlobals}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.svc| structure
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{nc\_load}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.svc| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{svc}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.svc| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{svc\_indx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.svc| structure
+	\end{itemize}
+%===============================================================================
+\paragraph{s\_simu\_Batch}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.svc| structure
+	\end{itemize}
+
+
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300}
+
+%===============================================================================
+Alteration of system globals to use \verb|g.svc| structure:
+
+	\begin{itemize}
+		\item svm\_mgen\_Batch
+		\item ns\_file (ran as a script)
+		\item p\_m\_file (ran as a script)
+		\item p\_file (ran as a script)
+		\item p\_cont (ran as a script)
+	\end{itemize}
+	
+	
+
+
+\end{document}

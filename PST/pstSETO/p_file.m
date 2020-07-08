@@ -101,8 +101,8 @@ exc_st3(0,2,flag);
 tg(0,2,flag);
 tg_hydro(0,2,bus,flag);
 
-if n_svc~=0 
-   v_svc = abs(v(g.sys.bus_int(svc_con(:,2)),2));
+if g.svc.n_svc~=0 
+   v_svc = abs(v(g.sys.bus_int(g.svc.svc_con(:,2)),2));
    svc(0,2,bus,flag,v_svc);
 end
 if n_tcsc~=0
@@ -183,33 +183,33 @@ if n_ig~=0
    d_vector(ig_start+2*n_ig+1:ig_start+3*n_ig) = dslig(:,2);
 end
 
-if n_svc ~= 0
+if g.svc.n_svc ~= 0
    svc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig;
-   d_vector(svc_start+1:svc_start+n_svc) = dB_cv(:,2);
-   d_vector(svc_start+n_svc+1:svc_start+2*n_svc) = dB_con(:,2);
+   d_vector(svc_start+1:svc_start+g.svc.n_svc) = g.svc.dB_cv(:,2);
+   d_vector(svc_start+g.svc.n_svc+1:svc_start+2*g.svc.n_svc) = g.svc.dB_con(:,2);
 end
 
 if n_tcsc~=0
-   tcsc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc;
+   tcsc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*g.svc.n_svc;
    d_vector(tcsc_start+1:tcsc_start+n_tcsc)=dB_tcsc(:,2);
 end
 if g.lmod.n_lmod ~= 0
-   lmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc;
+   lmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*g.svc.n_svc+n_tcsc;
    d_vector(lmod_start+1:lmod_start+g.lmod.n_lmod) = g.lmod.dlmod_st(:,2);
 end
 if g.rlmod.n_rlmod ~= 0
-   rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod;
+   rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*g.svc.n_svc+n_tcsc+g.lmod.n_lmod;
    d_vector(rlmod_start+1:rlmod_start+g.rlmod.n_rlmod) = g.rlmod.drlmod_st(:,2);
 end
 if g.pwr.n_pwrmod ~= 0
-   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
+   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*g.svc.n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
    d_vector(pwrmod_p_start+1:pwrmod_p_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_p_st(:,2);
-   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
+   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig+2*g.svc.n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
    d_vector(pwrmod_q_start+1:pwrmod_q_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_q_st(:,2);
 end
 
 if n_conv~=0
-   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*n_svc +n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
+   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*n_ig + 2*g.svc.n_svc +n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
    d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
    d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
    d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
@@ -463,12 +463,12 @@ if n_ig~=0
    dvqpig(:,2) = dvqpig(:,1);
    dslig(:,2) = dslig(:,1);
 end
-if n_svc ~=0
-   B_cv(:,2) = B_cv(:,1);
-   dB_cv(:,2) = dB_cv(:,1);
-   B_con(:,2) = B_con(:,1);
-   dB_con(:,2) = dB_con(:,1);
-   svc_sig(:,2) = svc_sig(:,1);
+if g.svc.n_svc ~=0
+   g.svc.B_cv(:,2) = g.svc.B_cv(:,1);
+   g.svc.dB_cv(:,2) = g.svc.dB_cv(:,1);
+   g.svc.B_con(:,2) = g.svc.B_con(:,1);
+   g.svc.dB_con(:,2) = g.svc.dB_con(:,1);
+   g.svc.svc_sig(:,2) = g.svc.svc_sig(:,1);
 end
 if n_tcsc~=0
    B_tcsc(:,2)=B_tcsc(:,1);

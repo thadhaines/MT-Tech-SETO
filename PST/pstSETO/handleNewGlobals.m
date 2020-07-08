@@ -15,6 +15,7 @@
 %   07/02/20    13:15   Thad Haines     addition of load_con for ncl
 %   07/06/20    09:30   Thad Haines     addition of sw_con
 %   07/06/20    11:15   Thad Haines     addition of pss_con and gain fix
+%   07/08/20    15:32   Thad Haines     addition of svc_con
 
 global g
 
@@ -110,6 +111,14 @@ if exist('pss_con','var')
 else
     g.pss.pss_con = [];
     g.pss.pssGainFix = nan;
+end
+
+%% svc_con
+if exist('svc_con','var')
+    g.svc.svc_con = svc_con;
+    clear svc_con;
+else
+    g.svc.svc_con = [];
 end
 
 %% Global for plot flag

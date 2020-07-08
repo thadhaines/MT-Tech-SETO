@@ -185,26 +185,26 @@ if n_ig~=0
    end
 end
 
-nts = ntot + n_svc;
+nts = ntot + g.svc.n_svc;
 % disturb svc states
-if n_svc~=0
+if g.svc.n_svc~=0
    disp('disturbing svc')
    for k = ntot+1:nts
       j=1;
       k_svc = k - ntot;
-      pert = p_ratio*abs(B_cv(k_svc,1));   
+      pert = p_ratio*abs(g.svc.B_cv(k_svc,1));   
       pert = max(pert,p_ratio);
-      B_cv(k_svc,2) = B_cv(k_svc,1) + pert;
+      g.svc.B_cv(k_svc,2) = g.svc.B_cv(k_svc,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 32;
       % disturb B_con
-      if ~isempty(svcll_idx)
+      if ~isempty(g.svc.svcll_idx)
          j = j+1;
-         kcon = find(svcll_idx==k_svc);
+         kcon = find(g.svc.svcll_idx==k_svc);
          if ~isempty(kcon)
-            pert = p_ratio*abs(B_con(k_svc,1));
+            pert = p_ratio*abs(g.svc.B_con(k_svc,1));
             pert = max(pert,p_ratio);
-            B_con(k_svc,2) = B_con(k_svc,1) + pert;
+            g.svc.B_con(k_svc,2) = g.svc.B_con(k_svc,1) + pert;
             p_file %m-file of perturbations
             st_name(k,j)= 33;
          end
@@ -215,14 +215,14 @@ if n_svc~=0
       svc_input = k_svc;
       pert = p_ratio;
       nominal = 0.0;
-      svc_sig(k_svc,2) = svc_sig(k_svc,2) + pert;
+      g.svc.svc_sig(k_svc,2) = g.svc.svc_sig(k_svc,2) + pert;
       p_file
-      svc_sig(k_svc,2) = nominal; 
+      g.svc.svc_sig(k_svc,2) = nominal; 
       c_state = 0;
    end
 end
-nts = ntot + n_svc;
-ntf = ntot + n_svc + n_tcsc;
+nts = ntot + g.svc.n_svc;
+ntf = ntot + g.svc.n_svc + n_tcsc;
 % disturb tcsc states
 if n_tcsc~=0
    disp('disturbing tcsc')

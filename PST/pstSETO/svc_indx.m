@@ -1,4 +1,4 @@
-function svc_indx(svc_dc)
+function svc_indx()
 % syntax: f = svc_indx
 % 12:00 PM 8/8/97
 % determines the relationship between svc and nc loads
@@ -6,36 +6,34 @@ function svc_indx(svc_dc)
 % determines number of SVCs
 % checks for user defined damping controls
 
-global svc_con   n_svc  svc_idx svcll_idx % svc 
-global n_dcud dcud_idx  %user defined damping controls
-
 global g
 
-n_svc = 0;
-svc_idx = [];
-dcud_idx = [];
-n_dcud = 0;
-if ~isempty(svc_con)
-   [n_svc npar] = size(svc_con);
-   svc_idx = zeros(n_svc,1);
+g.svc.n_svc = 0;
+g.svc.svc_idx = [];
+g.svc.dcud_idx = [];
+g.svc.n_dcud = 0;
+
+if ~isempty(g.svc.svc_con)
+   [g.svc.n_svc, npar] = size(g.svc.svc_con);
+   g.svc.svc_idx = zeros(g.svc.n_svc,1);
    % set defaults for lead lag
    if npar<9
-      svc_con(:,8:9) = zeros(n_svc,2);
+      g.svc.svc_con(:,8:9) = zeros(g.svc.n_svc,2);
    end
-   svcll_idx = find(svc_con(:,9)~=0);
-   for j = 1:n_svc
-      index = find(svc_con(j,2)== g.ncl.load_con(:,1));
+   g.svc.svcll_idx = find(g.svc.svc_con(:,9)~=0);
+   for j = 1:g.svc.n_svc
+      index = find(g.svc.svc_con(j,2)== g.ncl.load_con(:,1));
       if ~isempty(index)
-         svc_idx(j) = index;
+         g.svc.svc_idx(j) = index;
       else
          error('you must have the svc bus declared as a non-conforming load')
       end
    end
    % check for user defined controls
-   if ~isempty(svc_dc)
-      [n_dcud,dummy] = size(svc_dc);
-      for j = 1:n_dcud
-         dcud_idx(j) = svc_dc{j,2};
+   if ~isempty(g.svc.svc_dc)
+      g.svc.n_dcud = size(g.svc.svc_dc,1);
+      for j = 1:g.svc.n_dcud
+         g.svc.dcud_idx(j) = g.svc.svc_dc{j,2};
       end
    end      
 end

@@ -13,7 +13,6 @@
 % Date: September 1996
 % Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997
 
-
 for k = 1:g.mac.n_mac
    % generators
    no_mac = 0;
@@ -186,24 +185,24 @@ end
 
 % svc
 n_svc_states = 0;
-if n_svc~=0
-   state_svc(1:n_svc) = ones(n_svc,1);
+if g.svc.n_svc~=0
+   state_svc(1:g.svc.n_svc) = ones(g.svc.n_svc,1);
    state_svccon = 0;
-   sc = zeros(n_svc,1);
-   if ~isempty(svcll_idx)
-      state_svccon = ones(length(svcll_idx),1);
-      sc(svcll_idx)=state_svccon;
+   sc = zeros(g.svc.n_svc,1);
+   if ~isempty(g.svc.svcll_idx)
+      state_svccon = ones(length(g.svc.svcll_idx),1);
+      sc(g.svc.svcll_idx)=state_svccon;
    end
    n_svc_states = sum(state_svc)+sum(state_svccon);
    n_svc1 = ntot;
-   state(n_svc1+1:n_svc1+n_svc) = ones(n_svc,1)+sc;
+   state(n_svc1+1:n_svc1+g.svc.n_svc) = ones(g.svc.n_svc,1)+sc;
 end;
 % tcsc
 n_tcsc_states = 0;
 if n_tcsc~=0
    state_tcsc(1:n_tcsc) = ones(n_tcsc,1);
    n_svc_states = sum(state_tcsc);
-   n_tcsc1 = ntot+n_svc;
+   n_tcsc1 = ntot+g.svc.n_svc;
    state(n_tcsc1+1:n_tcsc1+n_tcsc) = ones(n_tcsc,1);
 end;
 
@@ -212,7 +211,7 @@ n_lmod_states = 0;
 if g.lmod.n_lmod~=0
    state_lmod(1:g.lmod.n_lmod) = ones(g.lmod.n_lmod,1);
    n_lmod_states = sum(state_lmod);
-   n_lmod1 = ntot+ n_svc + n_tcsc;
+   n_lmod1 = ntot+ g.svc.n_svc + n_tcsc;
    state(n_lmod1+1 : n_lmod1+g.lmod.n_lmod ) = ones(g.lmod.n_lmod,1);
 end;
 % rlmod
@@ -220,7 +219,7 @@ n_rlmod_states = 0;
 if g.rlmod.n_rlmod~=0
    state_rlmod(1:g.rlmod.n_rlmod) = ones(g.rlmod.n_rlmod,1);
    n_rlmod_states = sum(state_rlmod);
-   n_rlmod1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod;
+   n_rlmod1 = ntot+g.svc.n_svc+n_tcsc+g.lmod.n_lmod;
    state(n_rlmod1+1 : n_rlmod1+g.rlmod.n_rlmod) = ones(g.rlmod.n_rlmod,1);
 end;
 % pwrmod
@@ -228,11 +227,11 @@ n_pwrmod_states = 0;
 if g.pwr.n_pwrmod~=0
    state_p_pwrmod(1:g.pwr.n_pwrmod) = ones(g.pwr.n_pwrmod,1);
    n_pwrmod_p_states = sum(state_p_pwrmod);
-   n_pwrmod_p1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
+   n_pwrmod_p1 = ntot+g.svc.n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
    state(n_pwrmod_p1+1:n_pwrmod_p1+g.pwr.n_pwrmod) = ones(g.pwr.n_pwrmod,1);
    state_q_pwrmod(1:g.pwr.n_pwrmod) = ones(g.pwr.n_pwrmod,1);
    n_pwrmod_q_states = sum(state_q_pwrmod);
-   n_pwrmod_q1 = ntot+n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
+   n_pwrmod_q1 = ntot+g.svc.n_svc+n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
    state(n_pwrmod_q1+1:n_pwrmod_q1+g.pwr.n_pwrmod) = ones(g.pwr.n_pwrmod,1);
 end;
 
@@ -244,6 +243,6 @@ if n_conv~= 0
       state_hvdc(cap_idx) =state_hvdc(cap_idx) + 2*ones(l_cap,1);
    end
    n_hvdc_states = sum(state_hvdc);
-   n_hvdc1 = ntot +n_svc + n_tcsc+ g.lmod.n_lmod+n_rlmod+2*g.pwr.n_pwrmod;
+   n_hvdc1 = ntot +g.svc.n_svc + n_tcsc+ g.lmod.n_lmod+n_rlmod+2*g.pwr.n_pwrmod;
    state(n_hvdc1+1:n_hvdc1+n_dcl) = (3 + 2*l_cap)*ones(n_dcl,1);
 end
