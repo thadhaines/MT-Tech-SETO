@@ -147,6 +147,21 @@ warning('*** Declare Global Variables')
 %     global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
 %     global  pss_idx n_pss pss_sp_idx pss_p_idx;
 %     global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
+% 
+%     %% svc variables - 13
+%     global  svc_con n_svc svc_idx svc_pot svcll_idx
+%     global  svc_sig
+%     % svc user defined damping controls
+%     global n_dcud dcud_idx svc_dsig
+%     global svc_dc % user damping controls?
+%     global dxsvc_dc xsvc_dc
+%     %states
+%     global B_cv B_con
+%     %dstates
+%     global dB_cv dB_con
+
+%% Original globals block condensed into g...
+
     
     %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
@@ -167,15 +182,7 @@ warning('*** Declare Global Variables')
     %dstates
     global dvdpig dvqpig dslig
 
-    %% svc variables - 13
-    global  svc_con n_svc svc_idx svc_pot svcll_idx
-    global  svc_sig
-    % svc user defined damping controls
-    global n_dcud dcud_idx svc_dsig
-    %states
-    global B_cv B_con
-    %dstates
-    global dB_cv dB_con
+
 
     %% tcsc variables - 10
     global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
@@ -216,7 +223,9 @@ warning('*** Declare Global Variables')
 
 
 %% meant to be dc globals? 06/08/20 - thad
-svc_dc=[];
+% look like user defined damping controls that were never implemented
+% and intentionally removed?
+g.svc.svc_dc=[];
 tcsc_dc=[];
 dcr_dc=[];
 dci_dc=[];
@@ -308,7 +317,7 @@ exc_indx();
 tg_indx(); % functionalized 06/05/20 - thad
 dpwf_indx;
 pss_indx;
-svc_indx(svc_dc);
+svc_indx(); % assigned svc_dc to global (damping control?)
 tcsc_indx(tcsc_dc);
 lm_indx;
 rlm_indx();
@@ -478,6 +487,7 @@ if n_conv~=0
         dxdcr_dc = zeros(1,kdc);
         dcrd_sig = zeros(1,k);
     end
+    
     if ndci_ud~=0
         for j = 1:ndci_ud
             sv = get(dci_dc{j,1});
@@ -485,8 +495,8 @@ if n_conv~=0
                 xdci_dc =zeros(sv.NumStates,kdc);
                 dxdci_dc = zeros(sv.NumStates,kdc);
             else
-                xdci_dc = [xsvc_dc;zeros(sv.NumStates,kdc)];
-                dxdci_dc = [dxsvc_dc;zeros(sv.NumStates,kdc)];
+                xdci_dc = [g.svc.xsvc_dc;zeros(sv.NumStates,kdc)];
+                dxdci_dc = [g.svc.dxsvc_dc;zeros(sv.NumStates,kdc)];
             end
         end
         dcid_sig=zeros(ndcr_ud,k);
@@ -642,38 +652,45 @@ pig = zig;
 qig = zig; 
 tmig = zig;
 
-if n_svc~=0
-    B_cv = zeros(n_svc,k); 
-    dB_cv = zeros(n_svc,k);
-    svc_sig = zeros(n_svc,k);
-    svc_dsig=zeros(n_svc,k);
-    B_con = zeros(n_svc,k); 
-    dB_con=zeros(n_svc,k);
-    if n_dcud~=0
-        d_sig = zeros(n_dcud,k);
-        for j = 1:n_dcud
-            sv = get(svc_dc{j,1});
+if g.svc.n_svc~=0
+    svcZeros = zeros(g.svc.n_svc,k); 
+    g.svc.B_cv = svcZeros;
+    g.svc.dB_cv = svcZeros;
+    g.svc.svc_sig = svcZeros;
+    g.svc.svc_dsig= svcZeros;
+    g.svc.B_con = svcZeros;
+    g.svc.dB_con= svcZeros;
+    
+    % Unsure of this - DC svc? -thad 07/08/20
+    % damping control user defined?
+    if g.svc.n_dcud~=0
+        d_sig = zeros(g.svc.n_dcud,k);
+        for j = 1:g.svc.n_dcud
+            sv = get(g.svc.svc_dc{j,1});
             if j==1
-                xsvc_dc =zeros(sv.NumStates,k);
-                dxsvc_dc = zeros(sv.NumStates,k);
+                g.svc.xsvc_dc =zeros(sv.NumStates,k);
+                g.svc.dxsvc_dc = zeros(sv.NumStates,k);
             else
-                xsvc_dc = [xsvc_dc;zeros(sv.NumStates,k)];
-                dxsvc_dc = [dxsvc_dc;zeros(sv.NumStates,k)];
+                g.svc.xsvc_dc = [g.svc.xsvc_dc;zeros(sv.NumStates,k)];
+                g.svc.dxsvc_dc = [g.svc.dxsvc_dc;zeros(sv.NumStates,k)];
             end
         end
+        
     else
-        xsvc_dc = zeros(1,k);
-        dxsvc_dc = zeros(1,k);
+        g.svc.xsvc_dc = zeros(1,k);
+        g.svc.dxsvc_dc = zeros(1,k);
     end
 else
-    B_cv = zeros(1,k);
-    dB_cv = zeros(1,k); 
-    svc_sig = zeros(1,k);
-    svc_dsig = zeros(1,k);
-    B_con = zeros(1,k);
-    dB_con=zeros(1,k);
-    xsvc_dc = zeros(1,k);   % supposed to be global? - thad 06/03/20
-    dxsvc_dc = zeros(1,k);  % supposed to be global? - thad 06/03/20
+    g.svc.B_cv = zeros(1,k);
+    g.svc.dB_cv = zeros(1,k); 
+    g.svc.svc_sig = zeros(1,k);
+    g.svc.svc_dsig = zeros(1,k);
+    g.svc.B_con = zeros(1,k);
+    g.svc.dB_con=zeros(1,k);
+    
+    % DC SVC?
+    g.svc.xsvc_dc = zeros(1,k);   % supposed to be global? - thad 06/03/20
+    g.svc.dxsvc_dc = zeros(1,k);  % supposed to be global? - thad 06/03/20
     d_sig = zeros(1,k);     % supposed to be global? - thad 06/03/20
 end
 
@@ -780,14 +797,14 @@ disp('initializing other models...')
 g.sys.theta(1:n_bus,1) = bus(:,3)*pi/180;
 g.sys.bus_v(1:n_bus,1) = bus(:,2).*exp(jay*g.sys.theta(1:n_bus,1));
 
-if n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
+if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of line current for svc damping controls
-    for j=1:n_dcud
-        l_num = svc_dc{j,3};
-        svc_num = svc_dc{j,2};
+    for j=1:g.svc.n_dcud
+        l_num = g.svc.svc_dc{j,3};
+        svc_num = g.svc.svc_dc{j,2};
         from_bus = g.sys.bus_int(line(l_num,1)); 
         to_bus = g.sys.bus_int(line(l_num,2));
-        svc_bn = g.sys.bus_int(svc_con(svc_num,2));
+        svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
         
         if svc_bn~= from_bus&& svc_bn  ~= to_bus
             error('the svc is not at the end of the specified line');
@@ -922,18 +939,18 @@ end
 
 %% initialize svc damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
-if n_dcud~=0
+if g.svc.n_dcud~=0
     disp('svc damping controls')
     tot_states=0;
-    for i = 1:n_dcud
-        ysvcmx = svc_dc{i,4};
-        ysvcmn = svc_dc{i,5};
-        svc_num = svc_dc{i,2};
+    for i = 1:g.svc.n_dcud
+        ysvcmx = g.svc.svc_dc{i,4};
+        ysvcmn = g.svc.svc_dc{i,5};
+        svc_num = g.svc.svc_dc{i,2};
         st_state = tot_states+1; 
-        svc_states = svc_dc{i,6}; 
+        svc_states = g.svc.svc_dc{i,6}; 
         tot_states = tot_states+svc_states;
-        [svc_dsig(svc_num,1),xsvc_dc(st_state:tot_states,1),dxsvc_dc(st_state:tot_states,1)] =...
-            svc_sud(i,1,flag,svc_dc{i,1},d_sig(i,1),ysvcmx,ysvcmn);
+        [g.svc.svc_dsig(svc_num,1),g.svc.xsvc_dc(st_state:tot_states,1),g.svc.dxsvc_dc(st_state:tot_states,1)] =...
+            svc_sud(i,1,flag,g.svc.svc_dc{i,1},d_sig(i,1),ysvcmx,ysvcmn);
     end
 end
 
@@ -1257,16 +1274,16 @@ while (kt<=ktmax)
         tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
         
-        if n_dcud~=0
+        if g.svc.n_dcud~=0
             %% set the new line currents
             % SVC damping control...
             % Static Var Compensator
-            for jj=1:n_dcud
-                l_num = svc_dc{jj,3};
-                svc_num = svc_dc{jj,2};
+            for jj=1:g.svc.n_dcud
+                l_num = g.svc.svc_dc{jj,3};
+                svc_num = g.svc.svc_dc{jj,2};
                 from_bus = g.sys.bus_int(line_sim(l_num,1)); 
                 to_bus = g.sys.bus_int(line_sim(l_num,2));
-                svc_bn = g.sys.bus_int(svc_con(svc_num,2));
+                svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
                 V1 = g.sys.bus_v(from_bus,k);
                 V2 = g.sys.bus_v(to_bus,k);
                 R = line_sim(l_num,3);
@@ -1321,22 +1338,22 @@ while (kt<=ktmax)
         tg(0,k,flag);
         tg_hydro(0,k,bus_sim,flag);
         
-        if n_svc~=0
-            v_svc = abs(g.sys.bus_v(g.sys.bus_int(svc_con(:,2)),k));
-            if n_dcud~=0
+        if g.svc.n_svc~=0
+            v_svc = abs(g.sys.bus_v(g.sys.bus_int(g.svc.svc_con(:,2)),k));
+            if g.svc.n_dcud~=0
                 tot_states=0;
-                for jj = 1:n_dcud
-                    ysvcmx = svc_dc{jj,4};
-                    ysvcmn = svc_dc{jj,5};
-                    svc_num = svc_dc{jj,2};
+                for jj = 1:g.svc.n_dcud
+                    ysvcmx = g.svc.svc_dc{jj,4};
+                    ysvcmn = g.svc.svc_dc{jj,5};
+                    svc_num = g.svc.svc_dc{jj,2};
                     st_state = tot_states+1; 
-                    svc_states = svc_dc{jj,6}; 
+                    svc_states = g.svc.svc_dc{jj,6}; 
                     tot_states = tot_states+svc_states;
-                    [svc_dsig(svc_num,k),xsvc_dc(st_state:tot_states,k),dxsvc_dc(st_state:tot_states,k)] =...
-                        svc_sud(jj,k,flag,svc_dc{jj,1},d_sig(jj,k),ysvcmx,ysvcmn,xsvc_dc(st_state:tot_states,k));
+                    [g.svc.svc_dsig(svc_num,k),g.svc.xsvc_dc(st_state:tot_states,k),g.svc.dxsvc_dc(st_state:tot_states,k)] =...
+                        svc_sud(jj,k,flag,g.svc.svc_dc{jj,1},d_sig(jj,k),ysvcmx,ysvcmn,g.svc.xsvc_dc(st_state:tot_states,k));
                 end
             end
-            msvc_sig(t(k),k);
+            msvc_sig(k);
             svc(0,k,bus_sim,flag,v_svc);
         end
         if n_tcsc~=0
@@ -1357,10 +1374,9 @@ while (kt<=ktmax)
             tcsc(0,k,bus_sim,flag);
         end
         
-        % modified in v2.3 - thad 06/01/20
         if g.lmod.n_lmod~=0
-            ml_sig(k); % removed t - thad
-            lmod(0,k,flag); % removed bus input - thad
+            ml_sig(k); 
+            lmod(0,k,flag); 
         end
         
         if g.rlmod.n_rlmod~=0
@@ -1512,10 +1528,10 @@ while (kt<=ktmax)
         end
         
         % svc
-        if n_svc ~= 0
-            B_cv(:,j) = B_cv(:,k) + h_sol*dB_cv(:,k);
-            B_con(:,j) = B_con(:,k) + h_sol*dB_con(:,k);
-            xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol* dxsvc_dc(:,k);
+        if g.svc.n_svc ~= 0
+            g.svc.B_cv(:,j) = g.svc.B_cv(:,k) + h_sol*g.svc.dB_cv(:,k);
+            g.svc.B_con(:,j) = g.svc.B_con(:,k) + h_sol*g.svc.dB_con(:,k);
+            g.svc.xsvc_dc(:,j) = g.svc.xsvc_dc(:,k) + h_sol* g.svc.dxsvc_dc(:,k);
         end
         
         %tcsc
@@ -1689,13 +1705,13 @@ while (kt<=ktmax)
         tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
-        if n_dcud~=0
+        if g.svc.n_dcud~=0
             % set the new line currents
-            for jj=1:n_dcud
-                l_num = svc_dc{jj,3};svc_num = svc_dc{jj,2};
+            for jj=1:g.svc.n_dcud
+                l_num = g.svc.svc_dc{jj,3};svc_num = g.svc.svc_dc{jj,2};
                 from_bus = g.sys.bus_int(line_sim(l_num,1)); 
                 to_bus = g.sys.bus_int(line_sim(l_num,2));
-                svc_bn = g.sys.bus_int(svc_con(svc_num,2));
+                svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
                 V1 = g.sys.bus_v(from_bus,j);
                 V2 = g.sys.bus_v(to_bus,j);
                 R = line_sim(l_num,3);
@@ -1741,22 +1757,22 @@ while (kt<=ktmax)
         tg(0,j,flag);
         tg_hydro(0,j,bus_sim,flag);
         
-        if n_svc~=0
-            msvc_sig(t(j),j);% modulation
-            if n_dcud~=0
+        if g.svc.n_svc~=0
+            msvc_sig(j);% modulation
+            if g.svc.n_dcud~=0
                 tot_states=0;
-                for jj = 1:n_dcud
-                    ysvcmx = svc_dc{jj,4};
-                    ysvcmn = svc_dc{jj,5};
-                    svc_num = svc_dc{jj,2};
+                for jj = 1:g.svc.n_dcud
+                    ysvcmx = g.svc.svc_dc{jj,4};
+                    ysvcmn = g.svc.svc_dc{jj,5};
+                    svc_num = g.svc.svc_dc{jj,2};
                     st_state = tot_states+1; 
-                    svc_states = svc_dc{jj,6}; 
+                    svc_states = g.svc.svc_dc{jj,6}; 
                     tot_states = tot_states+svc_states;
-                    [svc_dsig(svc_num,j),xsvc_dc(st_state:tot_states,j),dxsvc_dc(st_state:tot_states,j)] =...
-                        svc_sud(jj,j,flag,svc_dc{jj,1},d_sig(jj,j),ysvcmx,ysvcmn,xsvc_dc(st_state:tot_states,j));
+                    [g.svc.svc_dsig(svc_num,j),g.svc.xsvc_dc(st_state:tot_states,j),g.svc.dxsvc_dc(st_state:tot_states,j)] =...
+                        svc_sud(jj,j,flag,g.svc.svc_dc{jj,1},d_sig(jj,j),ysvcmx,ysvcmn,g.svc.xsvc_dc(st_state:tot_states,j));
                 end
             end
-            v_svc = abs(g.sys.bus_v(g.sys.bus_int(svc_con(:,2)),j));
+            v_svc = abs(g.sys.bus_v(g.sys.bus_int(g.svc.svc_con(:,2)),j));
             bus_sim = svc(0,j,bus_sim,flag,v_svc);
         end
         
@@ -1931,10 +1947,10 @@ while (kt<=ktmax)
         end
         
         % svc
-        if n_svc ~= 0
-            B_cv(:,j) = B_cv(:,k) + h_sol*(dB_cv(:,j) + dB_cv(:,k))/2.;
-            B_con(:,j) = B_con(:,k) + h_sol*(dB_con(:,j) + dB_con(:,k))/2.;
-            xsvc_dc(:,j) = xsvc_dc(:,k) + h_sol*(dxsvc_dc(:,j) + dxsvc_dc(:,k))/2.;
+        if g.svc.n_svc ~= 0
+            g.svc.B_cv(:,j) = g.svc.B_cv(:,k) + h_sol*(g.svc.dB_cv(:,j) + g.svc.dB_cv(:,k))/2.;
+            g.svc.B_con(:,j) = g.svc.B_con(:,k) + h_sol*(g.svc.dB_con(:,j) + g.svc.dB_con(:,k))/2.;
+            g.svc.xsvc_dc(:,j) = g.svc.xsvc_dc(:,k) + h_sol*(g.svc.dxsvc_dc(:,j) + g.svc.dxsvc_dc(:,k))/2.;
         end
         
         %tcsc

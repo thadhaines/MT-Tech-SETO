@@ -1,0 +1,60 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of Static VAR Compensator using global g\\ }
+\lhead{Research \\7/02/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable SVC in PST to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+    %% svc variables - 13
+    global  svc_con n_svc svc_idx svc_pot svcll_idx
+    global  svc_sig
+    % svc user defined damping controls
+    global n_dcud dcud_idx svc_dsig
+    %states
+    global B_cv B_con
+    %dstates
+    global dB_cv dB_con
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{xxx}
+	\begin{itemize}
+		\item alteration of system globals to use \verb|g.svc| structure
+	\end{itemize}
+%===============================================================================
+\
+
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300}
+
+%===============================================================================
+\paragraph{Files ran as a script:}
+	\begin{itemize}
+		\item ns\_file
+		\item p\_m\_file
+		\item p\_file
+		\item p\_cont
+	\end{itemize}
+	
+	
+
+
+\end{document}

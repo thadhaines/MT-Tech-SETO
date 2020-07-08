@@ -70,12 +70,12 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 % dc variables
 global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
 global  n_conv n_dcl ldc_idx
-% svc variables
-global svc_con svc_idx n_svc svc_pot B_cv
+
 % tcsc wariables
 global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
 
 global g 
+
 
 
 if ~isempty(g.ncl.load_con)
@@ -112,20 +112,16 @@ if ~isempty(g.ncl.load_con)
       end
       V_nc = V_o;
       
-      if n_svc~=0
-         j = svc_idx;    
-         Y22(j,j) = Y22(j,j)+jay*diag(B_cv(:,k));% note that Y22 is a local variable
+      if g.svc.n_svc~=0
+         j = g.svc.svc_idx;    
+         Y22(j,j) = Y22(j,j)+jay*diag(g.svc.B_cv(:,k));% note that Y22 is a local variable
       end
       if n_tcsc~=0
          j = tcscf_idx; jj = tcsct_idx;
          Y22(j,j)=Y22(j,j) + jay*diag(B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - jay*diag(B_tcsc(:,k));
          Y22(jj,j)=Y22(jj,j) - jay*diag(B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + jay*diag(B_tcsc(:,k));
       end
-%       if n_lmod ~=0 % original code - thad
-%          j = lmod_idx;
-%          Y22(j,j) = Y22(j,j) + diag(lmod_st(:,k));
-%       end
-      if g.lmod.n_lmod ~=0 % modified code - thad 06/03/20
+      if g.lmod.n_lmod ~=0 
          j = g.lmod.lmod_idx;
          Y22(j,j) = Y22(j,j) + diag(g.lmod.lmod_st(:,k));
       end
