@@ -127,6 +127,7 @@ if exist('tcsc_con','var')
     clear tcsc_con;
 else
     g.tcsc.tcsc_con = [];
+    g.tcsc.n_tcsc = 0;
 end
 
 %% Global for plot flag

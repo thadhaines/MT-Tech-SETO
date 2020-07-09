@@ -34,7 +34,8 @@ function [bus_new] = mac_igen(i,k,bus,flag)
 %Author: Graham Rogers
 %Date July  1997
 %(c) Copyright Cherry Tree Scientific Software 1997 _ All rights reserved
-global  basmva basrad bus_int 
+% global  basmva basrad bus_int 
+global g 
 global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
 global  igen_int igbus n_ig
 global  vdpig vqpig slig dvdpig dvqpig dslig
@@ -47,9 +48,9 @@ if ~isempty(igen_con)
       if i == 0;
          %vector computation
          n_ig = length(igen_con(:,1));
-         igbus=bus_int(igen_con(:,2));
+         igbus=g.sys.bus_int(igen_con(:,2));
          igen_pot = zeros(n_ig,7);
-         igen_pot(:,1)=basmva./igen_con(:,3); %scaled mva base
+         igen_pot(:,1)=g.sys.basmva./igen_con(:,3); %scaled mva base
          igen_pot(:,2)=ones(n_ig,1); %base kv
          ig_vm(:,1)=bus(igbus,2); %ind gen terminal voltage mag
          ig_ang(:,1)=bus(igbus,3)*pi/180; %ind gen term voltage angle
@@ -64,7 +65,7 @@ if ~isempty(igen_con)
          igen_pot(:,5)=igen_con(:,5)+igen_con(:,6).*...
             igen_con(:,8)./igen_pot(:,4);%Xsp
          igen_pot(:,6)=igen_pot(:,3)-igen_pot(:,5);%(Xs-Xsp)
-         igen_pot(:,7)=basrad*igen_con(:,7)./igen_pot(:,4); %1/Tr
+         igen_pot(:,7)=g.sys.basrad*igen_con(:,7)./igen_pot(:,4); %1/Tr
          rs=igen_con(:,4);
          xs=igen_con(:,5);
          Xm=igen_con(:,6);
@@ -79,7 +80,7 @@ if ~isempty(igen_con)
          err=max(abs(slip_new-slip_old));
          while err>=1e-8 & iter<30
             iter=iter+1;
-            y=basrad.*slip_old./igen_pot(:,7);
+            y=g.sys.basrad.*slip_old./igen_pot(:,7);
             denom = ones(n_ig,1)+y.*y;
             zr=rs + y.*igen_pot(:,6)./denom;
             zi=igen_pot(:,5)+igen_pot(:,6)./denom;
@@ -92,7 +93,7 @@ if ~isempty(igen_con)
             dp=dp./zmod2./zmod2;
             peig =v.*conj(v).*zr./zmod2;
             ynew=y-(peig - pig(:,1).*igen_pot(:,1))./dp;
-            slip_new = ynew.*igen_pot(:,7)/basrad;
+            slip_new = ynew.*igen_pot(:,7)/g.sys.basrad;
             err = max(abs(slip_new-slip_old));
             slip_old=slip_new;
          end
@@ -100,7 +101,7 @@ if ~isempty(igen_con)
             error('induction generator slip calculation failed to converge')
          end
          slig(:,1)=slip_new;
-         y=basrad*slig(:,1)./igen_pot(:,7);
+         y=g.sys.basrad*slig(:,1)./igen_pot(:,7);
          denom= ones(n_ig,1)+y.*y;
          zr=rs+y.*igen_pot(:,6)./denom;
          zi=igen_pot(:,5)+igen_pot(:,6)./denom;
@@ -136,9 +137,9 @@ if ~isempty(igen_con)
          iqigm=iqig(:,k).*igen_pot(:,1);
          %Brereton, Lewis and Young motor model
          dvdpig(:,k)=-(iqigm.*igen_pot(:,6)+vdpig(:,k)).*...
-            igen_pot(:,7)+vqpig(:,k).*slig(:,k)*basrad;
+            igen_pot(:,7)+vqpig(:,k).*slig(:,k)*g.sys.basrad;
          dvqpig(:,k)=(idigm.*igen_pot(:,6)-vqpig(:,k)).*...
-            igen_pot(:,7)-vdpig(:,k).*slig(:,k)*basrad;	
+            igen_pot(:,7)-vdpig(:,k).*slig(:,k)*g.sys.basrad;	
          dslig(:,k)=(tmig(:,k)-vdpig(:,k).*...
             idigm-vqpig(:,k).*iqigm)/2./igen_con(:,9);
       else

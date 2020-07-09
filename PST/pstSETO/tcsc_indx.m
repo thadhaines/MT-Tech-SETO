@@ -19,6 +19,12 @@ function tcsc_indx()
 
 global g
 
+% from version 2.3 -thad 07/09/20
+g.tcsc.n_tcsc = 0;
+g.tcsc.tcsc_idx = [];
+g.tcsc.dtcscud_idx = [];
+g.tcsc.n_tcscud = 0;
+
 if ~isempty(g.tcsc.tcsc_con)
    g.tcsc.n_tcsc = size(g.tcsc.tcsc_con,1);
    %tcsc_idx = zeros(n_tcsc,1);

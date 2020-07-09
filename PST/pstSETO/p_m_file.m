@@ -29,6 +29,7 @@ exc_count = 0;
 pss_count = 0;
 dpw_count = 0;
 tg_count = 0;
+
 for k = 1:g.mac.n_mac
    if state(k)~=0
       if k ~=1

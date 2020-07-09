@@ -35,10 +35,13 @@ function bus_new = mac_ind(i,k,bus,flag)
 %
 % Version 2 added deep bar, double cage and leakage inductance saturation
 %June 2002
-global basmva basrad bus_int bus_v
+% global basmva basrad bus_int bus_v
+% 
 global tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot t_mot
 global ind_int motbus sat_idx dbc_idx db_idx
 global vdp vqp slip dvdp dvqp dslip mld_con
+global g
+
 jay=sqrt(-1);
 bus_new=bus;
 
@@ -48,8 +51,8 @@ if ~isempty(ind_con)
         if i == 0;
             %vector computation
             motnum=length(ind_con(:,1));
-            motbus=bus_int(ind_con(:,2));
-            ind_pot(:,1)=basmva./ind_con(:,3); %scaled mva base
+            motbus=g.sys.bus_int(ind_con(:,2));
+            ind_pot(:,1)=g.sys.basmva./ind_con(:,3); %scaled mva base
             ind_pot(:,2)=ones(motnum,1); %base kv
             mot_vm(:,1)=bus(motbus,2); %motor terminal voltage mag
             mot_ang(:,1)=bus(motbus,3)*pi/180; %motor term voltage angle
@@ -75,7 +78,7 @@ if ~isempty(ind_con)
             ind_pot(:,4)=xr+Xm;%Xr
             ind_pot(:,5)=xs+Xm.*xr./ind_pot(:,4);%Xsp
             ind_pot(:,6)=ind_pot(:,3)-ind_pot(:,5);%(Xs-Xsp)
-            ind_pot(:,7)=basrad*rr./ind_pot(:,4); %1/Tr
+            ind_pot(:,7)=g.sys.basrad*rr./ind_pot(:,4); %1/Tr
             
             % index of motors to be initialized for running 
             run_ind = find(ind_con(:,15)~=0);
@@ -93,14 +96,14 @@ if ~isempty(ind_con)
                 ind_pot(dbc_idx,4) = Xm(dbc_idx)+xdc;
                 ind_pot(dbc_idx,5)=xs(dbc_idx)+Xm(dbc_idx).*xdc./ind_pot(dbc_idx,4);%Xsp
                 ind_pot(dbc_idx,6) = ind_pot(dbc_idx,3)-ind_pot(dbc_idx,5);
-                ind_pot(dbc_idx,7)=basrad*rdc./ind_pot(dbc_idx,4); %1/Tr
+                ind_pot(dbc_idx,7)=g.sys.basrad*rdc./ind_pot(dbc_idx,4); %1/Tr
             end
             if ~isempty(db_idx)
                 [rdb,xdb]=deepbar(rr(db_idx),dbf(db_idx),s(db_idx));
                 ind_pot(db_idx,4) = Xm(db_idx)+xr(db_idx)+xdb;
                 ind_pot(db_idx,5) = xs(db_idx)+Xm(db_idx).*(xr(db_idx)+xdb)./ind_pot(db_idx,4);%Xsp
                 ind_pot(db_idx,6) = ind_pot(db_idx,3)-ind_pot(db_idx,5);
-                ind_pot(db_idx,7) = basrad*rdb./ind_pot(db_idx,4); %1/Tr
+                ind_pot(db_idx,7) = g.sys.basrad*rdb./ind_pot(db_idx,4); %1/Tr
             end
             
             
@@ -120,7 +123,7 @@ if ~isempty(ind_con)
                 err=max(abs(slip_new-slip_old));
                 while (err>=1e-8) && (iter<30)
                     iter=iter+1;
-                    y=basrad.*slip_old(run_ind)./ind_pot(run_ind,7);
+                    y=g.sys.basrad.*slip_old(run_ind)./ind_pot(run_ind,7);
                     denom = ones(motrun,1)+y.*y;
                     zr=rs(run_ind)+y.*ind_pot(run_ind,6)./denom;
                     zi=ind_pot(run_ind,5)+ind_pot(run_ind,6)./denom;
@@ -134,7 +137,7 @@ if ~isempty(ind_con)
                     pem(run_ind)=v(run_ind).*conj(v(run_ind)).*zr./zmod2;
                     ynew=y-(pem(run_ind)- ...
                         p_mot(run_ind,1).*ind_pot(run_ind,1))./dp;
-                    slip_new(run_ind)=ynew.*ind_pot(run_ind,7)/basrad;
+                    slip_new(run_ind)=ynew.*ind_pot(run_ind,7)/g.sys.basrad;
                     err = max(abs(slip_new-slip_old));
                     slip_old=slip_new;
                     if ~isempty(dbc_idx)
@@ -142,14 +145,14 @@ if ~isempty(ind_con)
                         ind_pot(dbc_idx,4) = Xm(dbc_idx)+xdc;
                         ind_pot(dbc_idx,5)=xs(dbc_idx)+Xm(dbc_idx).*xdc./ind_pot(dbc_idx,4);%Xsp
                         ind_pot(dbc_idx,6) = ind_pot(dbc_idx,3)-ind_pot(dbc_idx,5);
-                        ind_pot(dbc_idx,7)=basrad*rdc./ind_pot(dbc_idx,4); %1/Tr
+                        ind_pot(dbc_idx,7)=g.sys.basrad*rdc./ind_pot(dbc_idx,4); %1/Tr
                     end
                     if ~isempty(db_idx)
                         [rdb,xdb]=deepbar(rr(db_idx),dbf(db_idx),slip_new(db_idx));
                         ind_pot(db_idx,4) = Xm(db_idx)+xr(db_idx)+xdb;
                         ind_pot(db_idx,5) = xs(db_idx)+Xm(db_idx).*(xr(db_idx)+xdb)./ind_pot(db_idx,4);%Xsp
                         ind_pot(db_idx,6) = ind_pot(db_idx,3)-ind_pot(db_idx,5);
-                        ind_pot(db_idx,7) = basrad*rdb./ind_pot(db_idx,4); %1/Tr
+                        ind_pot(db_idx,7) = g.sys.basrad*rdb./ind_pot(db_idx,4); %1/Tr
                     end
                 end
                 if iter >=30
@@ -159,7 +162,7 @@ if ~isempty(ind_con)
             end
             slip(:,1)=slip_new;
             ind_ldto(0,1);
-            y=basrad*slip(:,1)./ind_pot(:,7);
+            y=g.sys.basrad*slip(:,1)./ind_pot(:,7);
             denom= ones(motnum,1)+y.*y;
             zr=rs+y.*ind_pot(:,6)./denom;
             zi=ind_pot(:,5)+ind_pot(:,6)./denom;
@@ -187,7 +190,7 @@ if ~isempty(ind_con)
         end
     end
     if flag == 1
-        v = bus_v(motbus,k);
+        v = g.sys.bus_v(motbus,k);
         vdmot(:,k)=real(v);
         vqmot(:,k)=imag(v);
     end
@@ -221,7 +224,7 @@ if ~isempty(ind_con)
                 ind_pot(sat_idx,4) = Xm(sat_idx)+xr(sat_idx);
                 ind_pot(sat_idx,5)=xs(sat_idx)+Xm(sat_idx).*xr(sat_idx)./ind_pot(sat_idx,4);%Xsp
                 ind_pot(sat_idx,6) = ind_pot(sat_idx,3)-ind_pot(sat_idx,5);
-                ind_pot(sat_idx,7)=basrad*rr(sat_idx)./ind_pot(sat_idx,4); %1/Tr
+                ind_pot(sat_idx,7)=g.sys.basrad*rr(sat_idx)./ind_pot(sat_idx,4); %1/Tr
             end
             if ~isempty(dbc_idx)
                 % reset double cage
@@ -229,7 +232,7 @@ if ~isempty(ind_con)
                 ind_pot(dbc_idx,4) = Xm(dbc_idx)+xdc;
                 ind_pot(dbc_idx,5)=xs(dbc_idx)+Xm(dbc_idx).*xdc./ind_pot(dbc_idx,4);%Xsp
                 ind_pot(dbc_idx,6) = ind_pot(dbc_idx,3)-ind_pot(dbc_idx,5);
-                ind_pot(dbc_idx,7)=basrad*rdc./ind_pot(dbc_idx,4); %1/Tr
+                ind_pot(dbc_idx,7)=g.sys.basrad*rdc./ind_pot(dbc_idx,4); %1/Tr
             end
             if ~isempty(db_idx)
                 % reset deepbar
@@ -237,13 +240,13 @@ if ~isempty(ind_con)
                 ind_pot(db_idx,4) = Xm(db_idx)+xr(db_idx)+xdb;
                 ind_pot(db_idx,5) = xs(db_idx)+Xm(db_idx).*(xr(db_idx)+xdb)./ind_pot(db_idx,4);%Xsp
                 ind_pot(db_idx,6) = ind_pot(db_idx,3)-ind_pot(db_idx,5);
-                ind_pot(db_idx,7) = basrad*rdb./ind_pot(db_idx,4); %1/Tr
+                ind_pot(db_idx,7) = g.sys.basrad*rdb./ind_pot(db_idx,4); %1/Tr
             end
             %Brereton, Lewis and Young motor model
             dvdp(:,k)=-(iqm.*ind_pot(:,6)+vdp(:,k)).*...
-                ind_pot(:,7)+vqp(:,k).*slip(:,k)*basrad;
+                ind_pot(:,7)+vqp(:,k).*slip(:,k)*g.sys.basrad;
             dvqp(:,k)=(idm.*ind_pot(:,6)-vqp(:,k)).*...
-                ind_pot(:,7)-vdp(:,k).*slip(:,k)*basrad;
+                ind_pot(:,7)-vdp(:,k).*slip(:,k)*g.sys.basrad;
             t_mot(:,k) = vdp(:,k).*idm+vqp(:,k).*iqm;
             dslip(:,k)=(tload(:,k)-t_mot(:,k))/2./ind_con(:,9);
         else
