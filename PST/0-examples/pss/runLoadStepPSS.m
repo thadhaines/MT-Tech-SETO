@@ -32,9 +32,7 @@ copyfile('d_smallLoadStep.m',[PSTpath 'DataFile.m']); % copy system data file to
 delete([PSTpath 'ml_sig.m']); % ensure ml_sig file is empty
 copyfile('ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
 
-% copyfile('ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
-
-pssGainFix = 1;
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % copy simulation specific data file to batch run location
 
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
@@ -64,7 +62,6 @@ save('loadStepNONLIN.mat'); %Save simulation outputs
 %% PST linear system creation
 clear all; close all;
 
-pssGainFix = 1;
 svm_mgen_Batch
 
 %%  
