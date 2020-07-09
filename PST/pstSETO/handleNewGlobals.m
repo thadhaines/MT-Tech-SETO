@@ -16,6 +16,7 @@
 %   07/06/20    09:30   Thad Haines     addition of sw_con
 %   07/06/20    11:15   Thad Haines     addition of pss_con and gain fix
 %   07/08/20    15:32   Thad Haines     addition of svc_con
+%   07/09/20    11:11   Thad Haines     addition of tcsc_con
 
 global g
 
@@ -119,6 +120,13 @@ if exist('svc_con','var')
     clear svc_con;
 else
     g.svc.svc_con = [];
+end
+%% tcsc_con
+if exist('tcsc_con','var')
+    g.tcsc.tcsc_con = tcsc_con;
+    clear tcsc_con;
+else
+    g.tcsc.tcsc_con = [];
 end
 
 %% Global for plot flag

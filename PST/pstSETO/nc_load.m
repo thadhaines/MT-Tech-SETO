@@ -71,9 +71,6 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
 global  n_conv n_dcl ldc_idx
 
-% tcsc wariables
-global tcsc_con tcscf_idx tcsct_idx n_tcsc tcsc_pot B_tcsc
-
 global g 
 
 
@@ -116,10 +113,11 @@ if ~isempty(g.ncl.load_con)
          j = g.svc.svc_idx;    
          Y22(j,j) = Y22(j,j)+jay*diag(g.svc.B_cv(:,k));% note that Y22 is a local variable
       end
-      if n_tcsc~=0
-         j = tcscf_idx; jj = tcsct_idx;
-         Y22(j,j)=Y22(j,j) + jay*diag(B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - jay*diag(B_tcsc(:,k));
-         Y22(jj,j)=Y22(jj,j) - jay*diag(B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + jay*diag(B_tcsc(:,k));
+      if g.tcsc.n_tcsc~=0
+         j = g.tcsc.tcscf_idx; 
+         jj = g.tcsc.tcsct_idx;
+         Y22(j,j)=Y22(j,j) + jay*diag(g.tcsc.B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - jay*diag(g.tcsc.B_tcsc(:,k));
+         Y22(jj,j)=Y22(jj,j) - jay*diag(g.tcsc.B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + jay*diag(g.tcsc.B_tcsc(:,k));
       end
       if g.lmod.n_lmod ~=0 
          j = g.lmod.lmod_idx;
