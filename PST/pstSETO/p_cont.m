@@ -222,9 +222,10 @@ if g.svc.n_svc~=0
    end
 end
 nts = ntot + g.svc.n_svc;
-ntf = ntot + g.svc.n_svc + n_tcsc;
+
+ntf = ntot + g.svc.n_svc + g.tcsc.n_tcsc;
 % disturb tcsc states
-if n_tcsc~=0
+if g.tcsc.n_tcsc~=0
    disp('disturbing tcsc')
    
    pert_scale = 1e2; % scaling factor for minimum perturbation
@@ -233,9 +234,9 @@ if n_tcsc~=0
    for k = nts+1:ntf
       j=1;
       k_tcsc = k - nts;
-      pert = p_ratio*abs(B_tcsc(k_tcsc,1));   
+      pert = p_ratio*abs(g.tcsc.B_tcsc(k_tcsc,1));   
       pert = max(pert,p_ratio*pert_scale);  % modified by SGG, 03/30/11
-      B_tcsc(k_tcsc,2) = B_tcsc(k_tcsc,1) + pert;
+      g.tcsc.B_tcsc(k_tcsc,2) = g.tcsc.B_tcsc(k_tcsc,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 34;
    end
@@ -245,9 +246,9 @@ if n_tcsc~=0
    tcsc_input = k_tcsc;
    pert = p_ratio;
    nominal = 0.0;
-   tcsc_sig(k_tcsc,2) = tcsc_sig(k_tcsc,2) + pert;
+   g.tcsc.tcsc_sig(k_tcsc,2) = g.tcsc.tcsc_sig(k_tcsc,2) + pert;
    p_file
-   tcsc_sig(k_tcsc,2) = nominal; 
+   g.tcsc.tcsc_sig(k_tcsc,2) = nominal; 
    c_state = 0;
 end
 

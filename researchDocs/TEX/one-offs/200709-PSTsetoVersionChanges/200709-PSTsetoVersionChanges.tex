@@ -186,6 +186,21 @@ global dB_cv dB_con
 \end{minted}
 There seems to be some code related to user defined damping control of SVC, but it is not it the user manual.
 
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{tcsc}
+\begin{minted}{MATLAB}
+global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
+global  B_tcsc dB_tcsc
+global  tcsc_sig tcsc_dsig
+global  n_tcscud dtcscud_idx  %user defined damping controls
+% previous non-globals added as they seem to relavant
+global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
+global tcsc_dc
+\end{minted}
+Similar to the SVC, there seems to be some added functionality for controlled damping, but no examples exist?
+
+
 \begin{comment}
 
 %---------------------------------------------------------------------------------------------------

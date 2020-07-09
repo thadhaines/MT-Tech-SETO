@@ -2015,6 +2015,7 @@ phi = line(:,7);
 % full sim timing
 et = toc;
 ets = num2str(et);
+g.sys.ElapsedNonLinearTime = ets;
 disp(['elapsed time = ' ets 's'])
 disp('*** End simulation.')
 disp(' ')

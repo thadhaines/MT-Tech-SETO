@@ -117,8 +117,8 @@ delete('sim_fle.mat')
 figure
 hold on
 plot(tL,modSig)
-plot(t,tcsc_sig,'--')
-%plot(t,pm_sig,'--')
+% plot(t,tcsc_sig,'--')
+plot(t,g.tcsc.tcsc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('TCSC Modulation Signal')
 
