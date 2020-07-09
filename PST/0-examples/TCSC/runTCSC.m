@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =    'pstV3P1';%  'pstSETO'; %  'pstV2p3';%
+pstVer =  'pstSETO'; %   'pstV2p3';%   'pstV3P1';% 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -28,7 +28,7 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d2a_dceREFtcsc.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % move modulation file
-copyfile('mtcsc_sig_SmallStep.m',[PSTpath 'mtcsc_sig.m']); % copy system data file to batch run location
+copyfile('mtcsc_sig_SmallStepG.m',[PSTpath 'mtcsc_sig.m']); % copy system data file to batch run location
 %pssGainFix = 1;
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
@@ -97,8 +97,8 @@ name = [pstVer,'TCSCnonLIN.mat'];
 feval('load', name)
 
 for pmAdj = 1:size(linPm,1)
-%    linPm(pmAdj,:)= linPm(pmAdj,:)+ g.mac.pmech(pmAdj,1);
-    linPm(pmAdj,:)= linPm(pmAdj,:)+ pmech(pmAdj,1);
+   linPm(pmAdj,:)= linPm(pmAdj,:)+ g.mac.pmech(pmAdj,1);
+%     linPm(pmAdj,:)= linPm(pmAdj,:)+ pmech(pmAdj,1);
 end
 
 save linResults.mat tL linV linSpd modSig linPm
@@ -117,8 +117,8 @@ delete('sim_fle.mat')
 figure
 hold on
 plot(tL,modSig)
-plot(t,tcsc_sig,'--')
-%plot(t,pm_sig,'--')
+% plot(t,tcsc_sig,'--')
+plot(t,g.tcsc.tcsc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('TCSC Modulation Signal')
 
@@ -130,8 +130,8 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-%     plot(t,g.mac.mac_spd(busN,:),'--')
-     plot(t,mac_spd(busN,:),'--')
+    plot(t,g.mac.mac_spd(busN,:),'--')
+%      plot(t,mac_spd(busN,:),'--')
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end
@@ -147,8 +147,8 @@ legNames={};
 for busN=1:size(linPm,1)
     plot(tL,linPm(busN,:))
     legNames{end+1}= ['Gen Pm ', int2str(busN), ' Linear'];
-%     plot(t,g.mac.pmech(busN,:),'--')
-    plot(t,pmech(busN,:),'--')
+    plot(t,g.mac.pmech(busN,:),'--')
+%     plot(t,pmech(busN,:),'--')
     legNames{end+1}= ['Gen Pm ', int2str(busN), ' non-Linear'];
 end
 legend(legNames,'location','best')
@@ -163,8 +163,8 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-%     plot(t,abs(g.sys.bus_v(busN,:)),'--')
-    plot(t,abs(bus_v(busN,:)),'--')
+    plot(t,abs(g.sys.bus_v(busN,:)),'--')
+%     plot(t,abs(bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end

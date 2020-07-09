@@ -152,7 +152,15 @@ tic % start timer
 %     %dstates
 %     global dB_cv dB_con
 %     
-
+%     %% tcsc variables - 10
+%     global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
+%     global  B_tcsc dB_tcsc
+%     global  tcsc_sig tcsc_dsig
+%     global  n_tcscud dtcscud_idx  %user defined damping controls
+% 	% previous non-globals added as they seem to relavant
+% 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
+%     global tcsc_dc
+    
 %% Non converted globals
 % induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
@@ -169,12 +177,6 @@ global  igen_int igbus n_ig
 global  vdpig vqpig slig 
 %dstates
 global dvdpig dvqpig dslig
-
-% tcsc variables
-global  tcsc_con n_tcsc tcsvf_idx tcsct_idx 
-global  B_tcsc dB_tcsc 
-global  tcsc_sig tcsc_dsig
-global  n_tcscud dtcscud_idx  %user defined damping controls
 
 % DeltaP/omega filter variables
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
@@ -218,7 +220,9 @@ jay = sqrt(-1);
 disp('linearized model development by perturbation of the non-linear model')
 %set user defined SVC and TCSC models to empty 
 g.svc.svc_dc = [];
-dci_dc=[]; dcr_dc=[];
+
+dci_dc=[]; 
+dcr_dc=[];
 % input data file
 % [dfile,pathname]=uigetfile('d*.m','Select Data File');
 % if pathname == 0
@@ -289,13 +293,14 @@ g.exc.n_smp = 0;
 g.exc.n_st3 = 0;
 
 g.pss.n_pss= 0;
+
 n_dpw = 0;
 
 g.tg.n_tg = 0;
 g.tg.n_tgh = 0;
 
 g.svc.n_svc = 0;
-n_tcsc = 0;
+g.tcsc.n_tcsc = 0;
 
 g.lmod.n_lmod = 0;
 
@@ -401,8 +406,6 @@ else
    n_dpw=0;
 end
 
-mac_tg=0;
-mac_tgh=0;
 if ~isempty(g.tg.tg_con)
    tg_indx;%identifies turbine/governor
    mac_tg = g.mac.mac_int(g.tg.tg_con(g.tg.tg_idx,2));
@@ -411,29 +414,36 @@ else
    g.tg.n_tg =0;
    g.tg.n_tgh = 0;
 end
+
 if ~isempty(g.svc.svc_con)~=0
    g.svc.svc_dc=[];
    svc_indx();
 else
    g.svc.n_svc = 0;
 end
-tcsc_dc=[];n_tcscud=0;
-if ~isempty(tcsc_con)
-   tcsc_indx(tcsc_dc);
+
+g.tcsc.tcsc_dc=[];
+g.tcsc.n_tcscud=0;
+
+if ~isempty(g.tcsc.tcsc_con)
+   tcsc_indx();
 else
-   n_tcsc = 0;
+   g.tcsc.n_tcsc = 0;
 end
+
 if ~isempty(g.lmod.lmod_con)
    lm_indx; % identifies load modulation buses 
             % line flow monitoring buses? (Chow, 02/28/2016)
 else
    g.lmod.n_lmod = 0;
 end
+
 if ~isempty(g.rlmod.rlmod_con)~=0
    rlm_indx; % identifies load modulation buses
 else
    g.rlmod.n_rlmod = 0;
 end
+
 if ~isempty(g.pwr.pwrmod_con)
    pwrmod_indx(bus); % identifies power modulation buses % corrected to call pwrmod_indx, not pwrm_indx
 else
@@ -524,11 +534,11 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(g.mac.n_mac+n_mot+n_ig+g.svc.n_svc+n_tcsc ...
+state = zeros(g.mac.n_mac+n_mot+n_ig+g.svc.n_svc+g.tcsc.n_tcsc ...
     +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+n_dcl,1);
 max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
     + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
-    2*g.svc.n_svc+n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
+    2*g.svc.n_svc+g.tcsc.n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 g.sys.theta(:,1) = bus(:,3)*pi/180;
@@ -566,10 +576,10 @@ if g.svc.n_svc ~=0
 else
    g.svc.svc_sig = zeros(1,2);
 end
-if n_tcsc ~=0
-   tcsc_sig = zeros(n_tcsc,2);
+if g.tcsc.n_tcsc ~=0
+   g.tcsc.tcsc_sig = zeros(g.tcsc.n_tcsc,2);
 else
-   tcsc_sig = zeros(1,2);
+   g.tcsc.tcsc_sig = zeros(1,2);
 end
 if g.lmod.n_lmod ~= 0
    g.lmod.lmod_sig = zeros(g.lmod.n_lmod,2);
@@ -768,17 +778,18 @@ exc_st3(0,1,flag);
 % turbine governors
 tg(0,1,flag);
 tg_hydro(0,1,bus,flag);
+
 %initialize tcsc
-if n_tcsc ~=0
-    B_tcsc = zeros(n_tcsc,2);
-    dB_tcsc = zeros(n_tcsc,2);
-    if n_tcscud~=0
+if g.tcsc.n_tcsc ~=0
+    g.tcsc.B_tcsc = zeros(g.tcsc.n_tcsc,2);
+    g.tcsc.dB_tcsc = zeros(g.tcsc.n_tcsc,2);
+    if g.tcsc.n_tcscud~=0
         error('user defined tcsc damping control not allowed in small signal simulation')
     else
-        tcsc_dsig = zeros(n_tcsc,2);
+        g.tcsc.tcsc_dsig = zeros(g.tcsc.n_tcsc,2);
     end
 end
-tcsc(0,1,bus,0);
+tcsc(0,1,0);
 
 if ~isempty(g.lmod.lmod_con)
    disp('load modulation')
@@ -851,7 +862,8 @@ if g.tg.n_tg~=0 || g.tg.n_tgh~=0
    g.tg.tg4(:,2) = g.tg.tg4(:,1);
    g.tg.tg5(:,2) = g.tg.tg5(:,1);
 end
-telect(:,2) =telect(:,1);
+
+telect(:,2) =telect(:,1); % unused? -thad 07/09/20
 if n_mot~=0
    vdp(:,2) = vdp(:,1);
    vqp(:,2) = vqp(:,1);
@@ -867,8 +879,8 @@ if g.svc.n_svc ~= 0
    g.svc.B_cv(:,2) = g.svc.B_cv(:,1);
    g.svc.B_con(:,2) = g.svc.B_con(:,1);
 end
-if n_tcsc ~= 0
-   B_tcsc(:,2) = B_tcsc(:,1);
+if g.tcsc.n_tcsc ~= 0
+   g.tcsc.B_tcsc(:,2) = g.tcsc.B_tcsc(:,1);
 end
 if g.lmod.n_lmod ~=0
    g.lmod.lmod_st(:,2) = g.lmod.lmod_st(:,1);
@@ -896,7 +908,7 @@ g.mac.vex(:,2) = g.mac.vex(:,1);
 g.exc.exc_sig(:,2) = g.exc.exc_sig(:,1);
 g.tg.tg_sig(:,2) = g.tg.tg_sig(:,1);
 g.svc.svc_sig(:,2) = g.svc.svc_sig(:,1);
-tcsc_sig(:,2) = tcsc_sig(:,1);
+g.tcsc.tcsc_sig(:,2) = g.tcsc.tcsc_sig(:,1);
 g.lmod.lmod_sig(:,2) = g.lmod.lmod_sig(:,1);
 g.rlmod.rlmod_sig(:,2) = g.rlmod.rlmod_sig(:,1);
 if g.pwr.n_pwrmod ~=0
@@ -986,7 +998,9 @@ if isempty(g.mac.ibus_con)
       if g.svc.n_svc~=0
           b_svc = p_ang*b_svc;
       end
-      if n_tcsc~=0;b_tcsc = p_ang*b_tcsc;end
+      if g.tcsc.n_tcsc~=0
+          b_tcsc = p_ang*b_tcsc;
+      end
       if g.lmod.n_lmod~=0
           b_lmod = p_ang*b_lmod;
       end
@@ -1064,6 +1078,7 @@ damp(nz_eig,1) = -real(l(nz_eig))./abs(l(nz_eig));
 % full sim timing
 et = toc;
 ets = num2str(et);
+g.sys.ElapsedLinearTime = ets;
 disp(['elapsed time = ' ets 's'])
 disp('*** End simulation.')
 disp(' ')

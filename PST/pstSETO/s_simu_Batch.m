@@ -159,8 +159,16 @@ warning('*** Declare Global Variables')
 %     global B_cv B_con
 %     %dstates
 %     global dB_cv dB_con
-
-%% Original globals block condensed into g...
+% 
+%     %% tcsc variables - 10
+%     global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
+%     global  B_tcsc dB_tcsc
+%     global  tcsc_sig tcsc_dsig
+%     global  n_tcscud dtcscud_idx  %user defined damping controls
+% 	% previous non-globals added as they seem to relavant
+% 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
+%     global tcsc_dc
+% Original globals block condensed into g...
 
     
     %% ivm variables - 5
@@ -181,14 +189,6 @@ warning('*** Declare Global Variables')
     global  vdpig vqpig slig
     %dstates
     global dvdpig dvqpig dslig
-
-
-
-    %% tcsc variables - 10
-    global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
-    global  B_tcsc dB_tcsc
-    global  tcsc_sig tcsc_dsig
-    global  n_tcscud dtcscud_idx  %user defined damping controls
     
     %% DeltaP/omega filter variables - 21
     global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
@@ -224,9 +224,12 @@ warning('*** Declare Global Variables')
 
 %% meant to be dc globals? 06/08/20 - thad
 % look like user defined damping controls that were never implemented
-% and intentionally removed?
+% and intentionally removed/ignored?
 g.svc.svc_dc=[];
-tcsc_dc=[];
+
+g.tcsc.tcsc_dc=[];
+g.tcsc.n_tcscud = 0;
+
 dcr_dc=[];
 dci_dc=[];
 
@@ -318,7 +321,7 @@ tg_indx(); % functionalized 06/05/20 - thad
 dpwf_indx;
 pss_indx;
 svc_indx(); % assigned svc_dc to global (damping control?)
-tcsc_indx(tcsc_dc);
+tcsc_indx();
 lm_indx;
 rlm_indx();
 pwrmod_indx(bus); 
@@ -694,36 +697,36 @@ else
     d_sig = zeros(1,k);     % supposed to be global? - thad 06/03/20
 end
 
-if n_tcsc~=0
-    B_tcsc = zeros(n_tcsc,k); 
-    dB_tcsc = zeros(n_tcsc,k);
-    tcsc_sig = zeros(n_tcsc,k);
-    tcsc_dsig=zeros(n_tcsc,k);
+if g.tcsc.n_tcsc~=0
+    g.tcsc.B_tcsc = zeros(g.tcsc.n_tcsc,k); 
+    g.tcsc.dB_tcsc = zeros(g.tcsc.n_tcsc,k);
+    g.tcsc.tcsc_sig = zeros(g.tcsc.n_tcsc,k);
+    g.tcsc.tcsc_dsig=zeros(g.tcsc.n_tcsc,k);
     
-    if n_tcscud~=0
-        td_sig = zeros(n_tcscud,k);%input to tcsc damping control
-        for j = 1:n_tcscud
-            sv = get(tcsc_dc{j,1});% damping control state space object
+    if g.tcsc.n_tcscud~=0
+        g.tcsc.td_sig = zeros(g.tcsc.n_tcscud,k);%input to tcsc damping control
+        for j = 1:g.tcsc.n_tcscud
+            sv = get(g.tcsc.tcsc_dc{j,1});% damping control state space object
             if j==1
-                xtcsc_dc =zeros(sv.NumStates,k); % tcsc damping control states
-                dxtcsc_dc = zeros(sv.NumStates,k);% tcsc dc rates of chage of states
+                g.tcsc.xtcsc_dc =zeros(sv.NumStates,k); % tcsc damping control states
+                g.tcsc.dxtcsc_dc = zeros(sv.NumStates,k);% tcsc dc rates of chage of states
             else
-                xtcsc_dc = [xtcsc_dc;zeros(sv.NumStates,k)];% in order of damping controls
-                dxtcsc_dc = [dxtcsc_dc;zeros(sv.NumStates,k)];
+                g.tcsc.xtcsc_dc = [g.tcsc.xtcsc_dc;zeros(sv.NumStates,k)];% in order of damping controls
+                g.tcsc.dxtcsc_dc = [g.tcsc.dxtcsc_dc;zeros(sv.NumStates,k)];
             end
         end
     else
-        xtcsc_dc = zeros(1,k);
-        dxtcsc_dc = zeros(1,k);
+        g.tcsc.xtcsc_dc = zeros(1,k);
+        g.tcsc.dxtcsc_dc = zeros(1,k);
     end
 else
-    B_tcsc = zeros(1,k);
-    dB_tcsc = zeros(1,k); 
-    tcsc_sig = zeros(1,k);
-    tcsc_dsig = zeros(1,k);
-    xtcsc_dc = zeros(1,k);
-    dxtcsc_dc = zeros(1,k);
-    td_sig = zeros(1,k);
+    g.tcsc.B_tcsc = zeros(1,k);
+    g.tcsc.dB_tcsc = zeros(1,k); 
+    g.tcsc.tcsc_sig = zeros(1,k);
+    g.tcsc.tcsc_dsig = zeros(1,k);
+    g.tcsc.xtcsc_dc = zeros(1,k);
+    g.tcsc.dxtcsc_dc = zeros(1,k);
+    g.tcsc.td_sig = zeros(1,k);
 end
 
 
@@ -829,12 +832,12 @@ if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 
     end
 end
 
-if n_tcscud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
+if g.tcsc.n_tcscud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
-    for j=1:n_tcscud
-        b_num = tcsc_dc{j,3};
-        tcsc_num = tcsc_dc{j,2};
-        td_sig(j,1) =abs (g.sys.bus_v(g.sys.bus_int(b_num),1));
+    for j=1:g.tcsc.n_tcscud
+        b_num = g.tcsc.tcsc_dc{j,3};
+        tcsc_num = g.tcsc.tcsc_dc{j,2};
+        g.tcsc.td_sig(j,1) =abs (g.sys.bus_v(g.sys.bus_int(b_num),1));
     end
 end
 
@@ -956,18 +959,18 @@ end
 
 %% initialize tcsc damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
-if n_tcscud~=0
+if g.tcsc.n_tcscud~=0
     disp('tcsc damping controls')
     tot_states=0;
-    for i = 1:n_tcscud
-        ytcscmx = tcsc_dc{i,4};
-        ytcscmn = tcsc_dc{i,5};
-        tcsc_num = tcsc_dc{i,2};
+    for i = 1:g.tcsc.n_tcscud
+        ytcscmx = g.tcsc.tcsc_dc{i,4};
+        ytcscmn = g.tcsc.tcsc_dc{i,5};
+        tcsc_num = g.tcsc.tcsc_dc{i,2};
         st_state = tot_states+1; 
-        tcsc_states = tcsc_dc{i,6}; 
+        tcsc_states = g.tcsc.tcsc_dc{i,6}; 
         tot_states = tot_states+tcsc_states;
-        [tcsc_dsig(tcsc_num,1),xtcsc_dc(st_state:tot_states,1),dxtcsc_dc(st_state:tot_states,1)] =...
-            tcsc_sud(i,1,flag,tcsc_dc{i,1},td_sig(i,1),ytcscmx,ytcscmn);
+        [g.tcsc.tcsc_dsig(tcsc_num,1),g.tcsc.xtcsc_dc(st_state:tot_states,1),g.tcsc.dxtcsc_dc(st_state:tot_states,1)] =...
+            tcsc_sud(i,1,flag,g.tcsc.tcsc_dc{i,1},g.tcsc.td_sig(i,1),ytcscmx,ytcscmn);
     end
 end
 
@@ -1301,13 +1304,14 @@ while (kt<=ktmax)
             end
         end
         
-        if n_tcscud~=0
+        if g.tcsc.n_tcscud~=0
             % set the new bus voltages
             % tcsc damping controls
             % Thyristor Controlled Series compensator
-            for jj=1:n_tcscud
-                b_num = tcsc_dc{jj,3};tcsc_num = tcsc_dc{jj,2};
-                td_sig(jj,k)=abs(g.sys.bus_v(g.sys.bus_int(b_num),k));
+            for jj=1:g.tcsc.n_tcscud
+                b_num = g.tcsc.tcsc_dc{jj,3};
+                tcsc_num = g.tcsc.tcsc_dc{jj,2};
+                g.tcsc.td_sig(jj,k)=abs(g.sys.bus_v(g.sys.bus_int(b_num),k));
             end
         end
         
@@ -1356,22 +1360,22 @@ while (kt<=ktmax)
             msvc_sig(k);
             svc(0,k,bus_sim,flag,v_svc);
         end
-        if n_tcsc~=0
-            if n_tcscud~=0
+        if g.tcsc.n_tcsc~=0
+            if g.tcsc.n_tcscud~=0
                 tot_states=0;
-                for jj = 1:n_tcscud
-                    ytcscmx = tcsc_dc{jj,4};
-                    ytcscmn = tcsc_dc{jj,5};
-                    tcsc_num = tcsc_dc{jj,2};
+                for jj = 1:g.tcsc.n_tcscud
+                    ytcscmx = g.tcsc.tcsc_dc{jj,4};
+                    ytcscmn = g.tcsc.tcsc_dc{jj,5};
+                    tcsc_num = g.tcsc.tcsc_dc{jj,2};
                     st_state = tot_states+1; 
-                    tcsc_states = tcsc_dc{jj,6}; 
+                    tcsc_states = g.tcsc.tcsc_dc{jj,6}; 
                     tot_states = tot_states+tcsc_states;
-                    [tcsc_dsig(tcsc_num,k),xtcsc_dc(st_state:tot_states,k),dxtcsc_dc(st_state:tot_states,k)] =...
-                        tcsc_sud(jj,k,flag,tcsc_dc{jj,1},td_sig(jj,k),ytcscmx,ytcscmn,xtcsc_dc(st_state:tot_states,k));
+                    [g.tcsc.tcsc_dsig(tcsc_num,k),g.tcsc.xtcsc_dc(st_state:tot_states,k),g.tcsc.dxtcsc_dc(st_state:tot_states,k)] =...
+                        tcsc_sud(jj,k,flag,g.tcsc.tcsc_dc{jj,1},g.tcsc.td_sig(jj,k),ytcscmx,ytcscmn,g.tcsc.xtcsc_dc(st_state:tot_states,k));
                 end
             end
-            mtcsc_sig(t(k),k);
-            tcsc(0,k,bus_sim,flag);
+            mtcsc_sig(k);
+            tcsc(0,k,flag);
         end
         
         if g.lmod.n_lmod~=0
@@ -1535,9 +1539,9 @@ while (kt<=ktmax)
         end
         
         %tcsc
-        if n_tcsc ~= 0
-            B_tcsc(:,j) = B_tcsc(:,k) + h_sol*dB_tcsc(:,k);
-            xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol* dxtcsc_dc(:,k);
+        if g.tcsc.n_tcsc ~= 0
+            g.tcsc.B_tcsc(:,j) = g.tcsc.B_tcsc(:,k) + h_sol*g.tcsc.dB_tcsc(:,k);
+            g.tcsc.xtcsc_dc(:,j) = g.tcsc.xtcsc_dc(:,k) + h_sol* g.tcsc.dxtcsc_dc(:,k);
         end
         
         if g.lmod.n_lmod~=0
@@ -1727,12 +1731,12 @@ while (kt<=ktmax)
             end
         end
         
-        if n_tcscud~=0
+        if g.tcsc.n_tcscud~=0
             % set the new line currents
-            for jj=1:n_tcscud
-                b_num = tcsc_dc{jj,3};
-                tcsc_num = tcsc_dc{jj,2};
-                td_sig(jj,j) = abs(g.sys.bus_v(g.sys.bus_int(b_num),j));
+            for jj=1:g.tcsc.n_tcscud
+                b_num = g.tcsc.tcsc_dc{jj,3};
+                tcsc_num = g.tcsc.tcsc_dc{jj,2};
+                g.tcsc.td_sig(jj,j) = abs(g.sys.bus_v(g.sys.bus_int(b_num),j));
             end
         end
         
@@ -1776,22 +1780,22 @@ while (kt<=ktmax)
             bus_sim = svc(0,j,bus_sim,flag,v_svc);
         end
         
-        if n_tcsc~=0
-            mtcsc_sig(t(j),j); % this has changed since v 2.3... % modulation
-            if n_tcscud~=0
+        if g.tcsc.n_tcsc~=0
+            mtcsc_sig(j); % this has changed since v 2.3... % modulation
+            if g.tcsc.n_tcscud~=0
                 tot_states=0;
-                for jj = 1:n_tcscud
-                    ytcscmx = tcsc_dc{jj,4};
-                    ytcscmn = tcsc_dc{jj,5};
-                    tcsc_num = tcsc_dc{jj,2};
+                for jj = 1:g.tcsc.n_tcscud
+                    ytcscmx = g.tcsc.tcsc_dc{jj,4};
+                    ytcscmn = g.tcsc.tcsc_dc{jj,5};
+                    tcsc_num = g.tcsc.tcsc_dc{jj,2};
                     st_state = tot_states+1; 
-                    tcsc_states = tcsc_dc{jj,6}; 
+                    tcsc_states = g.tcsc.tcsc_dc{jj,6}; 
                     tot_states = tot_states+tcsc_states;
-                    [tcsc_dsig(tcsc_num,j),xtcsc_dc(st_state:tot_states,j),dxtcsc_dc(st_state:tot_states,j)] =...
-                        tcsc_sud(jj,j,flag,tcsc_dc{jj,1},td_sig(jj,j),ytcscmx,ytcscmn,xtcsc_dc(st_state:tot_states,j));
+                    [g.tcsc.tcsc_dsig(tcsc_num,j),g.tcsc.xtcsc_dc(st_state:tot_states,j),g.tcsc.dxtcsc_dc(st_state:tot_states,j)] =...
+                        tcsc_sud(jj,j,flag,g.tcsc.tcsc_dc{jj,1},g.tcsc.td_sig(jj,j),ytcscmx,ytcscmn,g.tcsc.xtcsc_dc(st_state:tot_states,j));
                 end
             end
-            tcsc(0,j,bus_sim,flag);
+            tcsc(0,j,flag);
         end
         
         % modified to handle g - thad 06/01/20
@@ -1954,9 +1958,9 @@ while (kt<=ktmax)
         end
         
         %tcsc
-        if n_tcsc ~= 0
-            B_tcsc(:,j) = B_tcsc(:,k) + h_sol*(dB_tcsc(:,j) + dB_tcsc(:,k))/2.;
-            xtcsc_dc(:,j) = xtcsc_dc(:,k) + h_sol*(dxtcsc_dc(:,j) + dxtcsc_dc(:,k))/2.;  
+        if g.tcsc.n_tcsc ~= 0
+            g.tcsc.B_tcsc(:,j) = g.tcsc.B_tcsc(:,k) + h_sol*(g.tcsc.dB_tcsc(:,j) + g.tcsc.dB_tcsc(:,k))/2.;
+            g.tcsc.xtcsc_dc(:,j) = g.tcsc.xtcsc_dc(:,k) + h_sol*(g.tcsc.dxtcsc_dc(:,j) + g.tcsc.dxtcsc_dc(:,k))/2.;  
         end
         
         if g.lmod.n_lmod~=0
@@ -2011,6 +2015,7 @@ phi = line(:,7);
 % full sim timing
 et = toc;
 ets = num2str(et);
+g.sys.ElapsedNonLinearTime = ets;
 disp(['elapsed time = ' ets 's'])
 disp('*** End simulation.')
 disp(' ')
