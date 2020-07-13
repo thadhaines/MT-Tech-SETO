@@ -19,14 +19,14 @@ mac_ind(0,2,bus,flag);
 mac_igen(0,2,bus,flag);
 psi = g.sys.psi_re(:,2) + jay*g.sys.psi_im(:,2);
 
-if n_mot~=0&&g.igen.n_ig==0
-   vmp = vdp(:,2) + jay*vqp(:,2);
+if g.ind.n_mot~=0&&g.igen.n_ig==0
+   vmp = g.ind.vdp(:,2) + jay*g.ind.vqp(:,2);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
-elseif n_mot==0&&g.igen.n_ig~=0
+elseif g.ind.n_mot==0&&g.igen.n_ig~=0
    vmpig = g.igen.vdpig(:,2) + jay*g.igen.vqpig(:,2);
    int_volt=[psi; vmpig]; % internal voltages of sync and ind. generators  
-elseif n_mot~=0&&g.igen.n_ig~=0
-   vmp = vdp(:,2) + jay*vqp(:,2);
+elseif g.ind.n_mot~=0&&g.igen.n_ig~=0
+   vmp = g.ind.vdp(:,2) + jay*g.ind.vqp(:,2);
    vmpig = g.igen.vdpig(:,2) + jay*g.igen.vqpig(:,2);
    int_volt = [psi;vmp;vmpig];
 else
@@ -53,9 +53,9 @@ g.sys.cur_re(1:g.mac.n_mac,2) = real(cur(1:g.mac.n_mac,2));
 g.sys.cur_im(1:g.mac.n_mac,2) = imag(cur(1:g.mac.n_mac,2));
 cur_mag(1:g.mac.n_mac,2) = abs(cur(1:g.mac.n_mac,2)).*g.mac.mac_pot(:,1);
 
-if n_mot~=0
-   idmot = -real(cur(g.mac.n_mac+1:ngm,:));%induction motor currents
-   iqmot = -imag(cur(g.mac.n_mac+1:ngm,:));%current out of network
+if g.ind.n_mot~=0
+   g.ind.idmot = -real(cur(g.mac.n_mac+1:ngm,:));%induction motor currents
+   g.ind.iqmot = -imag(cur(g.mac.n_mac+1:ngm,:));%current out of network
 end
 if g.igen.n_ig~=0
    g.igen.idig = -real(cur(ngm+1:ntot,:));%induction generator currents
@@ -171,46 +171,46 @@ if g.tg.n_tg~=0 || g.tg.n_tgh~=0
    d_vector(dpw_state+3*ngt+1:dpw_state+4*ngt) = g.tg.dtg4(:,2);
    d_vector(dpw_state+4*ngt+1:dpw_state+5*ngt) = g.tg.dtg5(:,2);
 end
-if n_mot~=0
+if g.ind.n_mot~=0
    mot_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh); % times turbine number? 06/11/20 -thad
-   d_vector(mot_start+1:mot_start+n_mot) = dvdp(:,2);
-   d_vector(mot_start+n_mot+1:mot_start+2*n_mot) = dvqp(:,2);
-   d_vector(mot_start+2*n_mot+1:mot_start+3*n_mot) = dslip(:,2);
+   d_vector(mot_start+1:mot_start+g.ind.n_mot) = g.ind.dvdp(:,2);
+   d_vector(mot_start+g.ind.n_mot+1:mot_start+2*g.ind.n_mot) = g.ind.dvqp(:,2);
+   d_vector(mot_start+2*g.ind.n_mot+1:mot_start+3*g.ind.n_mot) = g.ind.dslip(:,2);
 end
 if g.igen.n_ig~=0
-   ig_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot;
+   ig_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot;
    d_vector(ig_start+1:ig_start+g.igen.n_ig) = g.igen.dvdpig(:,2);
    d_vector(ig_start+g.igen.n_ig+1:ig_start+2*g.igen.n_ig) = g.igen.dvqpig(:,2);
    d_vector(ig_start+2*g.igen.n_ig+1:ig_start+3*g.igen.n_ig) = g.igen.dslig(:,2);
 end
 
 if g.svc.n_svc ~= 0
-   svc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig;
+   svc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig;
    d_vector(svc_start+1:svc_start+g.svc.n_svc) = g.svc.dB_cv(:,2);
    d_vector(svc_start+g.svc.n_svc+1:svc_start+2*g.svc.n_svc) = g.svc.dB_con(:,2);
 end
 
 if g.tcsc.n_tcsc~=0
-   tcsc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig+2*g.svc.n_svc;
+   tcsc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig+2*g.svc.n_svc;
    d_vector(tcsc_start+1:tcsc_start+g.tcsc.n_tcsc)=g.tcsc.dB_tcsc(:,2);
 end
 if g.lmod.n_lmod ~= 0
-   lmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc;
+   lmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc;
    d_vector(lmod_start+1:lmod_start+g.lmod.n_lmod) = g.lmod.dlmod_st(:,2);
 end
 if g.rlmod.n_rlmod ~= 0
-   rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod;
+   rlmod_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod;
    d_vector(rlmod_start+1:rlmod_start+g.rlmod.n_rlmod) = g.rlmod.drlmod_st(:,2);
 end
 if g.pwr.n_pwrmod ~= 0
-   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
+   pwrmod_p_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod;
    d_vector(pwrmod_p_start+1:pwrmod_p_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_p_st(:,2);
-   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
+   pwrmod_q_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+g.pwr.n_pwrmod;
    d_vector(pwrmod_q_start+1:pwrmod_q_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_q_st(:,2);
 end
 
 if n_conv~=0
-   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*n_mot+3*g.igen.n_ig + 2*g.svc.n_svc +g.tcsc.n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
+   dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig + 2*g.svc.n_svc +g.tcsc.n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
    d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
    d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
    d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
@@ -448,13 +448,13 @@ if g.tg.n_tg ~=0 || g.tg.n_tgh ~= 0
    g.tg.dtg4(:,2)= g.tg.dtg4(:,1);
    g.tg.dtg5(:,2)= g.tg.dtg5(:,1);
 end
-if n_mot~=0
-   vdp(:,2) = vdp(:,1);
-   vqp(:,2) = vqp(:,1);
-   slip(:,2) = slip(:,1);
-   dvdp(:,2) = dvdp(:,1);
-   dvqp(:,2) = dvqp(:,1);
-   dslip(:,2) = dslip(:,1);
+if g.ind.n_mot~=0
+   g.ind.vdp(:,2) = g.ind.vdp(:,1);
+   g.ind.vqp(:,2) = g.ind.vqp(:,1);
+   g.ind.slip(:,2) = g.ind.slip(:,1);
+   g.ind.dvdp(:,2) = g.ind.dvdp(:,1);
+   g.ind.dvqp(:,2) = g.ind.dvqp(:,1);
+   g.ind.dslip(:,2) = g.ind.dslip(:,1);
 end
 if g.igen.n_ig~=0
    g.igen.vdpig(:,2) = g.igen.vdpig(:,1);

@@ -17,9 +17,9 @@ function mac_indx()
 %   06/19/20    09:56   Thad Haines     Revised format of globals and internal function documentation
 %   07/13/20    10:34   Thad Haines     Induction generator g.igen alterations
 
-
+    %global ind_int ind_con n_mot
+    
 global n_ivm mac_ivm_idx
-global ind_int ind_con n_mot
 
 global g
 
@@ -39,15 +39,15 @@ g.mac.mac_int = zeros(macmax,1);
 g.mac.mac_int(round(g.mac.mac_con(:,1))) = 1:g.mac.n_mac;
 n_tot = g.mac.n_mac;
 ngm = g.mac.n_mac;
-n_mot = 0;
+g.ind.n_mot = 0;
 g.igen.n_ig = 0;
-if ~isempty(ind_con)
-    n_mot = length(ind_con(:,1));
-    n_tot = g.mac.n_mac + n_mot;
+if ~isempty(g.ind.ind_con)
+    g.ind.n_mot = length(g.ind.ind_con(:,1));
+    n_tot = g.mac.n_mac + g.ind.n_mot;
     ngm = n_tot;
-    motmax= max(ind_con(:,1));
-    ind_int = zeros(motmax,1);
-    ind_int(round(ind_con(:,1)))= g.mac.n_mac+1:n_tot;
+    motmax= max(g.ind.ind_con(:,1));
+    g.ind.ind_int = zeros(motmax,1);
+    g.ind.ind_int(round(g.ind.ind_con(:,1)))= g.mac.n_mac+1:n_tot;
 end
 
 if ~isempty(g.igen.igen_con)

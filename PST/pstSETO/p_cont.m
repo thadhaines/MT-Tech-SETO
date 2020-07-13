@@ -134,26 +134,26 @@ for k = 1:g.mac.n_mac
 end
 
 % disturb induction motor states
-if n_mot~=0
+if g.ind.n_mot~=0
    disp('disturbing induction motors')
    for k = g.mac.n_mac+1:ngm
       j=1;
       k_ind = k - g.mac.n_mac;
-      pert = p_ratio*abs(vdp(k_ind,1));   
+      pert = p_ratio*abs(g.ind.vdp(k_ind,1));   
       pert = max(pert,p_ratio);
-      vdp(k_ind,2) = vdp(k_ind,1) + pert;
+      g.ind.vdp(k_ind,2) = g.ind.vdp(k_ind,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 26;
       j=j+1;
-      pert = p_ratio*abs(vqp(k_ind,1));   
+      pert = p_ratio*abs(g.ind.vqp(k_ind,1));   
       pert = max(pert,p_ratio);
-      vqp(k_ind,2) = vqp(k_ind,1) + pert;
+      g.ind.vqp(k_ind,2) = g.ind.vqp(k_ind,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 27;
       j=j+1;
-      pert = p_ratio*abs(slip(k_ind,1));   
+      pert = p_ratio*abs(g.ind.slip(k_ind,1));   
       pert = max(pert,0.000001);
-      slip(k_ind,2) = slip(k_ind,1) + pert;
+      g.ind.slip(k_ind,2) = g.ind.slip(k_ind,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 28;
    end
