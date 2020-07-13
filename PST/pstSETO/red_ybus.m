@@ -33,9 +33,7 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] = red_ybus(bus_sol,line)
 %   08/xx/97    xx:xx   Graham Rogers   Version 2.3 - Add induction generators, correction to DC
 %   02/xx/15    xx:xx   Dan Trudnowski  Version 2.34 - Add power modulation
 %   07/02/20    14:29   Thad Haines     Revised format of globals and internal function documentation
-
-
-global ind_con ind_pot  
+%   07/13/20    12:09   Thad Haines     Added induction gen/motor variables to global g
 
 global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
 
@@ -49,7 +47,7 @@ load_bus = 3;
 nline = length(line(:,1));     % number of lines
 nbus = length(bus_sol(:,1));     % number of buses
 [n,dummy] = size(g.mac.mac_con);    % number of generators
-[nmot,dummy]=size(ind_con);	% number of induction motors
+[nmot,dummy]=size(g.ind.ind_con);	% number of induction motors
 [nig,dummy] = size(g.igen.igen_con); % number of induction generators
 n_tot=n+nmot+nig;			% total number of machines
 ngm = n + nmot; % number of generators + induction motors
@@ -160,11 +158,11 @@ Y_d = sparse(Y_d);
 % extract appropriate xsp from induction motor 
 %   data
 motmax=0;
-if length(ind_con)~=0
-      xsp = ind_pot(:,5).*ind_pot(:,1);
-      rs=ind_con(:,4).*ind_pot(:,1);
+if length(g.ind.ind_con)~=0
+      xsp = g.ind.ind_pot(:,5).*g.ind.ind_pot(:,1);
+      rs=g.ind.ind_con(:,4).*g.ind.ind_pot(:,1);
       y(n+1:ngm,1) = ones(nmot,1)./(rs+jay*xsp);     
-      jm = g.sys.bus_int(round(ind_con(:,2)));  % bus connected to induction motor
+      jm = g.sys.bus_int(round(g.ind.ind_con(:,2)));  % bus connected to induction motor
         % check for multiple induction motors at a bus
        perm = eye(nmot);
        for k = 1:nmot
@@ -184,7 +182,7 @@ if length(ind_con)~=0
        Ymmod = diag(y(n+1:ngm,1))*perm';
        Y_b(n+1:ngm,jm) = -Ymmod;
        Y_d(jm,jm) = Y_d(jm,jm) + perm*Ymmod;
-       motmax= max(ind_con(:,1));
+       motmax= max(g.ind.ind_con(:,1));
 end
 
 % extract appropriate xsp from induction generator 

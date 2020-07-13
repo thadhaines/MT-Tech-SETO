@@ -168,7 +168,7 @@ warning('*** Declare Global Variables')
 % 	% previous non-globals added as they seem to relavant
 % 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
 %     global tcsc_dc
-% Original globals block condensed into g...
+%
 %     %% induction genertaor variables - 19
 %     global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
 %     global  igen_int igbus n_ig
@@ -179,19 +179,19 @@ warning('*** Declare Global Variables')
 %     % added globals
 %     global s_igen
     
+%     %% induction motor variables - 21
+%     global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
+%     global  motbus ind_int mld_con n_mot t_mot
+%     % states
+%     global  vdp vqp slip
+%     % dstates
+%     global dvdp dvqp dslip
+%     % added globals
+%     global s_mot
     
     %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
     
-    %% induction motor variables - 21
-    global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
-    global  motbus ind_int mld_con n_mot t_mot
-    % states
-    global  vdp vqp slip
-    % dstates
-    global dvdp dvqp dslip
-
-
     %% DeltaP/omega filter variables - 21
     global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
     global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
@@ -328,18 +328,18 @@ lm_indx;
 rlm_indx();
 pwrmod_indx(bus); 
 
-n_mot = size(ind_con,1); % inductive motors
+g.ind.n_mot = size(g.ind.ind_con,1); % inductive motors
 g.igen.n_ig = size(g.igen.igen_con,1); % inductive generators
 
-if isempty(n_mot)
-    n_mot = 0;
+if isempty(g.ind.n_mot)
+    g.ind.n_mot = 0;
 end
 if isempty(g.igen.n_ig)
     g.igen.n_ig = 0; 
 end
 
-ntot = g.mac.n_mac+n_mot+g.igen.n_ig;
-ngm = g.mac.n_mac + n_mot;
+ntot = g.mac.n_mac+g.ind.n_mot+g.igen.n_ig;
+ngm = g.mac.n_mac + g.ind.n_mot;
 
 g.mac.n_pm = g.mac.n_mac; % into an init?
 
@@ -409,8 +409,8 @@ warning('*** Initialize zero matricies...')
 z = zeros(n,k);
 z1 = zeros(1,k);
 zm = zeros(1,k);
-if n_mot>1
-    zm = zeros(n_mot,k);
+if g.ind.n_mot>1
+    zm = zeros(g.ind.n_mot,k);
 end
 
 zig = zeros(1,k);
@@ -635,16 +635,16 @@ g.exc.dR_f = ze;
 
 g.pss.pss_out = ze; % seems related to pss more than exciters - thad 06/17/20
 
-%% machine zeros?..
-vdp = zm; 
-vqp = zm; 
-slip = zm;
-dvdp = zm; 
-dvqp = zm; 
-dslip = zm;
-s_mot = zm; % supposed to be global? - thad 06/03/20
-p_mot = zm; 
-q_mot = zm;
+%% inductive motor zeros
+g.ind.vdp = zm; 
+g.ind.vqp = zm; 
+g.ind.slip = zm;
+g.ind.dvdp = zm; 
+g.ind.dvqp = zm; 
+g.ind.dslip = zm;
+g.ind.s_mot = zm; % added to global 07/13/20 - thad
+g.ind.p_mot = zm; 
+g.ind.q_mot = zm;
 
 g.igen.vdpig = zig; 
 g.igen.vqpig = zig; 
@@ -1520,10 +1520,10 @@ while (kt<=ktmax)
         g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*g.tg.dtg5(:,k);
         
         % induction motor integrations
-        if n_mot ~= 0
-            vdp(:,j) = vdp(:,k) + h_sol*dvdp(:,k);
-            vqp(:,j) = vqp(:,k) + h_sol*dvqp(:,k);
-            slip(:,j) = slip(:,k) + h_sol*dslip(:,k);
+        if g.ind.n_mot ~= 0
+            g.ind.vdp(:,j) = g.ind.vdp(:,k) + h_sol*g.ind.dvdp(:,k);
+            g.ind.vqp(:,j) = g.ind.vqp(:,k) + h_sol*g.ind.dvqp(:,k);
+            g.ind.slip(:,j) = g.ind.slip(:,k) + h_sol*g.ind.dslip(:,k);
         end
         
         % induction generator integrations
@@ -1939,10 +1939,10 @@ while (kt<=ktmax)
         g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*(g.tg.dtg5(:,k) + g.tg.dtg5(:,j))/2.;
         
         % induction motor integrations
-        if n_mot ~= 0
-            vdp(:,j) = vdp(:,k) + h_sol*(dvdp(:,j) + dvdp(:,k))/2.;
-            vqp(:,j) = vqp(:,k) + h_sol*(dvqp(:,j) + dvqp(:,k))/2.;
-            slip(:,j) = slip(:,k) + h_sol*(dslip(:,j) + dslip(:,k))/2.;
+        if g.ind.n_mot ~= 0
+            g.ind.vdp(:,j) = g.ind.vdp(:,k) + h_sol*(g.ind.dvdp(:,j) + g.ind.dvdp(:,k))/2.;
+            g.ind.vqp(:,j) = g.ind.vqp(:,k) + h_sol*(g.ind.dvqp(:,j) + g.ind.dvqp(:,k))/2.;
+            g.ind.slip(:,j) = g.ind.slip(:,k) + h_sol*(g.ind.dslip(:,j) + g.ind.dslip(:,k))/2.;
         end
         
         % induction generator integrations

@@ -25,9 +25,6 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 % Author:   Graham Rogers
 % Copyright (c) Joe Chow All Rights Reserved
 
-
-global vdp vqp n_mot idmot iqmot p_mot q_mot ind_con
-
 global i_dc Vdc alpha gamma dcc_pot i_dcr  i_dci Pdc
 global r_idx i_idx ac_bus rec_ac_bus inv_ac_bus n_conv
 
@@ -36,8 +33,8 @@ global g
 flag =1;
 kdc=10*(k-1)+1;
 
-if isempty(n_mot)
-    n_mot = 0;
+if isempty(g.ind.n_mot)
+    g.ind.n_mot = 0;
 end
 
 if isempty(g.igen.n_ig)
@@ -46,20 +43,20 @@ end
 
 jay = sqrt(-1);
 psi = g.sys.psi_re(:,k) + jay*g.sys.psi_im(:,k);
-vmp = vdp(:,k) + jay*vqp(:,k);
+vmp = g.ind.vdp(:,k) + jay*g.ind.vqp(:,k);
 vmpig = g.igen.vdpig(:,k) + jay*g.igen.vqpig(:,k);
 
-if (n_mot~=0 && g.igen.n_ig==0) 
-    ntot = g.mac.n_mac + n_mot;
-    ngm = g.mac.n_mac + n_mot;
+if (g.ind.n_mot~=0 && g.igen.n_ig==0) 
+    ntot = g.mac.n_mac + g.ind.n_mot;
+    ngm = g.mac.n_mac + g.ind.n_mot;
     int_volt=[psi; vmp]; % internal voltages of generators and motors
-elseif (n_mot==0 && g.igen.n_ig~=0)
+elseif (g.ind.n_mot==0 && g.igen.n_ig~=0)
     ntot = g.mac.n_mac + g.igen.n_ig;
     ngm = g.mac.n_mac;
     int_volt=[psi; vmpig]; % internal voltages of generators and ind. generators
-elseif  (n_mot~=0 && g.igen.n_ig~=0)
-    ntot = g.mac.n_mac + n_mot + g.igen.n_ig;
-    ngm = g.mac.n_mac + n_mot;
+elseif  (g.ind.n_mot~=0 && g.igen.n_ig~=0)
+    ntot = g.mac.n_mac + g.ind.n_mot + g.igen.n_ig;
+    ngm = g.mac.n_mac + g.ind.n_mot;
     int_volt=[psi; vmp; vmpig]; % internal voltages of generators, motors & ind. generators
 else
     int_volt = psi;
@@ -89,12 +86,12 @@ g.sys.bus_v(g.sys.bus_int(bus_sim(:,1)),k) = b_v;
 g.sys.theta(g.sys.bus_int(bus_sim(:,1)),k) = angle(b_v);
 g.sys.cur_re(:,k) = real(cur(1:g.mac.n_mac));
 g.sys.cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
-if n_mot~=0
-    idmot(:,k) = -real(cur(g.mac.n_mac+1:ngm));%induction motor currents
-    iqmot(:,k) = -imag(cur(g.mac.n_mac+1:ngm));%current out of network
-    s_mot(:,k) = g.sys.bus_v(g.sys.bus_int(ind_con(:,2)),k).*(idmot(:,k)-jay*iqmot(:,k));
-    p_mot(:,k) = real(s_mot(:,k));
-    q_mot(:,k) = imag(s_mot(:,k));
+if g.ind.n_mot~=0
+    g.ind.idmot(:,k) = -real(cur(g.mac.n_mac+1:ngm));%induction motor currents
+    g.ind.iqmot(:,k) = -imag(cur(g.mac.n_mac+1:ngm));%current out of network
+    g.ind.s_mot(:,k) = g.sys.bus_v(g.sys.bus_int(g.ind.ind_con(:,2)),k).*(g.ind.idmot(:,k)-jay*g.ind.iqmot(:,k));
+    g.ind.p_mot(:,k) = real(g.ind.s_mot(:,k));
+    g.ind.q_mot(:,k) = imag(g.ind.s_mot(:,k));
 end
 if g.igen.n_ig~=0
     g.igen.idig(:,k) = -real(cur(ngm+1:ntot));%induction generator currents

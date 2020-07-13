@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =    'pstSETO'; % 'pstV2p3';%  'pstV3P1';%  
+pstVer =   'pstSETO'; % 'pstV2p3';%  'pstV3P1';%   
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -28,16 +28,16 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('data3mIg.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % move inductive load
-% copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
+copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
 % move modulation file
-copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % copy system data file to batch run location
-% copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % copy system data file to batch run location
+copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
+% copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 
 
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
 %reset inductive load file
-% copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
+copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
 % reset modulation file
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % copy system data file to batch run location
 
