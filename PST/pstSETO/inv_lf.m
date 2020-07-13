@@ -28,13 +28,13 @@ if ~isempty(mode_idx)
    ga1 = ga_min(mode_idx);
    Rc1 = Rc(mode_idx);
    idc1 = idc(mode_idx);
-   Vdo1 = Vdo(mode_idx)
-   Vdc1 = Vdo1.*cos(ga1) - Rc1.*idc1
+   Vdo1 = Vdo(mode_idx);
+   Vdc1 = Vdo1.*cos(ga1) - Rc1.*idc1;
    Vdc(i_idx) = Vdc1;
    % check that Vdc is within range
-   max_idx = find(Vdc1 > Vdc_max(mode_idx))
-   min_idx = find(Vdc1 < Vdc_min(mode_idx))
-   oor_idx = find(Vdc1 > Vdc_max(mode_idx)|Vdc1 < Vdc_min(mode_idx))
+   max_idx = find(Vdc1 > Vdc_max(mode_idx));
+   min_idx = find(Vdc1 < Vdc_min(mode_idx));
+   oor_idx = find(Vdc1 > Vdc_max(mode_idx)|Vdc1 < Vdc_min(mode_idx));
    if ~isempty(max_idx)
       for k = 1:length(max_idx)
          mo_idx(k) = find(oor_idx==max_idx(k));
@@ -57,17 +57,17 @@ if ~isempty(mode_idx)
          Vdo_new(min_idx,1) = (Vdc_min(mode_idx(min_idx)) + Rc1(min_idx).*idc1(min_idx))...
             ./cos(ga1(min_idx));
       end
-      Vdo1(oor_idx)
-      Vdo_new(oor_idx)                                                  %%%
-      tapi(t_idx)
-      tapn = tapi(t_idx).*Vdo1(oor_idx)./Vdo_new(oor_idx)               %%%
+      Vdo1(oor_idx);
+      Vdo_new(oor_idx);                                                  %%%
+      tapi(t_idx);
+      tapn = tapi(t_idx).*Vdo1(oor_idx)./Vdo_new(oor_idx);               %%%
       % get the right tap setting
       tnum = (tapn - tmini(t_idx))./tstepi(t_idx);
       % set tap step to the nearest integer higher for the maximum limit
       if ~isempty(max_idx);tnum(mo_idx) = ceil(tnum(mo_idx));end
       % set tap step to the nearest integer lower for the minimum limit
       if ~isempty(min_idx);tnum(mno_idx) = fix(tnum(mno_idx));end
-      tapin = tmini(t_idx) + tstepi(t_idx).*tnum                        %%%
+      tapin = tmini(t_idx) + tstepi(t_idx).*tnum;                        %%%
       tmax_idx = find(tapin>tmaxi(t_idx));
       if ~isempty(tmax_idx)
          inv_bus = num2str(i_idx(t_idx(tmax_idx)));

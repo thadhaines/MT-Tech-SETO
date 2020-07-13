@@ -27,7 +27,7 @@ copyfile('ml_sig_ORIG.m', 'ml_sig.m');
 copyfile('mpm_sig_ORIG.m', 'mpm_sig.m'); 
 
 % MSVC_SIG - SVC Signal
-copyfile('msvc_sig _ORIG.m', 'msvc_sig.m'); 
+copyfile('msvc_sig_ORIG.m', 'msvc_sig.m'); 
 
 % MTCSC_SIG - TCSC Signal
 copyfile('mtcsc_sig_ORIG.m', 'mtcsc_sig.m'); 
@@ -37,3 +37,6 @@ copyfile('mtg_sig_ORIG.m', 'mtg_sig.m');
 
 % RML_SIG - Reactive load
 copyfile('rml_sig_ORIG.m', 'rml_sig.m'); 
+
+%%
+display('Modulation files restored')

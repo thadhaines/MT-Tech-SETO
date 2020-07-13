@@ -1,6 +1,6 @@
 function [xr,dxr,xi,dxi] = ...
    dc_sim(k,kk,dcr,dci,xr,xi,bus_sim,hdc_sol)
-global  basmva  bus_v
+
 global  dcsp_con  dcl_con dcc_con 
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  Vdc  i_dc  dcc_pot  alpha  gamma Vdc_ref
@@ -49,8 +49,8 @@ if n_conv~=0
    else
       dxi(1,1)=0;
    end
-   f = dc_cont(0,k,kdc,bus_sim,2);
-   f = dc_line(0,k,kdc,bus_sim,2);
+   dc_cont(0,k,kdc,bus_sim,2);
+   dc_line(0,k,kdc,bus_sim,2);
 end
 v_conr(:,jdc) = v_conr(:,kdc) + hdc_sol*dv_conr(:,kdc);
 v_coni(:,jdc) = v_coni(:,kdc) + hdc_sol*dv_coni(:,kdc);
@@ -60,8 +60,8 @@ v_dcc(:,jdc) = v_dcc(:,kdc) + hdc_sol*dv_dcc(:,kdc);
 xr(:,2) = xr(:,1) + hdc_sol* dxr(:,1);
 xi(:,2) = xi(:,1) + hdc_sol* dxi(:,1); 
 
-f = dc_cont(0,k,jdc,bus_sim,1);% recalculate alpha and gamma
-f=dc_vidc(k,kdc); % update Vdc and i_dc
+dc_cont(0,k,jdc,bus_sim,1);% recalculate alpha and gamma
+dc_vidc(k,kdc); % update Vdc and i_dc
 if ndcr_ud~=0
    tot_states=0;
    for jj = 1:ndcr_ud
@@ -87,8 +87,8 @@ else
    dxi(1,2)=0;
 end
 
-f = dc_cont(0,k,jdc,bus_sim,2);
-f = dc_line(0,k,jdc,bus_sim,2);
+dc_cont(0,k,jdc,bus_sim,2);
+dc_line(0,k,jdc,bus_sim,2);
 
 v_conr(:,jdc) = v_conr(:,kdc) + 0.5*hdc_sol*(dv_conr(:,kdc)+dv_conr(:,jdc));
 v_coni(:,jdc) = v_coni(:,kdc) + 0.5*hdc_sol*(dv_coni(:,kdc)+dv_coni(:,jdc));
@@ -97,5 +97,5 @@ i_dci(:,jdc) = i_dci(:,kdc) + 0.5*hdc_sol*(di_dci(:,kdc)+di_dci(:,jdc));
 v_dcc(:,jdc) = v_dcc(:,kdc) + 0.5*hdc_sol*(dv_dcc(:,kdc)+dv_dcc(:,jdc));
 xr(:,2) = xr(:,1) + 0.5*hdc_sol* (dxr(:,1)+dxr(:,2));
 xi(:,2) = xi(:,1) + 0.5*hdc_sol* (dxi(:,1)+dxi(:,2)); 
-f = dc_cont(0,k,jdc,bus_sim,1);%recalculate alpha and gamma
-f=dc_vidc(k,jdc);% update Vdc and i_dc
+dc_cont(0,k,jdc,bus_sim,1);%recalculate alpha and gamma
+dc_vidc(k,jdc);% update Vdc and i_dc

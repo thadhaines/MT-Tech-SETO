@@ -26,6 +26,10 @@ function [f] = pss(i,k,bus,flag)
 % (c) Copyright 1991-2 Joe H. Chow - All Rights Reserved
 
 % History (in reverse chronological order)
+% Version 3.1
+% April 2011
+% corrected washout filter calculation 
+%
 % Version 2.2
 % July 1998
 % added interface to deltaP/omega filter
@@ -117,16 +121,16 @@ if n_pss~=0
       if i ~= 0 % scalar computation
          n = pss_mb_idx(i); % machine number
          if pss_con(i,1) == 1
-            var1 = (mac_spd(i,k)-pss1(i,k))/pss_con(i,4);
+            var1 = mac_spd(i,k)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
          else
             n = mac_int(pss_con(i,2)); % machine number 
-            var1 = (pelect(i,k)*basmva/mac_con(n,3)-pss1(i,k))/pss_con(i,4);
+            var1 = pelect(i,k)*basmva/mac_con(n,3)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
          end
          if n_dpw~=0
             if n_dpw ~= 0
                i_dpw = find(dpw_pss_idx==i);
                if ~isempty(i_dpw)
-                  var1 = (dpw_out(i_dpw,k)-pss1(i,k))/pss_con(i,4);
+                  var1 = dpw_out(i_dpw,k)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
                end
             end
          end  
@@ -147,14 +151,14 @@ if n_pss~=0
             var2 = var1; var3 = var1;
             if length(pss_sp_idx)~=0
                n_sp = mac_int(pss_con(pss_sp_idx,2));
-               var1(pss_sp_idx) = (mac_spd(n_sp,k)-pss1(pss_sp_idx,k))./pss_con(pss_sp_idx,4);
+               var1(pss_sp_idx) = mac_spd(n_sp,k)-pss1(pss_sp_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
             end
             if ~isempty(pss_p_idx)
                n_p = mac_int(pss_con(pss_p_idx,2));
-               var1(pss_p_idx) = (pelect(n_p,k)*basmva./mac_con(n_p,3)-pss1(pss_p_idx,k))./pss_con(pss_p_idx,4);
+               var1(pss_p_idx) = pelect(n_p,k)*basmva./mac_con(n_p,3)-pss1(pss_p_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
             end
             if n_dpw ~= 0
-               var1 = (dpw_out(:,k)-pss1(dpw_pss_idx,k))./pss_con(dpw_pss_idx,4);
+               var1 = dpw_out(:,k)-pss1(dpw_pss_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
             end
          end  
          
@@ -175,10 +179,10 @@ if n_pss~=0
       if i ~= 0 % scalar computation
          n = pss_mb_idx(i); % machine number
          if pss_con(i,1) == 1
-            var1 = (mac_spd(i,k)-pss1(i,k))/pss_con(i,4);
+            var1 = mac_spd(i,k)-pss1(i,k);  % do not divide by pss_con(i,4)  JHC April 17, 2011
          else
             n = mac_int(pss_con(i,2)); % machine number 
-            var1 = (pelect(i,k)*basmva./mac_con(n,3)-pss1(i,k))/pss_con(i,4);
+            var1 = pelect(i,k)*basmva./mac_con(n,3)-pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
          end
          if n_dpw~=0
             if n_dpw ~= 0
@@ -189,7 +193,7 @@ if n_pss~=0
             end
          end  
          
-         dpss1(i,k) = var1;
+         dpss1(i,k) = var1/pss_con(i,4);   % divide by pss_con(i,4)  JHC April 17, 2011
          
          var2 = pss_pot(i,1)*pss_con(i,3)*var1 + pss2(i,k);
          dpss2(i,k) = ((1-pss_pot(i,1))*pss_con(i,3)*var1 - pss2(i,k))/pss_con(i,6);
@@ -212,20 +216,19 @@ if n_pss~=0
             var2 = var1; var3 = var1;
             if ~isempty(pss_sp_idx)
                n_sp = mac_int(pss_con(pss_sp_idx,2));
-               var1(pss_sp_idx) = (mac_spd(n_sp,k)-pss1(pss_sp_idx,k))...
-                  ./pss_con(pss_sp_idx,4);
+               var1(pss_sp_idx) = mac_spd(n_sp,k)-pss1(pss_sp_idx,k); % do not divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
             end
             if ~isempty(pss_p_idx)
                n_p = mac_int(pss_con(pss_p_idx,2));
-               var1(pss_p_idx) = (pelect(n_p,k)*basmva./mac_con(n_p,3)...
-                  -pss1(pss_p_idx,k))./pss_con(pss_p_idx,4);
+               var1(pss_p_idx) = pelect(n_p,k)*basmva./mac_con(n_p,3)...
+                  -pss1(pss_p_idx,k); % do not divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
             end
             if n_dpw ~= 0
                var1 = (dpw_out(:,k)-pss1(dpw_pss_idx,k))./pss_con(dpw_pss_idx,4);
             end
          end  
          
-         dpss1(pss_idx,k) = var1;
+         dpss1(pss_idx,k) = var1./pss_con(pss_sp_idx,4); % divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
          
          var2 = pss_pot(pss_idx,1).*(pss_con(pss_idx,3).*var1) + pss2(pss_idx,k);
          dpss2(pss_idx,k) = ((ones(n_pss,1)-pss_pot(pss_idx,1))...

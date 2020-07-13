@@ -30,12 +30,15 @@ function [bus_sol,line_sol,line_flow,rec_par,inv_par,line_par] = lfdcs(bus,line,
 % Date:      February 1997
 %            (c) copyright Joe Chow 1991-1997  - All rights reserved
 %
-global basmva bus_int
+
 global dcsp_con  dcl_con  dcc_con
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
 global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tsepr tsepi
 global  Vdc
+
+global g
+
 disp(' load flow with HVDC')
 
 jay = sqrt(-1);
@@ -87,10 +90,10 @@ while (errv == 0&&iter<=itermax)
      i_ac = (P - jay*Q)./Vac./exp(-jay*Vang);
      Vac = Vac.*bus_sol(ac_bus,13); %convert to kV
      % convert ac currents to dc
-     idceq = abs(i_ac)*pi*basmva/3/sqrt(2)...
+     idceq = abs(i_ac)*pi*g.sys.basmva/3/sqrt(2)...
              ./bus_sol(ac_bus,13)./dcsp_con(:,6);
      % convert ac currents to kA
-     i_ac = i_ac*basmva/sqrt(3)./bus_sol(ac_bus,13);
+     i_ac = i_ac*g.sys.basmva/sqrt(3)./bus_sol(ac_bus,13);
      %calculate equivalent HT bus voltage
      xequ = sqrt(3)*dcsp_con(:,5)./dcsp_con(:,6);% eq transformer reactance
      VHT = abs(Vac.*exp(jay*Vang) + jay*xequ.*i_ac);

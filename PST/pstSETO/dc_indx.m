@@ -1,4 +1,4 @@
-function f = dc_indx(bus,line,dci_dc,dcr_dc)
+function dc_indx(bus,line,dci_dc,dcr_dc)
 %Syntax: f = dc_indx(bus,line)
 %Purpose: To form indexes for the rectifier and inverter in the dc load flow
 %         and indicate the ac buses contected to the converters
@@ -19,8 +19,7 @@ function f = dc_indx(bus,line,dci_dc,dcr_dc)
 %         (c) Copyright Joe Chow 1996 - All right reserved
 %
 
-f = 0;
-global  bus_int
+
 global  dcsp_con  dcl_con dcc_con 
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
@@ -61,20 +60,20 @@ if ~isempty(dcsp_con)
    rpc_idx = find(dcc_con(:,9)==2);
    n_dcl = lline;
    n_conv = lconv;
-   inv_ac_bus = bus_int(dcsp_con(i_idx,2));
-   rec_ac_bus = bus_int(dcsp_con(r_idx,2));
-   ac_bus = bus_int(dcsp_con(:,2));
+   inv_ac_bus = g.sys.bus_int(dcsp_con(i_idx,2));
+   rec_ac_bus = g.sys.bus_int(dcsp_con(r_idx,2));
+   ac_bus = g.sys.bus_int(dcsp_con(:,2));
    inv_ac_line = zeros(lline,1);
    rec_ac_line = zeros(lline,1);
    for j = 1:lline
-      acilj = find(bus_int(line(:,2))== inv_ac_bus(j));
+      acilj = find(g.sys.bus_int(line(:,2))== inv_ac_bus(j));
       if isempty(acilj)
          error(' the inverter bus is not declared as a to bus')
       else
          inv_ac_line(j) = acilj;
          acilj = [];
       end
-      acrlj = find(bus_int(line(:,2)) == rec_ac_bus(j));
+      acrlj = find(g.sys.bus_int(line(:,2)) == rec_ac_bus(j));
       if isempty(acrlj)
          error(' the rectifier bus is not declared as a to bus')
       else
@@ -100,7 +99,7 @@ l_cap = n_dcl-l_no_cap;
 no_ind_idx = find(dcl_con(:,4) ==0|dcl_con(:,6)==0|dcl_con(:,7)==0);
 
 % index of converters in load_con
-j = bus_int(g.ncl.load_con(:,1));
+j = g.sys.bus_int(g.ncl.load_con(:,1));
 for k = 1: n_conv
    ldc_idx(k) = find(j==ac_bus(k));
    if isempty(ldc_idx(k))

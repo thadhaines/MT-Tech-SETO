@@ -16,8 +16,10 @@ function [Yrr,Yri,Yir,Yii] = dc_load(V,k,kdc)
 %Author:  Graham Rogers
 % Copyright (c) Joe Chow 1991-1997 All Rights Reserved
 
-global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
+global  i_dci  i_dcr  dcc_pot  alpha  gamma  r_idx  i_idx
 global  n_conv n_dcl
+
+global g
 
 jay = sqrt(-1);
 V0(r_idx,1) = dcc_pot(:,7).*abs(V(r_idx));
@@ -31,7 +33,7 @@ idc(i_idx,1) = i_dci(:,kdc);
 Vdc = V0.*cos(dc_ang) - idc.*Rc;
 cphi = Vdc./V0;
 sphi = sqrt(ones(n_conv,1) - cphi.*cphi);
-P = Vdc.*idc/basmva;
+P = Vdc.*idc/g.sys.basmva;
 Q = P.*sphi./cphi;
 P(i_idx) = - P(i_idx);
 iac = (P - jay*Q)./conj(V);
@@ -41,9 +43,9 @@ dV0dVr(r_idx,1) = dcc_pot(:,7).*real(V(r_idx))./abs(V(r_idx));
 dV0dVr(i_idx,1) = dcc_pot(:,8).*real(V(i_idx))./abs(V(i_idx));
 dV0dVi(r_idx,1) = dcc_pot(:,7).*imag(V(r_idx))./abs(V(r_idx));
 dV0dVi(i_idx,1) = dcc_pot(:,8).*imag(V(i_idx))./abs(V(i_idx));
-dPdVr = idc.*cos(dc_ang).*dV0dVr/basmva;
-dPdVi = idc.*cos(dc_ang).*dV0dVi/basmva;
-Kq = idc.*(ones(n_conv,1)-cos(dc_ang).*cphi)./sphi/basmva;
+dPdVr = idc.*cos(dc_ang).*dV0dVr/g.sys.basmva;
+dPdVi = idc.*cos(dc_ang).*dV0dVi/g.sys.basmva;
+Kq = idc.*(ones(n_conv,1)-cos(dc_ang).*cphi)./sphi/g.sys.basmva;
 dQdVr = Kq.*dV0dVr;
 dQdVi = Kq.*dV0dVi;
 Vr = real(V);

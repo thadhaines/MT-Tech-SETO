@@ -211,6 +211,7 @@ warning('*** Declare Global Variables')
     %line
     global i_dcr i_dci  v_dcc
     global di_dcr  di_dci  dv_dcc
+    global dc_dsig % added 07/13/20 -thad
     %rectifier
     global v_conr dv_conr
     %inverter
@@ -436,6 +437,7 @@ cur_ord = z;
 alpha = zdcl;
 gamma = zdcl;
 dc_sig = zeros(n_conv,k);
+dc_dsig = zeros(n_conv,k);
 dcr_dsig = zeros(n_dcl,k);
 dci_dsig = zeros(n_dcl,k);
 i_dcr = zdcl; 
@@ -1077,7 +1079,7 @@ if ~isempty(dcsp_con)
     
     h_sol = i_simu(1,1,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     % reinitialize dc controls
-    mdc_sig(0,1);
+    mdc_sig(1);
     dc_cont(0,1,1,bus,flag);
     % initialize dc line
     dc_line(0,1,1,bus,flag);

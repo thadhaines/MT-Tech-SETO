@@ -1,4 +1,4 @@
-function  f = dc_line(i,k,kdc,bus,flag)
+function  dc_line(i,k,kdc,bus,flag)
 %Syntax:  f = dc_line(i,kdc,bus,flag)
 % 5:14 PM 15/08/97
 %Purpose: Models HVDC line dynamics
@@ -37,7 +37,6 @@ global i_dcr i_dci  v_dcc
 global di_dcr  di_dci  dv_dcc  
 
 
-f=0;
 jay = sqrt(-1);
 k=fix(1+(kdc+1)/10);
 % check for dcline data

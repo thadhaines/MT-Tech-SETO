@@ -11,8 +11,11 @@ function i_ac = dc_cur(V,k,kdc)
 %Date:   March 1997
 %Copyright Joe Chow 1991-1997 All Rights Reserved
 
-global  r_idx  i_idx  dcc_pot n_conv basmva
+
+
+global  r_idx  i_idx  dcc_pot n_conv 
 global  i_dcr  i_dci  alpha  gamma
+global g
 jay = sqrt(-1);
 V0(r_idx,1) = dcc_pot(:,7).*abs(V(r_idx));
 V0(i_idx,1) = dcc_pot(:,8).*abs(V(i_idx));
@@ -25,7 +28,7 @@ idc(i_idx,1) = i_dci(:,kdc);
 Vdc = V0.*cos(dc_ang) - idc.*Rc;
 cphi = Vdc./V0;
 sphi = sqrt(ones(n_conv,1) - cphi.*cphi);
-P = Vdc.*idc/basmva;
+P = Vdc.*idc/g.sys.basmva;
 Q = P.*sphi./cphi;
 P(i_idx) = - P(i_idx);
 i_ac = (P - jay*Q)./conj(V);

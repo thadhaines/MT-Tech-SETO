@@ -11,15 +11,17 @@ function [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
 % Author Graham Rogers
 % Date   October 1996
 % (c) Copyright Joe Chow 1996 - All rights reserved
-global  bus_int  basmva
+
 global  dcsp_con  dcl_con dcc_con 
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  inv_ac_line  rec_ac_line ac_line dcli_idx
 global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
 global  Vdc
+
+global g
 jay = sqrt(-1);
 % determine dc indexes
-f = dc_indx(bus,line,dci_dc,dcr_dc);
+dc_indx(bus,line,dci_dc,dcr_dc);
 if n_conv~=0 & n_dcl~=0
   Vdc=zeros(n_conv,1);% initialize to zero vector
   dc_bus = dcsp_con(:,1);
@@ -52,8 +54,8 @@ if n_conv~=0 & n_dcl~=0
   % in load flow the rectifier and inverter are represented by 
   % P and Q loads
   % Get P and Q in MW
-  P = bus(ac_bus,6)*basmva;
-  Q = bus(ac_bus,7)*basmva;
+  P = bus(ac_bus,6)*g.sys.basmva;
+  Q = bus(ac_bus,7)*g.sys.basmva;
   % convert ac voltages to kV line-to-line
   Vac = Vac.*bus(ac_bus,13);
   % calculate commutating voltage
@@ -95,13 +97,13 @@ if n_conv~=0 & n_dcl~=0
    
 
   end
-  alpha = alpha;
-  gamma = gamma;
+%   alpha = alpha; % oh? -thad 07/13/20
+%   gamma = gamma;
   % recalculate Vdo based on the modified firing and extinction angles
   Vdo(r_idx) = (Vdc(r_idx)+Rc(r_idx).*idc)./cos(alpha*pi/180);
-  Vdo(i_idx) = (Vdc(i_idx)+Rc(i_idx).*idc)./cos(gamma*pi/180)
+  Vdo(i_idx) = (Vdc(i_idx)+Rc(i_idx).*idc)./cos(gamma*pi/180);
   % calculate ac power factor at LT bus 
-  cphi = Vdc./Vdo
+  cphi = Vdc./Vdo;
   oor_idx = find(abs(cphi)>=1);
   if ~isempty(oor_idx)
     bad_num = num2str(oor_idx');
@@ -109,35 +111,35 @@ if n_conv~=0 & n_dcl~=0
     error('stop')
   end
   % converter power in per unit on ac system base 
-  Pr = Vdc(r_idx).*idc/basmva
-  Pi = -Vdc(i_idx).*idc/basmva
-  tphi = sqrt(ones(n_conv,1)-cphi.*cphi)./cphi
-  Qr = Pr.*tphi(r_idx)
-  Qi = -Pi.*tphi(i_idx)
+  Pr = Vdc(r_idx).*idc/g.sys.basmva;
+  Pi = -Vdc(i_idx).*idc/g.sys.basmva;
+  tphi = sqrt(ones(n_conv,1)-cphi.*cphi)./cphi;
+  Qr = Pr.*tphi(r_idx);
+  Qi = -Pi.*tphi(i_idx);
   % convert to load at the converter LT bus
   iacr = idc.*dcsp_con(r_idx,6)*sqrt(6)/pi;
   %convert to per unit
-  iacr = iacr*sqrt(3).*bus(rec_ac_bus,13)/basmva
+  iacr = iacr*sqrt(3).*bus(rec_ac_bus,13)/g.sys.basmva;
   % convert xequ to per unit on ac system base
-  xequ = xequ*basmva./bus(ac_bus,13)./bus(ac_bus,13)/sqrt(3)
+  xequ = xequ*g.sys.basmva./bus(ac_bus,13)./bus(ac_bus,13)/sqrt(3);
   iaci = idc.*dcsp_con(i_idx,6)*sqrt(6)/pi;
   % convert to per unit
-  iaci = iaci*sqrt(3).*bus(inv_ac_bus,13)/basmva
+  iaci = iaci*sqrt(3).*bus(inv_ac_bus,13)/g.sys.basmva;
   % calculate LT reactive power
-  Qr = Qr - xequ(r_idx).*iacr.*iacr
+  Qr = Qr - xequ(r_idx).*iacr.*iacr;
   Qi = Qi - xequ(i_idx).*iaci.*iaci;
-  Sr = (Pr + jay*Qr)
-  Si = (Pi + jay*Qi)
+  Sr = (Pr + jay*Qr);
+  Si = (Pi + jay*Qi);
   rec_par = zeros(n_dcl,3);
   inv_par = rec_par;
   rec_par(:,1) = alpha;
   inv_par(:,1) = gamma;
   rec_par(:,2) = Vdc(r_idx);
   inv_par(:,2) = Vdc(i_idx);
-  rec_par(:,3) = Vdc(r_idx).*idc
-  inv_par(:,3) = Vdc(i_idx).*idc
-  line_par = idc
+  rec_par(:,3) = Vdc(r_idx).*idc;
+  inv_par(:,3) = Vdc(i_idx).*idc;
+  line_par = idc;
   tap(i_idx) = tapi;
-  tap(r_idx) = tapr
+  tap(r_idx) = tapr;
 end
 return

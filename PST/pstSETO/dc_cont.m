@@ -25,19 +25,19 @@ function dc_cont(i,k,kdc,bus,flag)
 % Date:     April 1997
 % Author:   Graham Rogers
 
+global g
 global dcc_con
 % check that dc controls are defined
 if ~isempty(dcc_con)
 %define global variables
-global  basmva  bus_v
-global  dcsp_con  dcl_con dcc_con 
+global  dcsp_con  dcl_con 
 global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
 global  Vdc  i_dc  dc_pot  alpha  gamma Vdc_ref
 global  cur_ord dc_sig dcc_pot dcr_dsig dci_dsig
 % States
 %line
 global i_dcr i_dci  v_dcc
-global di_dcr  di_dci  dv_dcc  
+global di_dcr  di_dci  dv_dcc  dc_dsig
 %rectifier
 global v_conr  
 global dv_conr  
@@ -90,10 +90,10 @@ global dv_coni
          
          dcc_pot(:,1) = gamma(:,1); %gamma reference value
          dcc_pot(:,2) = dcsp_con(r_idx,5)./dcsp_con(r_idx,6); 
-         dcc_pot(:,2) = dcc_pot(:,2)*basmva./bus(rec_ac_bus,13)./bus(rec_ac_bus,13); % xeqpu rec
+         dcc_pot(:,2) = dcc_pot(:,2)*g.sys.basmva./bus(rec_ac_bus,13)./bus(rec_ac_bus,13); % xeqpu rec
          dcc_pot(:,3) = dcsp_con(r_idx,6).*dcsp_con(r_idx,5)*3/pi;  % Rc rectifiers   
          dcc_pot(:,4) = dcsp_con(i_idx,5)./dcsp_con(i_idx,6); 
-         dcc_pot(:,4) = dcc_pot(:,4)*basmva./bus(inv_ac_bus,13)./bus(inv_ac_bus,13); %xeqpu inv
+         dcc_pot(:,4) = dcc_pot(:,4)*g.sys.basmva./bus(inv_ac_bus,13)./bus(inv_ac_bus,13); %xeqpu inv
          dcc_pot(:,5) = dcsp_con(i_idx,6).*dcsp_con(i_idx,5)*3/pi;  % Rc inverters  
          dcc_pot(:,6) = dcc_pot(:,5); 
          % multiplier ideal rec dc voltage 
@@ -101,8 +101,8 @@ global dv_coni
          % multiplier ideal inv dc voltage
          dcc_pot(:,8) = 3*sqrt(2).*dcsp_con(i_idx,6).*bus(inv_ac_bus,13)/pi;
          % multiplier acpu to dc amps
-         dcc_pot(:,9) = pi*basmva/3/sqrt(2)./bus(rec_ac_bus,13)./dcsp_con(r_idx,6);%rectifier
-         dcc_pot(:,10) = pi*basmva/3/sqrt(2)./bus(inv_ac_bus,13)./dcsp_con(i_idx,6);%inverter
+         dcc_pot(:,9) = pi*g.sys.basmva/3/sqrt(2)./bus(rec_ac_bus,13)./dcsp_con(r_idx,6);%rectifier
+         dcc_pot(:,10) = pi*g.sys.basmva/3/sqrt(2)./bus(inv_ac_bus,13)./dcsp_con(i_idx,6);%inverter
          dc_dsig(:,1)=zeros(n_conv,1); % zero damping control signals
          if dc_sig(:,1)~=zeros(n_conv,1)
             % reset initial values of alpha and gamma

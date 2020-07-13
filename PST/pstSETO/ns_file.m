@@ -244,6 +244,6 @@ if n_conv~= 0
       state_hvdc(cap_idx) =state_hvdc(cap_idx) + 2*ones(l_cap,1);
    end
    n_hvdc_states = sum(state_hvdc);
-   n_hvdc1 = ntot +g.svc.n_svc + g.tcsc.n_tcsc+ g.lmod.n_lmod+n_rlmod+2*g.pwr.n_pwrmod;
+   n_hvdc1 = ntot +g.svc.n_svc + g.tcsc.n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
    state(n_hvdc1+1:n_hvdc1+n_dcl) = (3 + 2*l_cap)*ones(n_dcl,1);
 end
