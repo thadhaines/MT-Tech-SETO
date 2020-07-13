@@ -17,6 +17,7 @@
 %   07/06/20    11:15   Thad Haines     addition of pss_con and gain fix
 %   07/08/20    15:32   Thad Haines     addition of svc_con
 %   07/09/20    11:11   Thad Haines     addition of tcsc_con
+%   07/13/20    09:44   Thad Haines     addition of igen_con
 
 global g
 
@@ -129,7 +130,13 @@ else
     g.tcsc.tcsc_con = [];
     g.tcsc.n_tcsc = 0;
 end
-
+%% igen_con
+if exist('igen_con','var')
+    g.igen.igen_con = igen_con;
+    clear igen_con;
+else
+    g.igen.igen_con = [];
+end
 %% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;

@@ -26,36 +26,39 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 % Copyright (c) Joe Chow All Rights Reserved
 
 
-%global load_con nload
-
 global vdp vqp n_mot idmot iqmot p_mot q_mot ind_con
-
-global vdpig vqpig n_ig idig iqig  pig qig igen_con
 
 global i_dc Vdc alpha gamma dcc_pot i_dcr  i_dci Pdc
 global r_idx i_idx ac_bus rec_ac_bus inv_ac_bus n_conv
 
-    
 global g
 
 flag =1;
 kdc=10*(k-1)+1;
-if isempty(n_mot); n_mot = 0;end
-if isempty(n_ig); n_ig =0;end
+
+if isempty(n_mot)
+    n_mot = 0;
+end
+
+if isempty(g.igen.n_ig)
+    g.igen.n_ig =0;
+end
+
 jay = sqrt(-1);
 psi = g.sys.psi_re(:,k) + jay*g.sys.psi_im(:,k);
 vmp = vdp(:,k) + jay*vqp(:,k);
-vmpig = vdpig(:,k) + jay*vqpig(:,k);
-if (n_mot~=0&n_ig==0)
+vmpig = g.igen.vdpig(:,k) + jay*g.igen.vqpig(:,k);
+
+if (n_mot~=0 && g.igen.n_ig==0) 
     ntot = g.mac.n_mac + n_mot;
     ngm = g.mac.n_mac + n_mot;
     int_volt=[psi; vmp]; % internal voltages of generators and motors
-elseif (n_mot==0 & n_ig~=0)
-    ntot = g.mac.n_mac + n_ig;
+elseif (n_mot==0 && g.igen.n_ig~=0)
+    ntot = g.mac.n_mac + g.igen.n_ig;
     ngm = g.mac.n_mac;
     int_volt=[psi; vmpig]; % internal voltages of generators and ind. generators
-elseif  (n_mot~=0&n_ig~=0)
-    ntot = g.mac.n_mac + n_mot + n_ig;
+elseif  (n_mot~=0 && g.igen.n_ig~=0)
+    ntot = g.mac.n_mac + n_mot + g.igen.n_ig;
     ngm = g.mac.n_mac + n_mot;
     int_volt=[psi; vmp; vmpig]; % internal voltages of generators, motors & ind. generators
 else
@@ -93,12 +96,13 @@ if n_mot~=0
     p_mot(:,k) = real(s_mot(:,k));
     q_mot(:,k) = imag(s_mot(:,k));
 end
-if n_ig~=0
-    idig(:,k) = -real(cur(ngm+1:ntot));%induction generator currents
-    iqig(:,k) = -imag(cur(ngm+1:ntot));%current out of network
-    s_igen(:,k) = g.sys.bus_v(g.sys.bus_int(igen_con(:,2)),k).*(idig(:,k)-jay*iqig(:,k));
-    pig(:,k) = real(s_igen(:,k));
-    qig(:,k) = imag(s_igen(:,k));
+if g.igen.n_ig~=0
+    g.igen.idig(:,k) = -real(cur(ngm+1:ntot));%induction generator currents
+    g.igen.iqig(:,k) = -imag(cur(ngm+1:ntot));%current out of network
+    g.igen.s_igen(:,k) = g.sys.bus_v(g.sys.bus_int(g.igen.igen_con(:,2)),k)...
+        .*(g.igen.idig(:,k)-jay*g.igen.iqig(:,k));
+    g.igen.pig(:,k) = real(g.igen.s_igen(:,k));
+    g.igen.qig(:,k) = imag(g.igen.s_igen(:,k));
 end
 
 if n_conv ~=0

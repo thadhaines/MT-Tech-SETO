@@ -1,0 +1,84 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of Inductive Generators using global g\\ }
+\lhead{Research \\7/13/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable inductive generators \verb|mac_igen| in PST to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+    %% induction genertaor variables - 19
+    global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+    global  igen_int igbus n_ig
+    %states
+    global  vdpig vqpig slig
+    %dstates
+    global dvdpig dvqpig dslig
+    % added globals
+    global s_igen
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{handleNewGlobals}
+	\begin{itemize}
+		\item Addition of \verb|igen_con| to global g
+	\end{itemize}
+%===============================================================================
+\paragraph{i\_simu}
+	\begin{itemize}
+		\item Addition to \verb|igen| to global g
+	\end{itemize}
+
+%===============================================================================
+\paragraph{mac\_igen}
+	\begin{itemize}
+		\item Updated internal function documentation.
+		\item Addition to \verb|igen| to global g
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{red\_ybus}
+	\begin{itemize}
+		\item Addition to \verb|igen| to global g
+	\end{itemize}
+
+%===============================================================================
+\paragraph{s\_simu\_Batch}
+	\begin{itemize}
+		\item Addition to \verb|igen| to global g
+	\end{itemize}
+			
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300}
+
+%===============================================================================
+Alteration of system globals to use \verb|g.igen| structure:
+
+	\begin{itemize}
+		\item svm\_mgen\_Batch
+		\item ns\_file (ran as a script)
+		\item p\_m\_file (ran as a script)
+		\item p\_file (ran as a script)
+		\item p\_cont (ran as a script)
+	\end{itemize}
+	
+	
+
+
+\end{document}
