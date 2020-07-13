@@ -160,26 +160,26 @@ if n_mot~=0
 end
 
 % disturb induction generator states
-if n_ig~=0
+if g.igen.n_ig~=0
    disp('disturbing induction generators')
    for k = ngm+1:ntot
       j=1;
       k_ig = k - ngm;
-      pert = p_ratio*abs(vdpig(k_ig,1));   
+      pert = p_ratio*abs(g.igen.vdpig(k_ig,1));   
       pert = max(pert,p_ratio);
-      vdpig(k_ig,2) = vdpig(k_ig,1) + pert;
+      g.igen.vdpig(k_ig,2) = g.igen.vdpig(k_ig,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 29;
       j=j+1;
-      pert = p_ratio*abs(vqpig(k_ig,1));   
+      pert = p_ratio*abs(g.igen.vqpig(k_ig,1));   
       pert = max(pert,p_ratio);
-      vqpig(k_ig,2) = vqpig(k_ig,1) + pert;
+      g.igen.vqpig(k_ig,2) = g.igen.vqpig(k_ig,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 30;
       j=j+1;
-      pert = p_ratio*abs(slig(k_ig,1));   
+      pert = p_ratio*abs(g.igen.slig(k_ig,1));   
       pert = max(pert,0.000001);
-      slig(k_ig,2) = slig(k_ig,1) + pert;
+      g.igen.slig(k_ig,2) = g.igen.slig(k_ig,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 31;
    end

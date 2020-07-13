@@ -177,10 +177,10 @@ end
 
 % induction generator
 n_ig_states = 0;
-if n_ig~=0
-   state_ig(1:n_ig) = 3*ones(n_ig,1);
+if g.igen.n_ig~=0
+   state_ig(1:g.igen.n_ig) = 3*ones(g.igen.n_ig,1);
    n_ig_states = sum(state_ig);
-   state(ngm+1:ntot) = 3*ones(n_ig,1);
+   state(ngm+1:ntot) = 3*ones(g.igen.n_ig,1);
 end 
 
 % svc

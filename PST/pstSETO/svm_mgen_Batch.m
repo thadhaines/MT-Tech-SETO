@@ -161,6 +161,16 @@ tic % start timer
 % 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
 %     global tcsc_dc
     
+%     %% induction genertaor variables - 19
+%     global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+%     global  igen_int igbus n_ig
+%     %states
+%     global  vdpig vqpig slig
+%     %dstates
+%     global dvdpig dvqpig dslig
+%     % added globals
+%     global s_igen
+    
 %% Non converted globals
 % induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
@@ -169,14 +179,6 @@ global  motbus ind_int mld_con n_mot t_mot
 global  vdp vqp slip 
 % dstates
 global dvdp dvqp dslip 
-
-% induction genertaor variables
-global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
-global  igen_int igbus n_ig
-%states
-global  vdpig vqpig slig 
-%dstates
-global dvdpig dvqpig dslig
 
 % DeltaP/omega filter variables
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
@@ -310,7 +312,7 @@ g.rlmod.n_rlmod = 0;
 g.pwr.n_pwrmod = 0;
 % note dc_indx called in load flow
 mac_indx;% identifies generators
-ntot = g.mac.n_mac+n_mot+n_ig;
+ntot = g.mac.n_mac+n_mot+g.igen.n_ig;
 ngm = g.mac.n_mac+n_mot;
 g.mac.pm_sig = zeros(g.mac.n_mac,2);
 % mac_exc=0;
@@ -467,14 +469,14 @@ end
 bus = mac_ind(0,1,bus,0);
 
 %initialize induction generator
-if n_ig~=0
-   vdpig = zeros(n_ig,2);
-   vqpig = zeros(n_ig,2);
-   slig = zeros(n_ig,2);
-   dvdpig = zeros(n_ig,2);
-   dvqpig = zeros(n_ig,2);
-   dslig = zeros(n_ig,2);
-   tmig = zeros(n_ig,2);
+if g.igen.n_ig~=0
+   g.igen.vdpig = zeros(g.igen.n_ig,2);
+   g.igen.vqpig = zeros(g.igen.n_ig,2);
+   g.igen.slig = zeros(g.igen.n_ig,2);
+   g.igen.dvdpig = zeros(g.igen.n_ig,2);
+   g.igen.dvqpig = zeros(g.igen.n_ig,2);
+   g.igen.dslig = zeros(g.igen.n_ig,2);
+   g.igen.tmig = zeros(g.igen.n_ig,2);
 end
 bus = mac_igen(0,1,bus,0);
 
@@ -539,10 +541,10 @@ pss2_state = state;
 pss3_state = state;
 dpw_state = state;
 tg_state = state;
-state = zeros(g.mac.n_mac+n_mot+n_ig+g.svc.n_svc+g.tcsc.n_tcsc ...
+state = zeros(g.mac.n_mac+n_mot+g.igen.n_ig+g.svc.n_svc+g.tcsc.n_tcsc ...
     +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+n_dcl,1);
 max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
-    + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*n_ig+ ...
+    + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*n_mot+ 3*g.igen.n_ig+ ...
     2*g.svc.n_svc+g.tcsc.n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
@@ -727,15 +729,15 @@ mac_sub(0,1,bus,flag);
 mac_ib(0,1,bus,flag);
 %calculate initial electrical torque
 psi = g.sys.psi_re(:,1)+jay*g.sys.psi_im(:,1);
-if n_mot~=0&&n_ig==0
+if n_mot~=0&&g.igen.n_ig==0
    vmp = vdp(:,1) + jay*vqp(:,1);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
-elseif n_mot==0&&n_ig~=0
-   vmpig = vdpig(:,1) + jay*vqpig(:,1);
+elseif n_mot==0&&g.igen.n_ig~=0
+   vmpig = g.igen.vdpig(:,1) + jay*g.igen.vqpig(:,1);
    int_volt = [psi; vmpig]; % int volt of synch and ind generators
-elseif n_mot~=0&&n_ig~=0
+elseif n_mot~=0&&g.igen.n_ig~=0
    vmp = vdp(:,1) + jay*vqp(:,1);
-   vmpig = vdpig(:,1) + jay*vqpig(:,1);
+   vmpig = g.igen.vdpig(:,1) + jay*g.igen.vqpig(:,1);
    int_volt = [psi; vmp; vmpig];   
 else
    int_volt = psi;
@@ -753,9 +755,9 @@ if n_mot~=0
    idmot(:,1) = -real(cur(g.mac.n_mac+1:ngm,1));%induction motor currents
    iqmot(:,1) = -imag(cur(g.mac.n_mac+1:ngm,1));%current out of network
 end 
-if n_ig~=0
-   idig(:,1) = -real(cur(ngm+1:ntot,1));%induction generator currents
-   iqig(:,1) = -imag(cur(ngm+1:ntot,1));%current out of network
+if g.igen.n_ig~=0
+   g.igen.idig(:,1) = -real(cur(ngm+1:ntot,1));%induction generator currents
+   g.igen.iqig(:,1) = -imag(cur(ngm+1:ntot,1));%current out of network
 end 
 
 if n_conv ~=0
@@ -874,11 +876,11 @@ if n_mot~=0
    vqp(:,2) = vqp(:,1);
    slip(:,2) = slip(:,1);
 end
-if n_ig~=0
-   vdpig(:,2) = vdpig(:,1);
-   vqpig(:,2) = vqpig(:,1);
-   slig(:,2) = slig(:,1);
-   tmig(:,2) = tmig(:,1);
+if g.igen.n_ig~=0
+   g.igen.vdpig(:,2) = g.igen.vdpig(:,1);
+   g.igen.vqpig(:,2) = g.igen.vqpig(:,1);
+   g.igen.slig(:,2) = g.igen.slig(:,1);
+   g.igen.tmig(:,2) = g.igen.tmig(:,1);
 end
 if g.svc.n_svc ~= 0
    g.svc.B_cv(:,2) = g.svc.B_cv(:,1);
