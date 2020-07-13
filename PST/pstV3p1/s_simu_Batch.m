@@ -1394,9 +1394,9 @@ while (kt<=ktmax)
             tcsc(0,k,bus_sim,flag);
         end
         
-        % modified in v2.3 - thad 06/01/20
+        
         if n_lmod~=0
-            ml_sig(k); % modified to use global t
+            ml_sig(t, k); %=
             lmod(0,k,bus_sim,flag);
         end
         if n_rlmod~=0
@@ -1780,7 +1780,7 @@ while (kt<=ktmax)
         
         % already modified to handle g in v2.3 - thad 06/01/20
         if n_lmod~=0
-            ml_sig(j); % modified to use only g.sys.t
+            ml_sig(t, j); % modified to use only g.sys.t
             lmod(0,j,bus_sim,flag);
         end
         if n_rlmod~=0

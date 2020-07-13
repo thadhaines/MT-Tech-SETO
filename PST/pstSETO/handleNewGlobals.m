@@ -17,6 +17,8 @@
 %   07/06/20    11:15   Thad Haines     addition of pss_con and gain fix
 %   07/08/20    15:32   Thad Haines     addition of svc_con
 %   07/09/20    11:11   Thad Haines     addition of tcsc_con
+%   07/13/20    09:44   Thad Haines     addition of igen_con
+%   07/13/20    11:14   Thad Haines     addition of ind_con and mld_con 
 
 global g
 
@@ -128,6 +130,27 @@ if exist('tcsc_con','var')
 else
     g.tcsc.tcsc_con = [];
     g.tcsc.n_tcsc = 0;
+end
+%% igen_con
+if exist('igen_con','var')
+    g.igen.igen_con = igen_con;
+    clear igen_con;
+else
+    g.igen.igen_con = [];
+end
+%% ind_con and mld_con for inductive motor loads
+if exist('ind_con','var')
+    g.ind.ind_con = ind_con;
+    clear ind_con;
+else
+    g.ind.ind_con = [];
+end
+
+if exist('mld_con','var')
+    g.ind.mld_con = mld_con;
+    clear mld_con;
+else
+    g.ind.mld_con = [];
 end
 
 %% Global for plot flag

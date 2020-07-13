@@ -200,6 +200,38 @@ global tcsc_dc
 \end{minted}
 Similar to the SVC, there seems to be some added functionality for controlled damping, but no examples exist?
 
+%---------------------------------------------------------------------------------------------------
+\subparagraph{igen}
+\begin{minted}{MATLAB}
+%% induction genertaor variables - 19
+global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+global  igen_int igbus n_ig
+%states
+global  vdpig vqpig slig
+%dstates
+global dvdpig dvqpig dslig
+% added globals
+global s_igen
+\end{minted}
+
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{ind}
+\begin{minted}{MATLAB}
+%% induction motor variables - 21
+global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
+global  motbus ind_int mld_con n_mot t_mot
+% states
+global  vdp vqp slip
+% dstates
+global dvdp dvqp dslip
+% added globals
+global s_mot
+global sat_idx dbc_idx db_idx % has to do with version 2 of mac_ind
+% changed all pmot to p_mot (mac_ind1 only)
+\end{minted}
+Two models of this are included as \verb|mac_ind1| (a basic version from 2.3), and \verb|mac_ind2| which is an updated induction motor model. Default behavior is to use the newer model (\verb|mac_ind2|).
+
 
 \begin{comment}
 

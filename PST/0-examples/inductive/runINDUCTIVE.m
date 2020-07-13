@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =     'pstSETO'; % 'pstV2p3';%  'pstV3P1';%
+pstVer =   'pstSETO'; % 'pstV2p3';%  'pstV3P1';%   
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -30,7 +30,8 @@ copyfile('data3mIg.m',[PSTpath 'DataFile.m']); % copy system data file to batch 
 % move inductive load
 copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
 % move modulation file
-copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % copy system data file to batch run location
+copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
+% copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 
 
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
@@ -105,6 +106,7 @@ figure
 hold on
 plot(tL,modSig)
 plot(t,g.lmod.lmod_sig,'--')
+% plot(t,lmod_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Governor Pref Modulation Signal')
 
@@ -133,11 +135,11 @@ for busN=1:size(linAng,1)
     plot(tL,linAng(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
     plot(t,angle(g.sys.bus_v(busN,:)),'--')
-%     plot(t,abs(bus_v(busN,:)),'--')
+%     plot(t,angle(bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
 legend(legNames,'location','best')
-title('Bus Voltage Magnitude')
+title('Bus Voltage Angle')
 xlabel('Time [sec]')
-ylabel('Voltage [PU]')
+ylabel('Angle [PU]')

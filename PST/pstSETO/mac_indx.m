@@ -15,15 +15,11 @@ function mac_indx()
 %   Date        Time    Engineer        Description
 %   12/16/97    09:38   -               Version 1
 %   06/19/20    09:56   Thad Haines     Revised format of globals and internal function documentation
+%   07/13/20    10:34   Thad Haines     Induction generator g.igen alterations
 
-
-%global mac_pot mac_con mac_int ibus_con n_mac n_em n_tra n_sub n_ib
-%global mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
-%global mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
-
+    %global ind_int ind_con n_mot
+    
 global n_ivm mac_ivm_idx
-global ind_int ind_con n_mot
-global igen_int igen_con n_ig
 
 global g
 
@@ -43,23 +39,23 @@ g.mac.mac_int = zeros(macmax,1);
 g.mac.mac_int(round(g.mac.mac_con(:,1))) = 1:g.mac.n_mac;
 n_tot = g.mac.n_mac;
 ngm = g.mac.n_mac;
-n_mot = 0;
-n_ig = 0;
-if ~isempty(ind_con)
-    n_mot = length(ind_con(:,1));
-    n_tot = g.mac.n_mac + n_mot;
+g.ind.n_mot = 0;
+g.igen.n_ig = 0;
+if ~isempty(g.ind.ind_con)
+    g.ind.n_mot = length(g.ind.ind_con(:,1));
+    n_tot = g.mac.n_mac + g.ind.n_mot;
     ngm = n_tot;
-    motmax= max(ind_con(:,1));
-    ind_int = zeros(motmax,1);
-    ind_int(round(ind_con(:,1)))= g.mac.n_mac+1:n_tot;
+    motmax= max(g.ind.ind_con(:,1));
+    g.ind.ind_int = zeros(motmax,1);
+    g.ind.ind_int(round(g.ind.ind_con(:,1)))= g.mac.n_mac+1:n_tot;
 end
 
-if ~isempty(igen_con)
-    n_ig = length(igen_con(:,1));
-    n_tot = n_tot + n_ig;
-    igmax= max(igen_con(:,1));
-    igen_int = zeros(igmax,1);
-    igen_int(round(igen_con(:,1)))=ngm+1:n_tot;
+if ~isempty(g.igen.igen_con)
+    g.igen.n_ig = length(g.igen.igen_con(:,1));
+    n_tot = n_tot + g.igen.n_ig;
+    igmax= max(g.igen.igen_con(:,1));
+    g.igen.igen_int = zeros(igmax,1);
+    g.igen.igen_int(round(g.igen.igen_con(:,1)))=ngm+1:n_tot;
 end
 
 

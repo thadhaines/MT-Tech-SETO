@@ -168,27 +168,29 @@ warning('*** Declare Global Variables')
 % 	% previous non-globals added as they seem to relavant
 % 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
 %     global tcsc_dc
-% Original globals block condensed into g...
-
+%
+%     %% induction genertaor variables - 19
+%     global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+%     global  igen_int igbus n_ig
+%     %states
+%     global  vdpig vqpig slig
+%     %dstates
+%     global dvdpig dvqpig dslig
+%     % added globals
+%     global s_igen
+    
+%     %% induction motor variables - 21
+%     global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
+%     global  motbus ind_int mld_con n_mot t_mot
+%     % states
+%     global  vdp vqp slip
+%     % dstates
+%     global dvdp dvqp dslip
+%     % added globals
+%     global s_mot
     
     %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-    
-    %% induction motor variables - 21
-    global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
-    global  motbus ind_int mld_con n_mot t_mot
-    % states
-    global  vdp vqp slip
-    % dstates
-    global dvdp dvqp dslip
-
-    %% induction genertaor variables - 19
-    global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
-    global  igen_int igbus n_ig
-    %states
-    global  vdpig vqpig slig
-    %dstates
-    global dvdpig dvqpig dslig
     
     %% DeltaP/omega filter variables - 21
     global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
@@ -326,18 +328,18 @@ lm_indx;
 rlm_indx();
 pwrmod_indx(bus); 
 
-n_mot = size(ind_con,1);
-n_ig = size(igen_con,1);
+g.ind.n_mot = size(g.ind.ind_con,1); % inductive motors
+g.igen.n_ig = size(g.igen.igen_con,1); % inductive generators
 
-if isempty(n_mot)
-    n_mot = 0;
+if isempty(g.ind.n_mot)
+    g.ind.n_mot = 0;
 end
-if isempty(n_ig)
-    n_ig = 0; 
+if isempty(g.igen.n_ig)
+    g.igen.n_ig = 0; 
 end
 
-ntot = g.mac.n_mac+n_mot+n_ig;
-ngm = g.mac.n_mac + n_mot;
+ntot = g.mac.n_mac+g.ind.n_mot+g.igen.n_ig;
+ngm = g.mac.n_mac + g.ind.n_mot;
 
 g.mac.n_pm = g.mac.n_mac; % into an init?
 
@@ -407,13 +409,13 @@ warning('*** Initialize zero matricies...')
 z = zeros(n,k);
 z1 = zeros(1,k);
 zm = zeros(1,k);
-if n_mot>1
-    zm = zeros(n_mot,k);
+if g.ind.n_mot>1
+    zm = zeros(g.ind.n_mot,k);
 end
 
 zig = zeros(1,k);
-if n_ig>1
-    zig = zeros(n_ig,k);
+if g.igen.n_ig>1
+    zig = zeros(g.igen.n_ig,k);
 end
 
 zdc = zeros(2,kdc);
@@ -633,27 +635,27 @@ g.exc.dR_f = ze;
 
 g.pss.pss_out = ze; % seems related to pss more than exciters - thad 06/17/20
 
-%% machine zeros?..
-vdp = zm; 
-vqp = zm; 
-slip = zm;
-dvdp = zm; 
-dvqp = zm; 
-dslip = zm;
-s_mot = zm; % supposed to be global? - thad 06/03/20
-p_mot = zm; 
-q_mot = zm;
+%% inductive motor zeros
+g.ind.vdp = zm; 
+g.ind.vqp = zm; 
+g.ind.slip = zm;
+g.ind.dvdp = zm; 
+g.ind.dvqp = zm; 
+g.ind.dslip = zm;
+g.ind.s_mot = zm; % added to global 07/13/20 - thad
+g.ind.p_mot = zm; 
+g.ind.q_mot = zm;
 
-vdpig = zig; 
-vqpig = zig; 
-slig = zig;
-dvdpig = zig; 
-dvqpig = zig; 
-dslig = zig;
-s_igen = zig; % supposed to be global? - thad 06/03/20
-pig = zig; 
-qig = zig; 
-tmig = zig;
+g.igen.vdpig = zig; 
+g.igen.vqpig = zig; 
+g.igen.slig = zig;
+g.igen.dvdpig = zig; 
+g.igen.dvqpig = zig; 
+g.igen.dslig = zig;
+g.igen.s_igen = zig; % changed to global -thad 07/13/20
+g.igen.pig = zig; 
+g.igen.qig = zig; 
+g.igen.tmig = zig;
 
 if g.svc.n_svc~=0
     svcZeros = zeros(g.svc.n_svc,k); 
@@ -1121,7 +1123,7 @@ while (kt<=ktmax)
         % mach_ref(k) = mac_ang(syn_ref,k);
         g.sys.mach_ref(k) = 0;
         g.mac.pmech(:,k+1) = g.mac.pmech(:,k);
-        tmig(:,k+1) = tmig(:,k);
+        g.igen.tmig(:,k+1) = g.igen.tmig(:,k);
         
         if n_conv~=0
             cur_ord(:,k+1) = cur_ord(:,k);
@@ -1518,17 +1520,17 @@ while (kt<=ktmax)
         g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*g.tg.dtg5(:,k);
         
         % induction motor integrations
-        if n_mot ~= 0
-            vdp(:,j) = vdp(:,k) + h_sol*dvdp(:,k);
-            vqp(:,j) = vqp(:,k) + h_sol*dvqp(:,k);
-            slip(:,j) = slip(:,k) + h_sol*dslip(:,k);
+        if g.ind.n_mot ~= 0
+            g.ind.vdp(:,j) = g.ind.vdp(:,k) + h_sol*g.ind.dvdp(:,k);
+            g.ind.vqp(:,j) = g.ind.vqp(:,k) + h_sol*g.ind.dvqp(:,k);
+            g.ind.slip(:,j) = g.ind.slip(:,k) + h_sol*g.ind.dslip(:,k);
         end
         
         % induction generator integrations
-        if n_ig ~=0
-            vdpig(:,j) = vdpig(:,k) + h_sol*dvdpig(:,k);
-            vqpig(:,j) = vqpig(:,k) + h_sol*dvqpig(:,k);
-            slig(:,j) = slig(:,k) + h_sol*dslig(:,k);
+        if g.igen.n_ig ~=0
+            g.igen.vdpig(:,j) = g.igen.vdpig(:,k) + h_sol*g.igen.dvdpig(:,k);
+            g.igen.vqpig(:,j) = g.igen.vqpig(:,k) + h_sol*g.igen.dvqpig(:,k);
+            g.igen.slig(:,j) = g.igen.slig(:,k) + h_sol*g.igen.dslig(:,k);
         end
         
         % svc
@@ -1937,17 +1939,17 @@ while (kt<=ktmax)
         g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*(g.tg.dtg5(:,k) + g.tg.dtg5(:,j))/2.;
         
         % induction motor integrations
-        if n_mot ~= 0
-            vdp(:,j) = vdp(:,k) + h_sol*(dvdp(:,j) + dvdp(:,k))/2.;
-            vqp(:,j) = vqp(:,k) + h_sol*(dvqp(:,j) + dvqp(:,k))/2.;
-            slip(:,j) = slip(:,k) + h_sol*(dslip(:,j) + dslip(:,k))/2.;
+        if g.ind.n_mot ~= 0
+            g.ind.vdp(:,j) = g.ind.vdp(:,k) + h_sol*(g.ind.dvdp(:,j) + g.ind.dvdp(:,k))/2.;
+            g.ind.vqp(:,j) = g.ind.vqp(:,k) + h_sol*(g.ind.dvqp(:,j) + g.ind.dvqp(:,k))/2.;
+            g.ind.slip(:,j) = g.ind.slip(:,k) + h_sol*(g.ind.dslip(:,j) + g.ind.dslip(:,k))/2.;
         end
         
         % induction generator integrations
-        if n_ig ~=0
-            vdpig(:,j) = vdpig(:,k) + h_sol*(dvdpig(:,j) + dvdpig(:,k))/2.;
-            vqpig(:,j) = vqpig(:,k) + h_sol*(dvqpig(:,j) + dvqpig(:,k))/2.;
-            slig(:,j) = slig(:,k) + h_sol*(dslig(:,j) + dslig(:,k))/2.;
+        if g.igen.n_ig ~=0
+            g.igen.vdpig(:,j) = g.igen.vdpig(:,k) + h_sol*(g.igen.dvdpig(:,j) + g.igen.dvdpig(:,k))/2.;
+            g.igen.vqpig(:,j) = g.igen.vqpig(:,k) + h_sol*(g.igen.dvqpig(:,j) + g.igen.dvqpig(:,k))/2.;
+            g.igen.slig(:,j) = g.igen.slig(:,k) + h_sol*(g.igen.dslig(:,j) + g.igen.dslig(:,k))/2.;
         end
         
         % svc

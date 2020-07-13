@@ -134,52 +134,52 @@ for k = 1:g.mac.n_mac
 end
 
 % disturb induction motor states
-if n_mot~=0
+if g.ind.n_mot~=0
    disp('disturbing induction motors')
    for k = g.mac.n_mac+1:ngm
       j=1;
       k_ind = k - g.mac.n_mac;
-      pert = p_ratio*abs(vdp(k_ind,1));   
+      pert = p_ratio*abs(g.ind.vdp(k_ind,1));   
       pert = max(pert,p_ratio);
-      vdp(k_ind,2) = vdp(k_ind,1) + pert;
+      g.ind.vdp(k_ind,2) = g.ind.vdp(k_ind,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 26;
       j=j+1;
-      pert = p_ratio*abs(vqp(k_ind,1));   
+      pert = p_ratio*abs(g.ind.vqp(k_ind,1));   
       pert = max(pert,p_ratio);
-      vqp(k_ind,2) = vqp(k_ind,1) + pert;
+      g.ind.vqp(k_ind,2) = g.ind.vqp(k_ind,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 27;
       j=j+1;
-      pert = p_ratio*abs(slip(k_ind,1));   
+      pert = p_ratio*abs(g.ind.slip(k_ind,1));   
       pert = max(pert,0.000001);
-      slip(k_ind,2) = slip(k_ind,1) + pert;
+      g.ind.slip(k_ind,2) = g.ind.slip(k_ind,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 28;
    end
 end
 
 % disturb induction generator states
-if n_ig~=0
+if g.igen.n_ig~=0
    disp('disturbing induction generators')
    for k = ngm+1:ntot
       j=1;
       k_ig = k - ngm;
-      pert = p_ratio*abs(vdpig(k_ig,1));   
+      pert = p_ratio*abs(g.igen.vdpig(k_ig,1));   
       pert = max(pert,p_ratio);
-      vdpig(k_ig,2) = vdpig(k_ig,1) + pert;
+      g.igen.vdpig(k_ig,2) = g.igen.vdpig(k_ig,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 29;
       j=j+1;
-      pert = p_ratio*abs(vqpig(k_ig,1));   
+      pert = p_ratio*abs(g.igen.vqpig(k_ig,1));   
       pert = max(pert,p_ratio);
-      vqpig(k_ig,2) = vqpig(k_ig,1) + pert;
+      g.igen.vqpig(k_ig,2) = g.igen.vqpig(k_ig,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 30;
       j=j+1;
-      pert = p_ratio*abs(slig(k_ig,1));   
+      pert = p_ratio*abs(g.igen.slig(k_ig,1));   
       pert = max(pert,0.000001);
-      slig(k_ig,2) = slig(k_ig,1) + pert;
+      g.igen.slig(k_ig,2) = g.igen.slig(k_ig,1) + pert;
       p_file   % m file of perturbations
       st_name(k,j) = 31;
    end

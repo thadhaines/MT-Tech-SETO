@@ -167,20 +167,21 @@ for k = 1:g.mac.n_mac
       end
    end
 end 
+ 
 % induction motor
 n_mot_states = 0;
-if n_mot~=0
-   state_mot(1:n_mot) = 3*ones(n_mot,1);
+if g.ind.n_mot~=0
+   state_mot(1:g.ind.n_mot) = 3*ones(g.ind.n_mot,1);
    n_mot_states = sum(state_mot);
-   state(g.mac.n_mac+1:ngm) = 3*ones(n_mot,1);
+   state(g.mac.n_mac+1:ngm) = 3*ones(g.ind.n_mot,1);
 end 
 
 % induction generator
 n_ig_states = 0;
-if n_ig~=0
-   state_ig(1:n_ig) = 3*ones(n_ig,1);
+if g.igen.n_ig~=0
+   state_ig(1:g.igen.n_ig) = 3*ones(g.igen.n_ig,1);
    n_ig_states = sum(state_ig);
-   state(ngm+1:ntot) = 3*ones(n_ig,1);
+   state(ngm+1:ntot) = 3*ones(g.igen.n_ig,1);
 end 
 
 % svc
