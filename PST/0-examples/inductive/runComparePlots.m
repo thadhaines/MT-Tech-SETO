@@ -2,7 +2,7 @@
 % requires comparePlots folder to be added to MATLAB path.
 close all; clear; clc
 
-dataName = 'SVCnonLIN';
+dataName = 'INDnonLIN';
 a = ['pstSETO', dataName];
 b = ['pstV2P3', dataName];
 c = ['pstV3p1', dataName];
