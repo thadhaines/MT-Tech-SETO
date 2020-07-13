@@ -23,10 +23,10 @@ compareMac_Spd( a, c, printFigs )
 compareMac_Spd( a, b, printFigs )
 compareMac_Spd( c, b, printFigs )
 
-%% Compare svc_sig, B_cv...
-compareB_cv( a, c, printFigs )
-compareB_cv( a, b, printFigs )
-compareB_cv( c, b, printFigs )
+% %% Compare svc_sig, B_cv...
+% compareB_cv( a, c, printFigs )
+% compareB_cv( a, b, printFigs )
+% compareB_cv( c, b, printFigs )
 
 
-% difference in saturation of exc_dc12 between version 2 and 3
+% difference in angle due to mac_ind model - two versions exist

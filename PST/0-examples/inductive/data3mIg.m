@@ -1,5 +1,6 @@
 % A 3-machine 9-bus system from Chow's book pp.70
 % data3m9b.m
+% No exciters or governors
 
 % bus data format
 % bus: number, voltage(pu), angle(degree), p_gen(pu), q_gen(pu),
@@ -12,11 +13,11 @@ bus = [ 1 1.04    0.00   0.00   0.00  0.00  0.00  0.00  0.00 1;
 	2 1.02533 0.00   1.63   0.00  0.00  0.00  0.00  0.00 2;
 	3 1.02536 0.00   0.85   0.00  0.00  0.00  0.00  0.00 2;
 	4 1.00    0.00   0.00   0.00  0.00  0.00  0.00  0.00 3;
-	5 1.00    0.00   0.00   0.00  0.90  0.30  0.00  0.00 3;
+	5 1.00    0.00   0.00   0.00  0.90  0.30  0.00  0.00 3; % lmod load
 	6 1.00    0.00   0.00   0.00  0.00  0.00  0.00  0.00 3;
-	7 1.00    0.00   0.00   0.00  1.00  0.35  0.00  0.00 3;
-	8 1.00    0.00   0.00   0.00  -0.5  0.35  0.00  0.00 3;
-	9 1.00    0.00   0.00   0.00  1.25  0.50  0.00  0.00 3];
+	7 1.00    0.00   0.00   0.00  1.00  0.35  0.00  0.00 3; % motor load
+	8 1.00    0.00   0.00   0.00  -0.5  0.35  0.00  0.00 3; % inductive generator
+	9 1.00    0.00   0.00   0.00  1.25  0.50  0.00  0.00 3]; % motor load
 
 % line data format
 % line: from bus, to bus, resistance(pu), reactance(pu),
@@ -109,6 +110,32 @@ mld_con = [ ...
 
 igen_con = [ ...
   1  8  60. .001 .01 3 .009 .01  2. 0 0 0 0 0 1];
+%% Load Modulation
+
+% load_con format
+% Defines `non-conforming` loads
+% col   1 bus number
+% col   2 proportion of constant active power load
+% col   3 proportion of constant reactive power load
+% col   4 proportion of constant active current load
+% col   5 proportion of constant reactive current load
+load_con = [...
+    %   1   2       3       4       5
+        5   0       0       0       0;]; %constant impedance
+
+% lmod_con format
+% sets up model for load modulation
+% col	variable  						unit
+% 1  	load modulation number 
+% 2  	bus number 
+% 3  	modulation base MVA  			MVA
+% 4  	maximum conductance lmod_max 	pu
+% 5  	minimum conductance lmod_min 	pu
+% 6  	regulator gain K  				pu
+% 7  	regulator time constant T_R  	sec
+lmod_con = [ ...
+  % 1   2   3       4       5       6       7
+    1   5   100     1.0     0.0     1.0     0.1;];
 
 %Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
@@ -138,10 +165,11 @@ igen_con = [ ...
 
 sw_con = [...
 0    0    0    0    0    0    0.005;%sets intitial time step
-0.1  4    5  0    0    0    0.0025; %apply three phase fault at bus 4, on line 4-5
+%0.1  4    5  0    0    0    0.0025; %apply three phase fault at bus 4, on line 4-5
+0.1  4    5  0    0    6    0.0025; % do nothing
 0.15 0    0    0    0    0    0.0025; %clear fault at bus 4
 0.20 0    0    0    0    0    0.0025; %clear remote end
 0.50 0    0    0    0    0    0.005; % increase time step 
 1.0  0    0    0    0    0    0.01; % increase time step
-5.0  0    0    0    0    0    0]; % end simulation
+10.0  0    0    0    0    0    0]; % end simulation
 

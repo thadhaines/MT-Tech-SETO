@@ -291,6 +291,7 @@ g.exc.n_exc= 0;
 g.exc.n_dc = 0;
 g.exc.n_smp = 0;
 g.exc.n_st3 = 0;
+g.exc.n_smppi = 0; % added 07/10/20 - thad
 
 g.pss.n_pss= 0;
 
@@ -313,6 +314,7 @@ ntot = g.mac.n_mac+n_mot+n_ig;
 ngm = g.mac.n_mac+n_mot;
 g.mac.pm_sig = zeros(g.mac.n_mac,2);
 % mac_exc=0;
+
 % check for infinite buses
 if g.mac.n_ib~=0
    %remove controls associated with infinite bus generators
@@ -389,6 +391,7 @@ if ~isempty(g.exc.exc_con)
    mac_exc = g.mac.mac_int(g.exc.exc_con(:,2));
 else
    g.exc.n_exc=0;
+   mac_exc=0; % added -thad 07/10/20
 end
 
 mac_pss=0;
@@ -413,6 +416,8 @@ if ~isempty(g.tg.tg_con)
 else
    g.tg.n_tg =0;
    g.tg.n_tgh = 0;
+   mac_tg = 0; % added 07/10/20
+   mac_tgh = 0;
 end
 
 if ~isempty(g.svc.svc_con)~=0
