@@ -17,7 +17,7 @@ if pathname == 0
 else
   lfile =length(dfile);
   % strip off .m and convert to lower case
-  dfile = lower(dfile(1:lfile-2));
+  dfile = dfile(1:lfile-2);
   eval(dfile);
 end
 % check for valid dynamic data file
@@ -70,6 +70,15 @@ while(flag == 0)
       disp('                                      GENERATION             LOAD')
       disp('       BUS     VOLTS     ANGLE      REAL  REACTIVE      REAL  REACTIVE ')
       disp(bus_sol(:,1:7))
+      % Custom loadflow output to compare to other sources...
+%       fprintf('\t \t \t Solved Bus Data\t \t \t \n')
+%       fprintf('\t \t \t \t \t Generation\t Load\n')
+%       fprintf(' Bus\t Voltage\t Angle\t Reative\t Real\t Reactive\n')
+%       for lNum=1:length(bus_sol)
+%         fprintf('%d \t %2.4f \t %2.2f \t %4.2f \t %4.2f \t %4.2f \t %4.2f \n', ...
+%             bus_sol(lNum,1),bus_sol(lNum,2),bus_sol(lNum,3),bus_sol(lNum,4)*100, ...
+%             bus_sol(lNum,5)*100,bus_sol(lNum,6)*100,bus_sol(lNum,7)*100)
+%       end
       disp('paused: press any key to continue')
       pause
     elseif sel == 4

@@ -212,8 +212,6 @@ tg_con = [...
 1  3  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
 1  4  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0];
 
-
-
 %Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
 %       col7  initial time step (s)
@@ -239,13 +237,31 @@ tg_con = [...
 %
 %
 % row n col1 finishing time (s)  (n indicates that intermediate rows may be inserted)
-
+simTS = 0.008;
 sw_con = [...
-0    0    0    0    0    0    0.005;%sets intitial time step
-1.0  3    101  0.4    0.4    1    0.001; %line to ground fault bus 3 line 3-101 
-1.1 0    0    0    0    0    0.005; %clear fault at bus 3
-1.11 0    0    0    0    0    0.005;%clear remote end
-3.5  0    0    0    0    0    0]; % end simulation
+0    0    0    0    0    0    simTS;%sets intitial time step
+% 1.0  3    101  0.4    0.4    1    0.001; %line to ground fault bus 3 line 3-101 
+1.0  3    101  0    0    6    simTS; %Do nothing 
+1.1 0    0    0    0    0    simTS; %clear fault at bus 3
+1.11 0    0    0    0    0    simTS;%clear remote end
+5  0    0    0    0    0    0]; % end simulation
+
+%% Load Modulation
+
+% lmod_con format
+% sets up model for load modulation
+% col	variable  						unit
+% 1  	load modulation number 
+% 2  	bus number 
+% 3  	modulation base MVA  			MVA
+% 4  	maximum conductance lmod_max 	pu
+% 5  	minimum conductance lmod_min 	pu
+% 6  	regulator gain K  				pu
+% 7  	regulator time constant T_R  	sec
+lmod_con = [ ...
+  % 1   2   3       4       5       6       7
+    1   4   100     1.0     0.0     1.0     0.1;];
+
 
 % non-conforming load declaration of dc LT buses
 % col 1           bus number
@@ -254,5 +270,6 @@ sw_con = [...
 % col 4           fraction const active current load
 % col 5           fraction const reactive current load
 load_con = [...
+             4  0  0  0  0; % for load modulation
              5  0  0  0  0;
             15  0  0  0  0];
