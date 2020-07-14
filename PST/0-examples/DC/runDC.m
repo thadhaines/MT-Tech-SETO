@@ -1,14 +1,16 @@
 % DC line load case
 % % Tested as working in all Versions
-% % output the same 3.1 and SETO, 2.3 is slightly different
+% % output the same in 3.1 and SETO, 2.3 is slightly different
+
 %                       SETO        3.1         2.3
 % pre global run time:  12.6195     18.8766s    19.7401s
+% post global structure 8.853
 
 clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =   'pstV2p3';% 'pstV3P1';%  'pstSETO'; % 
+pstVer =   'pstSETO'; %  'pstV2p3';% 'pstV3P1';% 
 
 % automatically handle global g usage
 if strcmp(pstVer, 'pstSETO')

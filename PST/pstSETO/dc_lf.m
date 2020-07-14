@@ -11,99 +11,100 @@ function [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
 % Author Graham Rogers
 % Date   October 1996
 % (c) Copyright Joe Chow 1996 - All rights reserved
+% NOTE: output tap NOT global. ? -thad 07/14/20
 
-global  dcsp_con  dcl_con dcc_con 
-global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-global  inv_ac_line  rec_ac_line ac_line dcli_idx
-global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-global  Vdc
 
+% global  dcsp_con  dcl_con dcc_con 
+% global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+% global  inv_ac_line  rec_ac_line ac_line dcli_idx
+% global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+% global  Vdc
+% 
 global g
 jay = sqrt(-1);
 % determine dc indexes
-dc_indx(bus,line,dci_dc,dcr_dc);
-if n_conv~=0 & n_dcl~=0
-  Vdc=zeros(n_conv,1);% initialize to zero vector
-  dc_bus = dcsp_con(:,1);
-  Vac = bus(ac_bus,2);
-  Vang = bus(ac_bus,3)*pi/180;
-  al_min = dcsp_con(r_idx,7)*pi/180;
-  al_max = dcsp_con(r_idx,8)*pi/180;
-  rdc_bus = dc_bus(r_idx);
-  ga_min = dcsp_con(i_idx,7)*pi/180;
-  ga_max = dcsp_con(i_idx,8)*pi/180;
-  idc_bus = dc_bus(i_idx);
+dc_indx(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
+
+if g.dc.n_conv~=0 && g.dc.n_dcl~=0
+  g.dc.Vdc=zeros(g.dc.n_conv,1);% initialize to zero vector
+  dc_bus = g.dc.dcsp_con(:,1);
+  Vac = bus(g.dc.ac_bus,2);
+  Vang = bus(g.dc.ac_bus,3)*pi/180;
+  al_min = g.dc.dcsp_con(g.dc.r_idx,7)*pi/180;
+  al_max = g.dc.dcsp_con(g.dc.r_idx,8)*pi/180;
+  rdc_bus = dc_bus(g.dc.r_idx);
+  ga_min = g.dc.dcsp_con(g.dc.i_idx,7)*pi/180;
+  ga_max = g.dc.dcsp_con(g.dc.i_idx,8)*pi/180;
+  idc_bus = dc_bus(g.dc.i_idx);
   % get transformer taps from load flow
-  tap = line(ac_line,6);
-  tapr = line(rec_ac_line,6);
-  tapi = line(inv_ac_line,6);
-  tmax = line(ac_line,8);
-  tmaxr = line(rec_ac_line,8);
-  tmaxi = line(inv_ac_line,8);
-  tmin = line(ac_line,9);
-  tmini = line(inv_ac_line,9);
-  tminr = line(rec_ac_line,9);
-  tstep = line(ac_line,10);
-  tstepi = line(inv_ac_line,10);
-  tstepr = line(rec_ac_line,10);
+  tap = line(g.dc.ac_line,6);
+  g.dc.tapr = line(g.dc.rec_ac_line,6);
+  g.dc.tapi = line(g.dc.inv_ac_line,6);
+  g.dc.tmax = line(g.dc.ac_line,8);
+  g.dc.tmaxr = line(g.dc.rec_ac_line,8);
+  g.dc.tmaxi = line(g.dc.inv_ac_line,8);
+  g.dc.tmin = line(g.dc.ac_line,9);
+  g.dc.tmini = line(g.dc.inv_ac_line,9);
+  g.dc.tminr = line(g.dc.rec_ac_line,9);
+  g.dc.tstep = line(g.dc.ac_line,10);
+  g.dc.tstepi = line(g.dc.inv_ac_line,10);
+  g.dc.tstepr = line(g.dc.rec_ac_line,10);
   % set Vdc limits
-  Vdc_rated = dcsp_con(i_idx,4);
+  Vdc_rated = g.dc.dcsp_con(g.dc.i_idx,4);
   % set max and min values of dc voltage at 1% from nominal
   Vdc_max = 1.01*Vdc_rated;
   Vdc_min = 0.99*Vdc_rated;
   % in load flow the rectifier and inverter are represented by 
   % P and Q loads
   % Get P and Q in MW
-  P = bus(ac_bus,6)*g.sys.basmva;
-  Q = bus(ac_bus,7)*g.sys.basmva;
+  P = bus(g.dc.ac_bus,6)*g.sys.basmva;
+  Q = bus(g.dc.ac_bus,7)*g.sys.basmva;
   % convert ac voltages to kV line-to-line
-  Vac = Vac.*bus(ac_bus,13);
+  Vac = Vac.*bus(g.dc.ac_bus,13);
   % calculate commutating voltage
-  xequ = sqrt(3)*dcsp_con(:,5)./dcsp_con(:,6);% eq transformer reactance
-  Rc = dcsp_con(:,6).*dcsp_con(:,5)*3/pi;% in series as far as dc is concerned
+  xequ = sqrt(3)*g.dc.dcsp_con(:,5)./g.dc.dcsp_con(:,6);% eq transformer reactance
+  Rc = g.dc.dcsp_con(:,6).*g.dc.dcsp_con(:,5)*3/pi;% in series as far as dc is concerned
   iac = (P-jay*Q)./(Vac.*exp(-jay*Vang))/sqrt(3);
   ang_iac = angle(iac);
   % get specified idc in kA
-  idc = dcl_con(dcli_idx,8)./dcsp_con(i_idx,4);%dc power/dc voltage
+  idc = g.dc.dcl_con(g.dc.dcli_idx,8)./g.dc.dcsp_con(g.dc.i_idx,4);%dc power/dc voltage
   % adjust ac currents to have same angle as load flow but magnitude
   % corresponding to desired dc current
-  iaci = idc.*dcsp_con(i_idx,6).*exp(jay*ang_iac(i_idx))*sqrt(6)/pi;
-  iacr = idc.*dcsp_con(r_idx,6).*exp(jay*ang_iac(r_idx))*sqrt(6)/pi;
+  iaci = idc.*g.dc.dcsp_con(g.dc.i_idx,6).*exp(jay*ang_iac(g.dc.i_idx))*sqrt(6)/pi;
+  iacr = idc.*g.dc.dcsp_con(g.dc.r_idx,6).*exp(jay*ang_iac(g.dc.r_idx))*sqrt(6)/pi;
   % calculate the equivalent HT bus voltage (commutating voltage)
-  VHT(i_idx,1) = abs(Vac(i_idx).*exp(jay*Vang(i_idx)) + jay*xequ(i_idx).*iaci);
-  VHT(r_idx,1) = abs(Vac(r_idx).*exp(jay*Vang(r_idx)) + jay*xequ(r_idx).*iacr);
-  Vdo = 3*sqrt(2)*VHT.*dcsp_con(:,6)/pi; % ideal dc voltages
-  rdc = dcl_con(dcli_idx,3);% dc line resistance
-  cm = ones(n_dcl,1)-dcl_con(dcli_idx,9)/100;
+  g.dc.VHT(g.dc.i_idx,1) = abs(Vac(g.dc.i_idx).*exp(jay*Vang(g.dc.i_idx)) + jay*xequ(g.dc.i_idx).*iaci);
+  g.dc.VHT(g.dc.r_idx,1) = abs(Vac(g.dc.r_idx).*exp(jay*Vang(g.dc.r_idx)) + jay*xequ(g.dc.r_idx).*iacr);
+  Vdo = 3*sqrt(2)*g.dc.VHT.*g.dc.dcsp_con(:,6)/pi; % ideal dc voltages
+  rdc = g.dc.dcl_con(g.dc.dcli_idx,3);% dc line resistance
+  cm = ones(g.dc.n_dcl,1)-g.dc.dcl_con(g.dc.dcli_idx,9)/100;
 
   % Assume that inverters are operating at gamm_min
-  mode = ones(n_dcl,1);
-  [gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo(i_idx),Rc(i_idx));
+  mode = ones(g.dc.n_dcl,1);
+  [g.dc.gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo(g.dc.i_idx),Rc(g.dc.i_idx));
   
   % calculate rectifier dc voltage
-  Vdc(r_idx) = Vdc(i_idx) + idc.*rdc;
+  g.dc.Vdc(g.dc.r_idx) = g.dc.Vdc(g.dc.i_idx) + idc.*rdc;
 
   % calculate alpha
 
-  [alpha,mode_new,idc] = rec_lf(idc,al_min,al_max,Vdo(r_idx),Rc(r_idx),cm);
+  [g.dc.alpha,mode_new,idc] = rec_lf(idc,al_min,al_max,Vdo(g.dc.r_idx),Rc(g.dc.r_idx),cm);
   
   % check for mode change
   mode_ch = sum(mode-mode_new);
   if mode_ch ~=0
 
     % mode has changed - need to recalculate the inverter conditions
-    [gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo(i_idx),Rc(i_idx));
+    [g.dc.gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo(g.dc.i_idx),Rc(g.dc.i_idx));
     
-   
-
   end
 %   alpha = alpha; % oh? -thad 07/13/20
 %   gamma = gamma;
   % recalculate Vdo based on the modified firing and extinction angles
-  Vdo(r_idx) = (Vdc(r_idx)+Rc(r_idx).*idc)./cos(alpha*pi/180);
-  Vdo(i_idx) = (Vdc(i_idx)+Rc(i_idx).*idc)./cos(gamma*pi/180);
+  Vdo(g.dc.r_idx) = (g.dc.Vdc(g.dc.r_idx)+Rc(g.dc.r_idx).*idc)./cos(g.dc.alpha*pi/180);
+  Vdo(g.dc.i_idx) = (g.dc.Vdc(g.dc.i_idx)+Rc(g.dc.i_idx).*idc)./cos(g.dc.gamma*pi/180);
   % calculate ac power factor at LT bus 
-  cphi = Vdc./Vdo;
+  cphi = g.dc.Vdc./Vdo;
   oor_idx = find(abs(cphi)>=1);
   if ~isempty(oor_idx)
     bad_num = num2str(oor_idx');
@@ -111,35 +112,35 @@ if n_conv~=0 & n_dcl~=0
     error('stop')
   end
   % converter power in per unit on ac system base 
-  Pr = Vdc(r_idx).*idc/g.sys.basmva;
-  Pi = -Vdc(i_idx).*idc/g.sys.basmva;
-  tphi = sqrt(ones(n_conv,1)-cphi.*cphi)./cphi;
-  Qr = Pr.*tphi(r_idx);
-  Qi = -Pi.*tphi(i_idx);
+  Pr = g.dc.Vdc(g.dc.r_idx).*idc/g.sys.basmva;
+  Pi = -g.dc.Vdc(g.dc.i_idx).*idc/g.sys.basmva;
+  tphi = sqrt(ones(g.dc.n_conv,1)-cphi.*cphi)./cphi;
+  Qr = Pr.*tphi(g.dc.r_idx);
+  Qi = -Pi.*tphi(g.dc.i_idx);
   % convert to load at the converter LT bus
-  iacr = idc.*dcsp_con(r_idx,6)*sqrt(6)/pi;
+  iacr = idc.*g.dc.dcsp_con(g.dc.r_idx,6)*sqrt(6)/pi;
   %convert to per unit
-  iacr = iacr*sqrt(3).*bus(rec_ac_bus,13)/g.sys.basmva;
+  iacr = iacr*sqrt(3).*bus(g.dc.rec_ac_bus,13)/g.sys.basmva;
   % convert xequ to per unit on ac system base
-  xequ = xequ*g.sys.basmva./bus(ac_bus,13)./bus(ac_bus,13)/sqrt(3);
-  iaci = idc.*dcsp_con(i_idx,6)*sqrt(6)/pi;
+  xequ = xequ*g.sys.basmva./bus(g.dc.ac_bus,13)./bus(g.dc.ac_bus,13)/sqrt(3);
+  iaci = idc.*g.dc.dcsp_con(g.dc.i_idx,6)*sqrt(6)/pi;
   % convert to per unit
-  iaci = iaci*sqrt(3).*bus(inv_ac_bus,13)/g.sys.basmva;
+  iaci = iaci*sqrt(3).*bus(g.dc.inv_ac_bus,13)/g.sys.basmva;
   % calculate LT reactive power
-  Qr = Qr - xequ(r_idx).*iacr.*iacr;
-  Qi = Qi - xequ(i_idx).*iaci.*iaci;
+  Qr = Qr - xequ(g.dc.r_idx).*iacr.*iacr;
+  Qi = Qi - xequ(g.dc.i_idx).*iaci.*iaci;
   Sr = (Pr + jay*Qr);
   Si = (Pi + jay*Qi);
-  rec_par = zeros(n_dcl,3);
+  rec_par = zeros(g.dc.n_dcl,3);
   inv_par = rec_par;
-  rec_par(:,1) = alpha;
-  inv_par(:,1) = gamma;
-  rec_par(:,2) = Vdc(r_idx);
-  inv_par(:,2) = Vdc(i_idx);
-  rec_par(:,3) = Vdc(r_idx).*idc;
-  inv_par(:,3) = Vdc(i_idx).*idc;
+  rec_par(:,1) = g.dc.alpha;
+  inv_par(:,1) = g.dc.gamma;
+  rec_par(:,2) = g.dc.Vdc(g.dc.r_idx);
+  inv_par(:,2) = g.dc.Vdc(g.dc.i_idx);
+  rec_par(:,3) = g.dc.Vdc(g.dc.r_idx).*idc;
+  inv_par(:,3) = g.dc.Vdc(g.dc.i_idx).*idc;
   line_par = idc;
-  tap(i_idx) = tapi;
-  tap(r_idx) = tapr;
+  tap(g.dc.i_idx) = g.dc.tapi;
+  tap(g.dc.r_idx) = g.dc.tapr;
 end
 return

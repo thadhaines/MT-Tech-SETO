@@ -65,11 +65,34 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 % Version:  1.0
 % Author:   Joe H. Chow
 % Date:     April 1991
-
-
-% dc variables
-global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
-global  n_conv n_dcl ldc_idx
+%     %% HVDC link variables - 63
+%     global  dcsp_con  dcl_con  dcc_con
+%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
+%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
+%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
+%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+% 
+%     % States
+%     %line
+%     global i_dcr i_dci  v_dcc
+%     global di_dcr  di_dci  dv_dcc
+%     global dc_dsig % added 07/13/20 -thad
+%     %rectifier
+%     global v_conr dv_conr
+%     %inverter
+%     global v_coni dv_coni
+%     
+%     % added to global dc
+%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
+%     global dcr_dc dci_dc % damping control
+%     global  ldc_idx
+% 
+% % % dc variables
+% % global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
+% % global  n_conv n_dcl ldc_idx
 
 global g 
 
@@ -154,10 +177,10 @@ if ~isempty(g.ncl.load_con)
             .*abs(V_nc(hv_idx)))./V_nc(hv_idx));
       end     
       
-      if n_conv~=0
+      if g.dc.n_conv~=0
          %modify nc-current to take account of ac current
-         i_ac = dc_cur(V_nc(ldc_idx),k,kdc);
-         curr_nc(ldc_idx) = curr_nc(ldc_idx)-i_ac;
+         i_ac = dc_cur(V_nc(g.dc.ldc_idx),k,kdc);
+         curr_nc(g.dc.ldc_idx) = curr_nc(g.dc.ldc_idx)-i_ac;
       end
       if ~isempty(hv_idx)
          curr_mis(hv_idx)=curr_nc - curr_load(hv_idx); % current mismatch
@@ -204,13 +227,13 @@ if ~isempty(g.ncl.load_con)
             v_s21(lv_idx) = -v_s12(lv_idx);
          end
          % modify Jacobian for dc
-         if n_conv~=0
-            V = V_o(ldc_idx);
+         if g.dc.n_conv~=0
+            V = V_o(g.dc.ldc_idx);
             [y1,y2,y3,y4] = dc_load(V,k,kdc);
-            v_s11(ldc_idx) = v_s11(ldc_idx) + y1';
-            v_s12(ldc_idx) = v_s12(ldc_idx) + y2';
-            v_s21(ldc_idx) = v_s21(ldc_idx) + y3';
-            v_s22(ldc_idx) = v_s22(ldc_idx) + y4';
+            v_s11(g.dc.ldc_idx) = v_s11(g.dc.ldc_idx) + y1';
+            v_s12(g.dc.ldc_idx) = v_s12(g.dc.ldc_idx) + y2';
+            v_s21(g.dc.ldc_idx) = v_s21(g.dc.ldc_idx) + y3';
+            v_s22(g.dc.ldc_idx) = v_s22(g.dc.ldc_idx) + y4';
          end
          Jac_nc = [ Y22_real+diag(v_s11) diag(v_s12)-Y22_imag;
             Y22_imag+diag(v_s21)   Y22_real+diag(v_s22)];
@@ -232,10 +255,10 @@ if ~isempty(g.ncl.load_con)
             curr_mis(lv_idx) = -conj(diag(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4)))*V_nc(lv_idx)...
                - curr_load(lv_idx);
          end
-         if n_conv~=0
+         if g.dc.n_conv~=0
             % modify mismatch for dc
-            i_ac = dc_cur(V_nc(ldc_idx),k,kdc);
-            curr_mis(ldc_idx) = curr_mis(ldc_idx) - i_ac;
+            i_ac = dc_cur(V_nc(g.dc.ldc_idx),k,kdc);
+            curr_mis(g.dc.ldc_idx) = curr_mis(g.dc.ldc_idx) - i_ac;
          end
          if count > 30
             disp('NC_LOAD: Newton algorithm not converged in 30 iterations')

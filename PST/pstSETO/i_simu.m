@@ -25,8 +25,33 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 % Author:   Graham Rogers
 % Copyright (c) Joe Chow All Rights Reserved
 
-global i_dc Vdc alpha gamma dcc_pot i_dcr  i_dci Pdc
-global r_idx i_idx ac_bus rec_ac_bus inv_ac_bus n_conv
+%     %% HVDC link variables - 63
+%     global  dcsp_con  dcl_con  dcc_con
+%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
+%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
+%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
+%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+% 
+%     % States
+%     %line
+%     global i_dcr i_dci  v_dcc
+%     global di_dcr  di_dci  dv_dcc
+%     global dc_dsig % added 07/13/20 -thad
+%     %rectifier
+%     global v_conr dv_conr
+%     %inverter
+%     global v_coni dv_coni
+%     
+%     % added to global dc
+%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
+%     global dcr_dc dci_dc % damping control
+%     global  ldc_idx
+% 
+% % global i_dc Vdc alpha gamma dcc_pot i_dcr  i_dci Pdc
+% % global r_idx i_idx ac_bus rec_ac_bus inv_ac_bus n_conv
 
 global g
 
@@ -102,12 +127,12 @@ if g.igen.n_ig~=0
     g.igen.qig(:,k) = imag(g.igen.s_igen(:,k));
 end
 
-if n_conv ~=0
+if g.dc.n_conv ~=0
     % calculate dc voltage and current
-    V0(r_idx,1) = abs(g.sys.bus_v(rec_ac_bus,k)).*dcc_pot(:,7);
-    V0(i_idx,1) = abs(g.sys.bus_v(inv_ac_bus,k)).*dcc_pot(:,8);
-    Vdc(r_idx,kdc) = V0(r_idx,1).*cos(alpha(:,kdc)) - i_dcr(:,kdc).*dcc_pot(:,3);
-    Vdc(i_idx,kdc) = V0(i_idx,1).*cos(gamma(:,kdc)) - i_dci(:,kdc).*dcc_pot(:,5);
-    i_dc(r_idx,kdc) = i_dcr(:,kdc);
-    i_dc(i_idx,kdc) = i_dci(:,kdc);
+    V0(g.dc.r_idx,1) = abs(g.sys.bus_v(g.dc.rec_ac_bus,k)).*g.dc.dcc_pot(:,7);
+    V0(g.dc.i_idx,1) = abs(g.sys.bus_v(g.dc.inv_ac_bus,k)).*g.dc.dcc_pot(:,8);
+    g.dc.Vdc(g.dc.r_idx,kdc) = V0(g.dc.r_idx,1).*cos(g.dc.alpha(:,kdc)) - g.dc.i_dcr(:,kdc).*g.dc.dcc_pot(:,3);
+    g.dc.Vdc(g.dc.i_idx,kdc) = V0(g.dc.i_idx,1).*cos(g.dc.gamma(:,kdc)) - g.dc.i_dci(:,kdc).*g.dc.dcc_pot(:,5);
+    g.dc.i_dc(g.dc.r_idx,kdc) = g.dc.i_dcr(:,kdc);
+    g.dc.i_dc(g.dc.i_idx,kdc) = g.dc.i_dci(:,kdc);
 end

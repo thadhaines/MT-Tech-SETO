@@ -1,0 +1,107 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of High Voltage DC using global g\\ }
+\lhead{Research \\7/14/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable HVDC in PST to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+    %% HVDC link variables 
+    global  dcsp_con  dcl_con  dcc_con
+    global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+    global  inv_ac_line  rec_ac_line ac_line dcli_idx
+    global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+    global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma 
+    global  VHT dc_sig  cur_ord dcr_dsig dci_dsig
+    global  ric_idx  rpc_idx Vdc_ref dcc_pot
+    global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+    global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+
+    % States
+    %line
+    global i_dcr i_dci  v_dcc
+    global di_dcr  di_dci  dv_dcc
+    global dc_dsig % added 07/13/20 -thad
+    %rectifier
+    global v_conr dv_conr
+    %inverter
+    global v_coni dv_coni
+    
+    % added to global dc
+    global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
+    global dcr_dc dci_dc % damping control
+    global  ldc_idx
+\end{verbatim}
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{handleNewGlobals}
+	\begin{itemize}
+		\item Addition of \verb|ind_con| and \verb|mld_con| to global \verb|g.ind|
+	\end{itemize}
+%===============================================================================
+\paragraph{xxx}
+	\begin{itemize}
+		\item Alterations us use global \verb|g.dc| structure
+	\end{itemize}
+	
+	\begin{comment}
+	Files that were altered:
+	dc_cont
+	dc_cur
+	dc_indx
+	dc_lf
+	dc_line
+	dc_load
+	dc_sim
+	dc_vidc
+	handleNewGlobals
+	inv_lf
+	i_simu
+	lfdcs
+	nc_load
+	rec_lf
+	red_ybus
+	s_simu_Batch
+	\end{comment}
+
+\pagebreak
+%===============================================================================	
+\paragraph{Linear Specific files}\line(1,0){300}
+
+%===============================================================================
+\paragraph{xxx}
+	\begin{itemize}
+		\item Alterations us use global \verb|g.dc| structure
+	\end{itemize}
+	
+%===============================================================================
+Alteration of system globals to use \verb|g.dc| structure:
+
+	\begin{itemize}
+		\item svm\_mgen\_Batch
+		\item ns\_file (ran as a script)
+		\item p\_m\_file (ran as a script)
+		\item p\_file (ran as a script)
+		\item p\_cont (ran as a script)
+	\end{itemize}
+	
+	
+
+
+\end{document}

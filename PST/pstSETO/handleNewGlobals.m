@@ -19,6 +19,7 @@
 %   07/09/20    11:11   Thad Haines     addition of tcsc_con
 %   07/13/20    09:44   Thad Haines     addition of igen_con
 %   07/13/20    11:14   Thad Haines     addition of ind_con and mld_con 
+%   07/14/20    12:33   Thad Haines     addition of DC related globals
 
 global g
 
@@ -153,6 +154,27 @@ else
     g.ind.mld_con = [];
 end
 
+%% DC globals
+if exist('dcsp_con','var')% DC converer specifications
+    g.dc.dcsp_con = dcsp_con;
+    clear dcsp_con;
+else
+    g.dc.dcsp_con = [];
+end
+
+if exist('dcl_con','var')% DC lines
+    g.dc.dcl_con = dcl_con;
+    clear dcl_con;
+else
+    g.dc.dcl_con = [];
+end
+
+if exist('dcc_con','var') % DC converter controls
+    g.dc.dcc_con = dcc_con;
+    clear dcc_con;
+else
+    g.dc.dcc_con = [];
+end
 %% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;

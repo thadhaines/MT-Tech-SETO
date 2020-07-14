@@ -188,7 +188,33 @@ warning('*** Declare Global Variables')
 %     global dvdp dvqp dslip
 %     % added globals
 %     global s_mot
-    
+%
+%     %% HVDC link variables - 63
+%     global  dcsp_con  dcl_con  dcc_con
+%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
+%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
+%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
+%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+% 
+%     % States
+%     %line
+%     global i_dcr i_dci  v_dcc
+%     global di_dcr  di_dci  dv_dcc
+%     global dc_dsig % added 07/13/20 -thad
+%     %rectifier
+%     global v_conr dv_conr
+%     %inverter
+%     global v_coni dv_coni
+%     
+%     % added to global dc
+%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
+%     global dcr_dc dci_dc % damping control
+      
+%% Remaining 'loose' globals
+
     %% ivm variables - 5
     global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
     
@@ -196,27 +222,6 @@ warning('*** Declare Global Variables')
     global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
     global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
     global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
-
-    %% HVDC link variables - 63
-    global  dcsp_con  dcl_con  dcc_con
-    global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-    global  inv_ac_line  rec_ac_line ac_line dcli_idx
-    global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-    global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-    global  ric_idx  rpc_idx Vdc_ref dcc_pot
-    global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-    global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-
-    % States
-    %line
-    global i_dcr i_dci  v_dcc
-    global di_dcr  di_dci  dv_dcc
-    global dc_dsig % added 07/13/20 -thad
-    %rectifier
-    global v_conr dv_conr
-    %inverter
-    global v_coni dv_coni
-    
 
     %% pss design - 3
     global ibus_con  netg_con  stab_con
@@ -233,8 +238,8 @@ g.svc.svc_dc=[];
 g.tcsc.tcsc_dc=[];
 g.tcsc.n_tcscud = 0;
 
-dcr_dc=[];
-dci_dc=[];
+g.dc.dcr_dc=[];
+g.dc.dci_dc=[];
 
 % input data file from m.file
 %% 05/20 Edits - thad
@@ -297,12 +302,12 @@ g.mac.ibus_con = []; % ignore infinite buses in transient simulation % should be
 
 %% solve for loadflow - loadflow parameter
 warning('*** Solve initial loadflow')
-if isempty(dcsp_con)
+if isempty(g.dc.dcsp_con)
     % AC power flow
-    n_conv = 0;
-    n_dcl = 0;
-    ndcr_ud=0;
-    ndci_ud=0;
+    g.dc.n_conv = 0;
+    g.dc.n_dcl = 0;
+    g.dc.ndcr_ud=0;
+    g.dc.ndci_ud=0;
     tol = 1e-9;   % tolerance for convergence
     iter_max = 30; % maximum number of iterations
     acc = 1.0;   % acceleration factor
@@ -311,7 +316,7 @@ if isempty(dcsp_con)
     save sim_fle.mat bus line
 else
     % Has HVDC, use DC load flow
-    [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,dci_dc,dcr_dc);
+    [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
     bus = bus_sol;
     save sim_fle.mat bus line rec_par  inv_par line_par
 end
@@ -384,16 +389,16 @@ for sw_count = 1:n_switch-1
     k_incdc(sw_count) = 10*k_inc(sw_count);
     t_switch(sw_count+1) = t_switch(sw_count) +  k_inc(sw_count)*h(sw_count);
     t(k:k-1+k_inc(sw_count)) = t_switch(sw_count):h(sw_count):t_switch(sw_count+1)-h(sw_count);
-    t_dc(kdc:kdc-1+k_incdc(sw_count)) = t_switch(sw_count):h_dc(sw_count):t_switch(sw_count+1)-h_dc(sw_count);
+    g.dc.t_dc(kdc:kdc-1+k_incdc(sw_count)) = t_switch(sw_count):h_dc(sw_count):t_switch(sw_count+1)-h_dc(sw_count);
     k = k+k_inc(sw_count);
     kdc = kdc+k_incdc(sw_count);
 end
 
 % time for dc - multi-rate...
-t_dc(kdc)=t_dc(kdc-1)+h_dc(sw_count);
+g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
 for kk=1:10
     kdc=kdc+1;
-    t_dc(kdc)=t_dc(kdc-1)+h_dc(sw_count);
+    g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
 end
 
 k = sum(k_inc)+1; % k is the total number of time steps in the simulation
@@ -420,104 +425,107 @@ if g.igen.n_ig>1
 end
 
 zdc = zeros(2,kdc);
-if n_conv>2
-    zdc = zeros(n_conv,kdc);
+if g.dc.n_conv>2
+    zdc = zeros(g.dc.n_conv,kdc);
 end
 
 zdcl = zeros(1,kdc);
-if n_dcl>1
-    zdcl=zeros(n_dcl,kdc);
+if g.dc.n_dcl>1
+    zdcl=zeros(g.dc.n_dcl,kdc);
 end
 
 %% set dc parameters   (initialize zeros? 5/14/20)
-Vdc = zeros(n_conv,kdc);
-i_dc = zdc;
-P_dc = z; 
-cur_ord = z;
-alpha = zdcl;
-gamma = zdcl;
-dc_sig = zeros(n_conv,k);
-dc_dsig = zeros(n_conv,k);
-dcr_dsig = zeros(n_dcl,k);
-dci_dsig = zeros(n_dcl,k);
-i_dcr = zdcl; 
-i_dci = zdcl; 
-v_dcc = zdcl;
-di_dcr = zdcl; 
-di_dci = zdcl; 
-dv_dcc = zdcl;
-v_conr = zdcl; 
-v_coni = zdcl; 
-dv_conr = zdcl; 
-dv_coni = zdcl;
+g.dc.Vdc = zeros(g.dc.n_conv,kdc);
+g.dc.i_dc = zdc;
+g.dc.P_dc = z; 
+g.dc.cur_ord = z;
+g.dc.alpha = zdcl;
+g.dc.gamma = zdcl;
+g.dc.dc_sig = zeros(g.dc.n_conv,k);
+g.dc.dc_dsig = zeros(g.dc.n_conv,k);
+g.dc.dcr_dsig = zeros(g.dc.n_dcl,k);
+g.dc.dci_dsig = zeros(g.dc.n_dcl,k);
+g.dc.i_dcr = zdcl; 
+g.dc.i_dci = zdcl; 
+g.dc.v_dcc = zdcl;
+g.dc.di_dcr = zdcl; 
+g.dc.di_dci = zdcl; 
+g.dc.dv_dcc = zdcl;
+g.dc.v_conr = zdcl; 
+g.dc.v_coni = zdcl; 
+g.dc.dv_conr = zdcl; 
+g.dc.dv_coni = zdcl;
 
-if n_conv~=0
+if g.dc.n_conv~=0
     % Modified by Rui on Oct. 5, 2016
-    for ihvdc_count=1:n_dcl
-        ire = r_idx(ihvdc_count);
-        Vdc(ire,:) = rec_par(ihvdc_count,2);
-        i_dc(ire,:) = line_par(ihvdc_count);    % for PDCI
-        i_dcr(ihvdc_count,:) = i_dc(ire,:);
-        alpha(ihvdc_count,:) = rec_par(ihvdc_count,1)*pi/180;
+    for ihvdc_count=1:g.dc.n_dcl
+        ire = g.dc.r_idx(ihvdc_count);
+        g.dc.Vdc(ire,:) = rec_par(ihvdc_count,2);
+        g.dc.i_dc(ire,:) = line_par(ihvdc_count);    % for PDCI
+        g.dc.i_dcr(ihvdc_count,:) = g.dc.i_dc(ire,:);
+        g.dc.alpha(ihvdc_count,:) = rec_par(ihvdc_count,1)*pi/180;
     end
     
-    for ihvdc_count=1:n_dcl
-        iin=i_idx(ihvdc_count);
-        Vdc(iin,:)=inv_par(ihvdc_count,2);
-        i_dc(iin,:) = line_par(ihvdc_count);
-        i_dci(ihvdc_count,:) = i_dc(iin,:);
-        gamma(ihvdc_count,:) = inv_par(ihvdc_count,1)*pi/180;
+    for ihvdc_count=1:g.dc.n_dcl
+        iin=g.dc.i_idx(ihvdc_count);
+        g.dc.Vdc(iin,:)=inv_par(ihvdc_count,2);
+        g.dc.i_dc(iin,:) = line_par(ihvdc_count);
+        g.dc.i_dci(ihvdc_count,:) = g.dc.i_dc(iin,:);
+        g.dc.gamma(ihvdc_count,:) = inv_par(ihvdc_count,1)*pi/180;
     end
     % end modification by Rui
     
-    Vdc(r_idx,:) = rec_par(:,2); Vdc(i_idx,:) = inv_par(:,2);
-    i_dc(r_idx,:) = line_par; i_dc(i_idx,:) = line_par;
-    i_dcr(:,:) = i_dc(r_idx,:); i_dci(:,:) = i_dc(i_idx,:);
-    alpha(:,:) = rec_par(:,1)*pi/180;
-    gamma(:,:) = inv_par(:,1)*pi/180;
+    g.dc.Vdc(g.dc.r_idx,:) = rec_par(:,2); 
+    g.dc.Vdc(g.dc.i_idx,:) = inv_par(:,2);
+    g.dc.i_dc(g.dc.r_idx,:) = line_par; 
+    g.dc.i_dc(g.dc.i_idx,:) = line_par;
+    g.dc.i_dcr(:,:) = g.dc.i_dc(g.dc.r_idx,:); 
+    g.dc.i_dci(:,:) = g.dc.i_dc(g.dc.i_idx,:);
+    g.dc.alpha(:,:) = rec_par(:,1)*pi/180;
+    g.dc.gamma(:,:) = inv_par(:,1)*pi/180;
     
-    if ndcr_ud~=0
-        for j = 1:ndcr_ud
-            sv = get(dcr_dc{j,1});
+    if g.dc.ndcr_ud~=0
+        for j = 1:g.dc.ndcr_ud
+            sv = get(g.dc.dcr_dc{j,1});
             if j==1
-                xdcr_dc =zeros(sv.NumStates,kdc);
-                dxdcr_dc = zeros(sv.NumStates,kdc);
+                g.dc.xdcr_dc =zeros(sv.NumStates,kdc); 
+                g.dc.dxdcr_dc = zeros(sv.NumStates,kdc);
             else
-                xdcr_dc = [xdcr_dc;zeros(sv.NumStates,kdc)];
-                dxdcr_dc = [dxdcr_dc;zeros(sv.NumStates,kdc)];
+                g.dc.xdcr_dc = [g.dc.xdcr_dc;zeros(sv.NumStates,kdc)];
+                g.dc.dxdcr_dc = [g.dc.dxdcr_dc;zeros(sv.NumStates,kdc)];
             end
         end
-        dcrd_sig=zeros(ndcr_ud,k);
-        angdcr = zeros(ndcr_ud,k);
+        g.dc.dcrd_sig=zeros(g.dc.ndcr_ud,k);
+        g.dc.angdcr = zeros(g.dc.ndcr_ud,k);
     else
-        xdcr_dc = zeros(1,kdc);
-        dxdcr_dc = zeros(1,kdc);
-        dcrd_sig = zeros(1,k);
+        g.dc.xdcr_dc = zeros(1,kdc);
+        g.dc.dxdcr_dc = zeros(1,kdc);
+        g.dc.dcrd_sig = zeros(1,k);
     end
     
-    if ndci_ud~=0
-        for j = 1:ndci_ud
-            sv = get(dci_dc{j,1});
+    if g.dc.ndci_ud~=0
+        for j = 1:g.dc.ndci_ud
+            sv = get(g.dc.dci_dc{j,1});
             if j==1
-                xdci_dc =zeros(sv.NumStates,kdc);
-                dxdci_dc = zeros(sv.NumStates,kdc);
+                g.dc.xdci_dc =zeros(sv.NumStates,kdc);
+                g.dc.dxdci_dc = zeros(sv.NumStates,kdc);
             else
-                xdci_dc = [g.svc.xsvc_dc;zeros(sv.NumStates,kdc)];
-                dxdci_dc = [g.svc.dxsvc_dc;zeros(sv.NumStates,kdc)];
+                g.dc.xdci_dc = [g.svc.xsvc_dc;zeros(sv.NumStates,kdc)];
+                g.dc.dxdci_dc = [g.svc.dxsvc_dc;zeros(sv.NumStates,kdc)];
             end
         end
-        dcid_sig=zeros(ndcr_ud,k);
-        angdci = zeros(ndci_dc,k);
+        g.dc.dcid_sig=zeros(g.dc.ndcr_ud,k);
+        g.dc.angdci = zeros(ndci_dc,k);
     else
-        xdci_dc = zeros(1,kdc);
-        dxdci_dc = zeros(1,kdc);
-        dcid_sig = zeros(1,k);
+        g.dc.xdci_dc = zeros(1,kdc);
+        g.dc.dxdci_dc = zeros(1,kdc);
+        g.dc.dcid_sig = zeros(1,k);
     end
 else
-    xdcr_dc = zeros(1,kdc);
-    dxdcr_dc = zeros(1,kdc);
-    xdci_dc = zeros(1,kdc);
-    dxdci_dc = zeros(1,kdc);
+    g.dc.xdcr_dc = zeros(1,kdc);
+    g.dc.dxdcr_dc = zeros(1,kdc);
+    g.dc.xdci_dc = zeros(1,kdc);
+    g.dc.dxdci_dc = zeros(1,kdc);
 end
 
 %% End of DC specific stuff? - continuation of zero intialization - 06/01/20 -thad
@@ -822,9 +830,9 @@ if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 
         R = line(l_num,3);
         X = line(l_num,4);
         B = line(l_num,5);
-        tap = line(l_num,6);
+        g.dc.tap = line(l_num,6);
         phi = line(l_num,7);
-        [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
+        [l_if,l_it] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);
         l_if0(j)=l_if;
         l_it0(j)=l_it;
         
@@ -845,46 +853,46 @@ if g.tcsc.n_tcscud ~=0 % Seems like this should be put in a seperate script - th
     end
 end
 
-if n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/20
+if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% change dc buses from LT to HT
-    Pr = bus(rec_ac_bus,6);
-    Pi = bus(inv_ac_bus,6);
-    Qr = bus(rec_ac_bus,7);
-    Qi = bus(inv_ac_bus,7);
-    VLT= g.sys.bus_v(ac_bus,1);
-    i_acr = (Pr-jay*Qr)./conj(VLT(r_idx));
-    i_aci = (Pi - jay*Qi)./conj(VLT(i_idx));
-    IHT(r_idx,1)=i_acr;
-    IHT(i_idx,1)=i_aci;
-    VHT(r_idx,1) = (VLT(r_idx) + jay*dcc_pot(:,2).*i_acr);
-    VHT(i_idx,1) = (VLT(i_idx) + jay*dcc_pot(:,4).*i_aci);
-    g.sys.bus_v(ac_bus,1) = VHT;
-    g.sys.theta(ac_bus,1) = angle(g.sys.bus_v(ac_bus,1));
+    Pr = bus(g.dc.rec_ac_bus,6);
+    Pi = bus(g.dc.inv_ac_bus,6);
+    Qr = bus(g.dc.rec_ac_bus,7);
+    Qi = bus(g.dc.inv_ac_bus,7);
+    VLT= g.sys.bus_v(g.dc.ac_bus,1);
+    i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
+    i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
+    IHT(g.dc.r_idx,1)=i_acr;
+    IHT(g.dc.i_idx,1)=i_aci;
+    g.dc.VHT(g.dc.r_idx,1) = (VLT(g.dc.r_idx) + jay*g.dc.dcc_pot(:,2).*i_acr);
+    g.dc.VHT(g.dc.i_idx,1) = (VLT(g.dc.i_idx) + jay*g.dc.dcc_pot(:,4).*i_aci);
+    g.sys.bus_v(g.dc.ac_bus,1) = g.dc.VHT;
+    g.sys.theta(g.dc.ac_bus,1) = angle(g.sys.bus_v(g.dc.ac_bus,1));
     % modify the bus matrix to the HT buses
-    bus(ac_bus,2) = abs(g.sys.bus_v(ac_bus,1));
-    bus(ac_bus,3) = g.sys.theta(ac_bus,1)*180/pi;
-    SHT = VHT.*conj(IHT);
-    bus(ac_bus,6) = real(SHT);
-    bus(ac_bus,7) = imag(SHT);
+    bus(g.dc.ac_bus,2) = abs(g.sys.bus_v(g.dc.ac_bus,1));
+    bus(g.dc.ac_bus,3) = g.sys.theta(g.dc.ac_bus,1)*180/pi;
+    SHT = g.dc.VHT.*conj(IHT);
+    bus(g.dc.ac_bus,6) = real(SHT);
+    bus(g.dc.ac_bus,7) = imag(SHT);
     
-    if ndcr_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
+    if g.dc.ndcr_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
         % calculate the initial value of bus angles rectifier user defined control
-        for j = 1:ndcr_ud
-            b_num1 = dcr_dc{j,3};
-            b_num2 = dcr_dc{j,4};
-            conv_num = dcr_dc{j,2};
-            angdcr(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
-            dcrd_sig(j,:)=angdcr(j,:);
+        for j = 1:g.dc.ndcr_ud
+            b_num1 = g.dc.dcr_dc{j,3};
+            b_num2 = g.dc.dcr_dc{j,4};
+            conv_num = g.dc.dcr_dc{j,2};
+            g.dc.angdcr(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
+            g.dc.dcrd_sig(j,:)=g.dc.angdcr(j,:);
         end
     end
-    if ndci_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
+    if g.dc.ndci_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
         % calculate the initial value of bus angles inverter user defined control
-        for j = 1:ndci_ud
-            b_num1 = dci_dc{j,3};
-            b_num2 = dci_dc{j,4};
-            conv_num = dci_dc{j,2};
-            angdci(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
-            dcid_sig(j,:) = angdci(j,:);
+        for j = 1:g.dc.ndci_ud
+            b_num1 = g.dc.dci_dc{j,3};
+            b_num2 = g.dc.dci_dc{j,4};
+            conv_num = g.dc.dci_dc{j,2};
+            g.dc.angdci(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
+            g.dc.dcid_sig(j,:) = g.dc.angdci(j,:);
         end
     end
 end
@@ -980,35 +988,35 @@ end
 
 %% initialize rectifier damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
-if ndcr_ud~=0
+if g.dc.ndcr_ud~=0
     disp('rectifier damping controls')
     tot_states=0;
-    for i = 1:ndcr_ud
-        ydcrmx = dcr_dc{i,5};
-        ydcrmn = dcr_dc{i,6};
-        rec_num = dcr_dc{i,2};
+    for i = 1:g.dc.ndcr_ud
+        ydcrmx = g.dc.dcr_dc{i,5};
+        ydcrmn = g.dc.dcr_dc{i,6};
+        rec_num = g.dc.dcr_dc{i,2};
         st_state = tot_states+1; 
-        dcr_states = dcr_dc{i,7}; 
+        dcr_states = g.dc.dcr_dc{i,7}; 
         tot_states = tot_states+dcr_states;
-        [dcr_dsig(rec_num,1),xdcr_dc(st_state:tot_states,1),dxdcr_dc(st_state:tot_states,1)] = ...
-            dcr_sud(i,1,flag,dcr_dc{i,1},dcrd_sig(i,1),ydcrmx,ydcrmn);
+        [g.dc.dcr_dsig(rec_num,1),g.dc.xdcr_dc(st_state:tot_states,1),g.dc.dxdcr_dc(st_state:tot_states,1)] = ...
+            dcr_sud(i,1,flag,g.dc.dcr_dc{i,1},g.dc.dcrd_sig(i,1),ydcrmx,ydcrmn);
     end
 end
 
 %% initialize inverter damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
-if ndci_ud~=0
+if g.dc.ndci_ud~=0
     disp('inverter damping controls')
     tot_states = 0;
-    for i = 1:ndci_ud
-        ydcimx = dci_dc{i,5};
-        ydcrmn = dci_dc{i,6};
-        inv_num = dci_dc{i,2};
+    for i = 1:g.dc.ndci_ud
+        ydcimx = g.dc.dci_dc{i,5};
+        ydcrmn = g.dc.dci_dc{i,6};
+        inv_num = g.dc.dci_dc{i,2};
         st_state = tot_states+1; 
-        dci_states = dci_dc{i,7}; 
+        dci_states = g.dc.dci_dc{i,7}; 
         tot_states = tot_states+dci_states;
-        [dci_dsig(inv_num,1),xdci_dc(st_state:tot_states,1),dxdci_dc(st_state:tot_states,1)] =...
-            dci_sud(i,1,flag,dci_dc{i,1},dcid_sig(i,1),ydcimx,ydcimn);
+        [g.dc.dci_dsig(inv_num,1),g.dc.xdci_dc(st_state:tot_states,1),g.dc.dxdci_dc(st_state:tot_states,1)] =...
+            dci_sud(i,1,flag,g.dc.dci_dc{i,1},g.dc.dcid_sig(i,1),ydcimx,ydcimn);
     end
 end
 
@@ -1063,7 +1071,7 @@ else
 end
 
 %% DC Stuff ? (5/22/20)
-if ~isempty(dcsp_con)
+if ~isempty(g.dc.dcsp_con)
 % Seems like this should be put in a seperate script - thad 06/08/20
     disp('dc converter specification')
     
@@ -1127,8 +1135,8 @@ while (kt<=ktmax)
         g.mac.pmech(:,k+1) = g.mac.pmech(:,k);
         g.igen.tmig(:,k+1) = g.igen.tmig(:,k);
         
-        if n_conv~=0
-            cur_ord(:,k+1) = cur_ord(:,k);
+        if g.dc.n_conv~=0
+            g.dc.cur_ord(:,k+1) = g.dc.cur_ord(:,k);
         end
         
         % Trip gen - Copied from v2.3 06/01/20 - thad
@@ -1229,40 +1237,40 @@ while (kt<=ktmax)
         h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         %% HVDC
-        if ndcr_ud~=0
+        if g.dc.ndcr_ud~=0
             % calculate the new value of bus angles rectifier user defined control
             tot_states=0;
-            for jj = 1:ndcr_ud
-                b_num1 = dcr_dc{jj,3};
-                b_num2 = dcr_dc{jj,4};
-                conv_num = dcr_dc{jj,2};
-                angdcr(jj,k) = (g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k));
-                dcrd_sig(jj,k)=angdcr(jj,k);
+            for jj = 1:g.dc.ndcr_ud
+                b_num1 = g.dc.dcr_dc{jj,3};
+                b_num2 = g.dc.dcr_dc{jj,4};
+                conv_num = g.dc.dcr_dc{jj,2};
+                g.dc.angdcr(jj,k) = (g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k));
+                g.dc.dcrd_sig(jj,k)=g.dc.angdcr(jj,k);
                 st_state = tot_states+1; 
-                dcr_states = dcr_dc{jj,7}; 
+                dcr_states = g.dc.dcr_dc{jj,7}; 
                 tot_states = tot_states+dcr_states;
-                ydcrmx=dcr_dc{jj,5};
-                ydcrmn = dcr_dc{jj,6};
-                dcr_dsig(jj,k) = ...
-                    dcr_sud(jj,k,flag,dcr_dc{jj,1},dcrd_sig(jj,k),ydcrmx,ydcrmn,xdcr_dc(st_state:tot_states,10*(k-1)+1));
+                ydcrmx= g.dc.dcr_dc{jj,5};
+                ydcrmn = g.dc.dcr_dc{jj,6};
+                g.dc.dcr_dsig(jj,k) = ...
+                    dcr_sud(jj,k,flag,g.dc.dcr_dc{jj,1},g.dc.dcrd_sig(jj,k),ydcrmx,ydcrmn,g.dc.xdcr_dc(st_state:tot_states,10*(k-1)+1));
             end
         end
-        if ndci_ud~=0
+        if g.dc.ndci_ud~=0
             % calculate the new value of bus angles inverter user defined control
-            for jj = 1:ndci_ud
+            for jj = 1:g.dc.ndci_ud
                 tot_states=0;
-                b_num1 = dci_dc{jj,3};
-                b_num2 = dci_dc{jj,4};
-                conv_num = dci_dc{jj,2};
-                angdci(jj,k)=g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k);
-                dcid_sig(jj,k)=(angdci(jj,k)-angdci(jj,k-1))/(t(k)-t(k-1));
+                b_num1 = g.dc.dci_dc{jj,3};
+                b_num2 = g.dc.dci_dc{jj,4};
+                conv_num = g.dc.dci_dc{jj,2};
+                g.dc.angdci(jj,k)=g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k);
+                g.dc.dcid_sig(jj,k)=(g.dc.angdci(jj,k)-g.dc.angdci(jj,k-1))/(t(k)-t(k-1));
                 st_state = tot_states+1; 
-                dci_states = dci_dc{jj,7}; 
+                dci_states = g.dc.dci_dc{jj,7}; 
                 tot_states = tot_states+dci_states;
-                ydcimx=dci_dc{jj,5};
-                ydcimn = dci_dc{jj,6};
-                dci_dsig(jj,k) = ...
-                    dci_sud(jj,k,flag,dci_dc{jj,1},dcid_sig(jj,k),ydcimx,ydcimn,xdci_dc(st_state:tot_states,10*(k-1)+1));
+                ydcimx= g.dc.dci_dc{jj,5};
+                ydcimn = g.dc.dci_dc{jj,6};
+                g.dc.dci_dsig(jj,k) = ...
+                    dci_sud(jj,k,flag,g.dc.dci_dc{jj,1},g.dc.dcid_sig(jj,k),ydcimx,ydcimn,g.dc.xdci_dc(st_state:tot_states,10*(k-1)+1));
             end
         end
         
@@ -1296,9 +1304,9 @@ while (kt<=ktmax)
                 R = line_sim(l_num,3);
                 X = line_sim(l_num,4);
                 B = line_sim(l_num,5);
-                tap = line_sim(l_num,6);
+                g.dc.tap = line_sim(l_num,6);
                 phi = line_sim(l_num,7);
-                [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
+                [l_if,l_it] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);
                 
                 if svc_bn == from_bus
                     d_sig(jj,k) = abs(l_if);
@@ -1472,12 +1480,12 @@ while (kt<=ktmax)
         
         %% integrate dc at ten times rate (DC Stuff? 5/14/20)
         mdc_sig(k);
-        if n_conv~=0
+        if g.dc.n_conv~=0
             hdc_sol = h_sol/10;
             for kk = 1:10
                 kdc=10*(k-1)+kk;
-                [xdcr_dc(:,kdc:kdc+1),dxdcr_dc(:,kdc:kdc+1),xdci_dc(:,kdc:kdc+1),dxdci_dc(:,kdc:kdc+1)] = ...
-                    dc_sim(k,kk,dcr_dc,dci_dc,xdcr_dc(:,kdc),xdci_dc(:,kdc),bus_sim,hdc_sol);
+                [g.dc.xdcr_dc(:,kdc:kdc+1),g.dc.dxdcr_dc(:,kdc:kdc+1),g.dc.xdci_dc(:,kdc:kdc+1),g.dc.dxdci_dc(:,kdc:kdc+1)] = ...
+                    dc_sim(k,kk,g.dc.dcr_dc,g.dc.dci_dc,g.dc.xdcr_dc(:,kdc),g.dc.xdci_dc(:,kdc),bus_sim,hdc_sol); % dc_sim 
             end
         else
             dc_cont(0,k,k,bus_sim,2);
@@ -1661,40 +1669,41 @@ while (kt<=ktmax)
         h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         g.mac.vex(:,j) = g.mac.vex(:,k);
-        cur_ord(:,j) = cur_ord(:,k);
+        g.dc.cur_ord(:,j) = g.dc.cur_ord(:,k);
         % calculate the new value of bus angles rectifier user defined control
-        if ndcr_ud~=0
+        if g.dc.ndcr_ud~=0
             tot_states=0;
-            for jj = 1:ndcr_ud
-                b_num1 = dcr_dc{jj,3};
-                b_num2 = dcr_dc{jj,4};
-                conv_num = dcr_dc{jj,2};
-                angdcr(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
-                dcrd_sig(jj,j)=angdcr(jj,j);
+            for jj = 1:g.dc.ndcr_ud
+                b_num1 = g.dc.dcr_dc{jj,3};
+                b_num2 = g.dc.dcr_dc{jj,4};
+                conv_num = g.dc.dcr_dc{jj,2};
+                g.dc.angdcr(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
+                g.dc.dcrd_sig(jj,j)=g.dc.angdcr(jj,j);
                 st_state = tot_states+1; 
-                dcr_states = dcr_dc{jj,7}; 
+                dcr_states = g.dc.dcr_dc{jj,7}; 
                 tot_states = tot_states+dcr_states;
-                ydcrmx=dcr_dc{jj,5};ydcrmn = dcr_dc{jj,6};
-                dcr_dsig(jj,j) = ...
-                    dcr_sud(jj,j,flag,dcr_dc{jj,1},dcrd_sig(jj,j),ydcrmx,ydcrmn,xdcr_dc(st_state:tot_states,10*(j-1)+1));
+                ydcrmx = g.dc.dcr_dc{jj,5};
+                ydcrmn = g.dc.dcr_dc{jj,6};
+                g.dc.dcr_dsig(jj,j) = ...
+                    dcr_sud(jj,j,flag,g.dc.dcr_dc{jj,1},g.dc.dcrd_sig(jj,j),ydcrmx,ydcrmn,g.dc.xdcr_dc(st_state:tot_states,10*(j-1)+1));
             end
         end
-        if ndci_ud~=0
+        if g.dc.ndci_ud~=0
             % calculate the new value of bus angles inverter user defined control
-            for jj = 1:ndci_ud
+            for jj = 1:g.dc.ndci_ud
                 tot_states=0;
-                b_num1 = dci_dc{jj,3};
-                b_num2 = dci_dc{jj,4};
-                conv_num = dci_dc{jj,2};
-                angdci(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
-                dcid_sig(jj,j) = (angdci(jj,j)-angdci(jj,k))/(t(j)-t(k));
+                b_num1 = g.dc.dci_dc{jj,3};
+                b_num2 = g.dc.dci_dc{jj,4};
+                conv_num = g.dc.dci_dc{jj,2};
+                g.dc.angdci(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
+                g.dc.dcid_sig(jj,j) = (g.dc.angdci(jj,j)-g.dc.angdci(jj,k))/(t(j)-t(k));
                 st_state = tot_states+1; 
-                dci_states = dci_dc{jj,7}; 
+                dci_states = g.dc.dci_dc{jj,7}; 
                 tot_states = tot_states+dci_states;
-                ydcimx=dci_dc{jj,5};
-                ydcimn = dci_dc{jj,6};
-                dci_dsig(jj,j) = ...
-                    dci_sud(jj,j,flag,dci_dc{jj,1},dcid_sig(jj,j),ydcimx,ydcimn,xdci_dc(st_state:tot_states,10*(j-1)+1));
+                ydcimx = g.dc.dci_dc{jj,5};
+                ydcimn = g.dc.dci_dc{jj,6};
+                g.dc.dci_dsig(jj,j) = ...
+                    dci_sud(jj,j,flag,g.dc.dci_dc{jj,1},g.dc.dcid_sig(jj,j),ydcimx,ydcimn,g.dc.xdci_dc(st_state:tot_states,10*(j-1)+1));
             end
         end
         
@@ -1725,8 +1734,8 @@ while (kt<=ktmax)
                 R = line_sim(l_num,3);
                 X = line_sim(l_num,4);
                 B = line_sim(l_num,5);
-                tap = line_sim(l_num,6);phi = line_sim(l_num,7);
-                [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi);
+                g.dc.tap = line_sim(l_num,6);phi = line_sim(l_num,7);
+                [l_if,l_it] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);
                 if svc_bn == from_bus
                     d_sig(jj,j)=abs(l_if);
                 elseif svc_bn==to_bus
@@ -1891,12 +1900,12 @@ while (kt<=ktmax)
         % end copied from...
         
         %%integrate dc at ten times rate (DC Stuff? 6/09/20)
-        if n_conv~=0
+        if g.dc.n_conv~=0
             hdc_sol = h_sol/10;
             for kk = 1:10
                 jdc=10*(j-1)+kk;
-                [xdcr_dc(:,jdc:jdc+1),dxdcr_dc(:,jdc:jdc+1),xdci_dc(:,jdc:jdc+1),dxdci_dc(:,jdc:jdc+1)] = ...
-                    dc_sim(j,kk,dcr_dc,dci_dc,xdcr_dc(:,jdc),xdci_dc(:,jdc),bus_sim,hdc_sol);
+                [g.dc.xdcr_dc(:,jdc:jdc+1),g.dc.dxdcr_dc(:,jdc:jdc+1),g.dc.xdci_dc(:,jdc:jdc+1),g.dc.dxdci_dc(:,jdc:jdc+1)] = ...
+                    dc_sim(j,kk,g.dc.dcr_dc,g.dc.dci_dc,g.dc.xdcr_dc(:,jdc),g.dc.xdci_dc(:,jdc),bus_sim,hdc_sol);
             end
         else
             dc_cont(0,j,j,bus_sim,2);
@@ -2010,11 +2019,11 @@ V2 = g.sys.bus_v(g.sys.bus_int(line(:,2)),:);
 R = line(:,3); 
 X = line(:,4); 
 B = line(:,5);
-tap = line(:,6); 
+g.dc.tap = line(:,6); 
 phi = line(:,7);
 
-[ilf,ilt]=line_cur(V1,V2,R,X,B,tap,phi);%line currents
-[sInjF,sInjT]=line_pq(V1,V2,R,X,B,tap,phi);% 'line flows' - complex power injection at bus
+[ilf,ilt]=line_cur(V1,V2,R,X,B,g.dc.tap,phi);%line currents
+[sInjF,sInjT]=line_pq(V1,V2,R,X,B,g.dc.tap,phi);% 'line flows' - complex power injection at bus
 
 % full sim timing
 et = toc;
@@ -2024,23 +2033,23 @@ disp(['elapsed time = ' ets 's'])
 disp('*** End simulation.')
 disp(' ')
 
-%% DC stuff? (5/14/20)
-t_dc=t_dc(1:length(t_dc)-10);
-i_dc=i_dc(:,1:length(t_dc));
-i_dcr=i_dcr(:,1:length(t_dc));
-i_dci=i_dci(:,1:length(t_dc));
-alpha=alpha(:,1:length(t_dc));
-gamma=gamma(:,1:length(t_dc));
-Vdc=Vdc(:,1:length(t_dc));
-v_conr=v_conr(:,1:length(t_dc));
-v_coni= v_coni(:,1:length(t_dc));
-dv_conr= dv_conr(:,1:length(t_dc));
-dv_coni= dv_coni(:,1:length(t_dc));
-xdcr_dc= xdcr_dc(:,1:length(t_dc));
-xdci_dc= xdci_dc(:,1:length(t_dc));
-dxdcr_dc= dxdcr_dc(:,1:length(t_dc));
-dxdci_dc= dxdci_dc(:,1:length(t_dc));
-dv_dcc= dv_dcc(:,1:length(t_dc));
-v_dcc= v_dcc(:,1:length(t_dc));
-di_dci= di_dci(:,1:length(t_dc));
-di_dcr=di_dcr(:,1:length(t_dc));
+%% Clean up logged DC variables to length of DC simulated time.
+g.dc.t_dc = g.dc.t_dc(1:length(g.dc.t_dc)-10);
+g.dc.i_dc = g.dc.i_dc(:,1:length(g.dc.t_dc));
+g.dc.i_dcr = g.dc.i_dcr(:,1:length(g.dc.t_dc));
+g.dc.i_dci = g.dc.i_dci(:,1:length(g.dc.t_dc));
+g.dc.alpha = g.dc.alpha(:,1:length(g.dc.t_dc));
+g.dc.gamma = g.dc.gamma(:,1:length(g.dc.t_dc));
+g.dc.Vdc = g.dc.Vdc(:,1:length(g.dc.t_dc));
+g.dc.v_conr = g.dc.v_conr(:,1:length(g.dc.t_dc));
+g.dc.v_coni = g.dc.v_coni(:,1:length(g.dc.t_dc));
+g.dc.dv_conr = g.dc.dv_conr(:,1:length(g.dc.t_dc));
+g.dc.dv_coni = g.dc.dv_coni(:,1:length(g.dc.t_dc));
+g.dc.xdcr_dc = g.dc.xdcr_dc(:,1:length(g.dc.t_dc));
+g.dc.xdci_dc = g.dc.xdci_dc(:,1:length(g.dc.t_dc));
+g.dc.dxdcr_dc = g.dc.dxdcr_dc(:,1:length(g.dc.t_dc));
+g.dc.dxdci_dc = g.dc.dxdci_dc(:,1:length(g.dc.t_dc));
+g.dc.dv_dcc = g.dc.dv_dcc(:,1:length(g.dc.t_dc));
+g.dc.v_dcc = g.dc.v_dcc(:,1:length(g.dc.t_dc));
+g.dc.di_dci = g.dc.di_dci(:,1:length(g.dc.t_dc));
+g.dc.di_dcr = g.dc.di_dcr(:,1:length(g.dc.t_dc));
