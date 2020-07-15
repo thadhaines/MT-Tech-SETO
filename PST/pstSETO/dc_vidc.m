@@ -1,9 +1,22 @@
 function dc_vidc(k,kdc)
-%syntax: f=dc_vidc(k,kdc)
-% updates Vdc and i_dc assuming ac bus voltage remains constant
-% global bus_v 
-% global i_dc Vdc alpha gamma dcc_pot i_dcr  i_dci 
-% global r_idx i_idx ac_bus rec_ac_bus inv_ac_bus n_conv
+%DC_VIDC updates Vdc and i_dc assuming ac bus voltage remains constant
+% DC_VIDC  updates Vdc and i_dc assuming ac bus voltage remains constant
+%
+% Syntax: updates Vdc and i_dc assuming ac bus voltage remains constant
+%
+%   NOTES:  
+% 
+%   Input: 
+%   k - integer time (data index)
+%   kdc - integer time for dc (dc data index)
+%
+%   Output: 
+%   VOID
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   xx/xx/xx    XX:XX   xxx             Version 1.0
+%   07/15/20    10:40   Thad Haines     Revised format of globals and internal function documentation
 
 global g
 

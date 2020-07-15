@@ -1,57 +1,35 @@
 function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,bo)
-%Syntax: h_sol = i_simu(k,ks,k_inc,h,bus_sim,...
-%                 Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,bo)
-% 11:13 AM 18/08/97
-%Purpose forms the network interface variables
-% Inputs: k - the current time step
-%         ks - indicates the switching times
-%         k_inc - the number of time seps between switching points
-%         h vector of time steps
-%         bus_sim value of bus matrix at this switching time
-%         Y_g - reduced Y matrix for generators
-%         Y_gnc - mutual reduced Y generators-nc loads
-%         Y_ncg - mutual reduced Y nc loads generators
-%         Y_nc - reduced Y matrix nc loads
-%         rec_V1 - voltage recovery matrix generators
-%         rec_V2 - voltage recovery matrix nc loads
-%         bo bus order for this switching time
-% Output: h_sol - the time step at this value of ks
-% Called by: s_simu
-% Version 1.1
-% Date:   August 1997
-% Modification: add induction generator
-% Version: 1.0
-% Date:    March 1997
-% Author:   Graham Rogers
-% Copyright (c) Joe Chow All Rights Reserved
-
-%     %% HVDC link variables - 63
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+%I_SIMU Purpose forms the network interface variables
+% I_SIMU  Purpose forms the network interface variables
+%
+% Syntax: h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,bo)
+%
+%   NOTES:  Called by s_simu
+%           Calls nc_load
 % 
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%     
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-%     global  ldc_idx
-% 
-% % global i_dc Vdc alpha gamma dcc_pot i_dcr  i_dci Pdc
-% % global r_idx i_idx ac_bus rec_ac_bus inv_ac_bus n_conv
+%   Input: 
+%   k - the current time step
+%  	ks - indicates the switching times
+%  	k_inc - the number of time seps between switching points
+%  	h - vector of time steps
+%  	bus_sim - value of bus matrix at this switching time
+%  	Y_g - reduced Y matrix for generators
+%  	Y_gnc - mutual reduced Y generators-nc loads
+%  	Y_ncg - mutual reduced Y nc loads generators
+%   Y_nc - reduced Y matrix nc loads
+% 	rec_V1 - voltage recovery matrix generators
+% 	rec_V2 - voltage recovery matrix nc loads
+%  	bo - bus order for this switching time
+%
+%   Output: 
+%   h_sol - the time step at this value of ks
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   03/xx/97    XX:XX   Graham Rogers  	Version 1.0
+%   08/xx/97    XX:XX   xxx           	Version 1.1 - add induction generator
+%   Copyright (c) Joe Chow All Rights Reserved
+%   07/15/20    11:53   Thad Haines     Revised format of globals and internal function documentation
 
 global g
 

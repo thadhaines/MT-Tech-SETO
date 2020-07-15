@@ -1,23 +1,27 @@
 function dc_indx(bus,line,dci_dc,dcr_dc)
-%Syntax: f = dc_indx(bus,line)
-%Purpose: To form indexes for the rectifier and inverter in the dc load flow
-%         and indicate the ac buses contected to the converters
-%Input:   dc converter specification matrix
-%         dc line matrix
-%         ac bus matrix
-%         ac line matrix 
-%         dcr_dc - user defined damping control at rectifier cell
-%         dci_dc - user defined damping control at inverter cell
-%Output:  f is a dummy variable
-%Modified:
-%Date: January 1999
-%Author: Graham Rogers
-%Purpose: Addition of user defined damping controls
-
-%Author:  Graham Rogers
-%Date:    October 1996
-%         (c) Copyright Joe Chow 1996 - All right reserved
+%DC_INDX forms indexes for the rectifier and inverter in dc load flow.
+% DC_INDX  forms indexes for the rectifier and inverter in the dc load flow
+%          and indicates the ac buses contected to the converters.
 %
+% Syntax: dc_indx(bus,line,dci_dc,dcr_dc)
+%
+%   NOTES:  dci_dc and dcr_dc are the same as g.dc.dci_dc g.dcr_dc
+% 
+%   Input: 
+%   bus - solved loadflow bus data
+%   line - line data
+%   dcr_dc - user defined damping control at rectifier cell
+%   dci_dc - user defined damping control at inverter cell
+%
+%   Output: 
+%   VOID
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   01/xx/96    xx:xx   Graham Rogers   Version 1.0
+%   01/xx/99    XX:XX   Graham Rogers  	VAddition of user defined damping controls
+%   (c) Copyright Joe Chow 1996 - All right reserved
+%   07/15/20    10:48   Thad Haines     Revised format of globals and internal function documentation
 
 global g
 % pick out ac voltages (should be LT converter transformer buses)

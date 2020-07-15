@@ -1,63 +1,36 @@
-% s_simu.m
-% 9:59 AM 14 June 1999
-% An m.file to simulate power system transients
-% using the Matlab Power System Toolbox
-% This m-file takes the dynamic and load flow data and
-% calculates the response of the power system to a fault
-% which is specified in a switching file
-% see one of the supplied data files (data2a.m) for the
-% switching file format
-
-% version 1.9
-% Author: Thad Haines
-% June 01, 2020
-% Modified from PSTv3 to accomodate batch style running
-% pwrmod, ivmmod, and gen trip sections from 2.3 copied - untested
-
-% version 1.8
-% Author: Rui
-% July 19, 2017
-% add code for multiple HVDC systems
-
-% version 1.7
-% Author: Graham Rogers
-% Date September 1999
-% Add smple exciter with pi avr - smppi
-% version 1.6
-% Author: Graham Rogers
-% Date: June 1999
-% Modification: add user defined hvdc control
-%               modify dc so that it is integrated with a sub-multiple time constant
-
-% version 1.5
-% Author: Graham Rogers
-% Date: December 1998/ January 1999
-% Modification: Add svc and tcsc user defined damping controls, and add tcsc model
-
-% version 1.4
-% Author: Graham Rogers
-% Date:  July 1998
-% Modification: Add deltaP/omega filter
-
-% version 1.3
-% Author: Graham Rogers
-% Date:  June 1998
-% Modification: Add hydraulic turbine/governor
-
-% Version: 1.2
-% Author:  Graham Rogers
-% Date:    August 1997
-% Modification : add induction generator
-% Version: 1.1
-% Author:  Graham Rogers
-% Date:    August 1997
-% Modification : add modulation for load, exciter and governor
-% Version  1.0
-% Author:  Graham Rogers
-% Date: February 1997
-% (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997 - All rights reserved
+%S_SIMU_BATCH runs a non-linear simulation of a given data file.
+% S_SIMU_BATCH simulates power system transients using the MATLAB Power System Toolbox
+% This m-file takes the dynamic and load flow data and calculates the 
+% response of the power system to a fault (which is specified in a 
+% switching file) or other power system perturbance. See one of the supplied 
+% examples for file format and/or replacing technique.
 %
-
+%   NOTES:  Will run whatever is specified in the DataFile.m located in the 
+%           same folder as this script.
+% 
+%   Input: 
+%   N/A
+%
+%   Output: 
+%   Under revision...
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   02/xx/97    XX:XX   Graham Rogers  	Version 1.0
+%   08/xx/97    xx:xx   Graham Rogers   Version 1.1 - add modulation for load, exciter, and governor.
+%   08/xx/97    XX:XX   Graham Rogers   Version 1.2 - add induction generator
+%   (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 1997 - All rights reserved
+%   06/xx/98    xx:xx   Graham Rogers   Version 1.3 - Add hydraulic turbine/governor
+%   07/xx/98    XX:XX   Graham Rogers   Version 1.4 - add deltaP/omega filter
+%   12/xx/98    xx:xx   Graham Rogers   Version 1.5 - add svc user defined damping controls.
+%   01/xx/99    XX:XX   Graham Rogers   Version 1.5 - add tcsc model and tcsc user defined damping controls.
+%   06/14/99    09:59   Graham Rogers   Version 1.6 - add user defined hvdc control
+%                                       modify dc so that it is integrated with a sub-multiple time constant
+%   09/xx/99    XX:XX   Graham Rogers   Version 1.7 - Add simple exciter with pi avr - smppi
+%   xx/xx/15    xx:xx   Dan Trudnowski  Added pwrmod code
+%   07/19/17    xx:xx   Rui             Version 1.8 - Add code for multiple HVDC systems
+%   xx/xx/19    xx:xx   Dan Trudnowski  Added ivmmod code
+%   07/15/20    14:27   Thad Haines     Revised format of globals and internal function documentation
 
 %%
 %clear all
@@ -69,150 +42,16 @@ warning('*** s_simu_Batch Start')
 
 close % close graphics windows
 tic % set timer
-% plot_now=0;
+
 jay = sqrt(-1);
 
-%% Contents of pst_var copied into this section so that globals highlight - thad
+warning('*** Declare Global Variables')
+%% Contents of pst_var copied into this section so that globals highlight
+% globals converted to the global g have been removed
+
+% old method for declaring globals.
 %pst_var % set up global variables (very many)
 
-warning('*** Declare Global Variables')
-
-% Old globals from pst_var
-
-% %     %% system variables - 13
-% %     global  basmva basrad syn_ref mach_ref sys_freq
-% %     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
-% %     % lmon_con not used in non-linear sim...
-% %     global  lmon_con
-
-%     %% synchronous machine variables  - 47
-%     global  mac_con mac_pot mac_int ibus_con
-%     global  mac_ang mac_spd eqprime edprime psikd psikq
-%     global  curd curq curdg curqg fldcur
-%     global  psidpp psiqpp vex eterm theta ed eq
-%     global  pmech pelect qelect
-%     global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
-%     global  n_mac n_em n_tra n_sub n_ib
-%     global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
-%     global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
-%     global pm_sig n_pm 
-
-    %% excitation system variables - 63
-%     global  exc_con exc_pot n_exc
-%     global  Efd V_R V_A V_As R_f V_FB V_TR V_B
-%     global  dEfd dV_R dV_As dR_f dV_TR
-%     global  exc_sig 
-%     global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
-%     global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
-%     global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
-%     global smp_TR smp_TR_idx smp_no_TR_idx ;
-%     global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
-%     global dc_TE  dc_TE_idx dc_noTE_idx;
-%     global dc_TF dc_TF_idx dc_TR dc_TR_idx
-%     global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
-%     global st3_TR st3_TR_idx st3_noTR_idx;
-    %% load modulation variables - 7
-    %global lmod_con % defined by user
-    %global n_lmod lmod_idx % initialized and created in lm_indx
-    %global lmod_sig lmod_st dlmod_st % initialized in s_simu
-    %global lmod_pot % created/initialized in lmod.m
-    % g.lmod.lmod_pot(:,1) = max, g.lmod.lmod_pot(:,2) = min
-    %global lmod_data % added by Trudnowski - doesn't appear to be used? maybe in new models?
-
-    % reactive load modulation variables - 7
-    %global  rlmod_con n_rlmod rlmod_idx
-    %global  rlmod_pot rlmod_st drlmod_st
-    %global  rlmod_sig
-    
-%     %% power injection variables - 10 - g.pwr.
-%     global  pwrmod_con n_pwrmod pwrmod_idx
-%     global  pwrmod_p_st dpwrmod_p_st
-%     global  pwrmod_q_st dpwrmod_q_st
-%     global  pwrmod_p_sig pwrmod_q_sig
-%     global  pwrmod_data
-
-%     %% non-conforming load variables - 3
-%     global  load_con load_pot nload
-
-    %% turbine-governor variables -17
-    %global  tg_con tg_pot
-    %global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
-    %global  tg_idx  n_tg tg_sig tgh_idx n_tgh
-    
-    %% simulation control - 1
-%     global sw_con  %scr_con not used
-
-%     %% pss variables - 21
-%     global  pss_con pss_pot pss_mb_idx pss_exc_idx
-%     global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
-%     global  pss_idx n_pss pss_sp_idx pss_p_idx;
-%     global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
-% 
-%     %% svc variables - 13
-%     global  svc_con n_svc svc_idx svc_pot svcll_idx
-%     global  svc_sig
-%     % svc user defined damping controls
-%     global n_dcud dcud_idx svc_dsig
-%     global svc_dc % user damping controls?
-%     global dxsvc_dc xsvc_dc
-%     %states
-%     global B_cv B_con
-%     %dstates
-%     global dB_cv dB_con
-% 
-%     %% tcsc variables - 10
-%     global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
-%     global  B_tcsc dB_tcsc
-%     global  tcsc_sig tcsc_dsig
-%     global  n_tcscud dtcscud_idx  %user defined damping controls
-% 	% previous non-globals added as they seem to relavant
-% 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
-%     global tcsc_dc
-%
-%     %% induction genertaor variables - 19
-%     global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
-%     global  igen_int igbus n_ig
-%     %states
-%     global  vdpig vqpig slig
-%     %dstates
-%     global dvdpig dvqpig dslig
-%     % added globals
-%     global s_igen
-    
-%     %% induction motor variables - 21
-%     global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
-%     global  motbus ind_int mld_con n_mot t_mot
-%     % states
-%     global  vdp vqp slip
-%     % dstates
-%     global dvdp dvqp dslip
-%     % added globals
-%     global s_mot
-%
-%     %% HVDC link variables - 63
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-% 
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%     
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-      
 %% Remaining 'loose' globals
 
     %% ivm variables - 5
@@ -229,10 +68,8 @@ warning('*** Declare Global Variables')
     %% global structured array
     global g
 
-
-%% meant to be dc globals? 06/08/20 - thad
-% look like user defined damping controls that were never implemented
-% and intentionally removed/ignored?
+%% unused/unimplemented damping controls -thad 07/15/20
+% intentionally removed/ignored?
 g.svc.svc_dc=[];
 
 g.tcsc.tcsc_dc=[];
@@ -241,8 +78,8 @@ g.tcsc.n_tcscud = 0;
 g.dc.dcr_dc=[];
 g.dc.dci_dc=[];
 
-% input data file from m.file
-%% 05/20 Edits - thad
+%% input data file from d_*.m file
+% 05/20 Edits - thad
 % Check for Octave, automatically load compatibility scripe
 % Assumes license of Octave will be 'GNU ...'
 dataCheck = license;
@@ -603,6 +440,7 @@ g.pss.dpss1 = z_pss;
 g.pss.dpss2 = z_pss; 
 g.pss.dpss3 = z_pss;
 
+%% delta P omwga filter states and derivative place holders -thad 07/15/20
 z_dpw = zeros(1,k);
 if n_dpw~=0
     z_dpw = zeros(n_dpw,k);
@@ -704,8 +542,8 @@ else
     g.svc.dB_con=zeros(1,k);
     
     % DC SVC?
-    g.svc.xsvc_dc = zeros(1,k);   % supposed to be global? - thad 06/03/20
-    g.svc.dxsvc_dc = zeros(1,k);  % supposed to be global? - thad 06/03/20
+    g.svc.xsvc_dc = zeros(1,k);   
+    g.svc.dxsvc_dc = zeros(1,k);  
     d_sig = zeros(1,k);     % supposed to be global? - thad 06/03/20
 end
 

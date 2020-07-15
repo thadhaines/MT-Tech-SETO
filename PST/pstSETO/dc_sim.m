@@ -1,51 +1,24 @@
-function [xr,dxr,xi,dxi] = ...
-   dc_sim(k,kk,dcr,dci,xr,xi,bus_sim,hdc_sol)
-%     %% HVDC link variables - 63
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+function [xr,dxr,xi,dxi] = dc_sim(k,kk,dcr,dci,xr,xi,bus_sim,hdc_sol)
+%DC_SIM performs calculations and integrations related to HVDC
+% DC_SIM  performs calculations and integrations related to HVDC
+%
+% Syntax: [xr,dxr,xi,dxi] = dc_sim(k,kk,dcr,dci,xr,xi,bus_sim,hdc_sol)
+%
+%   NOTES:  No previous documentation existed for this function. As such,
+%           more investigation is required to properly explain inputs and outputs.
 % 
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%     
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-%     global  ldc_idx
-
-
-% global  dcsp_con  dcl_con dcc_con 
-% global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-% global  Vdc  i_dc  dcc_pot  alpha  gamma Vdc_ref
-% global  cur_ord dc_sig dcc_pot dcr_dsig dci_dsig ndcr_ud ndci_ud dcrd_sig dcid_sig
-% global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-% 
-% % States
-% %line
-% global i_dcr i_dci  v_dcc
-% global di_dcr  di_dci  dv_dcc  
-% %rectifier
-% global v_conr  
-% global dv_conr  
-% %inverter
-% global v_coni
-% global dv_coni 
-
+%   Input: 
+%   ...
+%
+%   Output: 
+%   ...
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   xx/xx/xx    XX:XX   xxx             Version 1.0
+%   07/15/20    10:32   Thad Haines     Revised format of globals and internal function documentation
 
 global g
-
 
 % predictor
 kdc = 10*(k-1)+ kk; 
@@ -111,7 +84,7 @@ if g.dc.ndci_ud~=0
       ydcimx = dci{jj,5};ydcimn = dci{jj,6};
       inv_num = dci{jj,2};
       st_state = tot_states+1; dci_states = dci{jj,7}; tot_states = tot_states+dci_states; 
-      [g.dc.dci_dsig(inv_num,j),xi(st_state:tot_states,2),dxi(st_state:tot_states,2)] =...
+      [g.dc.dci_dsig(inv_num,j),xi(st_state:tot_states,2),dxi(st_state:tot_states,2)] =... % should this j be a k or other index? -thad 07/15/20
          dci_sud(jj,jdc,flag,dci{jj,1},dci_sig(jj,k),ydcimx,ydcimn,xi(st_state:tot_states,2));
    end
 else

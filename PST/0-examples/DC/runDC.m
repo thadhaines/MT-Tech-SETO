@@ -10,7 +10,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =   'pstV3P1';%  'pstSETO'; %  'pstV2p3';%
+pstVer =  'pstSETO'; % 'pstV2p3';%   'pstV3P1';%  
 
 % automatically handle global g usage
 if strcmp(pstVer, 'pstSETO')

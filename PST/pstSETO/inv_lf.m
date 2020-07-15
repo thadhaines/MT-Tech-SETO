@@ -1,25 +1,35 @@
 function [gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo,Rc)
-%Syntax: [gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo,RC)
-% 8/12/97
-%Purpose: Finds gamma for inverter and sets inverter taps
-%Inputs:  mode - a vector giving the mode of operation of the inverter
-%         mode(i) = 1 indicates that the ith inverter is operating at gamma min
-%         mode(i) = 2 indicates that the ith inverter is controlling current
-%         Note: when mode(i) = 2, idc(i) should be reduced by the current margin
-%         idc specified dc line current vector
-%         Vdc_max vector of maximum allowed inverter dc voltages
-%         Vdc_min vector of minimum allowed inverter dc voltages
-%         ga_min vector of minimum gamma
-%         ga_max vector of maximum gamma
-%         Vdo vector of ideal inverter dc voltages
-%         Rc vector of inverter commutating resistances
-%Output:  gamma, the inverter extinction angle in radians
-%Author: Graham Rogers
-%Date:   November 1996
-%        (c) Copyright Joe Chow 1996 - All rights Reserved
+%INV_LF Finds gamma for inverter and sets inverter taps
+% INV_LF  Finds gamma for inverter and sets inverter taps
+%
+% Syntax: [gamma] = inv_lf(mode,idc,Vdc_max,Vdc_min,ga_min,ga_max,Vdo,Rc)
+%
+%   NOTES:  Local variable gamma is not the same as the global g.dc.gamma
+%           when mode(i) = 2, idc(i) should be reduced by the current margin       
+% 
+%   Input: 
+%   mode -  a vector giving the mode of operation of the inverter
+%           mode(i) = 1 indicates that the ith inverter is operating at gamma min
+%           mode(i) = 2 indicates that the ith inverter is controlling current
+% 	idc  - specified dc line current vector
+%  	Vdc_max - vector of maximum allowed inverter dc voltages
+% 	Vdc_min - vector of minimum allowed inverter dc voltages
+%  	ga_min - vector of minimum gamma
+%   ga_max - vector of maximum gamma
+%  	Vdo - vector of ideal inverter dc voltages
+%  	Rc - vector of inverter commutating resistances
+%
+%   Output: 
+%   gamma - the inverter extinction angle in radians
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   11/xx/96    XX:XX   Graham Rogers  	Version 1.0
+%   (c) Copyright Joe Chow 1996 - All rights Reserved
+%   07/15/20    10:46   Thad Haines     Revised format of globals and internal function documentation
+
 % NOTE: output gamma should not be the global gamma? -thad 07/14/20
 
-% global i_idx tapi tmaxi tmini tstepi Vdc
 global g
 Vdo_new = Vdo;
 mode_idx = find(mode ==1);

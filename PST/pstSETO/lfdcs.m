@@ -1,45 +1,45 @@
 function [bus_sol,line_sol,line_flow,rec_par,inv_par,line_par] = lfdcs(bus,line,dci_dc,dcr_dc)
-%Syntax:
-%        [bus_sol,line_sol,line_flow,rec_par,inv_par,line_par] = lfdcs(bus,line,dci_dc,dcr_dc)  
+%LFDCS Solves load flow with one or more dc lines
+% LFDCS     Solves load flow with one or more dc lines by iterating between
+%           AC and DC solutions until converged solution is reached.
 %
-% Purpose:   Solves load flow with one or more dc lines
-% Inputs:    bus - ac bus specification matrix
-%            line - ac line specification matrix
-% Outputs:   bus_sol - solved ac bus specification file
-%            line_sol - solved ac line specification file
-%            line_flow - calculated flow on ac lines
-%            rec_par - rectifier parameters
-%                    - rec_par(:,1) firing angle degrees
-%                    - rec_par(:,2) dc voltage kV
-%                    - rec_par(:,3) dc power MW
-%                    - rec_par(:,4) equi HT bus voltage kV
-%            inv_par - inverterer parameters
-%                    - inv_par(:,1) extinction angle degrees
-%                    - inv_par(:,2) dc voltage kV
-%                    - inv_par(:,3) dc power MW
-%                    - inv_par(:,4) equi HT bus voltage kV
-%           line_par - dc line current kA
-
-% Calls:     loadflow
-%            dc_lf
-% Called by: s_simu
-% Algorithm: iterates between AC and DC solutions until 
-%            converged solution is reached
-% Version:   1.0
-% Author:    Graham Rogers
-% Date:      February 1997
-%            (c) copyright Joe Chow 1991-1997  - All rights reserved
+% Syntax: [bus_sol,line_sol,line_flow,rec_par,inv_par,line_par] = lfdcs(bus,line,dci_dc,dcr_dc)  
 %
-    
-% global dcsp_con  dcl_con  dcc_con
-% global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-% global  inv_ac_line  rec_ac_line ac_line dcli_idx
-% global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tsepr tsepi
-% global  Vdc
+%   NOTES:  dci_dc and dcr_dc are the same as g.dc.dci_dc g.dcr_dc, but appear unused?
+%           Called by s_simu
+%           Calls loadflow, dc_lf
 % 
+%   Input: 
+%   bus - ac bus specification matrix
+% 	line - ac line specification matrix
+%   dcr_dc - user defined damping control at rectifier cell
+%   dci_dc - user defined damping control at inverter cell
+%
+%   Output: 
+%   bus_sol - solved ac bus specification file
+%  	line_sol - solved ac line specification file
+% 	line_flow - calculated flow on ac lines
+%  	rec_par - rectifier parameters
+%           	- rec_par(:,1) firing angle degrees
+%           	- rec_par(:,2) dc voltage kV
+%               - rec_par(:,3) dc power MW
+%               - rec_par(:,4) equi HT bus voltage kV
+%   inv_par - inverterer parameters
+%             	- inv_par(:,1) extinction angle degrees
+%             	- inv_par(:,2) dc voltage kV
+%             	- inv_par(:,3) dc power MW
+%             	- inv_par(:,4) equi HT bus voltage kV
+% 	line_par - dc line current kA
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   02/xx/97    XX:XX   Graham Rogers  	Version 1.0
+%   (c) copyright Joe Chow 1991-1997  - All rights reserved
+%   07/15/20    13:43   Thad Haines     Revised format of globals and internal function documentation
+
 global g
 
-disp(' load flow with HVDC')
+disp('load flow with HVDC')
 
 jay = sqrt(-1);
 % perform load flow iterations
@@ -52,7 +52,7 @@ while (errv == 0&&iter<=itermax)
   iter = iter + 1;
   [bus_sol,line_sol,line_flow] = loadflow(bus,line,1e-6,30, ...
                                  1.0,'n',2);
-  if iter==1;
+  if iter==1
      dc_indx(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
   end
 

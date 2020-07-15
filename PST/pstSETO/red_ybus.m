@@ -34,32 +34,7 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] = red_ybus(bus_sol,line)
 %   02/xx/15    xx:xx   Dan Trudnowski  Version 2.34 - Add power modulation
 %   07/02/20    14:29   Thad Haines     Revised format of globals and internal function documentation
 %   07/13/20    12:09   Thad Haines     Added induction gen/motor variables to global g
-
-%     %% HVDC link variables - 63
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-% 
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%     
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-%     global  ldc_idx
-% % global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
+%   07/15/20    14:04   Thad Haines     Added HVDC variables to global g
 
 global g
 

@@ -1,48 +1,29 @@
 function [Yrr,Yri,Yir,Yii] = dc_load(V,k,kdc)
-%Syntax: [Yrr,Yri,Yir,Yii] = dc_load(V,k,kdc)
-%Purpose: To calculate the non-linear Jacobian elements
-%         associated with a line commutated HVDC link
-% Inputs:
-%         V - Equivalent HT terminal voltage
-%         k - step indicator; kdc dc time step indicator
-% Outputs:
-%         Yrr - dir/dvr
-%         Yri - dir/dvi
-%         Yir - dii/dvr
-%         Yii - dii/dvi
-% Called by: nc_load
-%Version: 1.0
-%Date:    March 1997
-%Author:  Graham Rogers
-% Copyright (c) Joe Chow 1991-1997 All Rights Reserved
-
-%     %% HVDC link variables - 63
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+%DC_LOAD calculates the non-linear Jacobian elements associated with HVDC
+% DC_LOAD calculate the non-linear Jacobian elements associated with 
+% a line commutated HVDC link.
+%
+% Syntax: [Yrr,Yri,Yir,Yii] = dc_load(V,k,kdc)
+%
+%   NOTES:  Called by nc_load. 
+%           Vdc variable is not the same as the global g.dc.Vdc
 % 
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%     
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-%     global  ldc_idx
-% 
-% % global  i_dci  i_dcr  dcc_pot  alpha  gamma  r_idx  i_idx
-% % global  n_conv n_dcl
+%   Input: 
+%   V - Equivalent HT terminal voltage
+%   k - step indicator
+%   kdc dc time step indicator
+%
+%   Output: 
+%   Yrr - dir/dvr
+% 	Yri - dir/dvi
+%  	Yir - dii/dvr
+%  	Yii - dii/dvi
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   03/xx/97    XX:XX   Graham Rogers  	Version 1.0
+%   Copyright (c) Joe Chow 1991-1997 All Rights Reserved
+%   07/15/20    11:28   Thad Haines     Revised format of globals and internal function documentation
 
 %Vdc NOT Global
 global g

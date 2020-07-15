@@ -1,106 +1,53 @@
 function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
+%NC_LOAD non-conforming load model for constant power and current loads using Newton's algorithm.
+% NC_LOAD non-conforming load model, for constant power and constant current 
+% loads; the nonlinear equations are solved using a Newton's algorithm 
+%
 % Syntax: V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
-% 4:59 PM 15/08/97
-% Purpose: non-conforming load model, for constant power 
-%          and constant current loads; the nonlinear
-%          equations are solved using a Newton's algorithm 
 %
-% Input: bus - solved loadflow bus data
-%        flag - 0 - initialization
-%               1 - network interface computation
-%               2 - computation not needed
-%        Y22 - reduced self Y matrix of non-conforming loads
-%        Y21 - reduced mutual Y matrix of generator internal
-%              node to non-conforming loads 
-%        psi - machine internal node voltage,
-%              not used in initialization
-%        V_o - initial non-conforming load bus voltage 
-%              values (vector), not used in initialization
-%        tol - tolerance for Newton's algorithm convergence, 
-%              not used in initialization
-%        k   - integer time (only for svc/facts models),
-%              not used in initialization
-%        kdc - dc integer time
-%  
-% Output: V_nc - solved non-conforming load bus voltage 
-%                values (vector)
-%
-% Files:
-%
-% See Also: red_Ybus, svc
-
-% Algorithm: 
-%
-% Calls: dc_load  dc_cur
-%
-% Called By:svm_mgen, s_simu
-
-% (c) Copyright 1991-1997 Joe H. Chow/Cherry Tree Scientific Software
-%     All Rights Reserved
-
-% History (in reverse chronological order)
-%
-% Version:      2.3   
-% Date:         Feb 2015  
-% Author:       D. Trudnowski  
-% Purpose:      Add power modulation 
-%  
-% Version:      2.2
-% Date:         August 1997
-% Author:       Graham Rogers
-% Purpose:      Add load modulation
-%
-% Version:      2.1
-% Date:         March 1997
-% Author:       Graham Rogers
-% Purpose:      Add dc
-% Modification: Added section to determine VHT for dc converters
-% Version:      2.0
-% Date:         November 1996
-% Author:       Graham Rogers
-% Purpose:      Improve convergence
-% Modification: reduction to constant impedance load for low voltages
-%               modification of Jacobian
-
-% Version:  1.0
-% Author:   Joe H. Chow
-% Date:     April 1991
-%     %% HVDC link variables - 63
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+%   NOTES:  Calls dc_load and dc_cur
+%           Called by svm_mgen, s_simu
 % 
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%     
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-%     global  ldc_idx
-% 
-% % % dc variables
-% % global  i_dci  i_dcr  dcc_pot  alpha  gamma  basmva  r_idx  i_idx
-% % global  n_conv n_dcl ldc_idx
+%   Input: 
+%   bus - solved loadflow bus data
+%   flag -  0 - initialization
+%         	1 - network interface computation
+%          	2 - computation not needed
+%  	Y22 - reduced self Y matrix of non-conforming loads
+%  	Y21 - reduced mutual Y matrix of generator internal node to non-conforming loads 
+% 	psi - machine internal node voltage, not used in initialization
+%  	V_o - initial non-conforming load bus voltage values (vector), not used in initialization
+% 	tol - tolerance for Newton's algorithm convergence, not used in initialization
+%  	k   - integer time (only for svc/facts models), not used in initialization
+%  	kdc - dc integer time
+
+%   i - 0 vector computaion only for HVDC control
+%   k - integer time (data index)
+%   kdc - integer time for dc (dc data index)
+%   bus - solved loadflow bus data
+%   flag -  0 - initialization
+%          	1 - network interface computation
+%          	2 - dynamics computation and state state matrix building
+%
+%   Output: 
+%   V_nc - solved non-conforming load bus voltage values (vector)
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   04/xx/91    XX:XX   Joe Chow      	Version 1.0
+%   11/xx/96    xx:xx   Graham Rogers   Version 2.0 - Imporved convergence by reduction to constant 
+%                                       impedance load for low voltages modification of Jacobian
+%   03/xx/97    xx:xx   Graham Rogers   Version 2.1 - Added DC and section to determine VHT for DC converters
+%   08/15/97    16:59   Graham Rogers   Version 2.2 - Added load modulation
+%   (c) Copyright 1991-1997 Joe H. Chow/Cherry Tree Scientific Software All Rights Reserved
+%   02/xx/15    xx:xx   Dan Trudnowski  Version 2.3 - Added power modulation
+%   07/15/20    13:50   Thad Haines     Revised format of globals and internal function documentation
 
 global g 
 
-
-
 if ~isempty(g.ncl.load_con)
    jay = sqrt(-1);
-   if flag == 0; % initialization
+   if flag == 0 % initialization
        
       g.ncl.nload = size(g.ncl.load_con,1);
       %  set up constant power and current load components in 
@@ -159,7 +106,7 @@ if ~isempty(g.ncl.load_con)
                 load_pot_mod(g.pwr.pwrmod_idx(index),1) = - (g.pwr.pwrmod_p_st(index,k) + jay*g.pwr.pwrmod_q_st(index,k)); %power modulation
 %                 load_pot_mod(pwrmod_idx(index),3) = ...
 %                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/(V_nc(index)*conj(V_nc(index))); %power modulation with v<0.5 - maybe disable?
-            elseif (g.ncl.load_con(g.pwr.pwrmod_idx(index),4)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(index),5)==1); 
+            elseif (g.ncl.load_con(g.pwr.pwrmod_idx(index),4)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(index),5)==1)
                 load_pot_mod(g.pwr.pwrmod_idx(index),2) = - (g.pwr.pwrmod_p_st(index,k) + jay*g.pwr.pwrmod_q_st(index,k)); %current modulation
 %                 load_pot_mod(pwrmod_idx(index),4) = ...
 %                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/abs(V_nc(index)); %current modulation with v<.5 - maybe disable?
@@ -219,7 +166,7 @@ if ~isempty(g.ncl.load_con)
             v_s12(hv_idx) = (vp12 + vi12);
             v_s21(hv_idx) = (vp12 + vi21);
             v_s22(hv_idx) = -vp11 +vi22;
-         end;
+         end
          if ~isempty(lv_idx)
             v_s11(lv_idx) = -real(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4));
             v_s12(lv_idx) = imag(load_pot_mod(lv_idx,3)+load_pot_mod(lv_idx,4));

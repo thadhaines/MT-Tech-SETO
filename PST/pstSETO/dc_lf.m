@@ -1,25 +1,33 @@
 function [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
-%Syntax [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line)
-% Dc initialization model
-% Outputs: rectifier firing angle
-%          inverter extinction angle
-%          converter transformer tap settings
-%          complex ac load at LT terminals on system base
-% Input:   ac bus matrix (from data or as modified in loadflow)
-%          ac line matrix
-% Version 1.0
-% Author Graham Rogers
-% Date   October 1996
-% (c) Copyright Joe Chow 1996 - All rights reserved
+%DC_LF Dc initialization model
+% DC_LF Dc initialization model
+%
+% Syntax: [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
+%
+%   NOTES:  Output tap is not global during function computation.
+%           dci_dc and dcr_dc are the same as g.dc.dci_dc g.dcr_dc, though not used?
+%           Output documentation is copied from original - accuracy unknown.
+% 
+%   Input: 
+%   bus - ac bus matrix (from data or as modified in loadflow)
+%   line - ac line matrix
+%   dcr_dc - user defined damping control at rectifier cell
+%   dci_dc - user defined damping control at inverter cell
+%
+%   Output: 
+%   rectifier firing angle
+%   inverter extinction angle
+%   converter transformer tap settings
+%   complex ac load at LT terminals on system base
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   10/xx/96    XX:XX   Graham Rogers  	Version 1
+%   (c) Copyright Joe Chow 1996 - All rights reserved
+%   07/15/20    10:55   Thad Haines     Revised format of globals and internal function documentation
+
 % NOTE: output tap NOT global. ? -thad 07/14/20
 
-
-% global  dcsp_con  dcl_con dcc_con 
-% global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-% global  inv_ac_line  rec_ac_line ac_line dcli_idx
-% global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-% global  Vdc
-% 
 global g
 jay = sqrt(-1);
 % determine dc indexes

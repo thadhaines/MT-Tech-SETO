@@ -1,32 +1,37 @@
 function [alpha,mode,idc_new] = rec_lf(idc,al_min,al_max,Vdo,Rc,cm)
-%Syntax: [alpha,mode,idc_new] = rec_lf(idc,al_min,al_max,Vdo,RC,cm)
-% 8/12/97
-%Purpose: Finds alpha for rectifier and sets rectifier taps
-%         determines if mode change is necessary
-%         sets new idc
-%Inputs:  
-%         Note: when mode(i) = 2, idc(i) should be reduced by the current margin
-%         idc specified dc line current vector
-%         Vdc_max vector of maximum allowed inverter dc voltages
-%         Vdc_min vector of minimum allowed inverter dc voltages
-%         al_min vector of minimum alpha
-%         al_max vector of maximum alpha
-%         Vdo vector of ideal rectifier dc voltages
-%         Rc vector of rectifier commutating resistances
-%         cm vector of current margins
-%Output:  alpha, the rectifier firing angle in radians
-%         mode - a vector giving the mode of operation of the inverter
-%         mode(i) = 1 indicates that the ith inverter is operating at gamma min
-%         mode(i) = 2 indicates that the ith inverter is controlling current
-%         idc_new is set to specified idc when mode is 1
-%         or to idc reduced by the current margin if mode is 2
-%Author:  Graham Rogers
-%Date:   November 1996
-%        (c) Copyright Joe Chow 1996 - All rights Reserved
+%REC_LF finds alpha for rectifiers, sets rectifier taps, sets new idc.
+% REC_LF Finds alpha for rectifier and sets rectifier taps
+% determines if mode change is necessary sets new idc.
+%
+% Syntax: [alpha,mode,idc_new] = rec_lf(idc,al_min,al_max,Vdo,RC,cm)
+%
+%   NOTES:  When mode(i) = 2, idc(i) should be reduced by the current margin
+% 
+%   Input: 
+%   idc - specified dc line current vector
+%  	al_min - vector of minimum alpha
+%   al_max - vector of maximum alpha
+%   Vdo - vector of ideal rectifier dc voltages
+%   Rc - vector of rectifier commutating resistances
+%   cm - vector of current margins
+%
+%   Output: 
+%   alpha - the rectifier firing angle in radians
+%   mode - a vector giving the mode of operation of the inverter
+%           mode(i) = 1 indicates that the ith inverter is operating at gamma min
+%           mode(i) = 2 indicates that the ith inverter is controlling current
+%   idc_new - set to specified idc when mode is 1 or to idc reduced by 
+%             the current margin if mode is 2
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   11/xx/96    XX:XX   Graham Rogers  	Version 1.0
+%   (c) Copyright Joe Chow 1996 - All rights Reserved
+%   07/15/20    14:02   Thad Haines     Revised format of globals and internal function documentation
 
-%global  r_idx i_idx n_dcl tapr tmaxr tminr tstepr Vdc
-% calculate alpha
 global g
+
+% calculate alpha
 Vdcr = g.dc.Vdc(g.dc.r_idx);
 mode = ones(g.dc.n_dcl,1);% set to default initially
 calpha = (Vdcr+idc.*Rc)./Vdo;
