@@ -10,7 +10,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =   'pstSETO'; %  'pstV2p3';% 'pstV3P1';% 
+pstVer =   'pstV3P1';%  'pstSETO'; %  'pstV2p3';%
 
 % automatically handle global g usage
 if strcmp(pstVer, 'pstSETO')
@@ -101,13 +101,13 @@ for busN = 1:size(linV,1)
     linAng(busN,:) = linAng(busN,:) + deg2rad(bus_sol(busN,3));
 end
 
-save linResults.mat tL linV linAng modSig
+load PSTpath.mat
+save([pstVer,'linResults.mat'], 'tL', 'linV', 'linAng', 'modSig')
 
 %% plot comparisons
-load PSTpath.mat
 name = [pstVer,'DCnonLIN.mat'];
 feval('load', name)
-load linResults.mat
+load([pstVer,'linResults.mat'])
 
 %% compare mod inputs
 figure
