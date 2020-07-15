@@ -20,20 +20,22 @@
 		\itemsep0em 
 		\item Global g, linear \& non-linear functionality added for:
 		\begin{minipage}{\linewidth}
-		%\begin{multicols}{2}
+		\begin{multicols}{2}
 				\begin{itemize}
 		\itemsep0em 
 				\footnotesize
 					\item SVC
 					\item TCSC
+					\item HVDC
 					\item Induction Generators
 					\item Induction Motors
 				\end{itemize}
-		%\end{multicols}
+		\end{multicols}
 		\end{minipage}
 		\item Sent code to Dan for IVM linear incorporation.
-		\item Initial work on functional DC case.
+		\item Functional single line DC case added to examples.
 		\item No deltaP/ omega filter examples found.
+		\item NE 39 bus system received from Ryan and verified as working. Added to git with go ahead from Ryan.
 		
 		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
 		%\item Collected thoughts on AGC.
@@ -59,24 +61,14 @@
 \paragraph{Current Questions:}
 	\begin{enumerate}
 	\itemsep0em 
-	\item Requirements for variable step methods:
-		\begin{minipage}{\linewidth}
-			\begin{itemize}
-				\itemsep0em 
-				\footnotesize
-				\item Functionalized Network solution
-				\item Functionalized Derivative calculation
-				\item Functionalized collection and return of calculated derivatives
-				\item `outputfunction' that handles logging of correct output values and indexing
-				\item updated scheduler to run simulation in `blocks' between known events.
-			\end{itemize}
-		\end{minipage}
+	
 		\item Differences in \verb|mac_ind| between versions.
 	\item Induction machines have no speed?\\ only angle?
 	\item PST modeling of transformers?
 	\item Play in data for variable solar irradiance?
 	\item PSS design doesn't seem to be used in normal simulation?
 	\item Deadlines of any sort?
+	\item Continued employment beyond \\August 12th?
 	\end{enumerate}
 
 \vfill\null
@@ -86,23 +78,32 @@
 \paragraph{Current Tasks:}
 	\begin{enumerate}
 		\itemsep 0em 
-		\item Remaining model globals to structure:
+		\item Think about using standard ODE solvers
+				\item Requirements for variable step methods:
+						\begin{minipage}{\linewidth}
+							\begin{itemize}
+								\itemsep0em 
+								\footnotesize
+								\item Functionalized Network solution
+								\item Functionalized Derivative calculation
+								\item Functionalized collection and return of calculated derivatives
+								\item `outputfunction' that handles logging of correct output values and indexing
+								\item updated scheduler to run simulation in `blocks' between known events.
+							\end{itemize}
+						\end{minipage}
+		\item Decisions concerning remaining globals:
 		\begin{minipage}{\linewidth}
-				\begin{multicols}{2}
+				%\begin{multicols}{2}
 						\begin{itemize}
 				\itemsep0em 
 						\footnotesize
-							\item IVM
-							\item PWR
-							\item HVDC
-							\item pss design
-							\item delta P omega filter
+							\item IVM (waiting for linear code)
+							\item delta P omega filter (no examples)
+							\item PWR (cell data only)
+							\item pss design (not used in simulation)
 						\end{itemize}
-				\end{multicols}
+				%\end{multicols}
 				\end{minipage}
-		\item Test models in non-linear and linear simulations
-		\item Explore/Create example cases
-		\item Get code/cases from Ryan
 		\item Think about AGC implementation.
 		\begin{minipage}{\linewidth}
 				%\begin{multicols}{2}
@@ -117,7 +118,6 @@
 						\end{itemize}
 				%\end{multicols}
 				\end{minipage}
-		\item Think about using standard ODE solvers
 		\item Think about cleaning up or flowcharting svm\_mgen\_Batch
 		%\item Reference Trudnowski code for `structured array, functionalized' approach.
 		%\item Reference Stajcar code for basic transient stability simulation flow.
@@ -139,9 +139,10 @@
 	%	Would enable addition of area definitions to models.
 	%	\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
 	%	Possibly employ \verb|feval| for a more dynamic calculation routine.
-		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (use flags)
+		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
 		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
 		\item Generate comparison scripts to verify simulated results match after code changes.
+
 	\end{enumerate}
 	
 

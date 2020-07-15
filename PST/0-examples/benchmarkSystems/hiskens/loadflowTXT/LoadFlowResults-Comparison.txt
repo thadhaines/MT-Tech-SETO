@@ -1,0 +1,42 @@
+NOTE: sign convention is opposite between load flow results
+-
+-
+ok
+ok
+ok - 
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok - bus voltage magnitude differ by .0001
+ok
+ok
+ok
+ok
+ok - bus voltage magnitude differ by .0001
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok
+ok - reactive load added in PST - voltage and angle match
+ok - reative generation .02 variance -  v delta match
+ok - reactive power generation variance of 0.01
+ok - reactive power generation variance of 0.01
+ok 
+ok - reactive power generation variance of 0.01
+ok - reactive power generation variance of 0.01
+ok - reactive power generation variance of 0.01
+ok - reactive power generation variance of 0.02
+ok - reactive power generation variance of 0.27 - v and delta match
+ok 
