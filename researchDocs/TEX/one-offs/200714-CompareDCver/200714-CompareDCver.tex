@@ -1,0 +1,49 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Comparison of DC simulation results \\ between PST versions 2.3, 3.1, and SETO}
+\lhead{Research \\ 7/14/20}
+
+\usepackage{minted}
+\usepackage{setspace}
+\usepackage{lscape}
+\usepackage{multicol}
+\begin{document}
+\onehalfspacing
+\paragraph{Summary}
+\begin{itemize}
+\item A HVDC case has been created and tested as working in all versions of PST. 
+\item Using the structured global approach increases speed by over 2 times.
+\item Minor differences exist between version 2.3 and 3.1 in non-linear simulation output.
+\item All linear results match between versions, but do not match non-linear output (possibly due to improper data handling).
+\end{itemize}
+
+\paragraph{Scenario Description} \ \\
+A 16 bus system with one HVDC link and four machines equipped with st3 exciters, pss, and governors was perturbed by a 0.1 PU active load pulse from $t=1$ to $t=2$
+
+\paragraph{Non-Linear Results} \ \\
+The new pstSETO version is based on version 3.1 so it makes sense that there are no differences in machine speed or bus voltage and angle.
+However, total non-linear simulation time in 3.1 is 18.876 seconds, while pstSETO only takes 8.853 seconds.
+
+\includegraphics[width=.3\linewidth]{pstSETODCnonLINpstV3p1DCnonLINMacSpd} %
+\includegraphics[width=.3\linewidth]{pstSETODCnonLINpstV3p1DCnonLINBusV} %
+\includegraphics[width=.3\linewidth]{pstSETODCnonLINpstV3p1DCnonLINAngle} \\
+
+The differences between version 3.1 and 2.3 range between  $10^{-11}$ to $10^{-9}$.
+Judging from the initial difference, there must have been changes to the way DC lines were initialized between version 2 and 3.
+
+\includegraphics[width=.3\linewidth]{pstV3p1DCnonLINpstV2P3DCnonLINMacSpd} %
+\includegraphics[width=.3\linewidth]{pstV3p1DCnonLINpstV2P3DCnonLINBusV} %
+\includegraphics[width=.3\linewidth]{pstV3p1DCnonLINpstV2P3DCnonLINAngle} \\
+
+\paragraph{Linear Results} \ \\
+All versions provide the same output, however it does not match non-linear data.
+This is very possibly due to improper data handling.
+
+\end{document}

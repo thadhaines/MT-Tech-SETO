@@ -74,7 +74,7 @@ xlabel('Time [sec]')
 % pdf output code
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([nameA,nameB,'BusV'],'-png'); % to print fig
+    export_fig([nameA,nameB,'BusV'],'-pdf'); % to print fig
 end
 
 end
