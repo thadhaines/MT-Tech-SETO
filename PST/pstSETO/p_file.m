@@ -32,7 +32,8 @@ elseif g.ind.n_mot~=0&&g.igen.n_ig~=0
 else
    int_volt = psi;
 end
-if n_conv~=0
+
+if g.dc.n_conv~=0
    dc_cont(0,2,2,bus,flag);
 end
 
@@ -62,14 +63,14 @@ if g.igen.n_ig~=0
    g.igen.iqig = -imag(cur(ngm+1:ntot,:));%current out of network
 end
 
-if n_conv ~=0
+if g.dc.n_conv ~=0
    % calculate dc voltage and current
-   V0(r_idx,1) = abs(v(rec_ac_bus,2)).*dcc_pot(:,7);
-   V0(i_idx,1) = abs(v(inv_ac_bus,2)).*dcc_pot(:,8);
-   Vdc(r_idx,2) = V0(r_idx,1).*cos(alpha(:,2)) - i_dcr(:,2).*dcc_pot(:,3);
-   Vdc(i_idx,2) = V0(i_idx,1).*cos(gamma(:,2)) - i_dci(:,2).*dcc_pot(:,5);
-   i_dc(r_idx,2) = i_dcr(:,2);
-   i_dc(i_idx,2) = i_dci(:,2);
+   V0(g.dc.r_idx,1) = abs(v(g.dc.rec_ac_bus,2)).*g.dc.dcc_pot(:,7);
+   V0(g.dc.i_idx,1) = abs(v(g.dc.inv_ac_bus,2)).*g.dc.dcc_pot(:,8);
+   g.dc.Vdc(g.dc.r_idx,2) = V0(g.dc.r_idx,1).*cos(g.dc.alpha(:,2)) - g.dc.i_dcr(:,2).*g.dc.dcc_pot(:,3);
+   g.dc.Vdc(g.dc.i_idx,2) = V0(g.dc.i_idx,1).*cos(g.dc.gamma(:,2)) - g.dc.i_dci(:,2).*g.dc.dcc_pot(:,5);
+   g.dc.i_dc(g.dc.r_idx,2) = g.dc.i_dcr(:,2);
+   g.dc.i_dc(g.dc.i_idx,2) = g.dc.i_dci(:,2);
 end
 % DeltaP/omega filter
 dpwf(0,2,flag);
@@ -120,10 +121,11 @@ if g.pwr.n_pwrmod~=0
    pwrmod_q(0,2,bus,flag);
 end
 
-if n_conv ~=0
+if g.dc.n_conv ~=0
    dc_cont(0,2,2,bus,flag);
    dc_line(0,2,2,bus,flag);
 end
+
 telect(:,2) = g.mac.pelect(:,2).*g.mac.mac_pot(:,1) ...
     +g.mac.mac_con(:,5).*cur_mag(:,2).*cur_mag(:,2);
 % form state matrix
@@ -209,13 +211,13 @@ if g.pwr.n_pwrmod ~= 0
    d_vector(pwrmod_q_start+1:pwrmod_q_start+g.pwr.n_pwrmod) = g.pwr.dpwrmod_q_st(:,2);
 end
 
-if n_conv~=0
+if g.dc.n_conv~=0
    dc_start = dpw_state+5*(g.tg.n_tg + g.tg.n_tgh)+3*g.ind.n_mot+3*g.igen.n_ig + 2*g.svc.n_svc +g.tcsc.n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
-   d_vector(dc_start+1: dc_start+n_dcl) = dv_conr(:,2);
-   d_vector(dc_start+n_dcl+1: dc_start+2*n_dcl) = dv_coni(:,2);
-   d_vector(dc_start+2*n_dcl+1: dc_start+3*n_dcl) = di_dcr(:,2);
-   d_vector(dc_start+3*n_dcl+1: dc_start+4*n_dcl) = di_dci(:,2);
-   d_vector(dc_start+4*n_dcl+1: dc_start+5*n_dcl) = dv_dcc(:,2);
+   d_vector(dc_start+1: dc_start+g.dc.n_dcl) = g.dc.dv_conr(:,2);
+   d_vector(dc_start+g.dc.n_dcl+1: dc_start+2*g.dc.n_dcl) = g.dc.dv_coni(:,2);
+   d_vector(dc_start+2*g.dc.n_dcl+1: dc_start+3*g.dc.n_dcl) = g.dc.di_dcr(:,2);
+   d_vector(dc_start+3*g.dc.n_dcl+1: dc_start+4*g.dc.n_dcl) = g.dc.di_dci(:,2);
+   d_vector(dc_start+4*g.dc.n_dcl+1: dc_start+5*g.dc.n_dcl) = g.dc.dv_dcc(:,2);
 end 
 
 % form state matrix
@@ -257,12 +259,12 @@ if c_state == 0
       to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
       V1 = v(from_idx,1);
       V2 = v(to_idx,1);
-      [s11,s21] = line_pq(V1,V2,R,X,B,tap,phi);
-      [l_if1,l_it1] = line_cur(V1,V2,R,X,B,tap,phi);
+      [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
+      [l_if1,l_it1] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
       V1 = v(from_idx,2);
       V2 = v(to_idx,2);
-      [s12,s22] = line_pq(V1,V2,R,X,B,tap,phi);
-      [l_if2,l_it2]=line_cur(V1,V2,R,X,B,tap,phi);
+      [s12,s22] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
+      [l_if2,l_it2]=line_cur(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
       c_pf1(:,j_state) = (real(s12-s11))/pert; 
       c_qf1(:,j_state) = (imag(s12-s11))/pert;
       c_pf2(:,j_state) = (real(s22-s21))/pert;
@@ -274,11 +276,11 @@ if c_state == 0
       c_ilrt(:,j_state) = real(l_it2-l_it1)/pert;
       c_ilit(:,j_state) = imag(l_it2-l_it1)/pert;
    end
-   if n_conv~=0
-      c_dcir(:,j_state) = (i_dcr(:,2)-i_dcr(:,1))/pert;
-      c_dcii(:,j_state) = (i_dci(:,2)-i_dci(:,1))/pert;
-      c_Vdcr(:,j_state) = (Vdc(r_idx,2)-Vdc(r_idx,1))/pert;
-      c_Vdci(:,j_state) = (Vdc(i_idx,2)-Vdc(i_idx,1))/pert;
+   if g.dc.n_conv~=0
+      c_dcir(:,j_state) = (g.dc.i_dcr(:,2)-g.dc.i_dcr(:,1))/pert;
+      c_dcii(:,j_state) = (g.dc.i_dci(:,2)-g.dc.i_dci(:,1))/pert;
+      c_Vdcr(:,j_state) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
+      c_Vdci(:,j_state) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
    end
 else
    % form b and d matrices
@@ -315,20 +317,20 @@ else
       d_vdcr(:,dcmod_input) = abs(v(:,2) - v(:,1))/pert;
       d_angdcr(:,dcmod_input) = (g.sys.theta(:,2)-g.sys.theta(:,1))/pert;
       d_pdcr(:,dcmod_input)=(g.mac.pelect(:,2) - g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
-      d_idcdcr(:,dcmod_input) = (i_dcr(:,2)-i_dcr(:,1))/pert;
-      d_Vdcrdcr(:,dcmod_input) = (Vdc(r_idx,2)-Vdc(r_idx,1))/pert;
-      d_Vdcidcr(:,dcmod_input) = (Vdc(i_idx,2)-Vdc(i_idx,1))/pert;
+      d_idcdcr(:,dcmod_input) = (g.dc.i_dcr(:,2)-g.dc.i_dcr(:,1))/pert;
+      d_Vdcrdcr(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
+      d_Vdcidcr(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
       if ~isempty(g.sys.lmon_con) 
          from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
          to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
-         [s11,s21] = line_pq(V1,V2,R,X,B,tap,phi);
-         [l_if1,l_it1] = line_cur(V1,V2,R,X,B,tap,phi);
+         [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
+         [l_if1,l_it1] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
          V1 = v(from_idx,2);
          V2 = v(to_idx,2);
-         [s12,s22] = line_pq(V1,V2,R,X,B,tap,phi);
-         [l_if2,l_it2]=line_cur(V1,V2,R,X,B,tap,phi);
+         [s12,s22] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
+         [l_if2,l_it2]=line_cur(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
          d_pf1cdr(:,dcmod_input) = (real(s12-s11))/pert; 
          d_qf1dcr(:,dcmod_input) = (imag(s12-s11))/pert;
          d_pf2dcr(:,dcmod_input) = (real(s22-s21))/pert;
@@ -346,20 +348,20 @@ else
       d_vdci(:,dcmod_input) = abs(v(:,2) - v(:,1))/pert;
       d_angdci(:,dcmod_input) = (g.sys.theta(:,2)-g.sys.theta(:,1))/pert;
       d_pdci(:,dcmod_input)=(g.mac.pelect(:,2) - g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
-      d_idcdci(:,dcmod_input) = (i_dci(:,2)-i_dci(:,1))/pert;
-      d_Vdcrdci(:,dcmod_input) = (Vdc(r_idx,2)-Vdc(r_idx,1))/pert;
-      d_Vdcdci(:,dcmod_input) = (Vdc(i_idx,2)-Vdc(i_idx,1))/pert;
+      d_idcdci(:,dcmod_input) = (g.dc.i_dci(:,2)-g.dc.i_dci(:,1))/pert;
+      d_Vdcrdci(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
+      d_Vdcdci(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
       if ~isempty(g.sys.lmon_con) 
          from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
          to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
-         [s11,s21] = line_pq(V1,V2,R,X,B,tap,phi);
-         [l_if1,l_it1] = line_cur(V1,V2,R,X,B,tap,phi);
+         [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
+         [l_if1,l_it1] = line_cur(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
          V1 = v(from_idx,2);
          V2 = v(to_idx,2);
-         [s12,s22] = line_pq(V1,V2,R,X,B,tap,phi);
-         [l_if2,l_it2]=line_cur(V1,V2,R,X,B,tap,phi);
+         [s12,s22] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
+         [l_if2,l_it2]=line_cur(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
          d_pf1cdi(:,dcmod_input) = (real(s12-s11))/pert; 
          d_qf1dci(:,dcmod_input) = (imag(s12-s11))/pert;
          d_pf2dci(:,dcmod_input) = (real(s22-s21))/pert;
@@ -495,21 +497,21 @@ if g.pwr.n_pwrmod ~=0
    g.pwr.pwrmod_q_sig(:,2) = g.pwr.pwrmod_q_sig(:,1);
 end
 
-if n_conv~=0
-   v_conr(:,2) = v_conr(:,1);
-   v_coni(:,2) = v_coni(:,1);
-   i_dcr(:,2) = i_dcr(:,1);
-   i_dci(:,2) = i_dci(:,1);
-   v_dcc(:,2) = v_dcc(:,1);
-   dv_conr(:,2) = dv_conr(:,1);
-   dv_coni(:,2) = dv_coni(:,1);
-   di_dcr(:,2) = di_dcr(:,1);
-   di_dci(:,2) = di_dci(:,1);
-   dv_dcc(:,2) = dv_dcc(:,1);
-   Vdc(:,2) = Vdc(:,1);
-   i_dc(:,2) = i_dc(:,1);
-   alpha(:,2) = alpha(:,1);
-   gamma(:,2) = gamma(:,1); 
-   dc_sig(:,2)=dc_sig(:,1);
+if g.dc.n_conv~=0
+   g.dc.v_conr(:,2) = g.dc.v_conr(:,1);
+   g.dc.v_coni(:,2) = g.dc.v_coni(:,1);
+   g.dc.i_dcr(:,2) = g.dc.i_dcr(:,1);
+   g.dc.i_dci(:,2) = g.dc.i_dci(:,1);
+   g.dc.v_dcc(:,2) = g.dc.v_dcc(:,1);
+   g.dc.dv_conr(:,2) = g.dc.dv_conr(:,1);
+   g.dc.dv_coni(:,2) = g.dc.dv_coni(:,1);
+   g.dc.di_dcr(:,2) = g.dc.di_dcr(:,1);
+   g.dc.di_dci(:,2) = g.dc.di_dci(:,1);
+   g.dc.dv_dcc(:,2) = g.dc.dv_dcc(:,1);
+   g.dc.Vdc(:,2) = g.dc.Vdc(:,1);
+   g.dc.i_dc(:,2) = g.dc.i_dc(:,1);
+   g.dc.alpha(:,2) = g.dc.alpha(:,1);
+   g.dc.gamma(:,2) = g.dc.gamma(:,1); 
+   g.dc.dc_sig(:,2) = g.dc.dc_sig(:,1);
 end
 

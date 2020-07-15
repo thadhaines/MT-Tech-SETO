@@ -183,31 +183,38 @@ tic % start timer
 %     global sat_idx dbc_idx db_idx % has to do with version 2 of mac_ind
 %     % changed all pmot to p_mot (mac_ind1 only)
 % global  lmod_sig lmod_data     
+% 
+%     %% HVDC link variables 
+%     global  dcsp_con  dcl_con  dcc_con
+%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
+%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma 
+%     global  VHT dc_sig  cur_ord dcr_dsig dci_dsig
+%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
+%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+% 
+%     % States
+%     %line
+%     global i_dcr i_dci  v_dcc
+%     global di_dcr  di_dci  dv_dcc
+%     global dc_dsig % added 07/13/20 -thad
+%     %rectifier
+%     global v_conr dv_conr
+%     %inverter
+%     global v_coni dv_coni
+%     
+%     % added to global dc
+%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
+%     global dcr_dc dci_dc % damping control
+%     global  ldc_idx
 
 % DeltaP/omega filter variables
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
 
-%HVDC link variables
-global  dcsp_con  dcl_con  dcc_con
-global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-global  inv_ac_line  rec_ac_line ac_line dcli_idx
-global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma VHT dc_sig  cur_ord dcr_dsig dci_dsig
-global  ric_idx  rpc_idx Vdc_ref dcc_pot 
-global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-
-% States
-%line
-global i_dcr i_dci  v_dcc 
-global di_dcr  di_dci  dv_dcc 
-%rectifier
-global v_conr dv_conr  
-%inverter
-global v_coni dv_coni
-% 
 % pss design
 global  netg_con  stab_con
 
@@ -227,8 +234,8 @@ disp('linearized model development by perturbation of the non-linear model')
 %set user defined SVC and TCSC models to empty 
 g.svc.svc_dc = [];
 
-dci_dc=[]; 
-dcr_dc=[];
+g.dc.dci_dc=[]; 
+g.dc.dcr_dc=[];
 % input data file
 % [dfile,pathname]=uigetfile('d*.m','Select Data File');
 % if pathname == 0
@@ -273,9 +280,9 @@ lfs{1} = 'y'; %inputdlg('Do you want to solve loadflow > (y/n)[y] ','s');
 if isempty(lfs{1});lfs{1}='y';end
 if lfs{1}=='Y';lfs{1}='y';end
 if lfs{1} == 'y'
-   if isempty(dcsp_con)
-      n_conv = 0;
-      n_dcl = 0;
+   if isempty(g.dc.dcsp_con)
+      g.dc.n_conv = 0;
+      g.dc.n_dcl = 0;
       tol = 1e-5;   % tolerance for convergence
       iter_max = 30; % maximum number of iterations
       acc = 1.0;   % acceleration factor
@@ -285,7 +292,7 @@ if lfs{1} == 'y'
       % initialization
       save sim_fle.mat bus line n_conv n_dcl
    else
-      [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,dci_dc,dcr_dc);
+      [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
       bus = bus_sol;
       save sim_fle.mat bus line rec_par  inv_par line_par
    end 
@@ -498,15 +505,19 @@ if g.svc.n_svc ~=0
 end
 bus = svc(0,1,bus,0);
 
-if n_conv~=0
+if g.dc.n_conv~=0
    % pick up HVDC initial variables from load flow
-   Vdc(r_idx,1) = rec_par(:,2); Vdc(i_idx,1) = inv_par(:,2);
-   i_dc(r_idx,1) = line_par; i_dc(i_idx,1) = line_par;
-   i_dcr(:,1) = i_dc(r_idx,1); i_dci(:,1) = i_dc(i_idx,1);
-   alpha(:,1) = rec_par(:,1)*pi/180;
-   gamma(:,1) = inv_par(:,1)*pi/180;
-   dcr_dsig=zeros(n_dcl,2); dci_dsig=zeros(n_dcl,2);
-   dc_sig=zeros(n_conv,2);
+   g.dc.Vdc(g.dc.r_idx,1) = rec_par(:,2); 
+   g.dc.Vdc(g.dc.i_idx,1) = inv_par(:,2);
+   g.dc.i_dc(g.dc.r_idx,1) = line_par; 
+   g.dc.i_dc(g.dc.i_idx,1) = line_par;
+   g.dc.i_dcr(:,1) = g.dc.i_dc(g.dc.r_idx,1); 
+   g.dc.i_dci(:,1) = g.dc.i_dc(g.dc.i_idx,1);
+   g.dc.alpha(:,1) = rec_par(:,1)*pi/180;
+   g.dc.gamma(:,1) = inv_par(:,1)*pi/180;
+   g.dc.dcr_dsig = zeros(g.dc.n_dcl,2); 
+   g.dc.dci_dsig = zeros(g.dc.n_dcl,2);
+   g.dc.dc_sig = zeros(g.dc.n_conv,2);
 end
 dc_cont(0,1,1,bus,0); % initialize the dc controls - sets up data for red_ybus
 % this has to be done before red_ybus is used since the induction motor,svc and
@@ -521,7 +532,7 @@ if ~isempty(g.sys.lmon_con)
   R = line(g.sys.lmon_con,3); 
   X = line(g.sys.lmon_con,4); 
   B = line(g.sys.lmon_con,5);
-  tap = line(g.sys.lmon_con,6); 
+  g.dc.tap = line(g.sys.lmon_con,6); % seems odd.... -thad 07/14/20
   phi = line(g.sys.lmon_con,7);
 end
 % step 1: construct reduced Y matrix
@@ -546,26 +557,26 @@ pss3_state = state;
 dpw_state = state;
 tg_state = state;
 state = zeros(g.mac.n_mac+g.ind.n_mot+g.igen.n_ig+g.svc.n_svc+g.tcsc.n_tcsc ...
-    +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+n_dcl,1);
+    +g.lmod.n_lmod + g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+g.dc.n_dcl,1);
 max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
     + 5*g.tg.n_tg+ 5*g.tg.n_tgh+ 3*g.ind.n_mot+ 3*g.igen.n_ig+ ...
-    2*g.svc.n_svc+g.tcsc.n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*n_dcl;
+    2*g.svc.n_svc+g.tcsc.n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*g.dc.n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 g.sys.theta(:,1) = bus(:,3)*pi/180;
 v(:,1) = bus(:,2).*exp(jay*g.sys.theta(:,1));
-if n_conv ~= 0
+if g.dc.n_conv ~= 0
    % convert dc LT to Equ HT bus
-   Pr = bus(rec_ac_bus,6);
-   Pi = bus(inv_ac_bus,6);
-   Qr = bus(rec_ac_bus,7);
-   Qi = bus(inv_ac_bus,7);
-   VLT= v(ac_bus,1);
-   i_acr = (Pr-jay*Qr)./conj(VLT(r_idx));
-   i_aci = (Pi - jay*Qi)./conj(VLT(i_idx));
-   v(rec_ac_bus,1) = VLT(r_idx) + jay*dcc_pot(:,2).*i_acr;
-   v(inv_ac_bus,1) = VLT(i_idx) + jay*dcc_pot(:,4).*i_aci;
-   g.sys.theta(ac_bus,1) = angle(v(ac_bus,1));
+   Pr = bus(g.dc.rec_ac_bus,6);
+   Pi = bus(g.dc.inv_ac_bus,6);
+   Qr = bus(g.dc.rec_ac_bus,7);
+   Qi = bus(g.dc.inv_ac_bus,7);
+   VLT= v(g.dc.ac_bus,1);
+   i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
+   i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
+   v(g.dc.rec_ac_bus,1) = VLT(g.dc.r_idx) + jay*g.dc.dcc_pot(:,2).*i_acr;
+   v(g.dc.inv_ac_bus,1) = VLT(g.dc.i_idx) + jay*g.dc.dcc_pot(:,4).*i_aci;
+   g.sys.theta(g.dc.ac_bus,1) = angle(v(g.dc.ac_bus,1));
 end
 g.sys.bus_v(:,1) = v(:,1);  
 v(:,2) = v(:,1);
@@ -610,10 +621,10 @@ else
    g.pwr.pwrmod_q_sig = zeros(1,2);
 end
 
-if n_conv ~= 0
-   dc_sig = zeros(n_conv,2);
+if g.dc.n_conv ~= 0
+   g.dc.dc_sig = zeros(g.dc.n_conv,2);
 else
-   dc_sig = zeros(2,2);
+   g.dc.dc_sig = zeros(2,2);
 end
 % set initial state and rate matrices to zero
 nMacZero = zeros(g.mac.n_mac,2);
@@ -705,12 +716,12 @@ if g.pwr.n_pwrmod~=0
 end
 
 %HVDC links
-if n_conv~= 0
-   dv_conr = zeros(n_dcl,2);
-   dv_coni = zeros(n_dcl,2);
-   di_dcr = zeros(n_dcl,2);
-   di_dci = zeros(n_dcl,2);
-   dv_dcc = zeros(n_dcl,2);
+if g.dc.n_conv~= 0
+   g.dc.dv_conr = zeros(g.dc.n_dcl,2);
+   g.dc.dv_coni = zeros(g.dc.n_dcl,2);
+   g.dc.di_dcr = zeros(g.dc.n_dcl,2);
+   g.dc.di_dci = zeros(g.dc.n_dcl,2);
+   g.dc.dv_dcc = zeros(g.dc.n_dcl,2);
 end
 % set dimensions for A matrix and permutation matrix
 a_mat = zeros(NumStates);
@@ -764,15 +775,15 @@ if g.igen.n_ig~=0
    g.igen.iqig(:,1) = -imag(cur(ngm+1:ntot,1));%current out of network
 end 
 
-if n_conv ~=0
+if g.dc.n_conv ~=0
    % calculate dc voltage and current
-   V0(r_idx,1) = abs(v(rec_ac_bus,1)).*dcc_pot(:,7);
-   V0(i_idx,1) = abs(v(inv_ac_bus,1)).*dcc_pot(:,8);
-   Vdc(r_idx,1) = V0(r_idx,1).*cos(alpha(:,1)) - i_dcr(:,1).*dcc_pot(:,3);
-   Vdc(i_idx,1) = V0(i_idx,1).*cos(gamma(:,1)) - i_dci(:,1).*dcc_pot(:,5);
-   Vdc_ref = Vdc(i_idx,1);
-   i_dc(r_idx,1) = i_dcr(:,1);
-   i_dc(i_idx,1) = i_dci(:,1);
+   V0(g.dc.r_idx,1) = abs(v(g.dc.rec_ac_bus,1)).*g.dc.dcc_pot(:,7);
+   V0(g.dc.i_idx,1) = abs(v(g.dc.inv_ac_bus,1)).*g.dc.dcc_pot(:,8);
+   g.dc.Vdc(g.dc.r_idx,1) = V0(g.dc.r_idx,1).*cos(g.dc.alpha(:,1)) - g.dc.i_dcr(:,1).*g.dc.dcc_pot(:,3);
+   g.dc.Vdc(g.dc.i_idx,1) = V0(g.dc.i_idx,1).*cos(g.dc.gamma(:,1)) - g.dc.i_dci(:,1).*g.dc.dcc_pot(:,5);
+   g.dc.Vdc_ref = g.dc.Vdc(g.dc.i_idx,1);
+   g.dc.i_dc(g.dc.r_idx,1) = g.dc.i_dcr(:,1);
+   g.dc.i_dc(g.dc.i_idx,1) = g.dc.i_dci(:,1);
 end
 
 telect(:,1) = g.mac.pelect(:,1).*g.mac.mac_pot(:,1)...
@@ -903,12 +914,12 @@ if g.pwr.n_pwrmod ~=0
    g.pwr.pwrmod_p_st(:,2) = g.pwr.pwrmod_p_st(:,1);
    g.pwr.pwrmod_q_st(:,2) = g.pwr.pwrmod_q_st(:,1);
 end
-if n_conv~=0
-   v_conr(:,2) = v_conr(:,1);
-   v_coni(:,2) = v_coni(:,1);
-   i_dcr(:,2) = i_dcr(:,1);
-   i_dci(:,2) = i_dci(:,1);
-   v_dcc(:,2) = v_dcc(:,1);
+if g.dc.n_conv~=0
+   g.dc.v_conr(:,2) = g.dc.v_conr(:,1);
+   g.dc.v_coni(:,2) = g.dc.v_coni(:,1);
+   g.dc.i_dcr(:,2) = g.dc.i_dcr(:,1);
+   g.dc.i_dci(:,2) = g.dc.i_dci(:,1);
+   g.dc.v_dcc(:,2) = g.dc.v_dcc(:,1);
 end
 % set interconnection variables in perturbation stage to defaults
 % this accounts for any generators which do not have the
@@ -929,13 +940,13 @@ end
 g.pwr.pwrmod_p_sig(:,2) = g.pwr.pwrmod_p_sig(:,1);
 g.pwr.pwrmod_q_sig(:,2) = g.pwr.pwrmod_q_sig(:,1);
 
-if n_conv~=0
-   Vdc(:,2) = Vdc(:,1);
-   i_dc(:,2) = i_dc(:,1);
-   dc_sig(:,2) = dc_sig(:,1);
-   cur_ord(:,2) = cur_ord(:,1);
-   alpha(:,2) = alpha(:,1);
-   gamma(:,2) = gamma(:,1);
+if g.dc.n_conv~=0
+   g.dc.Vdc(:,2) = g.dc.Vdc(:,1);
+   g.dc.i_dc(:,2) = g.dc.i_dc(:,1);
+   g.dc.dc_sig(:,2) = g.dc.dc_sig(:,1);
+   g.dc.cur_ord(:,2) = g.dc.cur_ord(:,1);
+   g.dc.alpha(:,2) = g.dc.alpha(:,1);
+   g.dc.gamma(:,2) = g.dc.gamma(:,1);
 end
 %perform perturbation of state variables
 
@@ -992,7 +1003,7 @@ if isempty(g.mac.ibus_con)
          c_ilif = c_ilif*p_angi;
          c_ilit = c_ilit*p_angi;
       end
-      if n_conv~=0; 
+      if g.dc.n_conv~=0; 
          c_dcir=c_dcir*p_angi;
          c_dcii=c_dcii*p_angi;
          c_Vdcr=c_dcVr*p_angi;

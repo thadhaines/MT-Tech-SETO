@@ -29,4 +29,4 @@ compareMac_Spd( c, b, printFigs )
 % compareB_cv( c, b, printFigs )
 
 
-% difference in angle due to mac_ind model - two versions exist
+% DC doesn't seem to operate the same in v2.3 and v3.1

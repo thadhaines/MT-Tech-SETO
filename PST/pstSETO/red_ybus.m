@@ -34,8 +34,7 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] = red_ybus(bus_sol,line)
 %   02/xx/15    xx:xx   Dan Trudnowski  Version 2.34 - Add power modulation
 %   07/02/20    14:29   Thad Haines     Revised format of globals and internal function documentation
 %   07/13/20    12:09   Thad Haines     Added induction gen/motor variables to global g
-
-global  dcc_pot n_conv n_dcl ldc_idx ac_bus r_idx i_idx
+%   07/15/20    14:04   Thad Haines     Added HVDC variables to global g
 
 global g
 
@@ -67,10 +66,10 @@ if nargout > 2 %checking number of output arguments
                    .*bus_sol(j,6);
     bus_sol(j,7) = (ones(nload,1)-g.ncl.load_con(:,3)-g.ncl.load_con(:,5))...
                    .*bus_sol(j,7);
-    if n_conv ~=0
+    if g.dc.n_conv ~=0
       % remove dc loads from LT bus
-      bus_sol(ac_bus,6) = zeros(n_conv,1);
-      bus_sol(ac_bus,7) = zeros(n_conv,1);
+      bus_sol(g.dc.ac_bus,6) = zeros(g.dc.n_conv,1);
+      bus_sol(g.dc.ac_bus,7) = zeros(g.dc.n_conv,1);
     end
   end
 end
@@ -258,11 +257,11 @@ if nargout <= 2
       Y12 = full(Y_b1 + Y_b2*rec_V2);
       Y21 = full(Y_c1 + Y_d12*rec_V1);
       Y22 = full(Y_d11 + Y_d12*rec_V2);
-      if n_conv~=0
+      if g.dc.n_conv~=0
          % modify so that the HV dc voltage replaces the LT dc voltage
-         x_dc(r_idx) = dcc_pot(:,2); x_dc(i_idx) = dcc_pot(:,4);
+         x_dc(g.dc.r_idx) = g.dc.dcc_pot(:,2); x_dc(g.dc.i_idx) = g.dc.dcc_pot(:,4);
          % note that the dc lt buses are  after the non-conforming load buses
-         n_start = nload-n_conv+1;
+         n_start = nload-g.dc.n_conv+1;
          if n_start>1
            n_fin = n_start -1;%end of non-dc non-conforming loads
            y33 = Y22(n_start:nload,n_start:nload);
@@ -279,7 +278,7 @@ if nargout <= 2
            vr3 = rec_V2(:,n_start:nload);
            
            % make modifications
-           kdc = eye(n_conv) - jay*y33*diag(x_dc);
+           kdc = eye(g.dc.n_conv) - jay*y33*diag(x_dc);
            kdc = inv(kdc);
            y31 = kdc*y31;
            y32 = kdc*y32;
@@ -315,7 +314,7 @@ if nargout <= 2
            y21 = Y21;
            vr1 = rec_V1;
            vr2 = rec_V2;
-           kdc = eye(n_conv) - jay*y22*diag(x_dc);
+           kdc = eye(g.dc.n_conv) - jay*y22*diag(x_dc);
            kdc = inv(kdc);
            y21 = kdc*y21;
            y22 = kdc*y22;

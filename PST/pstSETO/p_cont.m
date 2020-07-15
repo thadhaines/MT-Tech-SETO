@@ -349,42 +349,42 @@ if g.pwr.n_pwrmod~=0
    end
 end
 
-ntdc = ntpwr_q + n_dcl;
+ntdc = ntpwr_q + g.dc.n_dcl;
 % disturb the HVDC states
-if n_conv~=0
+if g.dc.n_conv~=0
    disp('disturbing HVDC')
    for k = ntpwr_q+1:ntdc
       j = 1;
       k_hvdc = k - ntpwr_q;
-      pert = p_ratio*abs(v_conr(k_hvdc,1));
+      pert = p_ratio*abs(g.dc.v_conr(k_hvdc,1));
       pert = max(pert,p_ratio);
-      v_conr(k_hvdc,2) = v_conr(k_hvdc,1) + pert;
+      g.dc.v_conr(k_hvdc,2) = g.dc.v_conr(k_hvdc,1) + pert;
       p_file;
       st_name(k,j) = 39;
       j = j + 1;
-      pert = p_ratio*abs(v_coni(k_hvdc,1));
+      pert = p_ratio*abs(g.dc.v_coni(k_hvdc,1));
       pert = max(pert,p_ratio);
-      v_coni(k_hvdc,2) = v_coni(k_hvdc,1) + pert;
+      g.dc.v_coni(k_hvdc,2) = g.dc.v_coni(k_hvdc,1) + pert;
       p_file;
       st_name(k,j) = 40;
       j= j+1;
-      pert = p_ratio*abs(i_dcr(k_hvdc,1));
+      pert = p_ratio*abs(g.dc.i_dcr(k_hvdc,1));
       pert = max(pert,p_ratio);
-      i_dcr(k_hvdc,2) = i_dcr(k_hvdc,1) + pert;
+      g.dc.i_dcr(k_hvdc,2) = g.dc.i_dcr(k_hvdc,1) + pert;
       p_file;
       st_name(k,j) = 41;
-      if ~isempty(cap_idx)
-         k_cap_idx = find(cap_idx == k_hvdc);
+      if ~isempty(g.dc.cap_idx)
+         k_cap_idx = find(g.dc.cap_idx == k_hvdc);
          if ~isempty(k_cap_idx)
-            pert = p_ratio*abs(i_dci(k_hvdc,1));
+            pert = p_ratio*abs(g.dc.i_dci(k_hvdc,1));
             pert = max(pert,p_ratio);
-            i_dci(k_hvdc,2) = i_dci(k_hvdc,1) + pert;
+            g.dc.i_dci(k_hvdc,2) = g.dc.i_dci(k_hvdc,1) + pert;
             p_file;
             st_name(k,j) = 42;
             j = j + 1;
-            pert = p_ratio*abs(v_dcc(k_hvdc,1));
+            pert = p_ratio*abs(g.dc.v_dcc(k_hvdc,1));
             pert = max(pert,p_ratio);
-            v_dcc(k_hvdc,2) = v_dcc(k_hvdc,1) + pert;
+            g.dc.v_dcc(k_hvdc,2) = g.dc.v_dcc(k_hvdc,1) + pert;
             p_file;
             st_name(k,j) = 43;
          end
@@ -394,18 +394,18 @@ if n_conv~=0
       dcmod_input = k_hvdc;
       pert = p_ratio;
       nominal = 0.0;
-      dc_sig(r_idx(k_hvdc),2) = dc_sig(r_idx(k_hvdc),1) + pert;
+      g.dc.dc_sig(g.dc.r_idx(k_hvdc),2) = g.dc.dc_sig(g.dc.r_idx(k_hvdc),1) + pert;
       p_file
-      dc_sig(r_idx(k_hvdc),2) = nominal;  
+      g.dc.dc_sig(g.dc.r_idx(k_hvdc),2) = nominal;  
       c_state = 0;
       disp('disturbing inverter dc_sig') 
       c_state = 10; 
       dcmod_input = k_hvdc;
       pert = p_ratio;
       nominal = 0.0;
-      dc_sig(i_idx(k_hvdc),2) = dc_sig(i_idx(k_hvdc),1) + pert;
+      g.dc.dc_sig(g.dc.i_idx(k_hvdc),2) = g.dc.dc_sig(g.dc.i_idx(k_hvdc),1) + pert;
       p_file
-      dc_sig(i_idx(k_hvdc),2) = nominal;  
+      g.dc.dc_sig(g.dc.i_idx(k_hvdc),2) = nominal;  
       c_state = 0;
    end
 end

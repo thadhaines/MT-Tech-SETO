@@ -302,27 +302,27 @@ end
 
 % p_mat for hvdc links
 k_col = k_colg+3*g.ind.n_mot+3*g.igen.n_ig+2*g.svc.n_svc+g.tcsc.n_tcsc+g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
-if n_conv~=0
-   for k = 1:n_dcl
+if g.dc.n_conv~=0
+   for k = 1:g.dc.n_dcl
       %  converter controls 
       k_row = k_row + 1;
       k_col = k_col + k;
       p_mat(k_row,k_col) = 1;
       k_row = k_row + 1;
-      k_col = k_col + n_dcl;
+      k_col = k_col + g.dc.n_dcl;
       p_mat(k_row,k_col) = 1;
       % hvdc line
       k_row = k_row + 1;
-      k_col = k_col + n_dcl;
+      k_col = k_col + g.dc.n_dcl;
       p_mat(k_row,k_col) = 1;
-      if l_cap~=0
-         if ~isempty(cap_idx(k))
+      if g.dc.l_cap~=0
+         if ~isempty(g.dc.cap_idx(k))
             % capicitor in this line model
             k_row = k_row + 1;
-            k_col = k_col + n_dcl;
+            k_col = k_col + g.dc.n_dcl;
             p_mat(k_row,k_col) = 1;
             k_row = k_row+1;
-            k_col = k_col + n_dcl;
+            k_col = k_col + g.dc.n_dcl;
             p_mat(k_row, k_col) = 1;
          end
       end

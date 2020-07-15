@@ -238,12 +238,12 @@ end;
 
 % HVDC
 n_hvdc_states = 0;
-if n_conv~= 0
-   state_hvdc(1:n_dcl) = 3*ones(n_dcl,1);
-   if l_cap ~=0
-      state_hvdc(cap_idx) =state_hvdc(cap_idx) + 2*ones(l_cap,1);
+if g.dc.n_conv~= 0
+   state_hvdc(1:g.dc.n_dcl) = 3*ones(g.dc.n_dcl,1);
+   if g.dc.l_cap ~=0
+      state_hvdc(g.dc.cap_idx) =state_hvdc(g.dc.cap_idx) + 2*ones(g.dc.l_cap,1);
    end
    n_hvdc_states = sum(state_hvdc);
    n_hvdc1 = ntot +g.svc.n_svc + g.tcsc.n_tcsc+ g.lmod.n_lmod+g.rlmod.n_rlmod+2*g.pwr.n_pwrmod;
-   state(n_hvdc1+1:n_hvdc1+n_dcl) = (3 + 2*l_cap)*ones(n_dcl,1);
+   state(n_hvdc1+1:n_hvdc1+g.dc.n_dcl) = (3 + 2*g.dc.l_cap)*ones(g.dc.n_dcl,1);
 end
