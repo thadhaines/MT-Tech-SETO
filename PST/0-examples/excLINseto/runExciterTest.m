@@ -100,7 +100,7 @@ figure
 hold on
 plot(tL,excSig)
 %plot(t,exc_sig,'--')
-plot(t,g.exc.exc_sig,'--')
+plot(g.sys.t,g.exc.exc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Exciter Modulation Signal')
 %% compare bus voltage magnitude
@@ -110,7 +110,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(bus_v(busN,:)),'--')
+    plot(g.sys.t,abs(g.sys.bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
@@ -123,7 +123,7 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-    plot(t,g.mac.mac_spd(busN,:),'--')
+    plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end

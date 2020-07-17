@@ -102,7 +102,7 @@ load linResults.mat
 figure
 hold on
 plot(tL,lmodSig)
-plot(t,g.rlmod.rlmod_sig,'--')
+plot(g.sys.t,g.rlmod.rlmod_sig,'--')
 ylabel('Reactive Power [PU MVAR]')
 
 %plot(t,lmod_sig,'--')
@@ -115,7 +115,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(g.sys.bus_v(busN,:)),'--')
+    plot(g.sys.t,abs(g.sys.bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
@@ -128,7 +128,7 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-    plot(t,g.mac.mac_spd(busN,:),'--')
+    plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end

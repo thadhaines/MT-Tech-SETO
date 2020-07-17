@@ -118,7 +118,7 @@ figure
 hold on
 plot(tL,modSig)
 % plot(t,svc_sig,'--')
-plot(t,g.svc.svc_sig,'--')
+plot(g.sys.t,g.svc.svc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Governor Pref Modulation Signal')
 
@@ -130,7 +130,7 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-    plot(t,g.mac.mac_spd(busN,:),'--')
+    plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
 %      plot(t,mac_spd(busN,:),'--')
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
@@ -147,7 +147,7 @@ legNames={};
 for busN=1:size(linPm,1)
     plot(tL,linPm(busN,:))
     legNames{end+1}= ['Gen Pm ', int2str(busN), ' Linear'];
-    plot(t,g.mac.pmech(busN,:),'--')
+    plot(g.sys.t,g.mac.pmech(busN,:),'--')
 %     plot(t,pmech(busN,:),'--')
     legNames{end+1}= ['Gen Pm ', int2str(busN), ' non-Linear'];
 end
@@ -163,7 +163,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(g.sys.bus_v(busN,:)),'--')
+    plot(g.sys.t,abs(g.sys.bus_v(busN,:)),'--')
 %     plot(t,abs(bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     

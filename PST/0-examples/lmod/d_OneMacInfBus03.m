@@ -177,7 +177,7 @@ sw_con = [ ...
     1+(2/60)+(1/600)    0   0   0   0   0   1/(60*5);   % 
     3                   0   0   0   0   0   1/(60*2);   % change time step
     5                   0   0   0   0   0   1/(60);     % change time step
-    20                   0   0   0   0   0   1/(60);     % end
+   % 20                   0   0   0   0   0   1/(60);     % end
 ];    % end
   
 %% Load Modulation

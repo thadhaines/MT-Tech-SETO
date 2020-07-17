@@ -290,7 +290,7 @@ if lfs{1} == 'y'
          loadflow(bus,line,tol,iter_max,acc,'n',2);
       bus = bus_sol;  % solved loadflow solution needed for
       % initialization
-      save sim_fle.mat bus line n_conv n_dcl
+      save sim_fle.mat bus line % n_conv n_dcl % commented out -thad 07/16/20
    else
       [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
       bus = bus_sol;

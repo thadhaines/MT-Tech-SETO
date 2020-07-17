@@ -34,25 +34,25 @@ s_simu_Batch %Run PST <- this is the main file to look at for simulation working
 copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % copy system data file to batch run location
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % copy system data file to batch run location
 
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-        zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-        if zeroTest
-            eval(sprintf('clear %s',vName{1}) ); % clear variable
-            clearedVars{end+1} = vName{1}; % add name to cell for reference
-        end
-    catch ME
-        % gets called for structs... (global g)
-        disp(ME.message)
-        disp(vName)
-    end
-end
-clear varNames vName zeroTest
+% %% Simulation variable cleanup
+% % Clear any varables that contain only zeros
+% varNames = who()'; % all variable names in workspace
+% clearedVars = {}; % cell to hold names of deleted 'all zero' variables
+% 
+% for vName = varNames
+%     try
+%         zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
+%         if zeroTest
+%             eval(sprintf('clear %s',vName{1}) ); % clear variable
+%             clearedVars{end+1} = vName{1}; % add name to cell for reference
+%         end
+%     catch ME
+%         % gets called for structs... (global g)
+%         disp(ME.message)
+%         disp(vName)
+%     end
+% end
+% clear varNames vName zeroTest
 
 %% Save cleaned output data
 save([pstVer, caseName, '.mat']); %Save simulation outputs
@@ -108,3 +108,8 @@ for gen=1:g.mac.n_mac
     ylabel('Omega [%PU]')
     xlabel('Time [sec]')
 end
+clear yLIM titleSTR gen % variables with script plot
+
+clear PSTpath caseName % script variables
+
+clear pssV3 gov_flag % set in d file

@@ -115,7 +115,7 @@ hold on
 plot(tL,modSig)
 
 if useGlobalG
-    plot(t,g.lmod.lmod_sig,'--')
+    plot(g.sys.t,g.lmod.lmod_sig,'--')
 else
     plot(t,lmod_sig,'--')
 end
@@ -132,7 +132,7 @@ for busN=1:size(linV,1)
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
     
     if useGlobalG
-        plot(t,abs(g.sys.bus_v(busN,:)),'--')
+        plot(g.sys.t,abs(g.sys.bus_v(busN,:)),'--')
     else
         plot(t,abs(bus_v(busN,:)),'--')
     end
@@ -154,7 +154,7 @@ for busN=1:size(linAng,1)
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
     
     if useGlobalG
-        plot(t,angle(g.sys.bus_v(busN,:)),'--')
+        plot(g.sys.t,angle(g.sys.bus_v(busN,:)),'--')
     else
         plot(t,angle(bus_v(busN,:)),'--')
     end

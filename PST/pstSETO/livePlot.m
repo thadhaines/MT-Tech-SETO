@@ -8,11 +8,12 @@ if (mod(k,25)==0)
     end
     
     % format bus voltage for plot
-    v_p(1:k)=abs(g.sys.bus_v(bus_idx(1),1:k));
+    v_p(1:k) = abs(g.sys.bus_v(bus_idx(1),1:k));
     % plot the voltage of the faulted bus
     subplot(nPlt,1,1)
-    plot(t(1:k),v_p(1:k),'r')
-    title('Voltage Magnitude at Fault Bus');
+    plot(g.sys.t(1:k),v_p(1:k),'r')
+    busNum = int2str(bus(bus_idx(1),1));
+    title(['Voltage Magnitude at Bus ', busNum]);
     xlabel('Time [sec]');
     ylabel('Volatge [PU]');
     
@@ -20,7 +21,7 @@ if (mod(k,25)==0)
     subplot(nPlt,1,2)
     Lcolor = lines(size(g.mac.mac_spd,1));
     for pltGen = 1:size(g.mac.mac_spd,1)
-        plot(t(1:k),g.mac.mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
+        plot(g.sys.t(1:k),g.mac.mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
         hold on
     end
     title('System Generator Speed');
@@ -30,7 +31,7 @@ if (mod(k,25)==0)
     % plot load moduation (if present)
     if ~isempty(g.lmod.lmod_con)
         subplot(nPlt,1,3)
-        plot(t(1:k),g.lmod.lmod_st(1:k))
+        plot(g.sys.t(1:k), g.lmod.lmod_st(1:k))
         title('System Real Load Modulation');
         xlabel('Time [sec]');
         ylabel('MW [PU]');
@@ -41,7 +42,7 @@ if (mod(k,25)==0)
         subplot(nPlt,1,3)
         Lcolor = lines(size(g.pwr.pwrmod_p_st,1));
         for pltData = 1:size(g.pwr.pwrmod_p_st,1)
-            plot(t(1:k),g.pwr.pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
+            plot(g.sys.t(1:k),g.pwr.pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
             hold on
         end
         title('Power Modulation');

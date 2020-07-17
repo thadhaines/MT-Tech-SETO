@@ -35,7 +35,7 @@ copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use specific pss model
 copyfile('pwrmod_dyn_Example2.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
 s_simu_Batch %Run PST
-save('Example2_NonlinearSim','t','g'); %Save t and bus_v results
+save('Example2_NonlinearSim','g'); %Save g
 
 %% Build Linear model, simulate, and store results
 %Build PST linear model with real-power input and voltage mag and angle
@@ -77,7 +77,7 @@ clear Gsolar Gpst GopenLoop
 tL = [0:1/120:10]';
 N = length(tL);
 Pref = [-0.0001*(stepfun(tL,1)-stepfun(tL,1.5)) zeros(N,1) 0.0002*(stepfun(tL,4)-stepfun(tL,4.5)) zeros(N,1) ]; %Pref pulses
-load('Example2_NonlinearSim','t','g');
+load('Example2_NonlinearSim','g');
 y = lsim(G,Pref,tL);
 v = y(:,1:2) + ones(N,1)*abs(g.sys.bus_v([2 3],1))';
 a = y(:,3:4) + ones(N,1)*angle(g.sys.bus_v([2 3],1))';
@@ -87,37 +87,37 @@ save('Example2_LinearSim','tL','bus_vL'); %Save linear results
 
 %% Plot linear vs nonlinear
 clear all; %close all; clc
-load('Example2_NonlinearSim','t','g');
+load('Example2_NonlinearSim','g');
 load('Example2_LinearSim','tL','bus_vL');
 
 figure
 subplot(411)
 nb = 2; %Bus to plot
-plot(t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(1,:)),'r');
+plot(g.sys.t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(1,:)),'r');
 ylabel(['bus ' num2str(nb) ' V (abs)'])
 legend('non-linear','linear','location','best')
 
 subplot(412)
-f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(t)); 
+f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(g.sys.t)); 
 f = [f f(end)];
 fL = 1e3*angle(bus_vL(1,2:end)./bus_vL(1,1:end-1))./(2*pi*diff(tL)); 
 fL = [fL fL(end)];
-plot(t,f,'k',tL,fL,'r')
+plot(g.sys.t,f,'k',tL,fL,'r')
 ylabel(['bus ' num2str(nb) ' (mHz)'])
 legend('non-linear','linear','location','best')
 
 subplot(413)
 nb = 3;
-plot(t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(2,:)),'r');
+plot(g.sys.t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(2,:)),'r');
 ylabel(['bus ' num2str(nb) ' V (abs)'])
 legend('non-linear','linear','location','best')
 
 subplot(414)
-f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(t)); 
+f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(g.sys.t)); 
 f = [f f(end)];
 fL = 1e3*angle(bus_vL(2,2:end)./bus_vL(2,1:end-1))./(2*pi*diff(tL)); 
 fL = [fL fL(end)];
-plot(t,f,'k',tL,fL,'r')
+plot(g.sys.t,f,'k',tL,fL,'r')
 ylabel(['bus ' num2str(nb) ' (mHz)'])
 legend('non-linear','linear','location','best')
 %set(gcf,'Position',[360 202 560 720])
@@ -125,16 +125,16 @@ legend('non-linear','linear','location','best')
 %% Plot nonlinear P and Q injected power
 figure
 subplot(411)
-plot(t,g.pwr.pwrmod_p_st(1,:),'k')
+plot(g.sys.t,g.pwr.pwrmod_p_st(1,:),'k')
 ylabel('Bus 2 I_P (pu)')
 subplot(412)
-plot(t,g.pwr.pwrmod_p_st(2,:),'k')
+plot(g.sys.t,g.pwr.pwrmod_p_st(2,:),'k')
 ylabel('Bus 3 I_P (pu)')
 subplot(413)
-plot(t,g.pwr.pwrmod_q_st(1,:),'k')
+plot(g.sys.t,g.pwr.pwrmod_q_st(1,:),'k')
 ylabel('Bus 2 I_Q (pu)')
 subplot(414)
-plot(t,g.pwr.pwrmod_q_st(2,:),'k')
+plot(g.sys.t,g.pwr.pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 I_Q (pu)')
 xlabel('Time (sec.)')
 %set(gcf,'Position',[360 202 560 720]);
