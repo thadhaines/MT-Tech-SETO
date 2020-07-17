@@ -276,30 +276,26 @@ g.sys.syn_ref = 0 ;     % synchronous reference frame
 % end
 
 % solve for loadflow - loadflow parameter
-lfs{1} = 'y'; %inputdlg('Do you want to solve loadflow > (y/n)[y] ','s');
-if isempty(lfs{1});lfs{1}='y';end
-if lfs{1}=='Y';lfs{1}='y';end
-if lfs{1} == 'y'
-   if isempty(g.dc.dcsp_con)
-      g.dc.n_conv = 0;
-      g.dc.n_dcl = 0;
-      tol = 1e-5;   % tolerance for convergence
-      iter_max = 30; % maximum number of iterations
-      acc = 1.0;   % acceleration factor
-      [bus_sol,line,line_flw] = ...
-         loadflow(bus,line,tol,iter_max,acc,'n',2);
-      bus = bus_sol;  % solved loadflow solution needed for
-      % initialization
-      %save sim_fle.mat bus line n_conv n_dcl % no need in batch runs - thad 07/17/20
-   else
-      [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
-      g.bus.bus = bus_sol;
-      clear bus_sol
-      %save sim_fle.mat bus line rec_par  inv_par line_par% no need in batch runs - thad 07/17/20
-   end 
+
+if isempty(g.dc.dcsp_con)
+  g.dc.n_conv = 0;
+  g.dc.n_dcl = 0;
+  tol = 1e-5;   % tolerance for convergence
+  iter_max = 30; % maximum number of iterations
+  acc = 1.0;   % acceleration factor
+  [bus_sol,line,line_flw] = ...
+     loadflow(g.bus.busOG, g.line.lineOG, tol,iter_max,acc,'n',2);
+  g.bus.bus = bus_sol;  % solved loadflow solution needed for initialization
+  g.line.line = line;
+  clear bus_sol line
+  %save sim_fle.mat bus line n_conv n_dcl % no need in batch runs - thad 07/17/20
 else
-   %load sim_fle % no need in batch runs - thad 07/17/20
-end
+  [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
+  g.bus.bus = bus_sol;
+  g.line.line = line;
+  clear bus_sol line
+  %save sim_fle.mat bus line rec_par  inv_par line_par% no need in batch runs - thad 07/17/20
+end 
 
 g.exc.n_exc= 0;
 g.exc.n_dc = 0;
@@ -464,7 +460,7 @@ else
 end
 
 if ~isempty(g.pwr.pwrmod_con)
-   pwrmod_indx(bus); % identifies power modulation buses % corrected to call pwrmod_indx, not pwrm_indx
+   pwrmod_indx(g.bus.bus); % identifies power modulation buses % corrected to call pwrmod_indx, not pwrm_indx
 else
    g.pwr.n_pwrmod = 0;
 end
@@ -478,7 +474,7 @@ if g.ind.n_mot~=0
    g.ind.dvqp = zeros(g.ind.n_mot,2);
    g.ind.dslip = zeros(g.ind.n_mot,2);
 end
-bus = mac_ind(0,1,bus,0);
+g.bus.bus = mac_ind(0,1,g.bus.bus,0);
 
 %initialize induction generator
 if g.igen.n_ig~=0
@@ -490,7 +486,7 @@ if g.igen.n_ig~=0
    g.igen.dslig = zeros(g.igen.n_ig,2);
    g.igen.tmig = zeros(g.igen.n_ig,2);
 end
-bus = mac_igen(0,1,bus,0);
+g.bus.bus = mac_igen(0,1,g.bus.bus,0);
 
 %initialize svc
 if g.svc.n_svc ~=0
@@ -504,7 +500,7 @@ if g.svc.n_svc ~=0
       g.svc.svc_dsig = zeros(g.svc.n_svc,2);
    end
 end
-bus = svc(0,1,bus,0);
+g.bus.bus = svc(0,1,g.bus.bus,0);
 
 if g.dc.n_conv~=0
    % pick up HVDC initial variables from load flow
@@ -520,26 +516,26 @@ if g.dc.n_conv~=0
    g.dc.dci_dsig = zeros(g.dc.n_dcl,2);
    g.dc.dc_sig = zeros(g.dc.n_conv,2);
 end
-dc_cont(0,1,1,bus,0); % initialize the dc controls - sets up data for red_ybus
+dc_cont(0,1,1,g.bus.bus,0); % initialize the dc controls - sets up data for red_ybus
 % this has to be done before red_ybus is used since the induction motor,svc and
 % dc link initialization alters the bus matrix
-v = ones(length(bus(:,1)),2);
+v = ones(length(g.bus.bus(:,1)),2);
 g.bus.bus_v = v;
-g.bus.theta = zeros(length(bus(:,1)),2);
+g.bus.theta = zeros(length(g.bus.bus(:,1)),2);
 disp(' ')
 disp('Performing linearization')
 % set line parameters
 if ~isempty(g.lmon.lmon_con)
-  R = line(g.lmon.lmon_con,3); 
-  X = line(g.lmon.lmon_con,4); 
-  B = line(g.lmon.lmon_con,5);
-  g.dc.tap = line(g.lmon.lmon_con,6); % seems odd.... -thad 07/14/20
-  phi = line(g.lmon.lmon_con,7);
+  R = g.line.line(g.lmon.lmon_con,3); 
+  X = g.line.line(g.lmon.lmon_con,4); 
+  B = g.line.line(g.lmon.lmon_con,5);
+  g.dc.tap = g.line.line(g.lmon.lmon_con,6); % seems odd.... -thad 07/14/20
+  phi = g.line.line(g.lmon.lmon_con,7);
 end
 % step 1: construct reduced Y matrix
-[Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
-bus_intprf = g.bus.bus_int;% store the internal bus numbers for the pre_fault system
-nbus = length(bus(:,1));
+[Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(g.bus.bus,g.line.line);
+g.bus.bus_intprf = g.bus.bus_int;% store the internal bus numbers for the pre_fault system
+nbus = length(g.bus.bus(:,1));
 if isempty(g.ncl.load_con)
    g.ncl.nload = 0;
 else
@@ -564,14 +560,14 @@ max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
     2*g.svc.n_svc+g.tcsc.n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*g.dc.n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
-g.bus.theta(:,1) = bus(:,3)*pi/180;
-v(:,1) = bus(:,2).*exp(jay*g.bus.theta(:,1));
+g.bus.theta(:,1) = g.bus.bus(:,3)*pi/180;
+v(:,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(:,1));
 if g.dc.n_conv ~= 0
    % convert dc LT to Equ HT bus
-   Pr = bus(g.dc.rec_ac_bus,6);
-   Pi = bus(g.dc.inv_ac_bus,6);
-   Qr = bus(g.dc.rec_ac_bus,7);
-   Qi = bus(g.dc.inv_ac_bus,7);
+   Pr = g.bus.bus(g.dc.rec_ac_bus,6);
+   Pi = g.bus.bus(g.dc.inv_ac_bus,6);
+   Qr = g.bus.bus(g.dc.rec_ac_bus,7);
+   Qi = g.bus.bus(g.dc.inv_ac_bus,7);
    VLT= v(g.dc.ac_bus,1);
    i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
    i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
@@ -739,10 +735,10 @@ p_m_file
 % step 2: initialization
 flag = 0;
 %machines
-mac_em(0,1,bus,flag);
-mac_tra(0,1,bus,flag);
-mac_sub(0,1,bus,flag);
-mac_ib(0,1,bus,flag);
+mac_em(0,1,g.bus.bus,flag);
+mac_tra(0,1,g.bus.bus,flag);
+mac_sub(0,1,g.bus.bus,flag);
+mac_ib(0,1,g.bus.bus,flag);
 %calculate initial electrical torque
 psi = g.mac.psi_re(:,1)+jay*g.mac.psi_im(:,1);
 if g.ind.n_mot~=0&&g.igen.n_ig==0
@@ -761,8 +757,8 @@ end
 cur(:,1) = Y_gprf*int_volt; % network solution currents into generators       
 b_v(boprf(g.ncl.nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
 if g.ncl.nload~=0
-   vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);%vnc is a dummy variable
-   cur(:,1) = cur(:,1) + Y_gncprf*v(bus_intprf(g.ncl.load_con(:,1)),1);% modify currents for nc loads 
+   vnc = nc_load(g.bus.bus,flag,Y_ncprf,Y_ncgprf);%vnc is a dummy variable
+   cur(:,1) = cur(:,1) + Y_gncprf*v(g.bus.bus_intprf(g.ncl.load_con(:,1)),1);% modify currents for nc loads 
 end
 g.mac.cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
 g.mac.cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
@@ -800,7 +796,7 @@ exc_dc12(0,1,flag);
 exc_st3(0,1,flag);
 % turbine governors
 tg(0,1,flag);
-tg_hydro(0,1,bus,flag);
+tg_hydro(0,1,g.bus.bus,flag);
 
 %initialize tcsc
 if g.tcsc.n_tcsc ~=0
@@ -824,19 +820,19 @@ if ~isempty(g.rlmod.rlmod_con)
 end
 if ~isempty(g.pwr.pwrmod_con)
    disp('power modulation')
-   pwrmod_p(0,1,bus,flag);
-   pwrmod_q(0,1,bus,flag);
+   pwrmod_p(0,1,g.bus.bus,flag);
+   pwrmod_q(0,1,g.bus.bus,flag);
 end
 
 % initialize non-linear loads
 if ~isempty(g.ncl.load_con)
    disp('non-linear loads')
-   vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);
+   vnc = nc_load(g.bus.bus,flag,Y_ncprf,Y_ncgprf);
 else
    g.ncl.nload = 0;
 end
 % hvdc lines
-dc_line(0,1,1,bus,flag);
+dc_line(0,1,1,g.bus.bus,flag);
 
 g.sys.mach_ref(1) = 0;
 g.sys.mach_ref(2) = 0;

@@ -74,7 +74,7 @@ y = lsim(G,modSig,tL); % run input into state space system
 % collect bus voltage magnitudes and adjust by initial conditions
 linV = y(:,1:4)'; % rotate into col vectors
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
+    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
 end
 
 % collect machine speeds and adjust by initial condition

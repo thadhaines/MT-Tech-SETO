@@ -97,8 +97,8 @@ linAng = y(:,size(c_v,1)+1:end)'; % collect and rotate angle data
 
 % adjust data changes by initial conditions
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
-    linAng(busN,:) = linAng(busN,:) + deg2rad(bus_sol(busN,3));
+    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+    linAng(busN,:) = linAng(busN,:) + deg2rad(g.bus.bus(busN,3));
 end
 
 load PSTpath.mat

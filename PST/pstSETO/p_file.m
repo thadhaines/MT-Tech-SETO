@@ -8,15 +8,14 @@
 % All Rights Reserved
 % step 3a: network solution
 
-
 flag = 1;
 %generators
-mac_ib(0,2,bus,flag);
-mac_em(0,2,bus,flag);
-mac_tra(0,2,bus,flag);
-mac_sub(0,2,bus,flag);
-mac_ind(0,2,bus,flag); 
-mac_igen(0,2,bus,flag);
+mac_ib(0,2,g.bus.bus,flag);
+mac_em(0,2,g.bus.bus,flag);
+mac_tra(0,2,g.bus.bus,flag);
+mac_sub(0,2,g.bus.bus,flag);
+mac_ind(0,2,g.bus.bus,flag); 
+mac_igen(0,2,g.bus.bus,flag);
 psi = g.mac.psi_re(:,2) + jay*g.mac.psi_im(:,2);
 
 if g.ind.n_mot~=0&&g.igen.n_ig==0
@@ -34,22 +33,22 @@ else
 end
 
 if g.dc.n_conv~=0
-   dc_cont(0,2,2,bus,flag);
+   dc_cont(0,2,2,g.bus.bus,flag);
 end
 
 cur(:,2) = Y_gprf*int_volt; % network solution currents into generators       
 b_v(boprf(g.ncl.nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
 if g.ncl.nload~=0
    vnc = v(boprf(1:g.ncl.nload),1);
-   vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf,int_volt,vnc,1e-6,2,2);
+   vnc = nc_load(g.bus.bus,flag,Y_ncprf,Y_ncgprf,int_volt,vnc,1e-6,2,2);
    bvnc = full(V_rncprf*vnc);
    b_v(boprf(1:g.ncl.nload),1) = vnc;
    cur(:,2) = cur(:,2) + Y_gncprf*vnc;% modify currents for nc loads
    b_v(boprf(g.ncl.nload+1:nbus),1) =  b_v(boprf(g.ncl.nload+1:nbus),1) + bvnc; % adjust voltages for nc loads
 end
-v(g.bus.bus_int(bus(:,1)),2) = b_v;
-g.bus.bus_v(g.bus.bus_int(bus(:,1)),2) = b_v;
-g.bus.theta(g.bus.bus_int(bus(:,1)),2) = angle(b_v); 
+v(g.bus.bus_int(g.bus.bus(:,1)),2) = b_v;
+g.bus.bus_v(g.bus.bus_int(g.bus.bus(:,1)),2) = b_v;
+g.bus.theta(g.bus.bus_int(g.bus.bus(:,1)),2) = angle(b_v); 
 g.mac.cur_re(1:g.mac.n_mac,2) = real(cur(1:g.mac.n_mac,2)); 
 g.mac.cur_im(1:g.mac.n_mac,2) = imag(cur(1:g.mac.n_mac,2));
 cur_mag(1:g.mac.n_mac,2) = abs(cur(1:g.mac.n_mac,2)).*g.mac.mac_pot(:,1);
@@ -83,14 +82,14 @@ exc_dc12(0,2,flag);
 exc_st3(0,2,flag);
 % turbine/governor
 tg(0,2,flag);
-tg_hydro(0,2,bus,flag);
+tg_hydro(0,2,g.bus.bus,flag);
 % calculate rates of change
 flag = 2;
-mac_em(0,2,bus,flag);
-mac_tra(0,2,bus,flag);
-mac_sub(0,2,bus,flag); 
-mac_ind(0,2,bus,flag); 
-mac_igen(0,2,bus,flag);
+mac_em(0,2,g.bus.bus,flag);
+mac_tra(0,2,g.bus.bus,flag);
+mac_sub(0,2,g.bus.bus,flag); 
+mac_ind(0,2,g.bus.bus,flag); 
+mac_igen(0,2,g.bus.bus,flag);
 dpwf(0,2,flag);
 pss(0,2,flag);
 
@@ -100,11 +99,11 @@ exc_dc12(0,2,flag);
 exc_st3(0,2,flag);
 
 tg(0,2,flag);
-tg_hydro(0,2,bus,flag);
+tg_hydro(0,2,g.bus.bus,flag);
 
 if g.svc.n_svc~=0 
    v_svc = abs(v(g.bus.bus_int(g.svc.svc_con(:,2)),2));
-   svc(0,2,bus,flag,v_svc);
+   svc(0,2,g.bus.bus,flag,v_svc);
 end
 
 if g.tcsc.n_tcsc~=0
@@ -117,13 +116,13 @@ if g.rlmod.n_rlmod~=0
    rlmod(0,2,flag);
 end
 if g.pwr.n_pwrmod~=0 
-   pwrmod_p(0,2,bus,flag);
-   pwrmod_q(0,2,bus,flag);
+   pwrmod_p(0,2,g.bus.bus,flag);
+   pwrmod_q(0,2,g.bus.bus,flag);
 end
 
 if g.dc.n_conv ~=0
-   dc_cont(0,2,2,bus,flag);
-   dc_line(0,2,2,bus,flag);
+   dc_cont(0,2,2,g.bus.bus,flag);
+   dc_line(0,2,2,g.bus.bus,flag);
 end
 
 telect(:,2) = g.mac.pelect(:,2).*g.mac.mac_pot(:,1) ...
@@ -255,8 +254,8 @@ if c_state == 0
       c_Efd(:,j_state) = (g.exc.Efd(:,2)-g.exc.Efd(:,1))/pert;
    end
    if ~isempty(g.lmon.lmon_con) 
-      from_idx = g.bus.bus_int(line(g.lmon.lmon_con,1));
-      to_idx = g.bus.bus_int(line(g.lmon.lmon_con,2));
+      from_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,1));
+      to_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,2));
       V1 = v(from_idx,1);
       V2 = v(to_idx,1);
       [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
@@ -352,8 +351,8 @@ else
       d_Vdcrdci(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
       d_Vdcdci(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
       if ~isempty(g.lmon.lmon_con) 
-         from_idx = g.bus.bus_int(line(g.lmon.lmon_con,1));
-         to_idx = g.bus.bus_int(line(g.lmon.lmon_con,2));
+         from_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,1));
+         to_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
          [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20

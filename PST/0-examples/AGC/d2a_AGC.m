@@ -37,9 +37,26 @@ bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0  -99.0  22
        101 1.05    -19.3  0.00   8.00  0.00  0.00  0.00  0.00 2  99.0  -99.0  500.0  1.5  .5; % SVC is on gen bus
        110 1.0125  -13.4  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
        120 0.9938  -23.6  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5 ];
-
-
-% line data format
+   
+%% area data format
+% should contain same number of rows as bus
+% col 1 bus number
+% col 2 area number
+area = [    1  1;
+            2  1;
+            3  1;
+            4  1;
+            10 1;
+            11 2;
+            12 2;
+            13 2;
+            14 2; 
+            20 1;
+           101 1; 
+           110 2;
+           120 2];
+   
+%% line data format
 % line: from bus, to bus, resistance(pu), reactance(pu),
 %       line charging(pu), tap ratio, tap phase, tapmax, tapmin, tapsize
 
@@ -169,7 +186,7 @@ load_con = [...
 % 7  	regulator time constant T_R  	sec
 lmod_con = [ ...
   % 1   2   3       4       5       6       7
-    1   4   100     1.0     0.0     2.0     0.004;
+    1   4   100     100.0     0.0     2.0     0.004;
    % 1   14   100    1.0     0.0     1.0     0.004 ;
    ];
 

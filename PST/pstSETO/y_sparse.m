@@ -39,6 +39,7 @@ load_bus = 3;
 
 nline = length(line(:,1));     % number of lines
 nbus = length(bus(:,1));     % number of buses
+
 r=zeros(nline,1);
 rx=zeros(nline,1);
 chrg=zeros(nline,1);
@@ -93,13 +94,13 @@ if nargout > 1
   nSW = 0;
   nPV = 0;
   nPQ = 0;
-  bus_type=round(bus(:,10));
-  load_index=find(bus_type==3);
-  gen_index=find(bus_type==2);
-  SB=find(bus_type==1);
-  nSW=length(SB);
-  nPV=length(gen_index);
-  nPQ=length(load_index);
+  bus_type = round(bus(:,10));
+  load_index = find(bus_type==3);
+  gen_index = find(bus_type==2);
+  SB = find(bus_type==1);
+  nSW = length(SB);
+  nPV = length(gen_index);
+  nPQ = length(load_index);
 end
 
 return

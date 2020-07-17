@@ -45,6 +45,7 @@ load_bus = 3;
 
 nline = length(line(:,1));     % number of lines
 nbus = length(bus_sol(:,1));     % number of buses
+
 [n,dummy] = size(g.mac.mac_con);    % number of generators
 [nmot,dummy]=size(g.ind.ind_con);	% number of induction motors
 [nig,dummy] = size(g.igen.igen_con); % number of induction generators

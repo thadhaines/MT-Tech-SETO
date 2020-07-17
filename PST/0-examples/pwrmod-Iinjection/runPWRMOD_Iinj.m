@@ -62,8 +62,8 @@ B(2,2) = 1/Tv(1);
 B(3,3) = 1/Tpord(2); 
 B(4,4) = 1/Tv(2); 
 C = zeros(2,4); 
-C(1,1) = 1/bus(2,2); 
-C(2,3) = 1/bus(3,2); %Eg, linearize Ipcmd(1) = x(1)/x(2)
+C(1,1) = 1/g.bus.bus(2,2); 
+C(2,3) = 1/g.bus.bus(3,2); %Eg, linearize Ipcmd(1) = x(1)/x(2)
 D = zeros(2,4);
 Gsolar = ss(A,B,C,D);
 clear A B C D

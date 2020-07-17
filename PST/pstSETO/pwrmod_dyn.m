@@ -34,21 +34,13 @@ function [P,Q,dP_states,dQ_states,P_statesIni,Q_statesIni] = pwrmod_dyn(P_states
 %   pwrmod_con = see system data file.
 % D. Trudnowski, 2015
 
-
+%global pwrmod_data bus_v pwrmod_con load_con
 global g
-
 %% Parameters
-nOrderP = [2;2]; %order of state equations for P modulation
-nOrderQ = [1;1]; %order of state equations for Q modulation
+nOrderP = 1; %order of state equations for P modulation
+nOrderQ = 1; %order of state equations for Q modulation
 
-%P modulation parameters
-Tpord = [0.25; 0.35]; %Power order filter time constant
-Tv = [0.05; 0.15]; %Voltage measurment filter
-Ipmax = [0.1;0.1]; %Max modulated P current
-Ipmin = [-0.1;-0.1]; %Min modulated P current
-dIpmax = [100;100]; %Max dIp
-dIpmin = [-100;-100]; %Min dIp
-
+%% Initialize output variables
 %% Initialize output variables
 P = zeros(n_pwrmod,1);
 Q = zeros(n_pwrmod,1);
@@ -57,82 +49,22 @@ dQ_states = cell(n_pwrmod,1);
 P_statesIni = cell(n_pwrmod,1);
 Q_statesIni = cell(n_pwrmod,1);
 
-%% Define and initialize states at t = 0.
+%% Define and initialize state derivatives at t = 0 (set to zero).
 if Flag==0
     for k=1:n_pwrmod
-        Q_statesIni{k} = zeros(nOrderQ(k),1);
-        P_statesIni{k} = zeros(nOrderP(k),1);
-        n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
-        P_statesIni{k}(1) = bus(n,4); %Initial real power
-        P_statesIni{k}(2) = bus(n,2); %Initial voltage magnitude
+        Q_statesIni{k} = zeros(nOrderQ,1);
+        P_statesIni{k} = zeros(nOrderP,1);
     end
     g.pwr.pwrmod_data = zeros(length(Time),2); %Store Pref in pwrmod_data
-    clear k n
+    clear k
 
 %% Calculate P and Q
 elseif Flag==1
-    %Initial conditions
-    for k=1:length(P)
-        n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
-        m = find(g.pwr.pwrmod_con(k,1)==g.ncl.load_con(:,1));
-        if g.ncl.load_con(m,2)==1
-            %Initial power injection
-            P(k) = bus(n,4); %Real power 
-            Q(k) = bus(n,5); %Reac power
-        else
-            %Initial current injection
-            P(k) = bus(n,4)/abs(bus(n,2)); %Real-power current
-            Q(k) = bus(n,5)/abs(bus(n,2)); %Reac-power current
-        end
-    end
-    
-    %Controls on P
-    for k=1:n_pwrmod
-        if abs(P_states{k}(2))>1e-8
-            P(k) = P_states{k}(1)/P_states{k}(2);
-        else
-            P(k) = P_states{k}(1)/0.01;
-        end
-    end
+    %Not used
 
 %% Calculate derivatives
 elseif Flag==2
-    for k=1:n_pwrmod
-        %No dynamics for Q, initialize dP
-        dQ_states{k} = zeros(nOrderQ(k),1);
-        dP_states{k} = zeros(nOrderP(k),1);
-        
-        %Bus location
-        n = find(bus(:,1)==g.pwr.pwrmod_con(k,1));
-        
-        %Set Pref and store result in pwrmod_data
-        Pref = bus(n,4);
-        if k==1
-            if Time(kSim)>=1 && Time(kSim)<1.5; 
-                Pref = Pref-0.0001; %Pulse Pref
-            end 
-        elseif k==2
-            if Time(kSim)>=4 && Time(kSim)<4.5; 
-                Pref = Pref + 0.0002; %Pulse Pref
-            end 
-        end
-        g.pwr.pwrmod_data(kSim,k) = Pref;
-        
-        %Calculate dP_states
-        if P_states{k}(1)>Ipmax(k) || P_states{k}(1)<Ipmin(k) 
-            dP_states{k}(1) = 0; %Limit set using anti-windup
-            dP_states{k}(1) = 0; %Limit set using anti-windup
-        else
-            dP_states{k}(1) = (-P_states{k}(1) + Pref)/Tpord(k);
-            if dP_states{k}(1) > dIpmax(k); dP_states{k}(1) = dIpmax(k); end %Rate limit
-            if dP_states{k}(1) < dIpmin(k); dP_states{k}(1) = dIpmin(k); end %Rate limit
-        end
-        
-        VT = abs(g.bus.bus_v(n,kSim)); %Voltage magnitude at the injection bus
-        dP_states{k}(2) = (-P_states{k}(2) + VT)/Tv(k);
-        if P_states{k}(2)<=0.01; dP_states{k}(2) = 0; end %Limit set using anti-windup
-    end
-    clear k
+    %Not used
     
 end
 
