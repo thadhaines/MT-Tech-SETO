@@ -28,6 +28,7 @@ function lmod(i,k,flag)
 %   08/15/97    16:58   Graham Rogers   Version 1
 %   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
 %   05/28/20    09:45   Thad Haines     Revised format of globals and internal function documentation
+%   07/17/20    14:13   Thad Haines     Fixed limiting of state
 
 % system variables
 global g
@@ -73,6 +74,7 @@ if ~isempty(g.lmod.lmod_con)
             % anti-windup reset
             indmx = find( g.lmod.lmod_st(:,k) > g.lmod.lmod_pot(:,1));
             if ~isempty(indmx)
+                g.lmod.lmod_st(indmx,k) = g.lmod.lmod_con(indmx,4); % set state to max - thad 07/10/20
                 indrate = find(g.lmod.dlmod_st(indmx,k)>0);
                 if ~isempty(indrate)
                     % set rate to zero
@@ -81,6 +83,7 @@ if ~isempty(g.lmod.lmod_con)
             end
             indmn = find(g.lmod.lmod_st(:,k) < g.lmod.lmod_pot(:,2));
             if ~isempty(indmn)
+                g.lmod.lmod_st(indmn,k) = g.lmod.lmod_con(indmn,5); % set state to min - thad 07/10/20
                 indrate = find(g.lmod.dlmod_st(indmn)<0);
                 if ~isempty(indrate)
                     % set rate to zero

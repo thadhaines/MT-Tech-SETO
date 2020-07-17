@@ -43,7 +43,7 @@ copyfile('mtg_sig_ORIG.m', 'mtg_sig.m');
 copyfile('rml_sig_ORIG.m', 'rml_sig.m'); 
 
 %% Live plotting
-copyfile('livePlot_ORIG.m', 'livePlot.m'); 
+copyfile('livePlot_1.m', 'livePlot.m'); % use altered as default
 
 %%
 display('Models, Modulation files, and life plotting restored')

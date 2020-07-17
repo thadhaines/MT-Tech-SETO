@@ -28,6 +28,7 @@ function rlmod(i,k,flag)
 %   08/27/97    17:20   Graham Rogers   Version 1
 %   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
 %   06/15/20    09:45   Thad Haines     Revised format of globals and internal function documentation
+%   07/17/20    14:20   Thad Haines     Fixed state limiting
 
 global g
 
@@ -74,7 +75,7 @@ if ~isempty(g.rlmod.rlmod_con)
          % anti-windup reset
          indmx =find( g.rlmod.rlmod_st(:,k) > g.rlmod.rlmod_pot(:,1));
          if ~isempty(indmx)
-            g.rlmod.rlmod_st(indmx,k) = g.rlmod.rlmod_pot(indmx,1);
+            g.rlmod.rlmod_st(indmx,k) = g.rlmod.rlmod_con(indmx,4);% fixed limitng -thad 07/17/20
             indrate = find(g.rlmod.drlmod_st(indmx,k)>0);
             if ~isempty(indrate)
                % set rate to zero
@@ -83,7 +84,7 @@ if ~isempty(g.rlmod.rlmod_con)
          end
          indmn = find(g.rlmod.rlmod_st(:,k) < g.rlmod.rlmod_pot(:,2));
          if ~isempty(indmn)
-            g.rlmod.rlmod_st(indmn,k) = g.rlmod.rlmod_pot(indmn,2); % Fixed rl_mod_st to rlmod_st?
+            g.rlmod.rlmod_st(indmn,k) = g.rlmod.rlmod_con(indmn,5); % Fixed rl_mod_st to rlmod_st? % fixed limitng -thad 07/17/20
             indrate = find(g.rlmod.drlmod_st(indmn)<0);
             if ~isempty(indrate)
                % set rate to zero

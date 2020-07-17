@@ -102,10 +102,11 @@ figure
 hold on
 plot(tL,lmodSig)
 plot(g.sys.t,g.rlmod.rlmod_sig,'--')
+plot(g.sys.t,g.rlmod.rlmod_st,'--')
 ylabel('Reactive Power [PU MVAR]')
 
 %plot(t,lmod_sig,'--')
-legend('Linear','Non-Linear','location','best')
+legend('Linear','Non-Linear Signal','Non-Linear State','location','best')
 title('Modulation Signal')
 %% compare bus voltage magnitude
 figure
