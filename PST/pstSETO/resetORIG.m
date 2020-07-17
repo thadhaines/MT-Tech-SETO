@@ -1,5 +1,5 @@
 %% File resets all user defined or specified files to original state.
-% copyfile(source, destination);
+% format of command:  copyfile(source, destination);
 
 %   History:
 %   Date        Time    Engineer        Description

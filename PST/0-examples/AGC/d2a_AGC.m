@@ -1,6 +1,8 @@
 % Two Area Test Case
 % Altered to type 0 exciters, fault removed, alternate distrubance expected.
 % removed svc
+% added actual area definition
+% added lmon_con for line monitoring during simulation
 
 disp('Two area, 4 machine, AGC test')
 % bus data format
@@ -80,7 +82,7 @@ line = [...
 % each value corresponds to a line index in the line_con
 % Real and reactive current and power will be logged during simulation
 
-lmon_con = [5,6]; % lines between bus 3 and 101
+lmon_con = [5, 6, 13]; % lines between bus 3 and 101 and line between 13 and 120
 
 %% Machine data format
 %       1. machine number,
@@ -256,3 +258,4 @@ sw_con = [...
 3.0 0    0    0    0    0    ts; %clear remote end
 30.0  0    0    0    0    0    0]; % end simulation
 
+clear ts

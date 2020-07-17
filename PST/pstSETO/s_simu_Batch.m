@@ -662,6 +662,17 @@ end
 
 g.sys.sys_freq = ones(1,k); % replaces variable for base frequency input... 5/21/20
 
+%% Initialize zeros for line monitor
+if g.lmon.n_lmon ~=0
+    for Lndx = 1:g.lmon.n_lmon
+       g.lmon.line(Lndx).iFrom = zeros(1,k);
+       g.lmon.line(Lndx).iTo = zeros(1,k);
+       g.lmon.line(Lndx).sFrom = zeros(1,k);
+       g.lmon.line(Lndx).sTo = zeros(1,k);
+    end
+end
+clear Lndx
+
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
 disp('constructing reduced y matrices')
@@ -680,7 +691,7 @@ disp('initializing other models...')
 
 %% step 2: initialization
 g.bus.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
-g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(1:n_bus,1));
+g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(1:n_bus,1)); %complex bus voltage
 
 % clear temp variables
 clear z zdc zdcl ze zig zm t n_bus
@@ -1124,6 +1135,11 @@ while (kt<=ktmax)
         
         %% solve
         h_sol = i_simu(k,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        
+        %% Line Monitoring
+        if g.lmon.n_lmon~=0
+            lmon(k)
+        end
         
         %% HVDC
         if g.dc.ndcr_ud~=0
@@ -1569,6 +1585,8 @@ while (kt<=ktmax)
         %% solve
         h_sol = i_simu(j,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
+        
+        
         g.mac.vex(:,j) = g.mac.vex(:,k);
         g.dc.cur_ord(:,j) = g.dc.cur_ord(:,k);
         % calculate the new value of bus angles rectifier user defined control
@@ -1606,6 +1624,11 @@ while (kt<=ktmax)
                 g.dc.dci_dsig(jj,j) = ...
                     dci_sud(jj,j,flag,g.dc.dci_dc{jj,1},g.dc.dcid_sig(jj,j),ydcimx,ydcimn,g.dc.xdci_dc(st_state:tot_states,10*(j-1)+1));
             end
+        end
+        
+        %% Line Monitoring
+        if g.lmon.n_lmon~=0
+            lmon(j)
         end
         
         %% network interface for control models - 'corrector' step
@@ -1921,17 +1944,18 @@ if g.sys.livePlotFlag
    livePlot('end')
 end
 
-%% calculation of line currents post sim
-V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
-V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
-R = g.line.line(:,3); 
-X = g.line.line(:,4); 
-B = g.line.line(:,5);
-g.dc.tap = g.line.line(:,6); 
-phi = g.line.line(:,7);
-
-[ilf,ilt] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);%line currents
-[sInjF,sInjT] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% 'line flows' - complex power injection at bus
+% Now handled during simulation via lmon - below code can be used to verify functionality
+% %% calculation of line currents post sim
+% V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
+% V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
+% R = g.line.line(:,3); 
+% X = g.line.line(:,4); 
+% B = g.line.line(:,5);
+% g.dc.tap = g.line.line(:,6); 
+% phi = g.line.line(:,7);
+% 
+% [ilf,ilt] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);%line currents
+% [sInjF,sInjT] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% 'line flows' - complex power injection at bus
 
 %% full sim timing
 et = toc;
