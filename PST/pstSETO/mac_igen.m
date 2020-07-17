@@ -49,7 +49,7 @@ if ~isempty(g.igen.igen_con)
       if i == 0;
          %vector computation
          g.igen.n_ig = length(g.igen.igen_con(:,1));
-         g.igen.igbus=g.sys.bus_int(g.igen.igen_con(:,2));
+         g.igen.igbus=g.bus.bus_int(g.igen.igen_con(:,2));
          g.igen.igen_pot = zeros(g.igen.n_ig,7);
          g.igen.igen_pot(:,1)=g.sys.basmva./g.igen.igen_con(:,3); %scaled mva base
          g.igen.igen_pot(:,2)=ones(g.igen.n_ig,1); %base kv

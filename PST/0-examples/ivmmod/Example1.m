@@ -38,19 +38,19 @@ subplot(311)
 nb = 2; %Bus to plot
 ng = 3; %Generator to plot (IVM generator at bus nb)
 ni = 1; %IVM device (corresponds to generator ng and bus nb)
-plot(t,abs(g.sys.bus_v(nb,:)),'k',t,ivmmod_e_sig(ni,:),'r',t,g.mac.edprime(ng,:),'b','LineWidth',2);
+plot(g.sys.t,abs(g.bus.bus_v(nb,:)),'k',g.sys.t,ivmmod_e_sig(ni,:),'r',g.sys.t,g.mac.edprime(ng,:),'b','LineWidth',2);
 ylim([1.1 1.25])
 legend(['bus ' num2str(nb)],'E_c','E','Location','SouthEast')
 ylabel('Voltage (pu)')
 
 subplot(312)
-plot(t,ivmmod_d_sig(ni,:),'r',t,g.mac.mac_ang(ng,:),'b','LineWidth',2);
+plot(g.sys.t,ivmmod_d_sig(ni,:),'r',g.sys.t,g.mac.mac_ang(ng,:),'b','LineWidth',2);
 legend('{\delta}_c','{\delta}','Location','SouthEast')
 ylim([0.1 0.35])
 ylabel('IVM angle (rad)')
 
 subplot(313)
-plot(t,g.mac.pelect(ng,:),'k','LineWidth',2)
+plot(g.sys.t,g.mac.pelect(ng,:),'k','LineWidth',2)
 ylabel('IVM real-power (pu)')
 
 %set(gcf,'Position',[520   0.5*378   560   1.5*420])

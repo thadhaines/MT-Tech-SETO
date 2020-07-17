@@ -56,7 +56,7 @@ if ~isempty(g.ind.ind_con)
         if i == 0;
             %vector computation
             motnum=length(g.ind.ind_con(:,1));
-            g.ind.motbus=g.sys.bus_int(g.ind.ind_con(:,2));
+            g.ind.motbus=g.bus.bus_int(g.ind.ind_con(:,2));
             g.ind.ind_pot(:,1)=g.sys.basmva./g.ind.ind_con(:,3); %scaled mva base
             g.ind.ind_pot(:,2)=ones(motnum,1); %base kv
             mot_vm(:,1)=bus(g.ind.motbus,2); %motor terminal voltage mag
@@ -198,7 +198,7 @@ if ~isempty(g.ind.ind_con)
         end
     end
     if flag == 1
-        v = g.sys.bus_v(g.ind.motbus,k);
+        v = g.bus.bus_v(g.ind.motbus,k);
         g.ind.vdmot(:,k)=real(v);
         g.ind.vqmot(:,k)=imag(v);
     end

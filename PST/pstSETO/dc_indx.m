@@ -57,20 +57,20 @@ if ~isempty(g.dc.dcsp_con)
    g.dc.rpc_idx = find(g.dc.dcc_con(:,9)==2);
    g.dc.n_dcl = lline;
    g.dc.n_conv = lconv;
-   g.dc.inv_ac_bus = g.sys.bus_int(g.dc.dcsp_con(g.dc.i_idx,2));
-   g.dc.rec_ac_bus = g.sys.bus_int(g.dc.dcsp_con(g.dc.r_idx,2));
-   g.dc.ac_bus = g.sys.bus_int(g.dc.dcsp_con(:,2));
+   g.dc.inv_ac_bus = g.bus.bus_int(g.dc.dcsp_con(g.dc.i_idx,2));
+   g.dc.rec_ac_bus = g.bus.bus_int(g.dc.dcsp_con(g.dc.r_idx,2));
+   g.dc.ac_bus = g.bus.bus_int(g.dc.dcsp_con(:,2));
    g.dc.inv_ac_line = zeros(lline,1);
    g.dc.rec_ac_line = zeros(lline,1);
    for j = 1:lline
-      acilj = find(g.sys.bus_int(line(:,2)) == g.dc.inv_ac_bus(j));
+      acilj = find(g.bus.bus_int(line(:,2)) == g.dc.inv_ac_bus(j));
       if isempty(acilj)
          error(' the inverter bus is not declared as a to bus')
       else
          g.dc.inv_ac_line(j) = acilj;
          acilj = [];
       end
-      acrlj = find(g.sys.bus_int(line(:,2)) == g.dc.rec_ac_bus(j));
+      acrlj = find(g.bus.bus_int(line(:,2)) == g.dc.rec_ac_bus(j));
       if isempty(acrlj)
          error(' the rectifier bus is not declared as a to bus')
       else
@@ -96,7 +96,7 @@ g.dc.l_cap = g.dc.n_dcl-g.dc.l_no_cap;
 g.dc.no_ind_idx = find(g.dc.dcl_con(:,4) ==0|g.dc.dcl_con(:,6)==0|g.dc.dcl_con(:,7)==0);
 
 % index of converters in load_con
-j = g.sys.bus_int(g.ncl.load_con(:,1));
+j = g.bus.bus_int(g.ncl.load_con(:,1));
 for k = 1: g.dc.n_conv
    g.dc.ldc_idx(k) = find(j==g.dc.ac_bus(k));
    if isempty(g.dc.ldc_idx(k))

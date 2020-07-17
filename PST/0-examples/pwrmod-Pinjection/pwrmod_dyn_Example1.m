@@ -34,8 +34,6 @@ function [P,Q,dP_states,dQ_states,P_statesIni,Q_statesIni] = pwrmod_dyn(P_states
 %   pwrmod_con = see system data file.
 % D. Trudnowski, 2015
 
-%global pwrmod_data bus_v pwrmod_con 
-global load_con
 global g
 
 %% Parameters
@@ -63,8 +61,8 @@ if Flag==0
 elseif Flag==1
     for k=1:length(P)
         n = find(g.pwr.pwrmod_con(k,1)==bus(:,1));
-        m = find(g.pwr.pwrmod_con(k,1)==load_con(:,1));
-        if load_con(m,2)==1
+        m = find(g.pwr.pwrmod_con(k,1)==g.ncl.load_con(:,1));
+        if g.ncl.load_con(m,2)==1
             %Initial power injection
             P(k) = bus(n,4); %Real power 
             Q(k) = bus(n,5); %Reac power

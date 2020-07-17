@@ -37,7 +37,7 @@ if ~isempty(g.pwr.pwrmod_con)
            else
                error('pwrmod buses must be defined as 100% constant power or 100% constant current in load_con'); 
            end
-           kk = g.sys.bus_int(g.pwr.pwrmod_con(:,1));
+           kk = g.bus.bus_int(g.pwr.pwrmod_con(:,1));
            if any(abs(bus(kk,10)-2))
                error('power modulation buses must be declared type 2 (PV) buses'); 
            end

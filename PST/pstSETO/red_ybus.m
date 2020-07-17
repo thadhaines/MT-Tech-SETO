@@ -45,6 +45,7 @@ load_bus = 3;
 
 nline = length(line(:,1));     % number of lines
 nbus = length(bus_sol(:,1));     % number of buses
+
 [n,dummy] = size(g.mac.mac_con);    % number of generators
 [nmot,dummy]=size(g.ind.ind_con);	% number of induction motors
 [nig,dummy] = size(g.igen.igen_con); % number of induction generators
@@ -61,7 +62,7 @@ if nargout > 2 %checking number of output arguments
 % subtract non-conforming loads from bus P and Q loads
   [nload dum] = size(g.ncl.load_con); % could use nload in globals...? -thad 07/02/20
   if nload~=0
-    j = g.sys.bus_int(g.ncl.load_con(:,1));
+    j = g.bus.bus_int(g.ncl.load_con(:,1));
     bus_sol(j,6) = (ones(nload,1)-g.ncl.load_con(:,2)-g.ncl.load_con(:,4)) ...
                    .*bus_sol(j,6);
     bus_sol(j,7) = (ones(nload,1)-g.ncl.load_con(:,3)-g.ncl.load_con(:,5))...
@@ -76,7 +77,7 @@ end
 
 %Adjust load for pwrmod buses as these are PV buses.
 if g.pwr.n_pwrmod~=0
-    j = g.sys.bus_int(g.pwr.pwrmod_con(:,1));
+    j = g.bus.bus_int(g.pwr.pwrmod_con(:,1));
     bus_sol(j,6) = bus_sol(j,4);
     bus_sol(j,7) = bus_sol(j,5);
     clear j
@@ -126,7 +127,7 @@ if ~isempty(txp)
 end 
 y(1:n,1) = ones(n,1)./(ra+jay*xd); 
    
-jg = g.sys.bus_int(round(g.mac.mac_con(:,2)));  % buses connected to
+jg = g.bus.bus_int(round(g.mac.mac_con(:,2)));  % buses connected to
                                       % generator
 
 % check for multiple generators at a bus
@@ -161,7 +162,7 @@ if length(g.ind.ind_con)~=0
       xsp = g.ind.ind_pot(:,5).*g.ind.ind_pot(:,1);
       rs=g.ind.ind_con(:,4).*g.ind.ind_pot(:,1);
       y(n+1:ngm,1) = ones(nmot,1)./(rs+jay*xsp);     
-      jm = g.sys.bus_int(round(g.ind.ind_con(:,2)));  % bus connected to induction motor
+      jm = g.bus.bus_int(round(g.ind.ind_con(:,2)));  % bus connected to induction motor
         % check for multiple induction motors at a bus
        perm = eye(nmot);
        for k = 1:nmot
@@ -191,7 +192,7 @@ if nig~=0
       xsp = g.igen.igen_pot(:,5).*g.igen.igen_pot(:,1);
       rs=g.igen.igen_con(:,4).*g.igen.igen_pot(:,1);
       y(ngm+1:n_tot,1) = ones(nig,1)./(rs+jay*xsp);     
-      jm = g.sys.bus_int(round(g.igen.igen_con(:,2)));  % bus connected to induction generator
+      jm = g.bus.bus_int(round(g.igen.igen_con(:,2)));  % bus connected to induction generator
         % check for multiple induction generators at a bus
        perm = eye(nig);
        for k = 1:nig
@@ -228,7 +229,7 @@ if nargout <= 2
     % Note dc buses must be the last entries in load_con
       bus_order = zeros(nbus,1);
       bus_conf = zeros(nbus,1);
-      bus_order(1:nload) = g.sys.bus_int(g.ncl.load_con(:,1));
+      bus_order(1:nload) = g.bus.bus_int(g.ncl.load_con(:,1));
       bus_conf(bus_order(1:nload))=ones(nload,1); % constant impedance bus
                                                 % indicator                                                                                    
       bus_order(nload+1:nbus)=find(~bus_conf);
@@ -339,7 +340,7 @@ if nargout <= 2
       Y21 = [];
       Y22 = [];
       rec_V2 = [];
-      bus_order = g.sys.bus_int(bus_sol(:,1));
+      bus_order = g.bus.bus_int(bus_sol(:,1));
     end
 end
 

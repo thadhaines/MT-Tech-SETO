@@ -53,12 +53,14 @@ for vName = varNames
         clearedVars{end+1} = vName{1}; % add name to cell for reference
     end
     catch ME
+        % catches stuctures
         eval(sprintf('[%s, clearedVars] = cleanZeros(%s, clearedVars);',vName{1},vName{1} )) 
         disp(ME.message)
         disp(vName)
     end
 
 end
+g.sys.clearedVars = clearedVars;
 clear varNames vName zeroTest
 
 %% Save cleaned output data

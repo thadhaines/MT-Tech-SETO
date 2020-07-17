@@ -1,4 +1,4 @@
-function f = dpwf_indx;
+function dpwf_indx()
 % syntax: f = dpwf_indx  
 % 6:14 pm 7/7/98
 % Version:  1
@@ -8,7 +8,7 @@ function f = dpwf_indx;
 %          determines indexs for the generators and pss to which the filters are connected 
 % (c) Copyright Joe Chow/Cherry Tree Scientific Software 1998
 %     All Rights Reserved
-f=0;
+
 global  pss_con  mac_int; 
 global  dpw_con dpw_idx dpw_pss_idx n_dpw dpw_Td_idx dpw_Tz_idx dpw_mb_idx;
 if ~isempty(dpw_con)

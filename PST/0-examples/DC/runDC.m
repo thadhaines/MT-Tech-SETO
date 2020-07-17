@@ -97,8 +97,8 @@ linAng = y(:,size(c_v,1)+1:end)'; % collect and rotate angle data
 
 % adjust data changes by initial conditions
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
-    linAng(busN,:) = linAng(busN,:) + deg2rad(bus_sol(busN,3));
+    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+    linAng(busN,:) = linAng(busN,:) + deg2rad(g.bus.bus(busN,3));
 end
 
 load PSTpath.mat
@@ -115,7 +115,7 @@ hold on
 plot(tL,modSig)
 
 if useGlobalG
-    plot(t,g.lmod.lmod_sig,'--')
+    plot(g.sys.t,g.lmod.lmod_sig,'--')
 else
     plot(t,lmod_sig,'--')
 end
@@ -132,7 +132,7 @@ for busN=1:size(linV,1)
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
     
     if useGlobalG
-        plot(t,abs(g.sys.bus_v(busN,:)),'--')
+        plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
     else
         plot(t,abs(bus_v(busN,:)),'--')
     end
@@ -154,7 +154,7 @@ for busN=1:size(linAng,1)
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
     
     if useGlobalG
-        plot(t,angle(g.sys.bus_v(busN,:)),'--')
+        plot(g.sys.t,angle(g.bus.bus_v(busN,:)),'--')
     else
         plot(t,angle(bus_v(busN,:)),'--')
     end

@@ -1,11 +1,12 @@
 %% File resets all user defined or specified files to original state.
-% copyfile(source, destination);
+% format of command:  copyfile(source, destination);
 
 %   History:
 %   Date        Time    Engineer        Description
 %   07/07/20    15:09   Thad Haines     Init
+%   07/17/20    13:31   Thad Haines     Added live plotting
 
-%% Modely Dynamic Configuration
+%% Model Dynamic Configuration
 % IVM MOD
 copyfile('ivmmod_dyn_ORIG.m', 'ivmmod_dyn.m'); 
 
@@ -15,6 +16,9 @@ copyfile('pwrmod_dyn_ORIG.m', 'pwrmod_dyn.m');
 %% Alternate Models
 % MAC_SUB
 copyfile('mac_sub_ORIG.m','mac_sub.m');
+
+% PSS
+copyfile('pss2.m','pss.m');
 
 %% Moduation Files
 % MEXC_SIG - Exciter Signal
@@ -38,5 +42,8 @@ copyfile('mtg_sig_ORIG.m', 'mtg_sig.m');
 % RML_SIG - Reactive load
 copyfile('rml_sig_ORIG.m', 'rml_sig.m'); 
 
+%% Live plotting
+copyfile('livePlot_1.m', 'livePlot.m'); % use altered as default
+
 %%
-display('Modulation files restored')
+display('Models, Modulation files, and life plotting restored')

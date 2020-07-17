@@ -75,7 +75,7 @@ y = lsim(G,excSig,tL); % run input into state space system
 % collect bus voltage magnitudes and adjust by initial conditions
 linV = y(:,1:4)'; % rotate into col vectors
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
+    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
 end
 
 % collect machine speeds and adjust by initial condition
@@ -90,7 +90,6 @@ copyfile([PSTpath 'mexc_sig_ORIG.m'],[PSTpath 'mexc_sig.m']); % Replace original
 
 %% temp file clean up
 delete('PSTpath.mat')
-delete('sim_fle.mat')
 
 %% plot comparisons
 load exciterTest.mat
@@ -100,7 +99,7 @@ figure
 hold on
 plot(tL,excSig)
 %plot(t,exc_sig,'--')
-plot(t,g.exc.exc_sig,'--')
+plot(g.sys.t,g.exc.exc_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Exciter Modulation Signal')
 %% compare bus voltage magnitude
@@ -110,7 +109,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(bus_v(busN,:)),'--')
+    plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
@@ -123,7 +122,7 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-    plot(t,g.mac.mac_spd(busN,:),'--')
+    plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end

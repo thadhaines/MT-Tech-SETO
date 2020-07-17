@@ -96,7 +96,7 @@ for ut=1:length(compTest)
     for busN=1:size(linV,1)
         plot(tL,linV(busN,:))
         legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-        plot(t,abs(g.sys.bus_v(busN,:)),'--')
+        plot(t,abs(g.bus.bus_v(busN,:)),'--')
         legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
         
     end

@@ -1,4 +1,4 @@
-function pss_indx
+function pss_indx()
 %PSS_INDX forms indexes for the pss
 % PSS_INDX Forms indexes for the pss and determines indexs for
 % the generators and exciters to which pss are connected.

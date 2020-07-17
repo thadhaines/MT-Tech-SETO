@@ -89,8 +89,8 @@ linAng = y(:,size(c_v,1)+1:end)'; % collect and rotate angle data
 
 % adjust data changes by initial conditions
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
-    linAng(busN,:) = linAng(busN,:) + deg2rad(bus_sol(busN,3));
+    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+    linAng(busN,:) = linAng(busN,:) + deg2rad(g.bus.bus(busN,3));
 end
 
 save linResults.mat tL linV linAng modSig 
@@ -105,7 +105,7 @@ load linResults.mat
 figure
 hold on
 plot(tL,modSig)
-plot(t,g.lmod.lmod_sig,'--')
+plot(g.sys.t,g.lmod.lmod_sig,'--')
 % plot(t,lmod_sig,'--')
 legend('Linear','Non-Linear','location','best')
 title('Governor Pref Modulation Signal')
@@ -117,7 +117,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(g.sys.bus_v(busN,:)),'--')
+    plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
 %     plot(t,abs(bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
@@ -134,7 +134,7 @@ legNames={};
 for busN=1:size(linAng,1)
     plot(tL,linAng(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,angle(g.sys.bus_v(busN,:)),'--')
+    plot(g.sys.t,angle(g.bus.bus_v(busN,:)),'--')
 %     plot(t,angle(bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     

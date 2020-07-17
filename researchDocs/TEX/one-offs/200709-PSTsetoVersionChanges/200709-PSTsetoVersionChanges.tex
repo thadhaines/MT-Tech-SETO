@@ -55,6 +55,10 @@ Corrected simple \verb|*| to \verb|.*| int the \verb|if ~isempty(nst3_sub)| sect
 Commented out code that prevented the setting equal of the transient reactances.
 
 %===========================================================================================================
+\paragraph{lmod and rlmod} \ \\
+Fixed state limiting.
+
+%===========================================================================================================
 \paragraph{pwrmod} \ \\
 This is the power or current injection model Dan created for version 2.3.
 It's meant to model the `grid following' type of converters.
@@ -67,6 +71,16 @@ It's meant to model a `grid forming' converter where voltage and angle are manip
 While there are questions about the reality of such operations, the model exists and appears to work in the non-linear simulation  of PST SETO.
 
 %===========================================================================================================
+\paragraph{livePlot} \ \\
+Function that creates plot during non-linear simulation.
+While this operation existed in previous versions of pst, it is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
+The \verb|livePlot| function is designed to be overwritten in a similar fashion as pss or machine models previously described.
+
+%===========================================================================================================
+\paragraph{lmon} \ \\
+Coded to actually monitor line current and power flow during non-linear simulation.
+
+%===========================================================================================================
 \pagebreak
 \paragraph{Global Variables} \ \\
 To enable easier manipulation of PST - it was decided to create a global structure that contains all system globals.
@@ -76,7 +90,7 @@ In other words, it could be assumed previous versions of PST spend half of their
 
 
 Inside the global variable \verb|g| are fields that corresponds to models, or groups, of other globals.
-For example, the \verb|g.mac.mac_spd| global contains a all machine speeds while the \verb|g.sys.bus_v| contains all bus voltages, etc.
+For example, the \verb|g.mac.mac_spd| global contains a all machine speeds while the \verb|g.bus.bus_v| contains all bus voltages, etc.
 As of this writing, compiled on \today, the following subparagraphs describe the globals contained in each field of the global \verb|g|. 
 
 %---------------------------------------------------------------------------------------------------
@@ -129,13 +143,14 @@ global st3_TR st3_TR_idx st3_noTR_idx;
 global  mac_con mac_pot mac_int ibus_con
 global  mac_ang mac_spd eqprime edprime psikd psikq
 global  curd curq curdg curqg fldcur
-global  psidpp psiqpp vex eterm theta ed eq
+global  psidpp psiqpp vex eterm ed eq
 global  pmech pelect qelect
 global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
 global  n_mac n_em n_tra n_sub n_ib
 global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
 global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
 global pm_sig n_pm 
+global  psi_re psi_im cur_re cur_im
 \end{minted}
 %---------------------------------------------------------------------------------------------------
 \subparagraph{pss}
@@ -167,11 +182,8 @@ global  load_con load_pot nload
 \subparagraph{sys}
 \begin{minted}{MATLAB}
 global  basmva basrad syn_ref mach_ref sys_freq
-global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
-global  lmon_con % lmon_con not used in non-linear sim...
-global theta % moved from g.mac as it is a system variable
 \end{minted}
-Despite the user manual listing \verb|cur_re|,\verb|cur_im|,\verb|psi_re|, and \verb|psi_im| as system variables, they appear to only correspond to machines and may be moved accordingly.
+
 %---------------------------------------------------------------------------------------------------
 \subparagraph{svc}
 \begin{minted}{MATLAB}
@@ -268,9 +280,30 @@ Some DC related functions reused global variable names for local values but avoi
 During global conversion this caused some issues with accidental casting to global and overwriting issues.
 While the non-linear and linear simulations run, there may be issues with this problem yet to be discovered.
 
+%---------------------------------------------------------------------------------------------------
+\subparagraph{bus} \ \\
+Contains \verb|bus| and all altered bus arrays associated with faults created in \verb|y_switch|.
+Also contains the \verb|bus_v| and \verb|theta| information related to buses.
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{line} \ \\
+Contains \verb|line| and all altered line arrays associated with faults created in \verb|y_switch|.
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{int} \ \\
+Contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with faults.
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{lmon}
+\begin{minted}{MATLAB}
+global lmon_con
+\end{minted}
+This will contain variables for line monitoring not previously collected during simulation.
+
+
 \begin{comment}
 
-
+template for subparagraphs
 
 %---------------------------------------------------------------------------------------------------
 \subparagraph{xxx}
@@ -279,5 +312,8 @@ While the non-linear and linear simulations run, there may be issues with this p
 \end{minted}
 
 
+
+
 \end{comment}
+
 \end{document}

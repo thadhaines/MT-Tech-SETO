@@ -128,7 +128,7 @@ elseif Flag==2
             if dP_states{k}(1) < dIpmin(k); dP_states{k}(1) = dIpmin(k); end %Rate limit
         end
         
-        VT = abs(g.sys.bus_v(n,kSim)); %Voltage magnitude at the injection bus
+        VT = abs(g.bus.bus_v(n,kSim)); %Voltage magnitude at the injection bus
         dP_states{k}(2) = (-P_states{k}(2) + VT)/Tv(k);
         if P_states{k}(2)<=0.01; dP_states{k}(2) = 0; end %Limit set using anti-windup
     end

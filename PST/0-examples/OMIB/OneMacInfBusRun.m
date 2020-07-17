@@ -58,5 +58,5 @@ delete('sim_fle.mat')
 clear all % ensure only saved data is plotted
 load('OneMacInfBus01.mat')
 
-pstMegaPlot
+%pstMegaPlot
 disp('fin')

@@ -20,8 +20,25 @@
 %   07/13/20    09:44   Thad Haines     addition of igen_con
 %   07/13/20    11:14   Thad Haines     addition of ind_con and mld_con 
 %   07/14/20    12:33   Thad Haines     addition of DC related globals
+%   07/17/20    07:57   Thad Haines     addition of bus, line, line mon
 
 global g
+
+%% bus
+if exist('bus','var')
+    g.bus.busOG = bus; % original bus
+    clear bus 
+else
+    error('No bus data found')
+end
+
+%% line
+if exist('line','var')
+    g.line.lineOG = line; % original line
+    clear line 
+else
+    error('No line data found')
+end
 
 %% lmod
 if exist('lmod_con','var')
@@ -76,13 +93,6 @@ if exist('pwrmod_con','var')
     clear pwrmod_con;
 else
     g.pwr.pwrmod_con = [];
-end
-%% lmon_con
-if exist('lmon_con','var')
-    g.sys.lmon_con = lmon_con;
-    clear lmon_con;
-else
-    g.sys.lmon_con = [];
 end
 %% load_con
 if exist('load_con','var')
@@ -175,6 +185,15 @@ if exist('dcc_con','var') % DC converter controls
 else
     g.dc.dcc_con = [];
 end
+
+%% Line monitoring
+if exist('lmon_con','var')
+    g.lmon.lmon_con = lmon_con;
+    clear lmon_con;
+else
+    g.lmon.lmon_con = [];
+end
+
 %% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;

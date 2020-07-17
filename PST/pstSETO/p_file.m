@@ -8,16 +8,15 @@
 % All Rights Reserved
 % step 3a: network solution
 
-
 flag = 1;
 %generators
-mac_ib(0,2,bus,flag);
-mac_em(0,2,bus,flag);
-mac_tra(0,2,bus,flag);
-mac_sub(0,2,bus,flag);
-mac_ind(0,2,bus,flag); 
-mac_igen(0,2,bus,flag);
-psi = g.sys.psi_re(:,2) + jay*g.sys.psi_im(:,2);
+mac_ib(0,2,g.bus.bus,flag);
+mac_em(0,2,g.bus.bus,flag);
+mac_tra(0,2,g.bus.bus,flag);
+mac_sub(0,2,g.bus.bus,flag);
+mac_ind(0,2,g.bus.bus,flag); 
+mac_igen(0,2,g.bus.bus,flag);
+psi = g.mac.psi_re(:,2) + jay*g.mac.psi_im(:,2);
 
 if g.ind.n_mot~=0&&g.igen.n_ig==0
    vmp = g.ind.vdp(:,2) + jay*g.ind.vqp(:,2);
@@ -34,24 +33,24 @@ else
 end
 
 if g.dc.n_conv~=0
-   dc_cont(0,2,2,bus,flag);
+   dc_cont(0,2,2,g.bus.bus,flag);
 end
 
 cur(:,2) = Y_gprf*int_volt; % network solution currents into generators       
 b_v(boprf(g.ncl.nload+1:nbus),1) = V_rgprf*int_volt;   % bus voltage reconstruction
 if g.ncl.nload~=0
    vnc = v(boprf(1:g.ncl.nload),1);
-   vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf,int_volt,vnc,1e-6,2,2);
+   vnc = nc_load(g.bus.bus,flag,Y_ncprf,Y_ncgprf,int_volt,vnc,1e-6,2,2);
    bvnc = full(V_rncprf*vnc);
    b_v(boprf(1:g.ncl.nload),1) = vnc;
    cur(:,2) = cur(:,2) + Y_gncprf*vnc;% modify currents for nc loads
    b_v(boprf(g.ncl.nload+1:nbus),1) =  b_v(boprf(g.ncl.nload+1:nbus),1) + bvnc; % adjust voltages for nc loads
 end
-v(g.sys.bus_int(bus(:,1)),2) = b_v;
-g.sys.bus_v(g.sys.bus_int(bus(:,1)),2) = b_v;
-g.sys.theta(g.sys.bus_int(bus(:,1)),2) = angle(b_v); 
-g.sys.cur_re(1:g.mac.n_mac,2) = real(cur(1:g.mac.n_mac,2)); 
-g.sys.cur_im(1:g.mac.n_mac,2) = imag(cur(1:g.mac.n_mac,2));
+v(g.bus.bus_int(g.bus.bus(:,1)),2) = b_v;
+g.bus.bus_v(g.bus.bus_int(g.bus.bus(:,1)),2) = b_v;
+g.bus.theta(g.bus.bus_int(g.bus.bus(:,1)),2) = angle(b_v); 
+g.mac.cur_re(1:g.mac.n_mac,2) = real(cur(1:g.mac.n_mac,2)); 
+g.mac.cur_im(1:g.mac.n_mac,2) = imag(cur(1:g.mac.n_mac,2));
 cur_mag(1:g.mac.n_mac,2) = abs(cur(1:g.mac.n_mac,2)).*g.mac.mac_pot(:,1);
 
 if g.ind.n_mot~=0
@@ -83,14 +82,14 @@ exc_dc12(0,2,flag);
 exc_st3(0,2,flag);
 % turbine/governor
 tg(0,2,flag);
-tg_hydro(0,2,bus,flag);
+tg_hydro(0,2,g.bus.bus,flag);
 % calculate rates of change
 flag = 2;
-mac_em(0,2,bus,flag);
-mac_tra(0,2,bus,flag);
-mac_sub(0,2,bus,flag); 
-mac_ind(0,2,bus,flag); 
-mac_igen(0,2,bus,flag);
+mac_em(0,2,g.bus.bus,flag);
+mac_tra(0,2,g.bus.bus,flag);
+mac_sub(0,2,g.bus.bus,flag); 
+mac_ind(0,2,g.bus.bus,flag); 
+mac_igen(0,2,g.bus.bus,flag);
 dpwf(0,2,flag);
 pss(0,2,flag);
 
@@ -100,11 +99,11 @@ exc_dc12(0,2,flag);
 exc_st3(0,2,flag);
 
 tg(0,2,flag);
-tg_hydro(0,2,bus,flag);
+tg_hydro(0,2,g.bus.bus,flag);
 
 if g.svc.n_svc~=0 
-   v_svc = abs(v(g.sys.bus_int(g.svc.svc_con(:,2)),2));
-   svc(0,2,bus,flag,v_svc);
+   v_svc = abs(v(g.bus.bus_int(g.svc.svc_con(:,2)),2));
+   svc(0,2,g.bus.bus,flag,v_svc);
 end
 
 if g.tcsc.n_tcsc~=0
@@ -117,13 +116,13 @@ if g.rlmod.n_rlmod~=0
    rlmod(0,2,flag);
 end
 if g.pwr.n_pwrmod~=0 
-   pwrmod_p(0,2,bus,flag);
-   pwrmod_q(0,2,bus,flag);
+   pwrmod_p(0,2,g.bus.bus,flag);
+   pwrmod_q(0,2,g.bus.bus,flag);
 end
 
 if g.dc.n_conv ~=0
-   dc_cont(0,2,2,bus,flag);
-   dc_line(0,2,2,bus,flag);
+   dc_cont(0,2,2,g.bus.bus,flag);
+   dc_line(0,2,2,g.bus.bus,flag);
 end
 
 telect(:,2) = g.mac.pelect(:,2).*g.mac.mac_pot(:,1) ...
@@ -248,15 +247,15 @@ if c_state == 0
    c_t(g.mac.not_ib_idx,j_state) = (telect(g.mac.not_ib_idx,2)-telect(g.mac.not_ib_idx,1))/pert;
    c_pm(g.mac.not_ib_idx,j_state) = (g.mac.pmech(g.mac.not_ib_idx,2)-g.mac.pmech(g.mac.not_ib_idx,1))/pert;
    c_v(:,j_state) = (abs(v(:,2)) -abs(v(:,1)))/pert;
-   c_ang(:,j_state) = (g.sys.theta(:,2) - g.sys.theta(:,1))/pert;
+   c_ang(:,j_state) = (g.bus.theta(:,2) - g.bus.theta(:,1))/pert;
    c_curd(:,j_state) = (g.mac.curd(:,2) - g.mac.curd(:,1))/pert;  % JHC 12/17/2015
    c_curq(:,j_state) = (g.mac.curq(:,2) - g.mac.curq(:,1))/pert;  % JHC 12/17/2015
    if g.exc.n_exc~=0
       c_Efd(:,j_state) = (g.exc.Efd(:,2)-g.exc.Efd(:,1))/pert;
    end
-   if ~isempty(g.sys.lmon_con) 
-      from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
-      to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
+   if ~isempty(g.lmon.lmon_con) 
+      from_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,1));
+      to_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,2));
       V1 = v(from_idx,1);
       V2 = v(to_idx,1);
       [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
@@ -288,12 +287,12 @@ else
       b_vr(:,vr_input) = p_mat*d_vector/pert;
       d_pvr(:,vr_input) = (g.mac.pelect(:,2)-g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
       d_vvr(:,vr_input) = abs(v(:,2) - v(:,1))/pert;
-      d_angvr(:,vr_input) = (g.sys.theta(:,2)-g.sys.theta(:,1))/pert;
+      d_angvr(:,vr_input) = (g.bus.theta(:,2)-g.bus.theta(:,1))/pert;
    elseif c_state==2
       b_pr(:,pr_input) = p_mat*d_vector/pert;
       d_ppr(:,pr_input) = (g.mac.pelect(:,2) - g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
       d_vpr(:,pr_input) = abs(v(:,2) - v(:,1))/pert;
-      d_angpr(:,pr_input) = (g.sys.theta(:,2)-g.sys.theta(:,1))/pert; 
+      d_angpr(:,pr_input) = (g.bus.theta(:,2)-g.bus.theta(:,1))/pert; 
    elseif c_state==3
       b_svc(:,svc_input) = p_mat*d_vector/pert;
       % note: d_svc is zero because of the time constant
@@ -315,14 +314,14 @@ else
       b_dcr(:,dcmod_input) = p_mat*d_vector/pert;
       d_pdcr(:,dcmod_input) = (g.mac.pelect(:,2)-g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
       d_vdcr(:,dcmod_input) = abs(v(:,2) - v(:,1))/pert;
-      d_angdcr(:,dcmod_input) = (g.sys.theta(:,2)-g.sys.theta(:,1))/pert;
+      d_angdcr(:,dcmod_input) = (g.bus.theta(:,2)-g.bus.theta(:,1))/pert;
       d_pdcr(:,dcmod_input)=(g.mac.pelect(:,2) - g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
       d_idcdcr(:,dcmod_input) = (g.dc.i_dcr(:,2)-g.dc.i_dcr(:,1))/pert;
       d_Vdcrdcr(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
       d_Vdcidcr(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
-      if ~isempty(g.sys.lmon_con) 
-         from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
-         to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
+      if ~isempty(g.lmon.lmon_con) 
+         from_idx = g.bus.bus_int(line(g.lmon.lmon_con,1));
+         to_idx = g.bus.bus_int(line(g.lmon.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
          [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
@@ -346,14 +345,14 @@ else
       b_dci(:,dcmod_input) = p_mat*d_vector/pert;
       d_pdci(:,dcmod_input) = (g.mac.pelect(:,2)-g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
       d_vdci(:,dcmod_input) = abs(v(:,2) - v(:,1))/pert;
-      d_angdci(:,dcmod_input) = (g.sys.theta(:,2)-g.sys.theta(:,1))/pert;
+      d_angdci(:,dcmod_input) = (g.bus.theta(:,2)-g.bus.theta(:,1))/pert;
       d_pdci(:,dcmod_input)=(g.mac.pelect(:,2) - g.mac.pelect(:,1)).*g.mac.mac_pot(:,1)/pert;
       d_idcdci(:,dcmod_input) = (g.dc.i_dci(:,2)-g.dc.i_dci(:,1))/pert;
       d_Vdcrdci(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
       d_Vdcdci(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
-      if ~isempty(g.sys.lmon_con) 
-         from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
-         to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
+      if ~isempty(g.lmon.lmon_con) 
+         from_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,1));
+         to_idx = g.bus.bus_int(g.line.line(g.lmon.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
          [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
@@ -376,17 +375,17 @@ else
    end
 end
 %reset states to initial values
-g.sys.psi_re(:,2) = g.sys.psi_re(:,1);
-g.sys.psi_im(:,2) = g.sys.psi_im(:,1);
+g.mac.psi_re(:,2) = g.mac.psi_re(:,1);
+g.mac.psi_im(:,2) = g.mac.psi_im(:,1);
 v(:,2) = v(:,1);
-g.sys.bus_v(:,2)=g.sys.bus_v(:,1);
+g.bus.bus_v(:,2)=g.bus.bus_v(:,1);
 telect(:,2) = telect(:,1); % what is this? -thad 06/18/20
 
 g.mac.eterm(:,2) = g.mac.eterm(:,1);
 g.mac.pelect(:,2) = g.mac.pelect(:,1);
 g.mac.qelect(:,2) = g.mac.qelect(:,1);
 
-g.sys.theta(:,2) = g.sys.theta(:,1);
+g.bus.theta(:,2) = g.bus.theta(:,1);
 
 g.mac.pmech(:,2) = g.mac.pmech(:,1);
 g.mac.mac_ang(:,2) = g.mac.mac_ang(:,1);

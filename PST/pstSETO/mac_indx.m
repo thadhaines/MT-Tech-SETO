@@ -16,9 +16,7 @@ function mac_indx()
 %   12/16/97    09:38   -               Version 1
 %   06/19/20    09:56   Thad Haines     Revised format of globals and internal function documentation
 %   07/13/20    10:34   Thad Haines     Induction generator g.igen alterations
-
-    %global ind_int ind_con n_mot
-    
+  
 global n_ivm mac_ivm_idx
 
 global g

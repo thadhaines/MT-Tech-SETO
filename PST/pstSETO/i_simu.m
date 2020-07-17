@@ -45,7 +45,7 @@ if isempty(g.igen.n_ig)
 end
 
 jay = sqrt(-1);
-psi = g.sys.psi_re(:,k) + jay*g.sys.psi_im(:,k);
+psi = g.mac.psi_re(:,k) + jay*g.mac.psi_im(:,k);
 vmp = g.ind.vdp(:,k) + jay*g.ind.vqp(:,k);
 vmpig = g.igen.vdpig(:,k) + jay*g.igen.vqpig(:,k);
 
@@ -75,8 +75,8 @@ if g.ncl.nload~=0
     else
         kk=k;
     end
-    vnc = g.sys.bus_v(g.sys.bus_int(g.ncl.load_con(:,1)),kk);% initial value
-    vnc = nc_load(bus_sim,flag,Y_nc,Y_ncg,int_volt,vnc,1e-5,k,kdc);
+    vnc = g.bus.bus_v(g.bus.bus_int(g.ncl.load_con(:,1)),kk);% initial value
+    vnc = nc_load(g.bus.bus_sim,flag,Y_nc,Y_ncg,int_volt,vnc,1e-5,k,kdc);
     
     % set nc load voltages
     b_v(bo(1:g.ncl.nload),1)=vnc;
@@ -85,21 +85,21 @@ if g.ncl.nload~=0
 end
 % note: the dc bus voltages are the equivalent HT bus voltages
 %       and not the LT bus voltages
-g.sys.bus_v(g.sys.bus_int(bus_sim(:,1)),k) = b_v;
-g.sys.theta(g.sys.bus_int(bus_sim(:,1)),k) = angle(b_v);
-g.sys.cur_re(:,k) = real(cur(1:g.mac.n_mac));
-g.sys.cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
+g.bus.bus_v(g.bus.bus_int(bus_sim(:,1)),k) = b_v;
+g.bus.theta(g.bus.bus_int(bus_sim(:,1)),k) = angle(b_v);
+g.mac.cur_re(:,k) = real(cur(1:g.mac.n_mac));
+g.mac.cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
 if g.ind.n_mot~=0
     g.ind.idmot(:,k) = -real(cur(g.mac.n_mac+1:ngm));%induction motor currents
     g.ind.iqmot(:,k) = -imag(cur(g.mac.n_mac+1:ngm));%current out of network
-    g.ind.s_mot(:,k) = g.sys.bus_v(g.sys.bus_int(g.ind.ind_con(:,2)),k).*(g.ind.idmot(:,k)-jay*g.ind.iqmot(:,k));
+    g.ind.s_mot(:,k) = g.bus.bus_v(g.bus.bus_int(g.ind.ind_con(:,2)),k).*(g.ind.idmot(:,k)-jay*g.ind.iqmot(:,k));
     g.ind.p_mot(:,k) = real(g.ind.s_mot(:,k));
     g.ind.q_mot(:,k) = imag(g.ind.s_mot(:,k));
 end
 if g.igen.n_ig~=0
     g.igen.idig(:,k) = -real(cur(ngm+1:ntot));%induction generator currents
     g.igen.iqig(:,k) = -imag(cur(ngm+1:ntot));%current out of network
-    g.igen.s_igen(:,k) = g.sys.bus_v(g.sys.bus_int(g.igen.igen_con(:,2)),k)...
+    g.igen.s_igen(:,k) = g.bus.bus_v(g.bus.bus_int(g.igen.igen_con(:,2)),k)...
         .*(g.igen.idig(:,k)-jay*g.igen.iqig(:,k));
     g.igen.pig(:,k) = real(g.igen.s_igen(:,k));
     g.igen.qig(:,k) = imag(g.igen.s_igen(:,k));
@@ -107,8 +107,8 @@ end
 
 if g.dc.n_conv ~=0
     % calculate dc voltage and current
-    V0(g.dc.r_idx,1) = abs(g.sys.bus_v(g.dc.rec_ac_bus,k)).*g.dc.dcc_pot(:,7);
-    V0(g.dc.i_idx,1) = abs(g.sys.bus_v(g.dc.inv_ac_bus,k)).*g.dc.dcc_pot(:,8);
+    V0(g.dc.r_idx,1) = abs(g.bus.bus_v(g.dc.rec_ac_bus,k)).*g.dc.dcc_pot(:,7);
+    V0(g.dc.i_idx,1) = abs(g.bus.bus_v(g.dc.inv_ac_bus,k)).*g.dc.dcc_pot(:,8);
     g.dc.Vdc(g.dc.r_idx,kdc) = V0(g.dc.r_idx,1).*cos(g.dc.alpha(:,kdc)) - g.dc.i_dcr(:,kdc).*g.dc.dcc_pot(:,3);
     g.dc.Vdc(g.dc.i_idx,kdc) = V0(g.dc.i_idx,1).*cos(g.dc.gamma(:,kdc)) - g.dc.i_dci(:,kdc).*g.dc.dcc_pot(:,5);
     g.dc.i_dc(g.dc.r_idx,kdc) = g.dc.i_dcr(:,kdc);

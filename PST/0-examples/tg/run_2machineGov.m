@@ -66,7 +66,6 @@ save('twoMachineGov.mat'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
-delete('sim_fle.mat')
 
 %% Plotting init and function call
 clear all % ensure only saved data is plotted

@@ -1,1 +1,0 @@
-Collection of examples to test functionality of PST.
