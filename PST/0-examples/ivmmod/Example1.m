@@ -38,7 +38,7 @@ subplot(311)
 nb = 2; %Bus to plot
 ng = 3; %Generator to plot (IVM generator at bus nb)
 ni = 1; %IVM device (corresponds to generator ng and bus nb)
-plot(g.sys.t,abs(g.sys.bus_v(nb,:)),'k',g.sys.t,ivmmod_e_sig(ni,:),'r',g.sys.t,g.mac.edprime(ng,:),'b','LineWidth',2);
+plot(g.sys.t,abs(g.bus.bus_v(nb,:)),'k',g.sys.t,ivmmod_e_sig(ni,:),'r',g.sys.t,g.mac.edprime(ng,:),'b','LineWidth',2);
 ylim([1.1 1.25])
 legend(['bus ' num2str(nb)],'E_c','E','Location','SouthEast')
 ylabel('Voltage (pu)')

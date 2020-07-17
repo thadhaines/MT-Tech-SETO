@@ -30,7 +30,7 @@ end
 
 [g.int.Y_gprf,g.int.Y_gncprf,g.int.Y_ncgprf,g.int.Y_ncprf,g.int.V_rgprf,g.int.V_rncprf,g.int.boprf] = red_ybus(g.bus.bus,g.line.line);
 
-g.bus.bus_intprf = g.sys.bus_int;% store the internal bus numbers for the pre_fault system
+g.bus.bus_intprf = g.bus.bus_int;% store the internal bus numbers for the pre_fault system
 
 %nbus = length(bus(:,1)); unused? -thad 07/17/20
 
@@ -109,7 +109,7 @@ end
 
 % form fault on reduced matrices
 [g.int.Y_gf,g.int.Y_gncf,g.int.Y_ncgf,g.int.Y_ncf,g.int.V_rgf,g.int.V_rncf,g.int.bof] = red_ybus(g.bus.bus_f,g.line.line_f);   % fault-on admittance matrix 
-g.bus.bus_intf = g.sys.bus_int;
+g.bus.bus_intf = g.bus.bus_int;
 
 %% second switching point, clear fault at near end/add new line
 if f_type < 4
@@ -143,7 +143,7 @@ if f_type < 4
     [g.int.Y_gpf1,g.int.Y_gncpf1,g.int.Y_ncgpf1,g.int.Y_ncpf1,g.int.V_rgpf1,g.int.V_rncpf1,g.int.bopf1]...
         = red_ybus(g.bus.bus_pf1,g.line.line_pf1);  % post-fault
     % admittance matrix
-    g.bus.bus_intpf1 = g.sys.bus_int;
+    g.bus.bus_intpf1 = g.bus.bus_int;
     
 elseif f_type==4 || f_type==5 || f_type==6
     % fault type is 4 or 5, 6 no change in system structure
@@ -188,7 +188,7 @@ if f_type < 4
     [g.int.Y_gpf2,g.int.Y_gncpf2,g.int.Y_ncgpf2,g.int.Y_ncpf2,g.int.V_rgpf2,g.int.V_rncpf2,g.int.bopf2]...
         = red_ybus(g.bus.bus_pf2,g.line.line_pf2);  % post-fault
     % admittance matrix
-    g.bus.bus_intpf2 = g.sys.bus_int;
+    g.bus.bus_intpf2 = g.bus.bus_int;
 else
     % load type = 4 or 5, 6 or 7
     % no change in system structure

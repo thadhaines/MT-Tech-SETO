@@ -128,7 +128,7 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(g.sys.t,abs(g.sys.bus_v(busN,:)),'--')
+    plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end

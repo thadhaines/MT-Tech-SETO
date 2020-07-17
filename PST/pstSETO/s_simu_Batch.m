@@ -205,7 +205,7 @@ lmon_indx;
 % ntot = g.mac.n_mac+g.ind.n_mot+g.igen.n_ig; % unused? commented out - thad 07/16/20
 % ngm = g.mac.n_mac + g.ind.n_mot;
 
-g.mac.n_pm = g.mac.n_mac; % used for pm modulation
+g.mac.n_pm = g.mac.n_mac; % used for pm modulation -- put into mac or tg indx?
 
 %% Make sure bus max/min Q is the same as the pwrmod_con max/min Q - moved to place after pwrmod is counted (never actually executed prior...) -thad 06/30/20
 if ~isempty(g.pwr.n_pwrmod)
@@ -395,19 +395,18 @@ clear j sv
 
 %% End of DC specific stuff? - continuation of zero intialization - 06/01/20 -thad
 
-%v_p = z1; % unsure of this use - commented out 07/16
 %mac_ref = z1;  % unsure of this use
 %sys_ref = z1;   % unsure of this use - thad 07/02/20
 
 n_bus = length(g.bus.bus(:,1));
-g.sys.bus_v = zeros(n_bus+1,k);
+g.bus.bus_v = zeros(n_bus+1,k);
 
-g.sys.cur_re = z; 
-g.sys.cur_im = z; 
-g.sys.psi_re = z; 
-g.sys.psi_im = z;
+g.mac.cur_re = z; 
+g.mac.cur_im = z; 
+g.mac.psi_re = z; 
+g.mac.psi_im = z;
 
-g.sys.theta = zeros(n_bus+1,k);
+g.bus.theta = zeros(n_bus+1,k);
 
 g.mac.mac_ang = z; 
 g.mac.mac_spd = z; 
@@ -680,8 +679,8 @@ y_switch % calculates the reduced y matrices for the different switching conditi
 disp('initializing other models...')
 
 %% step 2: initialization
-g.sys.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
-g.sys.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.sys.theta(1:n_bus,1));
+g.bus.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
+g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(1:n_bus,1));
 
 % clear temp variables
 clear z zdc zdcl ze zig zm t n_bus
@@ -691,16 +690,16 @@ if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 
     for j=1:g.svc.n_dcud
         l_num = g.svc.svc_dc{j,3};
         svc_num = g.svc.svc_dc{j,2};
-        from_bus = g.sys.bus_int(g.line.line(l_num,1)); 
-        to_bus = g.sys.bus_int(g.line.line(l_num,2));
-        svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
+        from_bus = g.bus.bus_int(g.line.line(l_num,1)); 
+        to_bus = g.bus.bus_int(g.line.line(l_num,2));
+        svc_bn = g.bus.bus_int(g.svc.svc_con(svc_num,2));
         
         if svc_bn~= from_bus&& svc_bn  ~= to_bus
             error('the svc is not at the end of the specified line');
         end
         
-        V1 = g.sys.bus_v(from_bus,1);
-        V2 = g.sys.bus_v(to_bus,1);
+        V1 = g.bus.bus_v(from_bus,1);
+        V2 = g.bus.bus_v(to_bus,1);
         R = g.line.line(l_num,3);
         X = g.line.line(l_num,4);
         B = g.line.line(l_num,5);
@@ -724,7 +723,7 @@ if g.tcsc.n_tcscud ~=0 % Seems like this should be put in a seperate script - th
     for j=1:g.tcsc.n_tcscud
         b_num = g.tcsc.tcsc_dc{j,3};
         tcsc_num = g.tcsc.tcsc_dc{j,2};
-        g.tcsc.td_sig(j,1) =abs(g.sys.bus_v(g.sys.bus_int(b_num),1));
+        g.tcsc.td_sig(j,1) =abs(g.bus.bus_v(g.bus.bus_int(b_num),1));
     end
     clear j
 end
@@ -735,18 +734,18 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
     Pi = g.bus.bus(g.dc.inv_ac_bus,6);
     Qr = g.bus.bus(g.dc.rec_ac_bus,7);
     Qi = g.bus.bus(g.dc.inv_ac_bus,7);
-    VLT= g.sys.bus_v(g.dc.ac_bus,1);
+    VLT= g.bus.bus_v(g.dc.ac_bus,1);
     i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
     i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
     IHT(g.dc.r_idx,1)=i_acr;
     IHT(g.dc.i_idx,1)=i_aci;
     g.dc.VHT(g.dc.r_idx,1) = (VLT(g.dc.r_idx) + jay*g.dc.dcc_pot(:,2).*i_acr);
     g.dc.VHT(g.dc.i_idx,1) = (VLT(g.dc.i_idx) + jay*g.dc.dcc_pot(:,4).*i_aci);
-    g.sys.bus_v(g.dc.ac_bus,1) = g.dc.VHT;
-    g.sys.theta(g.dc.ac_bus,1) = angle(g.sys.bus_v(g.dc.ac_bus,1));
+    g.bus.bus_v(g.dc.ac_bus,1) = g.dc.VHT;
+    g.bus.theta(g.dc.ac_bus,1) = angle(g.bus.bus_v(g.dc.ac_bus,1));
     % modify the bus matrix to the HT buses
-    g.bus.bus(g.dc.ac_bus,2) = abs(g.sys.bus_v(g.dc.ac_bus,1));
-    g.bus.bus(g.dc.ac_bus,3) = g.sys.theta(g.dc.ac_bus,1)*180/pi;
+    g.bus.bus(g.dc.ac_bus,2) = abs(g.bus.bus_v(g.dc.ac_bus,1));
+    g.bus.bus(g.dc.ac_bus,3) = g.bus.theta(g.dc.ac_bus,1)*180/pi;
     SHT = g.dc.VHT.*conj(IHT);
     g.bus.bus(g.dc.ac_bus,6) = real(SHT);
     g.bus.bus(g.dc.ac_bus,7) = imag(SHT);
@@ -757,7 +756,7 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
             b_num1 = g.dc.dcr_dc{j,3};
             b_num2 = g.dc.dcr_dc{j,4};
             conv_num = g.dc.dcr_dc{j,2};
-            g.dc.angdcr(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
+            g.dc.angdcr(j,:) = g.bus.theta(g.bus.bus_int(b_num1),1)-g.bus.theta(g.bus.bus_int(b_num2),1);
             g.dc.dcrd_sig(j,:)=g.dc.angdcr(j,:);
         end
         clear j
@@ -768,7 +767,7 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
             b_num1 = g.dc.dci_dc{j,3};
             b_num2 = g.dc.dci_dc{j,4};
             conv_num = g.dc.dci_dc{j,2};
-            g.dc.angdci(j,:) = g.sys.theta(g.sys.bus_int(b_num1),1)-g.sys.theta(g.sys.bus_int(b_num2),1);
+            g.dc.angdci(j,:) = g.bus.theta(g.bus.bus_int(b_num1),1)-g.bus.theta(g.bus.bus_int(b_num2),1);
             g.dc.dcid_sig(j,:) = g.dc.angdci(j,:);
         end
         clear j
@@ -778,7 +777,7 @@ end
 %% Flag = 0 == Initialization
 warning('*** Dynamic model initialization via functions/scripts:')
 flag = 0;
-g.sys.bus_int = g.bus.bus_intprf;% pre-fault system
+g.bus.bus_int = g.bus.bus_intprf;% pre-fault system
 
 disp('generators')
 mac_sub(0,1,g.bus.bus,flag); % first 
@@ -958,7 +957,7 @@ if ~isempty(g.dc.dcsp_con)
     disp('dc converter specification')
     
     g.bus.bus_sim = g.bus.bus;
-    g.sys.bus_int = g.bus.bus_intprf;
+    g.bus.bus_int = g.bus.bus_intprf;
     Y1 = g.int.Y_gprf;
     Y2 = g.int.Y_gncprf;
     Y3 = g.int.Y_ncgprf;
@@ -1044,7 +1043,7 @@ while (kt<=ktmax)
             %% fault cleared - post fault 2
             g.line.line_sim = g.line.line_pf2;
             g.bus.bus_sim = g.bus.bus_pf2;
-            g.sys.bus_int = g.bus.bus_intpf2;
+            g.bus.bus_int = g.bus.bus_intpf2;
             
             Y1 = g.int.Y_gpf2;
             Y2 = g.int.Y_gncpf2;
@@ -1064,7 +1063,7 @@ while (kt<=ktmax)
             g.line.line_sim = g.line.line_pf1;
             
             g.bus.bus_sim = g.bus.bus_pf1;
-            g.sys.bus_int = g.bus.bus_intpf1;
+            g.bus.bus_int = g.bus.bus_intpf1;
             
             Y1 = g.int.Y_gpf1;
             Y2 = g.int.Y_gncpf1;
@@ -1081,7 +1080,7 @@ while (kt<=ktmax)
             g.line.line_sim = g.line.line_f;
             g.bus.bus_sim = g.bus.bus_f;
             
-            g.sys.bus_int = g.bus.bus_intf;
+            g.bus.bus_int = g.bus.bus_intf;
             
             Y1 = g.int.Y_gf;
             Y2 = g.int.Y_gncf;
@@ -1098,7 +1097,7 @@ while (kt<=ktmax)
             g.line.line_sim = g.line.line;
             g.bus.bus_sim = g.bus.bus;
             
-            g.sys.bus_int = g.bus.bus_intprf;
+            g.bus.bus_int = g.bus.bus_intprf;
             
             Y1 = g.int.Y_gprf;
             Y2 = g.int.Y_gncprf;
@@ -1134,7 +1133,7 @@ while (kt<=ktmax)
                 b_num1 = g.dc.dcr_dc{jj,3};
                 b_num2 = g.dc.dcr_dc{jj,4};
                 conv_num = g.dc.dcr_dc{jj,2};
-                g.dc.angdcr(jj,k) = (g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k));
+                g.dc.angdcr(jj,k) = (g.bus.theta(g.bus.bus_int(b_num1),k)-g.bus.theta(g.bus.bus_int(b_num2),k));
                 g.dc.dcrd_sig(jj,k)=g.dc.angdcr(jj,k);
                 st_state = tot_states+1; 
                 dcr_states = g.dc.dcr_dc{jj,7}; 
@@ -1152,7 +1151,7 @@ while (kt<=ktmax)
                 b_num1 = g.dc.dci_dc{jj,3};
                 b_num2 = g.dc.dci_dc{jj,4};
                 conv_num = g.dc.dci_dc{jj,2};
-                g.dc.angdci(jj,k)=g.sys.theta(g.sys.bus_int(b_num1),k)-g.sys.theta(g.sys.bus_int(b_num2),k);
+                g.dc.angdci(jj,k)=g.bus.theta(g.bus.bus_int(b_num1),k)-g.bus.theta(g.bus.bus_int(b_num2),k);
                 g.dc.dcid_sig(jj,k)=(g.dc.angdci(jj,k)-g.dc.angdci(jj,k-1))/(t(k)-t(k-1));
                 st_state = tot_states+1; 
                 dci_states = g.dc.dci_dc{jj,7}; 
@@ -1186,11 +1185,11 @@ while (kt<=ktmax)
             for jj=1:g.svc.n_dcud
                 l_num = g.svc.svc_dc{jj,3};
                 svc_num = g.svc.svc_dc{jj,2};
-                from_bus = g.sys.bus_int(line_sim(l_num,1)); 
-                to_bus = g.sys.bus_int(line_sim(l_num,2));
-                svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
-                V1 = g.sys.bus_v(from_bus,k);
-                V2 = g.sys.bus_v(to_bus,k);
+                from_bus = g.bus.bus_int(line_sim(l_num,1)); 
+                to_bus = g.bus.bus_int(line_sim(l_num,2));
+                svc_bn = g.bus.bus_int(g.svc.svc_con(svc_num,2));
+                V1 = g.bus.bus_v(from_bus,k);
+                V2 = g.bus.bus_v(to_bus,k);
                 R = line_sim(l_num,3);
                 X = line_sim(l_num,4);
                 B = line_sim(l_num,5);
@@ -1213,7 +1212,7 @@ while (kt<=ktmax)
             for jj=1:g.tcsc.n_tcscud
                 b_num = g.tcsc.tcsc_dc{jj,3};
                 tcsc_num = g.tcsc.tcsc_dc{jj,2};
-                g.tcsc.td_sig(jj,k)=abs(g.sys.bus_v(g.sys.bus_int(b_num),k));
+                g.tcsc.td_sig(jj,k)=abs(g.bus.bus_v(g.bus.bus_int(b_num),k));
             end
         end
         
@@ -1245,7 +1244,7 @@ while (kt<=ktmax)
         tg_hydro(0,k,g.bus.bus_sim,flag);
         
         if g.svc.n_svc~=0
-            v_svc = abs(g.sys.bus_v(g.sys.bus_int(g.svc.svc_con(:,2)),k));
+            v_svc = abs(g.bus.bus_v(g.bus.bus_int(g.svc.svc_con(:,2)),k));
             if g.svc.n_dcud~=0
                 tot_states=0;
                 for jj = 1:g.svc.n_dcud
@@ -1494,7 +1493,7 @@ while (kt<=ktmax)
         if j >= sum(k_inc(1:3))+1
             % fault cleared
             g.bus.bus_sim = g.bus.bus_pf2;
-            g.sys.bus_int = g.bus.bus_intpf2;
+            g.bus.bus_int = g.bus.bus_intpf2;
             
             Y1 = g.int.Y_gpf2;
             Y2 = g.int.Y_gncpf2;
@@ -1508,7 +1507,7 @@ while (kt<=ktmax)
         elseif j >=sum(k_inc(1:2))+1
             % near bus cleared
             g.bus.bus_sim = g.bus.bus_pf1;
-            g.sys.bus_int = g.bus.bus_intpf1;
+            g.bus.bus_int = g.bus.bus_intpf1;
             
             Y1 = g.int.Y_gpf1;
             Y2 = g.int.Y_gncpf1;
@@ -1522,7 +1521,7 @@ while (kt<=ktmax)
         elseif j>=k_inc(1)+1
             % fault applied
             g.bus.bus_sim = g.bus.bus_f;
-            g.sys.bus_int = g.bus.bus_intf;
+            g.bus.bus_int = g.bus.bus_intf;
             
             Y1 = g.int.Y_gf;
             Y2 = g.int.Y_gncf;
@@ -1533,10 +1532,15 @@ while (kt<=ktmax)
             bo = g.int.bof;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif k<k_inc(1)+1  % JHC - DKF thinks k should be j. Yeah, probably should be j -thad 07/17/20
+        elseif j<k_inc(1)+1  % JHC - DKF thinks k should be j. 
+            % Changed to j - thad 07/17/20
+            % Though since this is prefault - it should be handled by 
+            % previous elseif statements to handle the single corrector
+            % step between a prefault and fault scenarious
+            
             % pre fault
             g.bus.bus_sim = g.bus.bus;
-            g.sys.bus_int = g.bus.bus_intprf;
+            g.bus.bus_int = g.bus.bus_intprf;
             
             Y1 = g.int.Y_gprf;
             Y2 = g.int.Y_gncprf;
@@ -1574,7 +1578,7 @@ while (kt<=ktmax)
                 b_num1 = g.dc.dcr_dc{jj,3};
                 b_num2 = g.dc.dcr_dc{jj,4};
                 conv_num = g.dc.dcr_dc{jj,2};
-                g.dc.angdcr(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
+                g.dc.angdcr(jj,j) = g.bus.theta(g.bus.bus_int(b_num1),j)-g.bus.theta(g.bus.bus_int(b_num2),j);
                 g.dc.dcrd_sig(jj,j)=g.dc.angdcr(jj,j);
                 st_state = tot_states+1; 
                 dcr_states = g.dc.dcr_dc{jj,7}; 
@@ -1592,7 +1596,7 @@ while (kt<=ktmax)
                 b_num1 = g.dc.dci_dc{jj,3};
                 b_num2 = g.dc.dci_dc{jj,4};
                 conv_num = g.dc.dci_dc{jj,2};
-                g.dc.angdci(jj,j) = g.sys.theta(g.sys.bus_int(b_num1),j)-g.sys.theta(g.sys.bus_int(b_num2),j);
+                g.dc.angdci(jj,j) = g.bus.theta(g.bus.bus_int(b_num1),j)-g.bus.theta(g.bus.bus_int(b_num2),j);
                 g.dc.dcid_sig(jj,j) = (g.dc.angdci(jj,j)-g.dc.angdci(jj,k))/(t(j)-t(k));
                 st_state = tot_states+1; 
                 dci_states = g.dc.dci_dc{jj,7}; 
@@ -1624,11 +1628,11 @@ while (kt<=ktmax)
             for jj=1:g.svc.n_dcud
                 l_num = g.svc.svc_dc{jj,3};
                 svc_num = g.svc.svc_dc{jj,2};
-                from_bus = g.sys.bus_int(g.line.line_sim(l_num,1)); 
-                to_bus = g.sys.bus_int(g.line.line_sim(l_num,2));
-                svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
-                V1 = g.sys.bus_v(from_bus,j);
-                V2 = g.sys.bus_v(to_bus,j);
+                from_bus = g.bus.bus_int(g.line.line_sim(l_num,1)); 
+                to_bus = g.bus.bus_int(g.line.line_sim(l_num,2));
+                svc_bn = g.bus.bus_int(g.svc.svc_con(svc_num,2));
+                V1 = g.bus.bus_v(from_bus,j);
+                V2 = g.bus.bus_v(to_bus,j);
                 R = g.line.line_sim(l_num,3);
                 X = g.line.line_sim(l_num,4);
                 B = g.line.line_sim(l_num,5);
@@ -1648,7 +1652,7 @@ while (kt<=ktmax)
             for jj=1:g.tcsc.n_tcscud
                 b_num = g.tcsc.tcsc_dc{jj,3};
                 tcsc_num = g.tcsc.tcsc_dc{jj,2};
-                g.tcsc.td_sig(jj,j) = abs(g.sys.bus_v(g.sys.bus_int(b_num),j));
+                g.tcsc.td_sig(jj,j) = abs(g.bus.bus_v(g.bus.bus_int(b_num),j));
             end
         end
         
@@ -1688,7 +1692,7 @@ while (kt<=ktmax)
                         svc_sud(jj,j,flag,g.svc.svc_dc{jj,1},d_sig(jj,j),ysvcmx,ysvcmn,g.svc.xsvc_dc(st_state:tot_states,j));
                 end
             end
-            v_svc = abs(g.sys.bus_v(g.sys.bus_int(g.svc.svc_con(:,2)),j));
+            v_svc = abs(g.bus.bus_v(g.bus.bus_int(g.svc.svc_con(:,2)),j));
             g.bus.bus_sim = svc(0,j,g.bus.bus_sim,flag,v_svc);
         end
         
@@ -1918,8 +1922,8 @@ if g.sys.livePlotFlag
 end
 
 %% calculation of line currents post sim
-V1 = g.sys.bus_v(g.sys.bus_int(g.line.line(:,1)),:);
-V2 = g.sys.bus_v(g.sys.bus_int(g.line.line(:,2)),:);
+V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
+V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
 R = g.line.line(:,3); 
 X = g.line.line(:,4); 
 B = g.line.line(:,5);
@@ -1962,7 +1966,6 @@ g.dc.di_dcr = g.dc.di_dcr(:,1:length(g.dc.t_dc));
 clear V1 V2 R X B jj phi % used in calls to line_cur, line_pq
 clear Y1 Y2 Y3 Y4 Vr1 Vr2 bo % used in calls to i_simu, red_ybus
 clear et ets % used to store/display elapsed time
-clear nPlt v_p Lcolor busNum % variables optionally associated with livePlot
 
 %% Remove all zero only data
 varNames = who()'; % all variable names in workspace

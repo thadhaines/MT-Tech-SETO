@@ -49,7 +49,7 @@ if g.mac.n_tra~=0
       end
       % check Tqo'
       if g.mac.mac_con(i,14)==0;g.mac.mac_con(i,14)=999.0;end                                                       
-      busnum = g.sys.bus_int(g.mac.mac_con(i,2)); % bus number 
+      busnum = g.bus.bus_int(g.mac.mac_con(i,2)); % bus number 
       g.mac.mac_pot(i,1) = g.sys.basmva/g.mac.mac_con(i,3); % scaled MVA base
       g.mac.mac_pot(i,2) = 1.0; % base kv
       % extract bus information
@@ -75,8 +75,8 @@ if g.mac.n_tra~=0
                                     % machine angle (delta)
       g.mac.mac_spd(i,1) = 1; % machine speed at steady state
       rot = jay*exp(-jay*g.mac.mac_ang(i,1)); % system reference frame rotation
-      g.sys.psi_re(i,1) = real(eprime);
-      g.sys.psi_im(i,1) = imag(eprime);
+      g.mac.psi_re(i,1) = real(eprime);
+      g.mac.psi_im(i,1) = imag(eprime);
       eprime = eprime*rot;
       g.mac.edprime(i,1) = real(eprime); 
       g.mac.eqprime(i,1) = imag(eprime); 
@@ -125,7 +125,7 @@ if g.mac.n_tra~=0
     if ~isempty(notqp_idx)
       g.mac.mac_con(g.mac.mac_tra_idx(notqp_idx),14) = 999.0*ones(length(notqp_idx),1);
     end
-    busnum = g.sys.bus_int(g.mac.mac_con(g.mac.mac_tra_idx,2)); % bus number 
+    busnum = g.bus.bus_int(g.mac.mac_con(g.mac.mac_tra_idx,2)); % bus number 
     g.mac.mac_pot(g.mac.mac_tra_idx,1) = g.sys.basmva*ones(g.mac.n_tra,1)./g.mac.mac_con(g.mac.mac_tra_idx,3); 
                           % scaled MVA base
     g.mac.mac_pot(g.mac.mac_tra_idx,2) = ones(g.mac.n_tra,1); % base kv
@@ -153,8 +153,8 @@ if g.mac.n_tra~=0
     g.mac.mac_spd(g.mac.mac_tra_idx,1) = ones(g.mac.n_tra,1); 
                             % machine speed at steady state
     rot = jay*exp(-jay*g.mac.mac_ang(g.mac.mac_tra_idx,1)); % system reference frame rotation
-    g.sys.psi_re(g.mac.mac_tra_idx,1)=real(eprime);
-    g.sys.psi_im(g.mac.mac_tra_idx,1)=imag(eprime);
+    g.mac.psi_re(g.mac.mac_tra_idx,1)=real(eprime);
+    g.mac.psi_im(g.mac.mac_tra_idx,1)=imag(eprime);
     eprime = eprime.*rot;
     g.mac.edprime(g.mac.mac_tra_idx,1) = real(eprime); 
     g.mac.eqprime(g.mac.mac_tra_idx,1) = imag(eprime); 
@@ -198,19 +198,19 @@ if g.mac.n_tra~=0
      if ~isempty(tra)
       g.mac.mac_ang(i,k) = g.mac.mac_ang(i,k) - g.sys.mach_ref(k);   
                      % wrt machine reference
-      g.sys.psi_re(i,k) = sin(g.mac.mac_ang(i,k))*g.mac.edprime(i,k) + ...
+      g.mac.psi_re(i,k) = sin(g.mac.mac_ang(i,k))*g.mac.edprime(i,k) + ...
          cos(g.mac.mac_ang(i,k))*g.mac.eqprime(i,k); % real part of psi
-      g.sys.psi_im(i,k) = -cos(g.mac.mac_ang(i,k))*g.mac.edprime(i,k) + ...
+      g.mac.psi_im(i,k) = -cos(g.mac.mac_ang(i,k))*g.mac.edprime(i,k) + ...
          sin(g.mac.mac_ang(i,k))*g.mac.eqprime(i,k); % imag part of psi
      end
    else
     % vectorized computation
     g.mac.mac_ang(g.mac.mac_tra_idx,k) = g.mac.mac_ang(g.mac.mac_tra_idx,k)-g.sys.mach_ref(k)*ones(g.mac.n_tra,1);
                      % wrt machine reference
-    g.sys.psi_re(g.mac.mac_tra_idx,k) = sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.edprime(g.mac.mac_tra_idx,k) + ...
+    g.mac.psi_re(g.mac.mac_tra_idx,k) = sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.edprime(g.mac.mac_tra_idx,k) + ...
                             cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.eqprime(g.mac.mac_tra_idx,k); 
                             % real part of psi
-    g.sys.psi_im(g.mac.mac_tra_idx,k) = -cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.edprime(g.mac.mac_tra_idx,k) + ...
+    g.mac.psi_im(g.mac.mac_tra_idx,k) = -cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.edprime(g.mac.mac_tra_idx,k) + ...
                             sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.eqprime(g.mac.mac_tra_idx,k);
                             % imag part of psi
 
@@ -222,10 +222,10 @@ if g.mac.n_tra~=0
   if i ~= 0
     %check that i is a transient machine
     if ~isempty(find(g.mac.mac_tra_idx ==i, 1)) % optimized -thad 06/19/20
-      g.mac.curd(i,k) = sin(g.mac.mac_ang(i,k))*g.sys.cur_re(i,k) - ...
-            cos(g.mac.mac_ang(i,k))*g.sys.cur_im(i,k); % d-axis current
-      g.mac.curq(i,k) = cos(g.mac.mac_ang(i,k))*g.sys.cur_re(i,k) + ...
-            sin(g.mac.mac_ang(i,k))*g.sys.cur_im(i,k); % q-axis current
+      g.mac.curd(i,k) = sin(g.mac.mac_ang(i,k))*g.mac.cur_re(i,k) - ...
+            cos(g.mac.mac_ang(i,k))*g.mac.cur_im(i,k); % d-axis current
+      g.mac.curq(i,k) = cos(g.mac.mac_ang(i,k))*g.mac.cur_re(i,k) + ...
+            sin(g.mac.mac_ang(i,k))*g.mac.cur_im(i,k); % q-axis current
       g.mac.curdg(i,k) = g.mac.curd(i,k)*g.mac.mac_pot(i,1);
       g.mac.curqg(i,k) = g.mac.curq(i,k)*g.mac.mac_pot(i,1);
       E_Isat = g.mac.mac_pot(i,3)*g.mac.eqprime(i,k)^2 ...
@@ -251,10 +251,10 @@ if g.mac.n_tra~=0
   else
     % vectorized computation
    
-    g.mac.curd(g.mac.mac_tra_idx,k) = sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.sys.cur_re(g.mac.mac_tra_idx,k) - ...
-            cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.sys.cur_im(g.mac.mac_tra_idx,k); % d-axis current
-    g.mac.curq(g.mac.mac_tra_idx,k) = cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.sys.cur_re(g.mac.mac_tra_idx,k) + ...
-            sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.sys.cur_im(g.mac.mac_tra_idx,k); % q-axis current
+    g.mac.curd(g.mac.mac_tra_idx,k) = sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.cur_re(g.mac.mac_tra_idx,k) - ...
+            cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.cur_im(g.mac.mac_tra_idx,k); % d-axis current
+    g.mac.curq(g.mac.mac_tra_idx,k) = cos(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.cur_re(g.mac.mac_tra_idx,k) + ...
+            sin(g.mac.mac_ang(g.mac.mac_tra_idx,k)).*g.mac.cur_im(g.mac.mac_tra_idx,k); % q-axis current
     g.mac.curdg(g.mac.mac_tra_idx,k) = g.mac.curd(g.mac.mac_tra_idx,k).*g.mac.mac_pot(g.mac.mac_tra_idx,1);
     g.mac.curqg(g.mac.mac_tra_idx,k) = g.mac.curq(g.mac.mac_tra_idx,k).*g.mac.mac_pot(g.mac.mac_tra_idx,1);
     E_Isat = g.mac.mac_pot(g.mac.mac_tra_idx,3).*g.mac.eqprime(g.mac.mac_tra_idx,k).^2 ...

@@ -49,9 +49,9 @@ Y = sparse(1,1,0,nbus,nbus);
 
 % set up internal bus numbers for second indexing of buses
 busmax = max(bus(:,1));
-g.sys.bus_int = zeros(busmax,1);
+g.bus.bus_int = zeros(busmax,1);
 ibus = (1:nbus)';
-g.sys.bus_int(round(bus(:,1))) = ibus;
+g.bus.bus_int(round(bus(:,1))) = ibus;
 
 
 % process line data and build admittance matrix Y
@@ -63,9 +63,9 @@ g.sys.bus_int(round(bus(:,1))) = ibus;
 
 % determine connection matrices including tap changers and phase shifters
   from_bus = round(line(:,1));
-  from_int = g.sys.bus_int(from_bus);
+  from_int = g.bus.bus_int(from_bus);
   to_bus = round(line(:,2));
-  to_int = g.sys.bus_int(to_bus);
+  to_int = g.bus.bus_int(to_bus);
   tap_index = find(abs(line(:,6))>0);
   tap=ones(nline,1);
   tap(tap_index)=1. ./line(tap_index,6);

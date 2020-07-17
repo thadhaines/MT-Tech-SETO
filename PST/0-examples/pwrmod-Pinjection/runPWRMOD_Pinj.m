@@ -72,9 +72,9 @@ tL = [0:1/120:10]';
 u = [-0.0001*(stepfun(tL,1)-stepfun(tL,1.5)) 0.0002*(stepfun(tL,4)-stepfun(tL,4.5))]; 
 load('Example1_NonlinearSim','g');
 v = lsim(Gv,u,tL);
-v = v + ones(size(v,1),1)*abs(g.sys.bus_v(1:6,1))';
+v = v + ones(size(v,1),1)*abs(g.bus.bus_v(1:6,1))';
 a = lsim(Ga,u,tL);
-a = a + ones(size(a,1),1)*angle(g.sys.bus_v(1:6,1))';
+a = a + ones(size(a,1),1)*angle(g.bus.bus_v(1:6,1))';
 bus_vL = transpose(v.*exp(1i*a));
 tL = tL';
 save('Example1_LinearSim','tL','bus_vL'); %Save linear results
@@ -86,12 +86,12 @@ load('Example1_LinearSim','tL','bus_vL');
 figure(2)
 subplot(411)
 nb = 2; %Bus to plot
-plot(g.sys.t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
+plot(g.sys.t,abs(g.bus.bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
 ylabel(['bus ' num2str(nb) ' V (abs)'])
 legend('non-linear','linear','location','best')
 
 subplot(412)
-f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(g.sys.t)); 
+f = 1e3*angle(g.bus.bus_v(nb,2:end)./g.bus.bus_v(nb,1:end-1))./(2*pi*diff(g.sys.t)); 
 f = [f f(end)];
 fL = 1e3*angle(bus_vL(nb,2:end)./bus_vL(nb,1:end-1))./(2*pi*diff(tL)); 
 fL = [fL fL(end)];
@@ -101,12 +101,12 @@ ylabel(['bus ' num2str(nb) ' (mHz)'])
 
 subplot(413)
 nb = 3; %Bus to plot
-plot(g.sys.t,abs(g.sys.bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
+plot(g.sys.t,abs(g.bus.bus_v(nb,:)),'k',tL,abs(bus_vL(nb,:)),'r');
 legend('non-linear','linear','location','best')
 ylabel(['bus ' num2str(nb) ' V (abs)'])
 
 subplot(414)
-f = 1e3*angle(g.sys.bus_v(nb,2:end)./g.sys.bus_v(nb,1:end-1))./(2*pi*diff(g.sys.t)); 
+f = 1e3*angle(g.bus.bus_v(nb,2:end)./g.bus.bus_v(nb,1:end-1))./(2*pi*diff(g.sys.t)); 
 f = [f f(end)];
 fL = 1e3*angle(bus_vL(nb,2:end)./bus_vL(nb,1:end-1))./(2*pi*diff(tL)); 
 fL = [fL fL(end)];

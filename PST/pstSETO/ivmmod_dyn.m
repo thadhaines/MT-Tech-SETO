@@ -37,7 +37,7 @@ global n_ivm mac_ivm_idx
 global g
 
 %% Parameters
-busnum = g.sys.bus_int(g.mac.mac_con(mac_ivm_idx,2)); % bus numbers where ivm's are connected
+busnum = g.bus.bus_int(g.mac.mac_con(mac_ivm_idx,2)); % bus numbers where ivm's are connected
 
 %% Initialize output variables
 dc = zeros(n_ivm,1);

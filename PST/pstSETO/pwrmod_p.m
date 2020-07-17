@@ -27,7 +27,7 @@ global g
 if ~isempty(g.pwr.pwrmod_con)
    if flag == 0; % initialization
       if i~=0
-          jj = g.sys.bus_int(g.pwr.pwrmod_con(i,1));
+          jj = g.bus.bus_int(g.pwr.pwrmod_con(i,1));
           if (g.ncl.load_con(g.pwr.pwrmod_idx(i),2)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(i),3)==1)
              g.pwr.pwrmod_p_st(i,1) = bus(jj,4);
           else
@@ -36,7 +36,7 @@ if ~isempty(g.pwr.pwrmod_con)
           clear jj
       else % vectorized calculation
           for ii=1:g.pwr.n_pwrmod
-              jj = g.sys.bus_int(g.pwr.pwrmod_con(ii,1));
+              jj = g.bus.bus_int(g.pwr.pwrmod_con(ii,1));
               if (g.ncl.load_con(g.pwr.pwrmod_idx(ii),2)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(ii),3)==1)
                  g.pwr.pwrmod_p_st(ii,1) = bus(jj,4);
               else

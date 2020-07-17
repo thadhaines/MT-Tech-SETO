@@ -45,10 +45,10 @@ Y = sparse(1,1,0,nbus,nbus);
 
 % set up internal bus numbers for second indexing of buses
 busmax = max(bus(:,1));
-g.sys.bus_int = zeros(busmax,1);
+g.bus.bus_int = zeros(busmax,1);
 ibus = [1:1:nbus]';
 for i = 1:nbus
-  g.sys.bus_int(round(bus(i,1))) = i;
+  g.bus.bus_int(round(bus(i,1))) = i;
 end
 
 % process line data and build admittance matrix Y
@@ -60,9 +60,9 @@ end
 
 for i = 1:nline
   from_bus = line(i,1);
-  from_int = g.sys.bus_int(round(from_bus));
+  from_int = g.bus.bus_int(round(from_bus));
   to_bus = line(i,2);
-  to_int = g.sys.bus_int(round(to_bus));
+  to_int = g.bus.bus_int(round(to_bus));
   tap_ratio = line(i,6);
   if tap_ratio == 0,     % this line has no transformer
     tap_ratio = 1;
@@ -99,7 +99,7 @@ if nargout > 1
   for i = 1:nbus,
     bus_type(i) = bus(i,10);
     if bus_type(i) == swing_bus,
-	SB = g.sys.bus_int(round(bus(i,1))); % swing bus number 
+	SB = g.bus.bus_int(round(bus(i,1))); % swing bus number 
 	nSW = nSW + 1;     % increment swing bus counter
       elseif bus_type(i) == gen_bus,
 	nPV = nPV +1;      % increment generator bus counter

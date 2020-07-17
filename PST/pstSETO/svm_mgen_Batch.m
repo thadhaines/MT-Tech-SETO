@@ -524,8 +524,8 @@ dc_cont(0,1,1,bus,0); % initialize the dc controls - sets up data for red_ybus
 % this has to be done before red_ybus is used since the induction motor,svc and
 % dc link initialization alters the bus matrix
 v = ones(length(bus(:,1)),2);
-g.sys.bus_v = v;
-g.sys.theta = zeros(length(bus(:,1)),2);
+g.bus.bus_v = v;
+g.bus.theta = zeros(length(bus(:,1)),2);
 disp(' ')
 disp('Performing linearization')
 % set line parameters
@@ -538,7 +538,7 @@ if ~isempty(g.lmon.lmon_con)
 end
 % step 1: construct reduced Y matrix
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
-bus_intprf = g.sys.bus_int;% store the internal bus numbers for the pre_fault system
+bus_intprf = g.bus.bus_int;% store the internal bus numbers for the pre_fault system
 nbus = length(bus(:,1));
 if isempty(g.ncl.load_con)
    g.ncl.nload = 0;
@@ -564,8 +564,8 @@ max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
     2*g.svc.n_svc+g.tcsc.n_tcsc+ g.lmod.n_lmod  +g.rlmod.n_rlmod+2*g.pwr.n_pwrmod+5*g.dc.n_dcl;
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
-g.sys.theta(:,1) = bus(:,3)*pi/180;
-v(:,1) = bus(:,2).*exp(jay*g.sys.theta(:,1));
+g.bus.theta(:,1) = bus(:,3)*pi/180;
+v(:,1) = bus(:,2).*exp(jay*g.bus.theta(:,1));
 if g.dc.n_conv ~= 0
    % convert dc LT to Equ HT bus
    Pr = bus(g.dc.rec_ac_bus,6);
@@ -577,12 +577,12 @@ if g.dc.n_conv ~= 0
    i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
    v(g.dc.rec_ac_bus,1) = VLT(g.dc.r_idx) + jay*g.dc.dcc_pot(:,2).*i_acr;
    v(g.dc.inv_ac_bus,1) = VLT(g.dc.i_idx) + jay*g.dc.dcc_pot(:,4).*i_aci;
-   g.sys.theta(g.dc.ac_bus,1) = angle(v(g.dc.ac_bus,1));
+   g.bus.theta(g.dc.ac_bus,1) = angle(v(g.dc.ac_bus,1));
 end
-g.sys.bus_v(:,1) = v(:,1);  
+g.bus.bus_v(:,1) = v(:,1);  
 v(:,2) = v(:,1);
-g.sys.bus_v(:,2)=v(:,1);
-g.sys.theta(:,2) = g.sys.theta(:,1);
+g.bus.bus_v(:,2)=v(:,1);
+g.bus.theta(:,2) = g.bus.theta(:,1);
 % find total number of states
 ns_file
 NumStates = sum(state);
@@ -629,8 +629,8 @@ else
 end
 % set initial state and rate matrices to zero
 nMacZero = zeros(g.mac.n_mac,2);
-g.sys.psi_re = nMacZero;
-g.sys.psi_im = nMacZero;
+g.mac.psi_re = nMacZero;
+g.mac.psi_im = nMacZero;
 psi = nMacZero;
 
 g.mac.eterm = nMacZero;
@@ -744,7 +744,7 @@ mac_tra(0,1,bus,flag);
 mac_sub(0,1,bus,flag);
 mac_ib(0,1,bus,flag);
 %calculate initial electrical torque
-psi = g.sys.psi_re(:,1)+jay*g.sys.psi_im(:,1);
+psi = g.mac.psi_re(:,1)+jay*g.mac.psi_im(:,1);
 if g.ind.n_mot~=0&&g.igen.n_ig==0
    vmp = g.ind.vdp(:,1) + jay*g.ind.vqp(:,1);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
@@ -764,8 +764,8 @@ if g.ncl.nload~=0
    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);%vnc is a dummy variable
    cur(:,1) = cur(:,1) + Y_gncprf*v(bus_intprf(g.ncl.load_con(:,1)),1);% modify currents for nc loads 
 end
-g.sys.cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
-g.sys.cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
+g.mac.cur_re(1:g.mac.n_mac,1) = real(cur(1:g.mac.n_mac,1)); 
+g.mac.cur_im(1:g.mac.n_mac,1) = imag(cur(1:g.mac.n_mac,1));
 cur_mag(1:g.mac.n_mac,1) = abs(cur(1:g.mac.n_mac,1)).*g.mac.mac_pot(:,1);
 if g.ind.n_mot~=0
    g.ind.idmot(:,1) = -real(cur(g.mac.n_mac+1:ngm,1));%induction motor currents

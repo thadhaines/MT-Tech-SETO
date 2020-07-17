@@ -54,7 +54,7 @@ if ~isempty(g.svc.svc_con)
             % B_cv max on system base
             g.svc.svc_pot(i,2) = g.svc.svc_con(i,5)*g.svc.svc_con(i,3)/g.sys.basmva;
             % B_cv min on system base
-            j = g.sys.bus_int(g.svc.svc_con(i,2)); % bus number
+            j = g.bus.bus_int(g.svc.svc_con(i,2)); % bus number
             g.svc.B_cv(i,1) = bus(j,5)/(bus(j,2).*bus(j,2)); % initial B_cv based on generation
             bus_new(j,5) = 0;
             if g.svc.B_cv(i,1) > g.svc.svc_pot(i,1)
@@ -77,7 +77,7 @@ if ~isempty(g.svc.svc_con)
             % B_cv max on system base
             g.svc.svc_pot(:,2) = g.svc.svc_con(:,5).*g.svc.svc_con(:,3)/g.sys.basmva;
             % B_cv min on system base
-            jsvc = g.sys.bus_int(g.svc.svc_con(:,2)); % bus number
+            jsvc = g.bus.bus_int(g.svc.svc_con(:,2)); % bus number
             g.svc.B_cv(:,1) = bus(jsvc,5)./(bus(jsvc,2).*bus(jsvc,2)); % initial B_cv
             bus_new(jsvc,5) = zeros(g.svc.n_svc,1);
             testmxlmt=max( g.svc.B_cv(:,1) > g.svc.svc_pot(:,1));

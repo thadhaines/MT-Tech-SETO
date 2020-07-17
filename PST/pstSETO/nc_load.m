@@ -53,7 +53,7 @@ if ~isempty(g.ncl.load_con)
       %  set up constant power and current load components in 
       %    load_pot
       %  vectorized computation
-      j = g.sys.bus_int(g.ncl.load_con(:,1));
+      j = g.bus.bus_int(g.ncl.load_con(:,1));
       % no need for special treatment for dc buses on initialization
       V_nc = bus(j,2).*exp(jay*bus(j,3)*pi/180);
       % constant power component

@@ -31,6 +31,9 @@ load PSTpath.mat
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d2a_AGC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
+copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
+livePlotFlag = 1;
+
 % Handle load modulation
 if useGlobalG
     copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
@@ -40,8 +43,8 @@ end
 
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
-% % reset modulation file
-copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']);
+copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % reset modulation file
+copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
 %% Save cleaned output data
 save([pstVer,'testAGC.mat']); %Save simulation outputs
@@ -105,7 +108,7 @@ save([pstVer,'testAGC.mat']); %Save simulation outputs
 %     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
 %     
 %     if useGlobalG
-%         plot(t,abs(g.sys.bus_v(busN,:)),'--')
+%         plot(t,abs(g.bus.bus_v(busN,:)),'--')
 %     else
 %         plot(t,abs(bus_v(busN,:)),'--')
 %     end
@@ -127,7 +130,7 @@ save([pstVer,'testAGC.mat']); %Save simulation outputs
 %     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
 %     
 %     if useGlobalG
-%         plot(t,angle(g.sys.bus_v(busN,:)),'--')
+%         plot(t,angle(g.bus.bus_v(busN,:)),'--')
 %     else
 %         plot(t,angle(bus_v(busN,:)),'--')
 %     end
