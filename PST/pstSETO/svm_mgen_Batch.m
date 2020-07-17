@@ -290,14 +290,15 @@ if lfs{1} == 'y'
          loadflow(bus,line,tol,iter_max,acc,'n',2);
       bus = bus_sol;  % solved loadflow solution needed for
       % initialization
-      save sim_fle.mat bus line % n_conv n_dcl % commented out -thad 07/16/20
+      %save sim_fle.mat bus line n_conv n_dcl % no need in batch runs - thad 07/17/20
    else
-      [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
-      bus = bus_sol;
-      save sim_fle.mat bus line rec_par  inv_par line_par
+      [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
+      g.bus.bus = bus_sol;
+      clear bus_sol
+      %save sim_fle.mat bus line rec_par  inv_par line_par% no need in batch runs - thad 07/17/20
    end 
 else
-   load sim_fle 
+   %load sim_fle % no need in batch runs - thad 07/17/20
 end
 
 g.exc.n_exc= 0;
@@ -528,12 +529,12 @@ g.sys.theta = zeros(length(bus(:,1)),2);
 disp(' ')
 disp('Performing linearization')
 % set line parameters
-if ~isempty(g.sys.lmon_con)
-  R = line(g.sys.lmon_con,3); 
-  X = line(g.sys.lmon_con,4); 
-  B = line(g.sys.lmon_con,5);
-  g.dc.tap = line(g.sys.lmon_con,6); % seems odd.... -thad 07/14/20
-  phi = line(g.sys.lmon_con,7);
+if ~isempty(g.lmon.lmon_con)
+  R = line(g.lmon.lmon_con,3); 
+  X = line(g.lmon.lmon_con,4); 
+  B = line(g.lmon.lmon_con,5);
+  g.dc.tap = line(g.lmon.lmon_con,6); % seems odd.... -thad 07/14/20
+  phi = line(g.lmon.lmon_con,7);
 end
 % step 1: construct reduced Y matrix
 [Y_gprf,Y_gncprf,Y_ncgprf,Y_ncprf,V_rgprf,V_rncprf,boprf] = red_ybus(bus,line);
@@ -991,7 +992,7 @@ if isempty(g.mac.ibus_con)
       c_pm = c_pm*p_angi;
       c_t = c_t*p_angi;
       c_p = c_p*p_angi;
-      if ~isempty(g.sys.lmon_con)
+      if ~isempty(g.lmon.lmon_con)
          c_pf1 = c_pf1*p_angi;
          c_qf1 = c_qf1*p_angi;
          c_pf2 = c_pf2*p_angi;

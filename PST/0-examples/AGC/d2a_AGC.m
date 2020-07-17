@@ -59,9 +59,13 @@ line = [...
 13  120 0.001   0.01     0.0175  1.0  0. 0.  0.  0.;
 110 120 0.0025  0.025    0.0437  1.0  0. 0.  0.  0.];
 
+%% line monitoring
+% each value corresponds to a line index in the line_con
+% Real and reactive current and power will be logged during simulation
 
-% Machine data format
-% Machine data format
+lmon_con = [5,6]; % lines between bus 3 and 101
+
+%% Machine data format
 %       1. machine number,
 %       2. bus number,
 %       3. base mva,
@@ -100,7 +104,7 @@ mac_con = [ ...
                        1.7  0.55  0.25 0.4   0.05...
   6.5  0  0  12];
 
-% all dc exciters, no pss
+%% all dc exciters, no pss
 exc_con = [... % type 1 exciters differ between v2 and v3
 1 1 0.01 46.0   0.06  0     0    1.0   -0.9...
     0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
@@ -118,7 +122,7 @@ exc_con = [ ... % alternative Type 0 exciters same in all versions
     0       4       0       100      0.01    12.0    1.0     7.5     -6;  ];
 
 
-% governor model
+%% governor model
 % tg_con matrix format
 %column	       data			unit
 %  1	turbine model number (=1)	
@@ -168,6 +172,7 @@ lmod_con = [ ...
     1   4   100     1.0     0.0     2.0     0.004;
    % 1   14   100    1.0     0.0     1.0     0.004 ;
    ];
+
 %% PSS model
 % pss_con matrix format
 %column        data         unit
@@ -198,6 +203,9 @@ pss_con = [ ...
 % SVC gain set to zero
 %svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
 
+
+
+    
 %% Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
 %       col7  initial time step (s)

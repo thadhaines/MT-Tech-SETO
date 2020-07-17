@@ -254,9 +254,9 @@ if c_state == 0
    if g.exc.n_exc~=0
       c_Efd(:,j_state) = (g.exc.Efd(:,2)-g.exc.Efd(:,1))/pert;
    end
-   if ~isempty(g.sys.lmon_con) 
-      from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
-      to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
+   if ~isempty(g.lmon.lmon_con) 
+      from_idx = g.sys.bus_int(line(g.lmon.lmon_con,1));
+      to_idx = g.sys.bus_int(line(g.lmon.lmon_con,2));
       V1 = v(from_idx,1);
       V2 = v(to_idx,1);
       [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20
@@ -320,9 +320,9 @@ else
       d_idcdcr(:,dcmod_input) = (g.dc.i_dcr(:,2)-g.dc.i_dcr(:,1))/pert;
       d_Vdcrdcr(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
       d_Vdcidcr(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
-      if ~isempty(g.sys.lmon_con) 
-         from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
-         to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
+      if ~isempty(g.lmon.lmon_con) 
+         from_idx = g.sys.bus_int(line(g.lmon.lmon_con,1));
+         to_idx = g.sys.bus_int(line(g.lmon.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
          [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% these taps may not supposed to be global? -thad 07/14/20
@@ -351,9 +351,9 @@ else
       d_idcdci(:,dcmod_input) = (g.dc.i_dci(:,2)-g.dc.i_dci(:,1))/pert;
       d_Vdcrdci(:,dcmod_input) = (g.dc.Vdc(g.dc.r_idx,2)-g.dc.Vdc(g.dc.r_idx,1))/pert;
       d_Vdcdci(:,dcmod_input) = (g.dc.Vdc(g.dc.i_idx,2)-g.dc.Vdc(g.dc.i_idx,1))/pert;
-      if ~isempty(g.sys.lmon_con) 
-         from_idx = g.sys.bus_int(line(g.sys.lmon_con,1));
-         to_idx = g.sys.bus_int(line(g.sys.lmon_con,2));
+      if ~isempty(g.lmon.lmon_con) 
+         from_idx = g.sys.bus_int(line(g.lmon.lmon_con,1));
+         to_idx = g.sys.bus_int(line(g.lmon.lmon_con,2));
          V1 = v(from_idx,1);
          V2 = v(to_idx,1);
          [s11,s21] = line_pq(V1,V2,R,X,B,g.dc.tap,phi); % these taps may not supposed to be global? -thad 07/14/20

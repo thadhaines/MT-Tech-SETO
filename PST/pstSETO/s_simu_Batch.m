@@ -163,14 +163,18 @@ if isempty(g.dc.dcsp_con)
     tol = 1e-9;   % tolerance for convergence
     iter_max = 30; % maximum number of iterations
     acc = 1.0;   % acceleration factor
-    [bus_sol,line,line_flw] = loadflow(bus,line,tol,iter_max,acc,'n',2);
-    bus = bus_sol;  % solved loadflow solution needed for initialization
-    save sim_fle.mat bus line
+    [bus_sol,line,~] = loadflow(g.bus.busOG,g.line.lineOG,tol,iter_max,acc,'n',2);
+    g.bus.bus = bus_sol;  % solved loadflow solution needed for initialization
+    g.line.line = line;
+    clear bus_sol line
+    %save sim_fle.mat bus line % no need in batch runs - thad 07/17/20
 else
     % Has HVDC, use DC load flow
-    [bus_sol,line,line_flw,rec_par,inv_par, line_par] = lfdcs(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
-    bus = bus_sol;
-    save sim_fle.mat bus line rec_par  inv_par line_par
+    [bus_sol,line,~,rec_par, inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
+    g.bus.bus = bus_sol;
+    g.line.line = line;
+    clear bus_sol line
+    %save sim_fle.mat bus line rec_par  inv_par line_par% no need in batch runs - thad 07/17/20
 end
 
 %% set indexes
@@ -184,7 +188,8 @@ svc_indx();
 tcsc_indx();
 lm_indx;
 rlm_indx();
-pwrmod_indx(bus); 
+pwrmod_indx(g.bus.bus); 
+lmon_indx;
 
 % Handled in mac_indx
 % g.ind.n_mot = size(g.ind.ind_con,1); % inductive motors
@@ -205,8 +210,8 @@ g.mac.n_pm = g.mac.n_mac; % used for pm modulation
 %% Make sure bus max/min Q is the same as the pwrmod_con max/min Q - moved to place after pwrmod is counted (never actually executed prior...) -thad 06/30/20
 if ~isempty(g.pwr.n_pwrmod)
     for kk=1:g.pwr.n_pwrmod
-        n = find(g.pwr.pwrmod_con(kk,1)==bus(:,1));
-        bus(n,11:12) = g.pwr.pwrmod_con(kk,6:7);
+        n = find(g.pwr.pwrmod_con(kk,1)==g.bus.bus(:,1));
+        g.bus.bus(n,11:12) = g.pwr.pwrmod_con(kk,6:7);
     end
     clear kk n
 end
@@ -394,7 +399,7 @@ clear j sv
 %mac_ref = z1;  % unsure of this use
 %sys_ref = z1;   % unsure of this use - thad 07/02/20
 
-n_bus = length(bus(:,1));
+n_bus = length(g.bus.bus(:,1));
 g.sys.bus_v = zeros(n_bus+1,k);
 
 g.sys.cur_re = z; 
@@ -663,10 +668,10 @@ warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
 disp('constructing reduced y matrices')
 disp('initializing motor,induction generator, svc and dc control models')
 
-bus = mac_ind(0,1,bus,0);% initialize induction motor
-bus = mac_igen(0,1,bus,0); % initialize induction generator
-bus = svc(0,1,bus,0);%initialize svc
-dc_cont(0,1,1,bus,0);% initialize dc controls
+g.bus.bus = mac_ind(0,1,g.bus.bus,0);% initialize induction motor
+g.bus.bus = mac_igen(0,1,g.bus.bus,0); % initialize induction generator
+g.bus.bus = svc(0,1,g.bus.bus,0);%initialize svc
+dc_cont(0,1,1,g.bus.bus,0);% initialize dc controls
 % this has to be done before red_ybus is used since the motor and svc
 % initialization alters the bus matrix and dc parameters are required
 
@@ -675,8 +680,8 @@ y_switch % calculates the reduced y matrices for the different switching conditi
 disp('initializing other models...')
 
 %% step 2: initialization
-g.sys.theta(1:n_bus,1) = bus(:,3)*pi/180;
-g.sys.bus_v(1:n_bus,1) = bus(:,2).*exp(jay*g.sys.theta(1:n_bus,1));
+g.sys.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
+g.sys.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.sys.theta(1:n_bus,1));
 
 % clear temp variables
 clear z zdc zdcl ze zig zm t n_bus
@@ -686,8 +691,8 @@ if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 
     for j=1:g.svc.n_dcud
         l_num = g.svc.svc_dc{j,3};
         svc_num = g.svc.svc_dc{j,2};
-        from_bus = g.sys.bus_int(line(l_num,1)); 
-        to_bus = g.sys.bus_int(line(l_num,2));
+        from_bus = g.sys.bus_int(g.line.line(l_num,1)); 
+        to_bus = g.sys.bus_int(g.line.line(l_num,2));
         svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
         
         if svc_bn~= from_bus&& svc_bn  ~= to_bus
@@ -696,11 +701,11 @@ if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 
         
         V1 = g.sys.bus_v(from_bus,1);
         V2 = g.sys.bus_v(to_bus,1);
-        R = line(l_num,3);
-        X = line(l_num,4);
-        B = line(l_num,5);
+        R = g.line.line(l_num,3);
+        X = g.line.line(l_num,4);
+        B = g.line.line(l_num,5);
         g.dc.tap = line(l_num,6);
-        phi = line(l_num,7);
+        phi = g.line.line(l_num,7);
         [l_if,l_it] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);
         l_if0(j)=l_if;
         l_it0(j)=l_it;
@@ -719,17 +724,17 @@ if g.tcsc.n_tcscud ~=0 % Seems like this should be put in a seperate script - th
     for j=1:g.tcsc.n_tcscud
         b_num = g.tcsc.tcsc_dc{j,3};
         tcsc_num = g.tcsc.tcsc_dc{j,2};
-        g.tcsc.td_sig(j,1) =abs (g.sys.bus_v(g.sys.bus_int(b_num),1));
+        g.tcsc.td_sig(j,1) =abs(g.sys.bus_v(g.sys.bus_int(b_num),1));
     end
     clear j
 end
 
 if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/20
     %% change dc buses from LT to HT
-    Pr = bus(g.dc.rec_ac_bus,6);
-    Pi = bus(g.dc.inv_ac_bus,6);
-    Qr = bus(g.dc.rec_ac_bus,7);
-    Qi = bus(g.dc.inv_ac_bus,7);
+    Pr = g.bus.bus(g.dc.rec_ac_bus,6);
+    Pi = g.bus.bus(g.dc.inv_ac_bus,6);
+    Qr = g.bus.bus(g.dc.rec_ac_bus,7);
+    Qi = g.bus.bus(g.dc.inv_ac_bus,7);
     VLT= g.sys.bus_v(g.dc.ac_bus,1);
     i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
     i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
@@ -740,11 +745,11 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
     g.sys.bus_v(g.dc.ac_bus,1) = g.dc.VHT;
     g.sys.theta(g.dc.ac_bus,1) = angle(g.sys.bus_v(g.dc.ac_bus,1));
     % modify the bus matrix to the HT buses
-    bus(g.dc.ac_bus,2) = abs(g.sys.bus_v(g.dc.ac_bus,1));
-    bus(g.dc.ac_bus,3) = g.sys.theta(g.dc.ac_bus,1)*180/pi;
+    g.bus.bus(g.dc.ac_bus,2) = abs(g.sys.bus_v(g.dc.ac_bus,1));
+    g.bus.bus(g.dc.ac_bus,3) = g.sys.theta(g.dc.ac_bus,1)*180/pi;
     SHT = g.dc.VHT.*conj(IHT);
-    bus(g.dc.ac_bus,6) = real(SHT);
-    bus(g.dc.ac_bus,7) = imag(SHT);
+    g.bus.bus(g.dc.ac_bus,6) = real(SHT);
+    g.bus.bus(g.dc.ac_bus,7) = imag(SHT);
     
     if g.dc.ndcr_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
         % calculate the initial value of bus angles rectifier user defined control
@@ -773,13 +778,13 @@ end
 %% Flag = 0 == Initialization
 warning('*** Dynamic model initialization via functions/scripts:')
 flag = 0;
-g.sys.bus_int = bus_intprf;% pre-fault system
+g.sys.bus_int = g.bus.bus_intprf;% pre-fault system
 
 disp('generators')
-mac_sub(0,1,bus,flag); % first 
-mac_tra(0,1,bus,flag);
-mac_em(0,1,bus,flag);
-mac_ivm(0,1,bus,flag); % ivm - thad 06/01/20
+mac_sub(0,1,g.bus.bus,flag); % first 
+mac_tra(0,1,g.bus.bus,flag);
+mac_em(0,1,g.bus.bus,flag);
+mac_ivm(0,1,g.bus.bus,flag); % ivm - thad 06/01/20
 
 disp('generator controls')
 dpwf(0,1,flag);
@@ -793,13 +798,13 @@ exc_dc12(0,1,flag);
 
 tg(0,1,flag); % modified 06/05/20 to global g
 
-tg_hydro(0,1,bus,flag);
+tg_hydro(0,1,g.bus.bus,flag);
 
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
 % Seems like this should be put in a seperate script - thad 06/08/20
 if n_ivm~=0
     disp('ivm modulation')
-    [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],bus,g.sys.t,1,flag);
+    [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],g.bus.bus,g.sys.t,1,flag);
     
     if (~iscell(Dini) || ~iscell(Eini))
         error('Error in ivmmod_dyn, initial states must be cells'); 
@@ -913,9 +918,9 @@ end
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.pwr.n_pwrmod~=0
     disp('power modulation')
-    pwrmod_p(0,1,bus,flag);
-    pwrmod_q(0,1,bus,flag);
-    [~,~,~,~,Pini,Qini] = pwrmod_dyn([],[],bus,g.sys.t,0,0,g.pwr.n_pwrmod);
+    pwrmod_p(0,1,g.bus.bus,flag);
+    pwrmod_q(0,1,g.bus.bus,flag);
+    [~,~,~,~,Pini,Qini] = pwrmod_dyn([],[],g.bus.bus,g.sys.t,0,0,g.pwr.n_pwrmod);
     if (~iscell(Pini) || ~iscell(Qini))
         error('Error in pwrmod_dyn, P_statesIni and P_statesIni must be cells');
     end
@@ -942,7 +947,7 @@ end
 % if statement redundant - used in script... - thad 06/08/20
 if ~isempty(g.ncl.load_con)
     disp('non-linear loads')
-    vnc = nc_load(bus,flag,Y_ncprf,Y_ncgprf);
+    vnc = nc_load(g.bus.bus,flag,g.int.Y_ncprf,g.int.Y_ncgprf); % return not used? - thad 07/17/20
 else
     g.ncl.nload = 0;
 end
@@ -952,22 +957,22 @@ if ~isempty(g.dc.dcsp_con)
 % Seems like this should be put in a seperate script - thad 06/08/20
     disp('dc converter specification')
     
-    bus_sim = bus;
-    g.sys.bus_int = bus_intprf;
-    Y1 = Y_gprf;
-    Y2 = Y_gncprf;
-    Y3 = Y_ncgprf;
-    Y4 = Y_ncprf;
-    Vr1 = V_rgprf;
-    Vr2 = V_rncprf;
-    bo = boprf;
+    g.bus.bus_sim = g.bus.bus;
+    g.sys.bus_int = g.bus.bus_intprf;
+    Y1 = g.int.Y_gprf;
+    Y2 = g.int.Y_gncprf;
+    Y3 = g.int.Y_ncgprf;
+    Y4 = g.int.Y_ncprf;
+    Vr1 = g.int.V_rgprf;
+    Vr2 = g.int.V_rncprf;
+    bo = g.int.boprf;
     
-    h_sol = i_simu(1,1,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+    h_sol = i_simu(1,1,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     % reinitialize dc controls
     mdc_sig(1);
-    dc_cont(0,1,1,bus,flag);
+    dc_cont(0,1,1,g.bus.bus,flag);
     % initialize dc line
-    dc_line(0,1,1,bus,flag);
+    dc_line(0,1,1,g.bus.bus,flag);
 end
 
 H_sum = sum(g.mac.mac_con(:,16)./g.mac.mac_pot(:,1));
@@ -982,7 +987,7 @@ ks = 1;
 k_tot = sum(k_inc);
 lswitch = length(k_inc);
 ktmax = k_tot-k_inc(lswitch);
-bus_sim = bus;
+g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
 mac_trip_flags = false(g.mac.n_mac,1);
@@ -1024,29 +1029,31 @@ while (kt<=ktmax)
         flag = 1;
         timestep = int2str(k); % not used? 06/09/20
         % network-machine interface
-        mac_ind(0,k,bus_sim,flag);
-        mac_igen(0,k,bus_sim,flag);
-        mac_sub(0,k,bus_sim,flag);
-        mac_tra(0,k,bus_sim,flag);
-        mac_em(0,k,bus_sim,flag);
-        mac_ivm(0,k,bus_sim,flag); 
+        mac_ind(0,k,g.bus.bus_sim,flag);
+        mac_igen(0,k,g.bus.bus_sim,flag);
+        mac_sub(0,k,g.bus.bus_sim,flag);
+        mac_tra(0,k,g.bus.bus_sim,flag);
+        mac_em(0,k,g.bus.bus_sim,flag);
+        mac_ivm(0,k,g.bus.bus_sim,flag); 
         
         mdc_sig(k); % dc controls mod signals
-        dc_cont(0,k,10*(k-1)+1,bus_sim,flag); % Models the action of HVDC link pole controllers
+        dc_cont(0,k,10*(k-1)+1,g.bus.bus_sim,flag); % Models the action of HVDC link pole controllers
         
         %% Calculate current injections and bus voltages and angles
         if k >= sum(k_inc(1:3))+1
             %% fault cleared - post fault 2
-            line_sim = line_pf2;
-            bus_sim = bus_pf2;
-            g.sys.bus_int = bus_intpf2;
-            Y1 = Y_gpf2;
-            Y2 = Y_gncpf2;
-            Y3 = Y_ncgpf2;
-            Y4 = Y_ncpf2;
-            Vr1 = V_rgpf2;
-            Vr2 = V_rncpf2;
-            bo = bopf2;
+            g.line.line_sim = g.line.line_pf2;
+            g.bus.bus_sim = g.bus.bus_pf2;
+            g.sys.bus_int = g.bus.bus_intpf2;
+            
+            Y1 = g.int.Y_gpf2;
+            Y2 = g.int.Y_gncpf2;
+            Y3 = g.int.Y_ncgpf2;
+            Y4 = g.int.Y_ncpf2;
+            Vr1 = g.int.V_rgpf2;
+            Vr2 = g.int.V_rncpf2;
+            bo = g.int.bopf2;
+            
             % i_simu forms the network interface variables
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             % duplicate call?
@@ -1054,46 +1061,52 @@ while (kt<=ktmax)
             
         elseif k >=sum(k_inc(1:2))+1
             %% near bus cleared - post fault 1
-            line_sim = line_pf1;
-            bus_sim = bus_pf1;
-            g.sys.bus_int = bus_intpf1;
-            Y1 = Y_gpf1;
-            Y2 = Y_gncpf1;
-            Y3 = Y_ncgpf1;
-            Y4 = Y_ncpf1;
-            Vr1 = V_rgpf1;
-            Vr2 = V_rncpf1;
-            bo = bopf1;
+            g.line.line_sim = g.line.line_pf1;
+            
+            g.bus.bus_sim = g.bus.bus_pf1;
+            g.sys.bus_int = g.bus.bus_intpf1;
+            
+            Y1 = g.int.Y_gpf1;
+            Y2 = g.int.Y_gncpf1;
+            Y3 = g.int.Y_ncgpf1;
+            Y4 = g.int.Y_ncpf1;
+            Vr1 = g.int.V_rgpf1;
+            Vr2 = g.int.V_rncpf1;
+            bo = g.int.bopf1;
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
         elseif k>=k_inc(1)+1
             %% fault applied - fault
-            line_sim = line_f;
-            bus_sim = bus_f;
-            g.sys.bus_int = bus_intf;
-            Y1 = Y_gf;
-            Y2 = Y_gncf;
-            Y3 = Y_ncgf;
-            Y4 = Y_ncf;
-            Vr1 = V_rgf;
-            Vr2 = V_rncf;
-            bo = bof;
+            g.line.line_sim = g.line.line_f;
+            g.bus.bus_sim = g.bus.bus_f;
+            
+            g.sys.bus_int = g.bus.bus_intf;
+            
+            Y1 = g.int.Y_gf;
+            Y2 = g.int.Y_gncf;
+            Y3 = g.int.Y_ncgf;
+            Y4 = g.int.Y_ncf;
+            Vr1 = g.int.V_rgf;
+            Vr2 = g.int.V_rncf;
+            bo = g.int.bof;
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
         elseif k<k_inc(1)+1
             %% pre fault
-            line_sim = line;
-            bus_sim = bus;
-            g.sys.bus_int = bus_intprf;
-            Y1 = Y_gprf;
-            Y2 = Y_gncprf;
-            Y3 = Y_ncgprf;
-            Y4 = Y_ncprf;
-            Vr1 = V_rgprf;
-            Vr2 = V_rncprf;
-            bo = boprf;
+            g.line.line_sim = g.line.line;
+            g.bus.bus_sim = g.bus.bus;
+            
+            g.sys.bus_int = g.bus.bus_intprf;
+            
+            Y1 = g.int.Y_gprf;
+            Y2 = g.int.Y_gncprf;
+            Y3 = g.int.Y_ncgprf;
+            Y4 = g.int.Y_ncprf;
+            Vr1 = g.int.V_rgprf;
+            Vr2 = g.int.V_rncprf;
+            bo = g.int.boprf;
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         end
@@ -1102,16 +1115,16 @@ while (kt<=ktmax)
         if sum(mac_trip_flags)>0.5
             genBuses = g.mac.mac_con(mac_trip_flags==1,2);
             for kB=1:length(genBuses)
-                nL = find(genBuses(kB)==line_sim(:,1) | genBuses(kB)==line_sim(:,2));
+                nL = find(genBuses(kB)==g.line.line_sim(:,1) | genBuses(kB)==g.line.line_sim(:,2));
                 if isempty(nL); error(' '); end
-                line_sim(nL,4) = 1e7; %make reactance infinity
+                g.line.line_sim(nL,4) = 1e7; %make reactance infinity
             end
-            [Y1,Y2,Y3,Y4,Vr1,Vr2,bo] = red_ybus(bus_sim,line_sim);
+            [Y1,Y2,Y3,Y4,Vr1,Vr2,bo] = red_ybus(g.bus.bus_sim,g.line.line_sim);
             clear nL kB genBuses
         end
         
         %% solve
-        h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        h_sol = i_simu(k,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         %% HVDC
         if g.dc.ndcr_ud~=0
@@ -1151,7 +1164,7 @@ while (kt<=ktmax)
             end
         end
         
-        dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
+        dc_cont(0,k,10*(k-1)+1,g.bus.bus_sim,flag);
         
         %% network interface for control models
         dpwf(0,k,flag);
@@ -1164,7 +1177,7 @@ while (kt<=ktmax)
         
         mtg_sig(k);
         tg(0,k,flag);
-        tg_hydro(0,k,bus_sim,flag);
+        tg_hydro(0,k,g.bus.bus_sim,flag);
         
         if g.svc.n_dcud~=0
             %% set the new line currents
@@ -1211,12 +1224,12 @@ while (kt<=ktmax)
         
         mpm_sig(k);
         
-        mac_ind(0,k,bus_sim,flag);
-        mac_igen(0,k,bus_sim,flag);
+        mac_ind(0,k,g.bus.bus_sim,flag);
+        mac_igen(0,k,g.bus.bus_sim,flag);
         
-        mac_sub(0,k,bus_sim,flag);
-        mac_tra(0,k,bus_sim,flag);
-        mac_em(0,k,bus_sim,flag);
+        mac_sub(0,k,g.bus.bus_sim,flag);
+        mac_tra(0,k,g.bus.bus_sim,flag);
+        mac_em(0,k,g.bus.bus_sim,flag);
         
         dpwf(0,k,flag);
         pss(0,k,flag);
@@ -1229,7 +1242,7 @@ while (kt<=ktmax)
         
         mtg_sig(k);
         tg(0,k,flag);
-        tg_hydro(0,k,bus_sim,flag);
+        tg_hydro(0,k,g.bus.bus_sim,flag);
         
         if g.svc.n_svc~=0
             v_svc = abs(g.sys.bus_v(g.sys.bus_int(g.svc.svc_con(:,2)),k));
@@ -1247,7 +1260,7 @@ while (kt<=ktmax)
                 end
             end
             msvc_sig(k);
-            svc(0,k,bus_sim,flag,v_svc);
+            svc(0,k,g.bus.bus_sim,flag,v_svc);
         end
         if g.tcsc.n_tcsc~=0
             if g.tcsc.n_tcscud~=0
@@ -1285,7 +1298,7 @@ while (kt<=ktmax)
                 Pst{index} = pwrmod_p_sigst{index}(:,k);
                 Qst{index} = pwrmod_q_sigst{index}(:,k);
             end
-            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,bus,g.sys.t,k,flag,g.pwr.n_pwrmod);
+            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,g.bus.bus,g.sys.t,k,flag,g.pwr.n_pwrmod);
             if (~iscell(dp) || ~iscell(dq)) 
                 error('Error in pwrmod_dyn, dp and dq must be cells'); 
             end
@@ -1305,14 +1318,14 @@ while (kt<=ktmax)
                 dpwrmod_p_sigst{index}(:,k) = dp{index};
                 dpwrmod_q_sigst{index}(:,k) = dq{index};
             end
-            [P,Q,~,~] = pwrmod_dyn(Pst,Qst,bus,g.sys.t,k,1,g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
+            [P,Q,~,~] = pwrmod_dyn(Pst,Qst,g.bus.bus,g.sys.t,k,1,g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
             if (length(P)~=g.pwr.n_pwrmod) || (length(Q)~=g.pwr.n_pwrmod)
                 error('Dimension error in pwrmod_dyn'); 
             end
             g.pwr.pwrmod_p_sig(:,k) = P;
             g.pwr.pwrmod_q_sig(:,k) = Q;
-            pwrmod_p(0,k,bus_sim,flag);
-            pwrmod_q(0,k,bus_sim,flag);
+            pwrmod_p(0,k,g.bus.bus_sim,flag);
+            pwrmod_q(0,k,g.bus.bus_sim,flag);
             clear P Q Pst Qst dp dq index
         end
         
@@ -1324,14 +1337,14 @@ while (kt<=ktmax)
                 dst{index} = ivmmod_d_sigst{index}(:,k);
                 est{index} = ivmmod_e_sigst{index}(:,k);
             end
-            [d,e,~,~,~,~] = ivmmod_dyn(dst,est,bus,g.sys.t,k,1); %get internal voltage signals
+            [d,e,~,~,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,k,1); %get internal voltage signals
             if (length(d)~=n_ivm) || (length(e)~=n_ivm)
                 error('Dimension error in ivmmod_dyn');
             end
             ivmmod_d_sig(:,k) = d;
             ivmmod_e_sig(:,k) = e;
-            mac_ivm(0,k,bus_sim,flag);
-            [~,~,dd,de,~,~] = ivmmod_dyn(dst,est,bus,g.sys.t,k,flag);
+            mac_ivm(0,k,g.bus.bus_sim,flag);
+            [~,~,dd,de,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,k,flag);
             if (~iscell(dd) || ~iscell(de))
                 error('Error in ivmmod_dyn, dd and de must be cells'); 
             end
@@ -1362,11 +1375,11 @@ while (kt<=ktmax)
             for kk = 1:10
                 kdc=10*(k-1)+kk;
                 [g.dc.xdcr_dc(:,kdc:kdc+1),g.dc.dxdcr_dc(:,kdc:kdc+1),g.dc.xdci_dc(:,kdc:kdc+1),g.dc.dxdci_dc(:,kdc:kdc+1)] = ...
-                    dc_sim(k,kk,g.dc.dcr_dc,g.dc.dci_dc,g.dc.xdcr_dc(:,kdc),g.dc.xdci_dc(:,kdc),bus_sim,hdc_sol); % dc_sim 
+                    dc_sim(k,kk,g.dc.dcr_dc,g.dc.dci_dc,g.dc.xdcr_dc(:,kdc),g.dc.xdci_dc(:,kdc),g.bus.bus_sim,hdc_sol); % dc_sim 
             end
         else
-            dc_cont(0,k,k,bus_sim,2);
-            dc_line(0,k,k,bus_sim,2);
+            dc_cont(0,k,k,g.bus.bus_sim,2);
+            dc_line(0,k,k,g.bus.bus_sim,2);
         end
         
         %% following statements are predictor steps
@@ -1466,65 +1479,72 @@ while (kt<=ktmax)
         g.sys.mach_ref(j) = 0;
         % perform network interface calculations again with predicted states
         mpm_sig(j);
-        mac_ind(0,j,bus_sim,flag);
-        mac_igen(0,j,bus_sim,flag);
-        mac_sub(0,j,bus_sim,flag);
-        mac_tra(0,j,bus_sim,flag);
-        mac_em(0,j,bus_sim,flag);
-        mac_ivm(0,j,bus_sim,flag); 
+        mac_ind(0,j,g.bus.bus_sim,flag);
+        mac_igen(0,j,g.bus.bus_sim,flag);
+        mac_sub(0,j,g.bus.bus_sim,flag);
+        mac_tra(0,j,g.bus.bus_sim,flag);
+        mac_em(0,j,g.bus.bus_sim,flag);
+        mac_ivm(0,j,g.bus.bus_sim,flag); 
         
         % assume Vdc remains unchanged for first pass through dc controls interface
         mdc_sig(j);
-        dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
+        dc_cont(0,j,10*(j-1)+1,g.bus.bus_sim,flag);
         
         % Calculate current injections and bus voltages and angles
         if j >= sum(k_inc(1:3))+1
             % fault cleared
-            bus_sim = bus_pf2;
-            g.sys.bus_int = bus_intpf2;
-            Y1 = Y_gpf2;
-            Y2 = Y_gncpf2;
-            Y3 = Y_ncgpf2;
-            Y4 = Y_ncpf2;
-            Vr1 = V_rgpf2;
-            Vr2 = V_rncpf2;
-            bo = bopf2;
+            g.bus.bus_sim = g.bus.bus_pf2;
+            g.sys.bus_int = g.bus.bus_intpf2;
+            
+            Y1 = g.int.Y_gpf2;
+            Y2 = g.int.Y_gncpf2;
+            Y3 = g.int.Y_ncgpf2;
+            Y4 = g.int.Y_ncpf2;
+            Vr1 = g.int.V_rgpf2;
+            Vr2 = g.int.V_rncpf2;
+            bo = g.int.bopf2;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+            
         elseif j >=sum(k_inc(1:2))+1
             % near bus cleared
-            bus_sim = bus_pf1;
-            g.sys.bus_int = bus_intpf1;
-            Y1 = Y_gpf1;
-            Y2 = Y_gncpf1;
-            Y3 = Y_ncgpf1;
-            Y4 = Y_ncpf1;
-            Vr1 = V_rgpf1;
-            Vr2 = V_rncpf1;
-            bo = bopf1;
+            g.bus.bus_sim = g.bus.bus_pf1;
+            g.sys.bus_int = g.bus.bus_intpf1;
+            
+            Y1 = g.int.Y_gpf1;
+            Y2 = g.int.Y_gncpf1;
+            Y3 = g.int.Y_ncgpf1;
+            Y4 = g.int.Y_ncpf1;
+            Vr1 = g.int.V_rgpf1;
+            Vr2 = g.int.V_rncpf1;
+            bo = g.int.bopf1;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+            
         elseif j>=k_inc(1)+1
             % fault applied
-            bus_sim = bus_f;
-            g.sys.bus_int = bus_intf;
-            Y1 = Y_gf;
-            Y2 = Y_gncf;
-            Y3 = Y_ncgf;
-            Y4 = Y_ncf;
-            Vr1 = V_rgf;
-            Vr2 = V_rncf;
-            bo = bof;
+            g.bus.bus_sim = g.bus.bus_f;
+            g.sys.bus_int = g.bus.bus_intf;
+            
+            Y1 = g.int.Y_gf;
+            Y2 = g.int.Y_gncf;
+            Y3 = g.int.Y_ncgf;
+            Y4 = g.int.Y_ncf;
+            Vr1 = g.int.V_rgf;
+            Vr2 = g.int.V_rncf;
+            bo = g.int.bof;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
-        elseif k<k_inc(1)+1  % JHC - DKF thinks k should be j
+            
+        elseif k<k_inc(1)+1  % JHC - DKF thinks k should be j. Yeah, probably should be j -thad 07/17/20
             % pre fault
-            bus_sim = bus;
-            g.sys.bus_int = bus_intprf;
-            Y1 = Y_gprf;
-            Y2 = Y_gncprf;
-            Y3 = Y_ncgprf;
-            Y4 = Y_ncprf;
-            Vr1 = V_rgprf;
-            Vr2 = V_rncprf;
-            bo = boprf;
+            g.bus.bus_sim = g.bus.bus;
+            g.sys.bus_int = g.bus.bus_intprf;
+            
+            Y1 = g.int.Y_gprf;
+            Y2 = g.int.Y_gncprf;
+            Y3 = g.int.Y_ncgprf;
+            Y4 = g.int.Y_ncprf;
+            Vr1 = g.int.V_rgprf;
+            Vr2 = g.int.V_rncprf;
+            bo = g.int.boprf;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         end
         
@@ -1532,18 +1552,18 @@ while (kt<=ktmax)
         if sum(mac_trip_flags)>0.5
             genBuses = g.mac.mac_con(mac_trip_flags==1,2);
             for kB=1:length(genBuses)
-                nL = find(genBuses(kB)==line_sim(:,1) | genBuses(kB)==line_sim(:,2));
+                nL = find(genBuses(kB)==g.line.line_sim(:,1) | genBuses(kB)==g.line.line_sim(:,2));
                 if isempty(nL)
                     error('nL is empty.'); 
                 end
-                line_sim(nL,4) = 1e7; %make reactance infinity
+                g.line.line_sim(nL,4) = 1e7; %make reactance infinity
             end
-            [Y1,Y2,Y3,Y4,Vr1,Vr2,bo] = red_ybus(bus_sim,line_sim);
+            [Y1,Y2,Y3,Y4,Vr1,Vr2,bo] = red_ybus(g.bus.bus_sim,g.line.line_sim);
             clear nL kB genBuses
         end
         
         %% solve
-        h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        h_sol = i_simu(j,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         g.mac.vex(:,j) = g.mac.vex(:,k);
         g.dc.cur_ord(:,j) = g.dc.cur_ord(:,k);
@@ -1585,7 +1605,7 @@ while (kt<=ktmax)
         end
         
         %% network interface for control models - 'corrector' step
-        dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
+        dc_cont(0,j,10*(j-1)+1,g.bus.bus_sim,flag);
         
         dpwf(0,j,flag);
         pss(0,j,flag);
@@ -1597,22 +1617,23 @@ while (kt<=ktmax)
         exc_dc12(0,j,flag);
         
         tg(0,j,flag);
-        tg_hydro(0,j,bus_sim,flag);
+        tg_hydro(0,j,g.bus.bus_sim,flag);
         
         if g.svc.n_dcud~=0
             % set the new line currents
             for jj=1:g.svc.n_dcud
-                l_num = g.svc.svc_dc{jj,3};svc_num = g.svc.svc_dc{jj,2};
-                from_bus = g.sys.bus_int(line_sim(l_num,1)); 
-                to_bus = g.sys.bus_int(line_sim(l_num,2));
+                l_num = g.svc.svc_dc{jj,3};
+                svc_num = g.svc.svc_dc{jj,2};
+                from_bus = g.sys.bus_int(g.line.line_sim(l_num,1)); 
+                to_bus = g.sys.bus_int(g.line.line_sim(l_num,2));
                 svc_bn = g.sys.bus_int(g.svc.svc_con(svc_num,2));
                 V1 = g.sys.bus_v(from_bus,j);
                 V2 = g.sys.bus_v(to_bus,j);
-                R = line_sim(l_num,3);
-                X = line_sim(l_num,4);
-                B = line_sim(l_num,5);
-                g.dc.tap = line_sim(l_num,6);
-                phi = line_sim(l_num,7);
+                R = g.line.line_sim(l_num,3);
+                X = g.line.line_sim(l_num,4);
+                B = g.line.line_sim(l_num,5);
+                g.dc.tap = g.line.line_sim(l_num,6);
+                phi = g.line.line_sim(l_num,7);
                 [l_if,l_it] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);
                 if svc_bn == from_bus
                     d_sig(jj,j)=abs(l_if);
@@ -1633,11 +1654,11 @@ while (kt<=ktmax)
         
         %% Flag = 2, for 'corrector step' d's
         flag = 2;
-        mac_ind(0,j,bus_sim,flag);
-        mac_igen(0,j,bus_sim,flag);
-        mac_sub(0,j,bus_sim,flag);
-        mac_tra(0,j,bus_sim,flag);
-        mac_em(0,j,bus_sim,flag);
+        mac_ind(0,j,g.bus.bus_sim,flag);
+        mac_igen(0,j,g.bus.bus_sim,flag);
+        mac_sub(0,j,g.bus.bus_sim,flag);
+        mac_tra(0,j,g.bus.bus_sim,flag);
+        mac_em(0,j,g.bus.bus_sim,flag);
         
         dpwf(0,j,flag);
         pss(0,j,flag);
@@ -1650,7 +1671,7 @@ while (kt<=ktmax)
         
         mtg_sig(j);% modulation
         tg(0,j,flag);
-        tg_hydro(0,j,bus_sim,flag);
+        tg_hydro(0,j,g.bus.bus_sim,flag);
         
         if g.svc.n_svc~=0
             msvc_sig(j);% modulation
@@ -1668,7 +1689,7 @@ while (kt<=ktmax)
                 end
             end
             v_svc = abs(g.sys.bus_v(g.sys.bus_int(g.svc.svc_con(:,2)),j));
-            bus_sim = svc(0,j,bus_sim,flag,v_svc);
+            g.bus.bus_sim = svc(0,j,g.bus.bus_sim,flag,v_svc);
         end
         
         if g.tcsc.n_tcsc~=0
@@ -1707,7 +1728,7 @@ while (kt<=ktmax)
                 Pst{index} = pwrmod_p_sigst{index}(:,j);
                 Qst{index} = pwrmod_q_sigst{index}(:,j);
             end
-            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,bus,g.sys.t,j,flag,g.pwr.n_pwrmod);
+            [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,g.bus.bus,g.sys.t,j,flag,g.pwr.n_pwrmod);
             if (~iscell(dp) || ~iscell(dq))
                 error('Error in pwrmod_dyn, dp and dq must be cells'); 
             end
@@ -1728,14 +1749,14 @@ while (kt<=ktmax)
                 dpwrmod_p_sigst{index}(:,j) = dp{index};
                 dpwrmod_q_sigst{index}(:,j) = dq{index};
             end
-            [P,Q,~,~,~,~] = pwrmod_dyn(Pst,Qst,bus,g.sys.t,j,1,g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
+            [P,Q,~,~,~,~] = pwrmod_dyn(Pst, Qst, g.bus.bus, g.sys.t, j, 1, g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
             if (length(P)~=g.pwr.n_pwrmod) || (length(Q)~=g.pwr.n_pwrmod)
                 error('Dimension error in pwrmod_dyn');
             end
             g.pwr.pwrmod_p_sig(:,j) = P;
             g.pwr.pwrmod_q_sig(:,j) = Q;
-            pwrmod_p(0,j,bus_sim,flag);
-            pwrmod_q(0,j,bus_sim,flag);
+            pwrmod_p(0,j,g.bus.bus_sim,flag);
+            pwrmod_q(0,j,g.bus.bus_sim,flag);
             clear P Q Pst Qst dp dq index
         end
         
@@ -1746,14 +1767,14 @@ while (kt<=ktmax)
                 dst{index} = ivmmod_d_sigst{index}(:,j);
                 est{index} = ivmmod_e_sigst{index}(:,j);
             end
-            [d,e,~,~,~,~] = ivmmod_dyn(dst,est,bus,g.sys.t,j,1);
+            [d,e,~,~,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,j,1); % should this be g.bus.bus_sim? - thad 07/17/20
             if (length(d)~=n_ivm) || (length(e)~=n_ivm)
                 error('Dimension error in ivmmod_dyn'); 
             end
             ivmmod_d_sig(:,j) = d;
             ivmmod_e_sig(:,j) = e;
-            mac_ivm(0,j,bus_sim,flag);
-            [~,~,dd,de,~,~] = ivmmod_dyn(dst,est,bus,g.sys.t,j,flag);
+            mac_ivm(0,j,g.bus.bus_sim,flag);
+            [~,~,dd,de,~,~] = ivmmod_dyn(dst, est, g.bus.bus, g.sys.t, j, flag);
             if (~iscell(dd) || ~iscell(de))
                 error('Error in ivmmod_dyn, dd and de must be cells'); 
             end
@@ -1783,11 +1804,11 @@ while (kt<=ktmax)
             for kk = 1:10
                 jdc=10*(j-1)+kk;
                 [g.dc.xdcr_dc(:,jdc:jdc+1),g.dc.dxdcr_dc(:,jdc:jdc+1),g.dc.xdci_dc(:,jdc:jdc+1),g.dc.dxdci_dc(:,jdc:jdc+1)] = ...
-                    dc_sim(j,kk,g.dc.dcr_dc,g.dc.dci_dc,g.dc.xdcr_dc(:,jdc),g.dc.xdci_dc(:,jdc),bus_sim,hdc_sol);
+                    dc_sim(j, kk, g.dc.dcr_dc, g.dc.dci_dc, g.dc.xdcr_dc(:,jdc), g.dc.xdci_dc(:,jdc), g.bus.bus_sim, hdc_sol);
             end
         else
-            dc_cont(0,j,j,bus_sim,2);
-            dc_line(0,j,j,bus_sim,2);
+            dc_cont(0, j, j, g.bus.bus_sim, 2);
+            dc_line(0, j, j, g.bus.bus_sim, 2);
         end
         
         %% following statements are corrector steps (Actual RK2 computation)
@@ -1882,7 +1903,7 @@ while (kt<=ktmax)
         
         %% Live plot call
         if g.sys.livePlotFlag
-           livePlot
+           livePlot(k)
         end
         
     end
@@ -1893,17 +1914,17 @@ end% end simulation loop
 
 %% Final 'live' plot call
 if g.sys.livePlotFlag
-   livePlot
+   livePlot('end')
 end
 
 %% calculation of line currents post sim
-V1 = g.sys.bus_v(g.sys.bus_int(line(:,1)),:);
-V2 = g.sys.bus_v(g.sys.bus_int(line(:,2)),:);
-R = line(:,3); 
-X = line(:,4); 
-B = line(:,5);
-g.dc.tap = line(:,6); 
-phi = line(:,7);
+V1 = g.sys.bus_v(g.sys.bus_int(g.line.line(:,1)),:);
+V2 = g.sys.bus_v(g.sys.bus_int(g.line.line(:,2)),:);
+R = g.line.line(:,3); 
+X = g.line.line(:,4); 
+B = g.line.line(:,5);
+g.dc.tap = g.line.line(:,6); 
+phi = g.line.line(:,7);
 
 [ilf,ilt] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);%line currents
 [sInjF,sInjT] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% 'line flows' - complex power injection at bus
@@ -1965,6 +1986,5 @@ for vName = varNames
     end
 
 end
-clear varNames vName zeroTest
-
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
+clear varNames vName zeroTest clearedVars

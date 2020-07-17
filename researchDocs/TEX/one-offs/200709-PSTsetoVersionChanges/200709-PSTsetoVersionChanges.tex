@@ -67,6 +67,12 @@ It's meant to model a `grid forming' converter where voltage and angle are manip
 While there are questions about the reality of such operations, the model exists and appears to work in the non-linear simulation  of PST SETO.
 
 %===========================================================================================================
+\paragraph{livePlot} \ \\
+Function that creates plot during non-linear simulation.
+While this operation existed in previous versions of pst, it is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
+The \verb|livePlot| function is designed to be overwritten in a similar fashion as pss or machine models previously described.
+
+%===========================================================================================================
 \pagebreak
 \paragraph{Global Variables} \ \\
 To enable easier manipulation of PST - it was decided to create a global structure that contains all system globals.
@@ -268,9 +274,24 @@ Some DC related functions reused global variable names for local values but avoi
 During global conversion this caused some issues with accidental casting to global and overwriting issues.
 While the non-linear and linear simulations run, there may be issues with this problem yet to be discovered.
 
+%---------------------------------------------------------------------------------------------------
+\subparagraph{bus} \ \\
+Contains \verb|bus| and all altered bus arrays associated with faults created in \verb|y_switch|.
+Does not contain bus values originally put into \verb|g.sys|, but probably will as it makes sense to move them here.
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{line} \ \\
+Contains \verb|line| and all altered line arrays associated with faults created in \verb|y_switch|.
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{int} \ \\
+Contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with faults.
+
+
+
 \begin{comment}
 
-
+template for subparagraphs
 
 %---------------------------------------------------------------------------------------------------
 \subparagraph{xxx}
