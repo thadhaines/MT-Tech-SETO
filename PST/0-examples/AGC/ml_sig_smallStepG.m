@@ -12,7 +12,7 @@ if g.lmod.n_lmod~=0
 %if n_lmod~=0
     if g.sys.t(k) > 1
         % load step
-        g.lmod.lmod_sig(1,k) = 5.0; % modify first load only
+        g.lmod.lmod_sig(1,k) = 0.5; % modify first load only
         %lmod_sig(1,k) = 0.01; % modify first load only
     end
 end

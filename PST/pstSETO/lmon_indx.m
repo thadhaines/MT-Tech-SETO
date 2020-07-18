@@ -1,6 +1,6 @@
 function lmon_indx
-%LMON_INDX checks if line monitoring indicies exist
-% LMON_INDX checks if line monitoring indicies exist
+%LMON_INDX creates data structures and indices for line monitoring
+% LMON_INDX creates data structures and indices for line monitoring
 %
 % Syntax: lmon_indx
 %
@@ -26,11 +26,11 @@ if ~isempty(g.lmon.lmon_con)
         
         for Lndx = 1:g.lmon.n_lmon
            % create placeholder structure for line flow info
-           g.lmon.line(Lndx).busArrayNdx = g.lmon.n_lmon(Lndx);
+           g.lmon.line(Lndx).busArrayNdx = g.lmon.lmon_con(Lndx);
            g.lmon.line(Lndx).FromBus = g.line.lineOG(g.lmon.lmon_con(Lndx), 1);
            g.lmon.line(Lndx).ToBus = g.line.lineOG(g.lmon.lmon_con(Lndx), 2);
            
-           % vector of busses for later calculations
+           % vector of buses for later calculations
            g.lmon.busFromTo(Lndx,1) = g.line.lineOG(g.lmon.lmon_con(Lndx), 1);
            g.lmon.busFromTo(Lndx,2) = g.line.lineOG(g.lmon.lmon_con(Lndx), 2);
            
