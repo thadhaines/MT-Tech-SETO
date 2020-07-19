@@ -4,6 +4,10 @@
 % added actual area definition
 % added lmon_con for line monitoring during simulation
 
+enableGov = false;
+enableExciters = false;
+enablePSS = false;
+
 disp('Two area, 4 machine, AGC test')
 % bus data format
 % bus: 
@@ -135,12 +139,13 @@ mac_con = [ ...
 % 1 4 0.01 46.0   0.06  0     0    1.0   -0.9...
 %     0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0];
 
-exc_con = [ ... % alternative Type 0 exciters same in all versions
-    0       1       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       2       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       3       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       4       0       100      0.01    12.0    1.0     7.5     -6;  ];
-
+if enableExciters
+    exc_con = [ ... % alternative Type 0 exciters same in all versions
+        0       1       0       100      0.01    12.0    1.0     7.5     -6;   
+        0       2       0       100      0.01    12.0    1.0     7.5     -6;   
+        0       3       0       100      0.01    12.0    1.0     7.5     -6;   
+        0       4       0       100      0.01    12.0    1.0     7.5     -6;  ];
+end
 
 %% governor model
 % tg_con matrix format
@@ -156,12 +161,13 @@ exc_con = [ ... % alternative Type 0 exciters same in all versions
 %  9	HP section time constant   T4	sec
 % 10	reheater time constant    T5	sec
 
-tg_con = [...
-1  1  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
-1  2  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
-1  3  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
-1  4  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0];
-
+if enableGov
+    tg_con = [...
+    1  1  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
+    1  2  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
+    1  3  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
+    1  4  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0];
+end
 
 %% non-conforming load
 % col 1           bus number
@@ -171,8 +177,8 @@ tg_con = [...
 % col 5           fraction const reactive current load
 
 load_con = [...
-4   0  0   0  0;
-14  0  0   0  0;
+4   .5  .5   0  0;
+14  .5  .5   0  0;
 %101 0  0   0  0
 ]; % SVC
 %disp('svc at bus 101')
@@ -206,11 +212,13 @@ lmod_con = [ ...
 %  8      2nd lag time const T4 (sec)
 %  9      max output limit (pu)
 %  10     min output limit (pu)
-pss_con = [ ...
-%    type gen#      K  Tw T1   T2   T3   T4    max min
-    1    1         30 2  0.25 0.04 0.2  0.03  0.1 -0.1;
-    1    3         30 2  0.25 0.04 0.2  0.03  0.1 -0.1];
 
+if enablePSS
+    pss_con = [ ...
+    %    type gen#      K  Tw T1   T2   T3   T4    max min
+        1    1         30 2  0.25 0.04 0.2  0.03  0.1 -0.1;
+        1    3         30 2  0.25 0.04 0.2  0.03  0.1 -0.1];
+end
 %% svc
 % col 1           svc number
 % col 2           bus number
@@ -254,6 +262,6 @@ sw_con = [...
 1.0  101  3    0    0    6    ts;   % Do Nothing
 5.0  0    0    0    0    0    ts*2;	% increase time step
 10.0 0    0    0    0    0    ts*4; % increase time step
-30.0 0    0    0    0    0    0];   % end simulation
+11.0 0    0    0    0    0    0];   % end simulation
 
 clear ts

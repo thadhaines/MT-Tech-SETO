@@ -1204,6 +1204,11 @@ while (kt<=ktmax)
         %% Average Frequency Calculation
         calcAveF(k,1);
         
+        %% Area Total Calcvulations
+        if g.area.n_area ~= 0
+            calcAreaVals(k,1);
+        end
+        
         %% network interface for control models
         dpwf(0,k,flag);
         
@@ -1652,6 +1657,11 @@ while (kt<=ktmax)
         end
         %% Average Frequency Calculation
         calcAveF(j,1);
+        
+        %% Area Total Calcvulations
+        if g.area.n_area ~= 0
+            calcAreaVals(j,1);
+        end
         
         %% network interface for control models - 'corrector' step
         dc_cont(0,j,10*(j-1)+1,g.bus.bus_sim,flag);

@@ -25,11 +25,19 @@ global g
 if ~isempty(g.area.area_con)
     areaNums = unique(g.area.area_con(:,2)); % collect unique area numbesr
     g.area.n_area = length(areaNums);
-    macBus = g.mac.mac_con(:,2);
-    loadBus = g.bus.bus(find(g.bus.bus(:,10)==3),1);
+    macBus = g.mac.mac_con(:,2); % used for indexing machine_con
+    
+    % used for indexing the bus array
+    genBus = g.bus.bus((g.bus.bus(:,10)==2) ,1);
+    slackBus = g.bus.bus((g.bus.bus(:,10)==1) ,1);
+    if ~isempty(slackBus)   
+        genBus = [genBus; slackBus];
+    end
+    loadBus = g.bus.bus((g.bus.bus(:,10)==3),1);
+    
     for areaN = 1:g.area.n_area
         g.area.area(areaN).number = areaNums(areaN);
-        g.area.area(areaN).areaBuses = g.area.area_con(find(g.area.area_con(:,2) == areaNums(areaN)),1);
+        g.area.area(areaN).areaBuses = g.area.area_con((g.area.area_con(:,2) == areaNums(areaN)),1);
         
         % doesn't assume/require same order of area and bus array
         g.area.area(areaN).macBus = intersect(macBus, g.area.area(areaN).areaBuses);
@@ -45,10 +53,19 @@ if ~isempty(g.area.area_con)
         g.area.area(areaN).loadBus = intersect(loadBus, g.area.area(areaN).areaBuses);
         
         g.area.area(areaN).loadBusNdx = []; % for references to bus array values
-        for lNdx=1:length(g.area.area(areaN).loadBus)
+        for ndx=1:length(g.area.area(areaN).loadBus)
             % add index to global
             g.area.area(areaN).loadBusNdx = [ g.area.area(areaN).loadBusNdx ...
-                , find(g.bus.bus(:,1) == g.area.area(areaN).loadBus(lNdx))]; % for references to machine array values
+                , find(g.bus.bus(:,1) == g.area.area(areaN).loadBus(ndx))]; % for references to machine array values
+        end
+        
+        g.area.area(areaN).genBus = intersect(genBus, g.area.area(areaN).areaBuses);
+        
+        g.area.area(areaN).genBusNdx = []; % for references to bus array values
+        for ndx=1:length(g.area.area(areaN).genBus)
+            % add index to global
+            g.area.area(areaN).genBusNdx = [ g.area.area(areaN).genBusNdx ...
+                , find(g.bus.bus(:,1) == g.area.area(areaN).genBus(ndx))]; % for references to machine array values
         end
         
         % place holders for logged values
