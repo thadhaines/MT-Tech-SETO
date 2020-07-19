@@ -42,22 +42,50 @@ else
     copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 end
 
+copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % use updated model
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use version 2 pss
+
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % reset modulation file
 copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
+copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % use updated model
+copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 
 %% Save cleaned output data
 save([pstVer,'testAGC.mat']); %Save simulation outputs
 
-
+%%
 figure
-title('Line Interchange')
+plot(g.sys.t, g.area.area(1).aveF)
+hold on
+plot(g.sys.t, g.area.area(2).aveF)
+plot(g.sys.t, g.sys.aveF,'--')
+title('Weighted Average Frequency')
+ylabel('Frequency [PU]')
+xlabel('Time [sec]')
+legend({'Area 1', 'Area 2', 'Total System'},'location','best')
+
+%%
+figure
 plot(g.sys.t, real(g.area.area(1).icA) - real(g.area.area(1).icA(1)))
 hold on
 plot(g.sys.t, real(g.area.area(2).icA)- real(g.area.area(2).icA(1)))
 ylabel('MW [PU]')
+xlabel('Time [sec]')
+title('Change in Area Interchange')
 legend({'Area 1', 'Area 2'},'location','best')
+
+%%
+figure
+plot(g.sys.t, real(g.area.area(1).totGen)-real(g.area.area(1).totGen(1)))
+hold on
+plot(g.sys.t, real(g.area.area(2).totGen)-real(g.area.area(2).totGen(1)))
+ylabel('MW [PU]')
+xlabel('Time [sec]')
+title('Change in Area Generation')
+legend({'Area 1', 'Area 2'},'location','best')
+
 
 % %% PST linear system creation
 % clear all; close all;

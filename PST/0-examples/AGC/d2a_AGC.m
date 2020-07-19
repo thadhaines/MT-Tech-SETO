@@ -4,9 +4,9 @@
 % added actual area definition
 % added lmon_con for line monitoring during simulation
 
-enableGov = false;
-enableExciters = false;
-enablePSS = false;
+enableGov = true;
+enableExciters = true;
+enablePSS = true;
 
 disp('Two area, 4 machine, AGC test')
 % bus data format
@@ -89,7 +89,7 @@ line = [...
 % each value corresponds to a index in the line_con
 % Complex current and power flow on the line will be calculated and logged during simulation
 
-lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
+%lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
 
 %% Machine data format
 %       1. machine number,
@@ -177,8 +177,8 @@ end
 % col 5           fraction const reactive current load
 
 load_con = [...
-4   .5  .5   0  0;
-14  .5  .5   0  0;
+4   0  0   0  0;
+14  0  0   0  0;
 %101 0  0   0  0
 ]; % SVC
 %disp('svc at bus 101')
@@ -262,6 +262,6 @@ sw_con = [...
 1.0  101  3    0    0    6    ts;   % Do Nothing
 5.0  0    0    0    0    0    ts*2;	% increase time step
 10.0 0    0    0    0    0    ts*4; % increase time step
-11.0 0    0    0    0    0    0];   % end simulation
+45.0 0    0    0    0    0    0];   % end simulation
 
 clear ts

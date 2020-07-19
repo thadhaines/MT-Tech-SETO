@@ -4,8 +4,7 @@ function calcAreaVals(k,flag)
 %
 % Syntax: calcAreaVals(k,flag)
 %
-%   NOTES: Area shunts are included in total load calculation.
-%           Sign convention is to use positive numbers that correspond
+%   NOTES:  Sign convention is to use positive numbers that correspond
 %           to category. For example, the convention is believed to be:
 %           Positive generation is power injection,
 %           positive load is real and reactive absorbtion
@@ -34,7 +33,7 @@ end
 % bus array col definitions
 
 % col4 p_gen(pu)
-% col5 q_gen(pu),
+% col5 q_gen(pu)
 % col6 p_load(pu)
 % col7 q_load(pu)
 % col8 G shunt(pu)
@@ -42,37 +41,38 @@ end
 
 if flag == 1
     for n=1:g.area.n_area
-        % assumes the bus array is updated with new vals....
+        
+        % collect and sum generator electric p and q values
+        pGen = sum(g.mac.pelect(g.area.area(n).macBusNdx,k));
+        qGen = sum(g.mac.qelect(g.area.area(n).macBusNdx,k));
+        g.area.area(n).totGen(k) = pGen + 1j*qGen;
+        
+        % assumed the bus array is updated with new vals....
         % However, that is not the case.
         % a Y-matrix is manipulated for load changes instead
         % could reflect lmod, or rlmod changes by indexing the respective
         % _con array and adding the output signal to the total sum...
         % but it seems like that may not be super useful as non-conforming
-        % load changes wouldn't be recorded.
-        % The solution may be to alter nc_load to update something ...
+        % load changes wouldn't be accounted for.
+        % The solution may be to alter/add code to nc_load that updates values?
         
-        % while included, nothing in the bus changes so plots may as well be tables...
-        pGen = sum(g.bus.bus(g.area.area(n).genBusNdx,4));
-        qGen = sum(g.bus.bus(g.area.area(n).genBusNdx,5));
-        g.area.area(n).totGen(k) = pGen + 1j*qGen;
+       % pLoad = sum(g.bus.bus(g.area.area(n).loadBusNdx,6));
+       % qLoad = sum(g.bus.bus(g.area.area(n).loadBusNdx,7));
         
-        pLoad = sum(g.bus.bus(g.area.area(n).loadBusNdx,6));
-        qLoad = sum(g.bus.bus(g.area.area(n).loadBusNdx,7));
+       % shuntG = sum(g.bus.bus(g.area.area(n).loadBusNdx,8));
+       % shuntB = sum(g.bus.bus(g.area.area(n).loadBusNdx,9));
         
-        shuntG = sum(g.bus.bus(g.area.area(n).loadBusNdx,8));
-        shuntB = sum(g.bus.bus(g.area.area(n).loadBusNdx,9));
-        
-        g.area.area(n).totLoad(k) = pLoad + 1j*(qLoad + shuntG - shuntB);
+       % g.area.area(n).totLoad(k) = pLoad + 1j*(qLoad + shuntG - shuntB);
 
-        % calculate interchange        
-        if ~isempty(g.area.area(n).exportLineNdx)
+        % calculate actual interchange        
+        if g.area.area(n).n_export~=0
             % calculate exported power
             [sExport, ~] = line_pq2(g.area.area(n).exportLineNdx,k);
         else
             sExport = 0;
         end
         
-        if ~isempty(g.area.area(n).importLineNdx)
+        if g.area.area(n).n_import~=0
             % calculate imported power
             [~, sImport] = line_pq2(g.area.area(n).importLineNdx,k);
         else
@@ -80,8 +80,6 @@ if flag == 1
         end
         
         g.area.area(n).icA(k) = sum(sExport) + sum(sImport); % ( Positive number represents overgenration / export )
-        
-        
         
     end
 end% end function

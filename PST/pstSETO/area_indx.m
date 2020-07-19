@@ -4,11 +4,7 @@ function area_indx
 %
 % Syntax: area_indx
 %
-%   NOTES:  Doesn't account for SVC Q generation as they are not load buses (yet).
-%           Import/Export Line indices included in area(x) for future 
-%           calculations of interchange. 
-%           Import lines will use sTo values while
-%           Export lines will use sFrom values for proper power flow. (I think)
+%   NOTES:  Doesn't assume/require same order of area and bus array
 %
 %   Input:
 %   VOID
@@ -18,7 +14,8 @@ function area_indx
 %
 %   History:
 %   Date        Time    Engineer        Description
-%   07/18/20    05:07   Thad Haines     Version 1
+%   07/18/20    05:07   Thad Haines     Version 1.0.0
+%   07/19/20    15:18   Thad Haines     Version 1.0.1 - minor additions to indices, area counts
 
 global g
 
@@ -37,12 +34,15 @@ if ~isempty(g.area.area_con)
     
     for areaN = 1:g.area.n_area
         g.area.area(areaN).number = areaNums(areaN);
+        % collect area bus numbers
         g.area.area(areaN).areaBuses = g.area.area_con((g.area.area_con(:,2) == areaNums(areaN)),1);
         
         % doesn't assume/require same order of area and bus array
+        
+        % collect area machine bus numbers
         g.area.area(areaN).macBus = intersect(macBus, g.area.area(areaN).areaBuses);
         
-        % collect mac_con index numbers
+        % collect area mac_con index numbers
         g.area.area(areaN).macBusNdx = [];
         for mNdx=1:length(g.area.area(areaN).macBus)
             % add index to global
@@ -50,8 +50,10 @@ if ~isempty(g.area.area_con)
                 , find(g.mac.mac_con(:,2) == g.area.area(areaN).macBus(mNdx))]; % for references to machine array values
         end
         
+        % collect area load bus numbers
         g.area.area(areaN).loadBus = intersect(loadBus, g.area.area(areaN).areaBuses);
         
+        % collect area load bus index numbers
         g.area.area(areaN).loadBusNdx = []; % for references to bus array values
         for ndx=1:length(g.area.area(areaN).loadBus)
             % add index to global
@@ -59,8 +61,10 @@ if ~isempty(g.area.area_con)
                 , find(g.bus.bus(:,1) == g.area.area(areaN).loadBus(ndx))]; % for references to machine array values
         end
         
+        % collect area generator bus numbers
         g.area.area(areaN).genBus = intersect(genBus, g.area.area(areaN).areaBuses);
         
+        % collect area generator bus index numbers
         g.area.area(areaN).genBusNdx = []; % for references to bus array values
         for ndx=1:length(g.area.area(areaN).genBus)
             % add index to global
@@ -74,7 +78,7 @@ if ~isempty(g.area.area_con)
         g.area.area(areaN).totGen = [];
         g.area.area(areaN).totLoad = [];
         g.area.area(areaN).icA = []; % Actual interchange
-        g.area.area(areaN).icS = []; % Scheduled interchange
+        g.area.area(areaN).icS = []; % Scheduled interchange (AGC?)
         
         % Create placeholders for line indices
         g.area.area(areaN).exportLineNdx = [];
@@ -100,7 +104,11 @@ if ~isempty(g.area.area_con)
                         [g.area.area(areaN).importLineNdx, line];
                 end
             end
-        end        
+        end
+        
+        % count number of interchange lines
+        g.area.area(areaN).n_export = length(g.area.area(areaN).exportLineNdx);
+        g.area.area(areaN).n_import = length(g.area.area(areaN).importLineNdx);
     end
 else
     g.area.n_area = 0;

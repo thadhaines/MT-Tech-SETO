@@ -49,8 +49,8 @@
 %   07/19/17    xx:xx   Rui             Version 1.8 - Add code for multiple HVDC systems
 %   xx/xx/19    xx:xx   Dan Trudnowski  Version 1.9 - Added ivmmod code
 %   07/15/20    14:27   Thad Haines     Version 2.0 - Revised format of globals and internal function documentation
-%   07/16/20    11:19   Thad Haines     Version 2.0.1 - Added cleanZeros to end of script to clean global g
-%   07/18/20    10:52   Thad Haines     Version 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
+%   07/16/20    11:19   Thad Haines     V 2.0.1 - Added cleanZeros to end of script to clean global g
+%   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
 
 %%
 %clear all
@@ -258,18 +258,21 @@ for sw_count = 1:n_switch-1
     k_incdc(sw_count) = 10*k_inc(sw_count);
     t_switch(sw_count+1) = t_switch(sw_count) +  k_inc(sw_count)*h(sw_count);
     t(k:k-1+k_inc(sw_count)) = t_switch(sw_count):h(sw_count):t_switch(sw_count+1)-h(sw_count);
+    if ~isempty(g.dc.dcl_con)
     g.dc.t_dc(kdc:kdc-1+k_incdc(sw_count)) = t_switch(sw_count):h_dc(sw_count):t_switch(sw_count+1)-h_dc(sw_count);
+    end
     k = k+k_inc(sw_count);
     kdc = kdc+k_incdc(sw_count);
 end
 
 % time for dc - multi-rate...
-g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
-for kk=1:10
-    kdc=kdc+1;
+if ~isempty(g.dc.dcsp_con)
     g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
+    for kk=1:10
+        kdc=kdc+1;
+        g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
+    end
 end
-
 k = sum(k_inc)+1; % k is the total number of time steps in the simulation
 
 t(k) = g.sys.sw_con(n_switch,1);
@@ -1196,19 +1199,7 @@ while (kt<=ktmax)
         end
         
         dc_cont(0,k,10*(k-1)+1,g.bus.bus_sim,flag);
-        %% Line Monitoring
-        if g.lmon.n_lmon~=0
-            lmon(k)
-        end
-        
-        %% Average Frequency Calculation
-        calcAveF(k,1);
-        
-        %% Area Total Calcvulations
-        if g.area.n_area ~= 0
-            calcAreaVals(k,1);
-        end
-        
+
         %% network interface for control models
         dpwf(0,k,flag);
         
@@ -1513,6 +1504,18 @@ while (kt<=ktmax)
             end
         end
         
+        %% Line Monitoring
+        if g.lmon.n_lmon~=0
+            lmon(k)
+        end
+        
+        %% Average Frequency Calculation
+        calcAveF(k,1);
+        
+        %% Area Total Calcvulations
+        if g.area.n_area ~= 0
+            calcAreaVals(k,1);
+        end        
         
         %% Flag = 1
         % begining of solutions as j (i.e. Corrector step)
@@ -1651,17 +1654,6 @@ while (kt<=ktmax)
             end
         end
         
-        %% Line Monitoring
-        if g.lmon.n_lmon~=0
-            lmon(j)
-        end
-        %% Average Frequency Calculation
-        calcAveF(j,1);
-        
-        %% Area Total Calcvulations
-        if g.area.n_area ~= 0
-            calcAreaVals(j,1);
-        end
         
         %% network interface for control models - 'corrector' step
         dc_cont(0,j,10*(j-1)+1,g.bus.bus_sim,flag);
@@ -1960,6 +1952,18 @@ while (kt<=ktmax)
             end
         end
         
+        %% Line Monitoring
+        if g.lmon.n_lmon~=0
+            lmon(j)
+        end
+        %% Average Frequency Calculation
+        calcAveF(j,1);
+        
+        %% Area Total Calculations
+        if g.area.n_area ~= 0
+            calcAreaVals(j,1);
+        end
+        
         %% Live plot call
         if g.sys.livePlotFlag
            livePlot(k)
@@ -1997,6 +2001,7 @@ g.sys.ElapsedNonLinearTime = ets;
 disp(['*** Elapsed Simulation Time = ' ets 's'])
 
 %% Clean up logged DC variables to length of DC simulated time.
+if ~isempty(g.dc.dcsp_con)
 disp('*** Adjusting logged data lengths...')
 g.dc.t_dc = g.dc.t_dc(1:length(g.dc.t_dc)-10);
 g.dc.i_dc = g.dc.i_dc(:,1:length(g.dc.t_dc));
@@ -2017,6 +2022,7 @@ g.dc.dv_dcc = g.dc.dv_dcc(:,1:length(g.dc.t_dc));
 g.dc.v_dcc = g.dc.v_dcc(:,1:length(g.dc.t_dc));
 g.dc.di_dci = g.dc.di_dci(:,1:length(g.dc.t_dc));
 g.dc.di_dcr = g.dc.di_dcr(:,1:length(g.dc.t_dc));
+end
 
 %% Clean up various temporary and function input values
 clear V1 V2 R X B jj phi % used in calls to line_cur, line_pq
