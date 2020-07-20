@@ -1,7 +1,5 @@
 % Test AGC two area case (AGC in seto version only...)
 % large timestep may cause newton solution to diverge....
-caseName = 'NoAGC';
-printFigs = 1 ;
 
 clear all; close all; clc
 %% Add pst path to MATLAB
@@ -55,6 +53,9 @@ copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % use updated model
 copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 
 %% Save cleaned output data
+caseName = 'NoAGC';
+printFigs = 0 ;
+
 save([pstVer,'testAGC.mat']); %Save simulation outputs
 
 if printFigs

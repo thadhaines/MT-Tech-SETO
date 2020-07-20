@@ -15,13 +15,13 @@
 \usepackage{setspace}
 \begin{document}
 \onehalfspacing
-\paragraph{Intro} \ \\
-Document to explain PST additions for AGC.
+\paragraph{Purpose} \ \\
+This document is meant to explain PST additions and alterations created to accommodate AGC.
 
 
 \paragraph{Area Definitions} \ \\
 To enable area calculations, each bus  in the \verb|bus| array must be assigned to an area in the \verb|area_def| array.
-An \verb|area_def| array may 
+An example \verb|area_def| array is shown below.
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -202,7 +202,7 @@ F_{ave_M} &= \left( \sum_{i}^{N_M}Mach_{speed_i}MVA_{base_i}H_i \right) / H_{tot
 Then system total values are calculated as
 \begin{align*}
 H_{tot} &= \sum_{i}^{M} H_{tot_M} \\
-F_{ave} &= \left( \sum_{i}^{M} f_{ave_M} \right)/M
+F_{ave} &= \left( \sum_{i}^{M} F_{ave_M} \right)/M
 \end{align*}
 
 If $M=0$, \verb|calcAveF| performs
@@ -222,12 +222,12 @@ Under development...
 \includegraphics[width=.75\linewidth]{sysOneLineAreas}
 \end{center}
 \begin{itemize}
-\item kundur  4 packaged with PST
+\item Kundur  4 machine system packaged with PST
 \item Constant Z load model
 \item All machines, exciters, and govs identical
 \item PSS on gen 1 and 3
 \item SVC on bus 101
-\item event: 50 MW load step of load on bus 4 at t=1
+\item Event: +50 MW (0.5 PU) step of load on bus 4 at t=1
 \end{itemize}
 
 \pagebreak
