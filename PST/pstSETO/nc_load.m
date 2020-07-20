@@ -139,7 +139,8 @@ if ~isempty(g.ncl.load_con)
             - curr_load(lv_idx);
       end
       count = 0;
-      Y22_real = real(Y22); Y22_imag = imag(Y22);
+      Y22_real = real(Y22); 
+      Y22_imag = imag(Y22);
       % Newton's algorithm
       while(norm(curr_mis,'inf') > tol)
          if ~isempty(hv_idx)
@@ -210,7 +211,7 @@ if ~isempty(g.ncl.load_con)
          if count > 30
             disp('NC_LOAD: Newton algorithm not converged in 30 iterations')
             fprintf('current mismatch is %g \n', curr_mis) 
-            error('executuion terminated')
+            error('Maximum iterations exceeded - executuion terminated')
          end
       end
    end

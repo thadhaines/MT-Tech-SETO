@@ -194,12 +194,12 @@ else
     g.lmon.lmon_con = [];
 end
 
-%% area_con
-if exist('area_con','var')
-    g.area.area_con = area_con;
-    clear area_con;
+%% area_def
+if exist('area_def','var')
+    g.area.area_def = area_def;
+    clear area_def;
 else
-    g.area.area_con = [];
+    g.area.area_def = [];
 end
 
 %% Global for plot flag

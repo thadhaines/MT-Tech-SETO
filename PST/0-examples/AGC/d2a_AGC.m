@@ -7,6 +7,7 @@
 enableGov = true;
 enableExciters = true;
 enablePSS = true;
+enableSVC = true;
 
 disp('Two area, 4 machine, AGC test')
 % bus data format
@@ -29,11 +30,12 @@ disp('Two area, 4 machine, AGC test')
 % col13 v_rated (kV)
 % col14 v_max  pu
 % col15 v_min  pu
-
-bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0  -99.0  22.0  1.1  .9;
-        2  1.01    8.80   7.00   1.76  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0  1.1  .9;
+%
+%           v       ang   pgen   qgen  pL    qL    G     B    type Qmx  Qmn   kv   Vmx  Vmn
+bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0 -99.0 22.0   1.1  .9;
+        2  1.01    8.80   7.00   1.76  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
         3  0.9781  -6.1   0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  500.0  1.5  .5;
-        4  0.95   -10    0.00   0.00  9.76  1.00  0.00  0.00  3  0.0   0.0  115.0  1.05 .95;
+        4  0.95   -10     0.00   0.00  9.76  1.00  0.00  0.00 3  0.0   0.0  115.0  1.05 .95;
         10 1.0103  12.1   0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
         11 1.03    -6.8   7.16   1.49  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
         12 1.01    -16.9  7.00   1.39  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
@@ -44,11 +46,16 @@ bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0  -99.0  22
        110 1.0125  -13.4  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
        120 0.9938  -23.6  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5 ];
    
-%% area_con data format
+   if enableSVC 
+       % change SVC bus to type 2
+       bus( (bus(:,1)==101), 10 ) = 2;
+       
+   end
+%% area_def data format
 % should contain same number of rows as bus array (i.e. all bus areas defined)
 % col 1 bus number
 % col 2 area number
-area_con = [ ...
+area_def = [ ...
             1  1;
             2  1;
             3  1;
@@ -85,11 +92,13 @@ line = [...
 13  120 0.001   0.01     0.0175  1.0  0. 0.  0.  0.;
 110 120 0.0025  0.025    0.0437  1.0  0. 0.  0.  0.];
 
-%% line monitoring
-% each value corresponds to a index in the line_con
+%% Line Monitoring
+% Each value corresponds to an array index in the line array.
 % Complex current and power flow on the line will be calculated and logged during simulation
 
 %lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
+
+lmon_con = [3,10]; % lines to loads
 
 %% Machine data format
 %       1. machine number,
@@ -179,9 +188,13 @@ end
 load_con = [...
 4   0  0   0  0;
 14  0  0   0  0;
-%101 0  0   0  0
-]; % SVC
-%disp('svc at bus 101')
+]; 
+
+
+if enableSVC
+    load_con = [load_con; 101 0  0   0  0];
+    disp('svc at bus 101')
+end
 
 %% lmod_con format
 % sets up model for load modulation
@@ -228,9 +241,9 @@ end
 % col 6           regulator gain
 % col 7           regulator time constant (s)
 
-% SVC gain set to zero
-%svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
-
+if enableSVC
+    svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
+end
 %% Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
 %       col7  initial time step (s)

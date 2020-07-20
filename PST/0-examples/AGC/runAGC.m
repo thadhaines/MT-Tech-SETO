@@ -1,5 +1,7 @@
 % Test AGC two area case (AGC in seto version only...)
 % large timestep may cause newton solution to diverge....
+caseName = 'NoAGC';
+printFigs = 1 ;
 
 clear all; close all; clc
 %% Add pst path to MATLAB
@@ -55,37 +57,95 @@ copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 %% Save cleaned output data
 save([pstVer,'testAGC.mat']); %Save simulation outputs
 
-%%
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f1'],'-png'); % to print fig
+end
+%% system frequency
 figure
-plot(g.sys.t, g.area.area(1).aveF)
+plot(g.sys.t, g.area.area(1).aveF,'--')
 hold on
-plot(g.sys.t, g.area.area(2).aveF)
-plot(g.sys.t, g.sys.aveF,'--')
+plot(g.sys.t, g.area.area(2).aveF,'--')
+plot(g.sys.t, g.sys.aveF,'k','linewidth',1.5)
+
+grid on
 title('Weighted Average Frequency')
 ylabel('Frequency [PU]')
 xlabel('Time [sec]')
 legend({'Area 1', 'Area 2', 'Total System'},'location','best')
 
-%%
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f2'],'-pdf'); % to print fig
+end
+%% change in area interchange
 figure
 plot(g.sys.t, real(g.area.area(1).icA) - real(g.area.area(1).icA(1)))
 hold on
 plot(g.sys.t, real(g.area.area(2).icA)- real(g.area.area(2).icA(1)))
+
+grid on
 ylabel('MW [PU]')
 xlabel('Time [sec]')
 title('Change in Area Interchange')
 legend({'Area 1', 'Area 2'},'location','best')
 
-%%
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f3'],'-pdf'); % to print fig
+end
+%% change area generation
 figure
 plot(g.sys.t, real(g.area.area(1).totGen)-real(g.area.area(1).totGen(1)))
 hold on
 plot(g.sys.t, real(g.area.area(2).totGen)-real(g.area.area(2).totGen(1)))
+
+grid on
 ylabel('MW [PU]')
 xlabel('Time [sec]')
 title('Change in Area Generation')
 legend({'Area 1', 'Area 2'},'location','best')
 
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f4'],'-pdf'); % to print fig
+end
+%% power to load bus via lmon
+figure
+plot(g.sys.t, real(g.lmon.line(1).sFrom)-real(g.lmon.line(1).sFrom(1)))
+hold on
+plot(g.sys.t, real(g.lmon.line(2).sFrom)-real(g.lmon.line(2).sFrom(1)))
+plot(g.sys.t, imag(g.lmon.line(1).sFrom)-imag(g.lmon.line(1).sFrom(1)), '--')
+plot(g.sys.t, imag(g.lmon.line(2).sFrom)-imag(g.lmon.line(2).sFrom(1)), '--')
+
+grid on
+ylabel('MW or MVAR [PU]')
+xlabel('Time [sec]')
+title('Change in Power Absorbed by Load Buses')
+legend({'REAL - Bus 4', 'REAL - Bus 14','REAC - Bus 4', 'REAC - Bus 14'},'location','best')
+
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f5'],'-pdf'); % to print fig
+end
+%% monitored load bus voltages
+figure
+plot(g.sys.t, abs(g.bus.bus_v(3,:))-abs(g.bus.bus_v(3,1)))
+hold on
+plot(g.sys.t, abs(g.bus.bus_v(10,:))-abs(g.bus.bus_v(10,1)))
+
+grid on
+ylabel('Voltage [PU]')
+xlabel('Time [sec]')
+title('Change Load Bus Voltage')
+legend({'Bus 4', 'Bus 14'},'location','best')
+
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f6'],'-pdf'); % to print fig
+end
+%% The following linear code was used to test new global functionality
+% the event is probably too large for reasonable linear simulation
 
 % %% PST linear system creation
 % clear all; close all;

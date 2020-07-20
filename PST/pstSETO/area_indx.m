@@ -19,8 +19,8 @@ function area_indx
 
 global g
 
-if ~isempty(g.area.area_con)
-    areaNums = unique(g.area.area_con(:,2)); % collect unique area numbesr
+if ~isempty(g.area.area_def)
+    areaNums = unique(g.area.area_def(:,2)); % collect unique area numbesr
     g.area.n_area = length(areaNums);
     macBus = g.mac.mac_con(:,2); % used for indexing machine_con
     
@@ -35,7 +35,7 @@ if ~isempty(g.area.area_con)
     for areaN = 1:g.area.n_area
         g.area.area(areaN).number = areaNums(areaN);
         % collect area bus numbers
-        g.area.area(areaN).areaBuses = g.area.area_con((g.area.area_con(:,2) == areaNums(areaN)),1);
+        g.area.area(areaN).areaBuses = g.area.area_def((g.area.area_def(:,2) == areaNums(areaN)),1);
         
         % doesn't assume/require same order of area and bus array
         

@@ -51,6 +51,7 @@ if flag == 1
     else
         % calculate weighted average frequency for each area, sum for system
         runningSysF = 0;
+        runningSysH = 0;
         for areaN=1:g.area.n_area
             % calculate area total inertia
             mNdx = g.area.area(areaN).macBusNdx;
@@ -60,9 +61,11 @@ if flag == 1
                 /g.area.area(areaN).totH(k);
             
             runningSysF = runningSysF + g.area.area(areaN).aveF(k);
+            runningSysH = runningSysH + g.area.area(areaN).totH(k);
         end
         
-        g.sys.totH(k) = sum(g.mac.mac_con(:,16).*g.mac.mac_con(:,3));
+        %g.sys.totH(k) = sum(g.mac.mac_con(:,16).*g.mac.mac_con(:,3));
+        g.sys.totH(k) = runningSysH;
         g.sys.aveF(k) = runningSysF/g.area.n_area;
     end
 end

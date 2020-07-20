@@ -47,7 +47,7 @@ if flag == 1
         qGen = sum(g.mac.qelect(g.area.area(n).macBusNdx,k));
         g.area.area(n).totGen(k) = pGen + 1j*qGen;
         
-        % assumed the bus array is updated with new vals....
+        % assumed the bus array is updated with new values...
         % However, that is not the case.
         % a Y-matrix is manipulated for load changes instead
         % could reflect lmod, or rlmod changes by indexing the respective
