@@ -13,14 +13,18 @@
 %   DataFile        - Contains simulation system information
 %   handleNewGlobals - assigns system variables to global structure g
 %   livePlot        - Plot data during simulation
-%  	y_switch
 %
 %   Function calls to:
 %   loadflow        - solve AC load flow
 %   lfdcs           - solve load flow with DC lines
+%   y_switch        - creates reduced Y matracies for fault scenarios
+%
 %   Create indicies in global g by calling:
 %   mac_indx, exc_indx, tg_indx, dpwf_indx, pss_indx, svc_indx, tcsc_indx,
-%   lm_indx, rlm_indx, pwrmod_indx
+%   lm_indx, rlm_indx, pwrmod_indx, ...
+%   
+%   Perform network and dynamic calculations by calling:
+%   ...
 % 
 %   Input: 
 %   N/A
@@ -41,26 +45,27 @@
 %   06/14/99    09:59   Graham Rogers   Version 1.6 - add user defined hvdc control
 %                                       modify dc so that it is integrated with a sub-multiple time constant
 %   09/xx/99    XX:XX   Graham Rogers   Version 1.7 - Add simple exciter with pi avr - smppi
-%   xx/xx/15    xx:xx   Dan Trudnowski  Added pwrmod code
+%   xx/xx/15    xx:xx   Dan Trudnowski  Version 1.75 - Added pwrmod code
 %   07/19/17    xx:xx   Rui             Version 1.8 - Add code for multiple HVDC systems
-%   xx/xx/19    xx:xx   Dan Trudnowski  Added ivmmod code
-%   07/15/20    14:27   Thad Haines     Revised format of globals and internal function documentation
-%   07/16/20    11:19   Thad Haines     Added cleanZeros to end of script to clean global g
+%   xx/xx/19    xx:xx   Dan Trudnowski  Version 1.9 - Added ivmmod code
+%   07/15/20    14:27   Thad Haines     Version 2.0 - Revised format of globals and internal function documentation
+%   07/16/20    11:19   Thad Haines     V 2.0.1 - Added cleanZeros to end of script to clean global g
+%   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
 
 %%
 %clear all
 %clear global
 % the above clears were removed to allow for running w/o running DataFile.m 5/20/20
-% assumes required arrays created before this script runs and DataFile is delted
-
-warning('*** s_simu_Batch Start')
+% assumes required arrays created before this script runs and DataFile is delted/not found
+format compact;
+disp('*** s_simu_Batch Start')
 
 close % close graphics windows
 tic % set timer
 
 jay = sqrt(-1);
 
-warning('*** Declare Global Variables')
+disp('*** Declare Global Variables')
 %% Contents of pst_var copied into this section so that globals highlight
 % globals converted to the global g have been removed
 
@@ -77,7 +82,7 @@ warning('*** Declare Global Variables')
     global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
     global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
 
-    %% pss design - 3
+    %% pss design - 3 - Not used in Simulation? - thad 07/18/20
     global ibus_con  netg_con  stab_con
     
     %% global structured array
@@ -190,6 +195,7 @@ lm_indx;
 rlm_indx();
 pwrmod_indx(g.bus.bus); 
 lmon_indx;
+area_indx;
 
 % Handled in mac_indx
 % g.ind.n_mot = size(g.ind.ind_con,1); % inductive motors
@@ -252,18 +258,21 @@ for sw_count = 1:n_switch-1
     k_incdc(sw_count) = 10*k_inc(sw_count);
     t_switch(sw_count+1) = t_switch(sw_count) +  k_inc(sw_count)*h(sw_count);
     t(k:k-1+k_inc(sw_count)) = t_switch(sw_count):h(sw_count):t_switch(sw_count+1)-h(sw_count);
+    if ~isempty(g.dc.dcl_con)
     g.dc.t_dc(kdc:kdc-1+k_incdc(sw_count)) = t_switch(sw_count):h_dc(sw_count):t_switch(sw_count+1)-h_dc(sw_count);
+    end
     k = k+k_inc(sw_count);
     kdc = kdc+k_incdc(sw_count);
 end
 
 % time for dc - multi-rate...
-g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
-for kk=1:10
-    kdc=kdc+1;
+if ~isempty(g.dc.dcsp_con)
     g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
+    for kk=1:10
+        kdc=kdc+1;
+        g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
+    end
 end
-
 k = sum(k_inc)+1; % k is the total number of time steps in the simulation
 
 t(k) = g.sys.sw_con(n_switch,1);
@@ -673,6 +682,23 @@ if g.lmon.n_lmon ~=0
 end
 clear Lndx
 
+%% Initialize zeros for area values
+if g.area.n_area ~=0
+    for areaN = 1:g.area.n_area
+        g.area.area(areaN).totH = zeros(1,k); % to account for possible trips
+        g.area.area(areaN).aveF = zeros(1,k);
+        g.area.area(areaN).totGen = zeros(1,k);
+        g.area.area(areaN).totLoad = zeros(1,k);
+        g.area.area(areaN).icA = zeros(1,k); % Actual interchange
+        g.area.area(areaN).icS = zeros(1,k); % Scheduled interchange
+    end
+end
+clear areaN
+
+%% Initialize zeros for logged system values
+g.sys.aveF = zeros(1,k);
+g.sys.totH = zeros(1,k);
+
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
 disp('constructing reduced y matrices')
@@ -807,7 +833,6 @@ exc_st3(0,1,flag);
 exc_dc12(0,1,flag);
 
 tg(0,1,flag); % modified 06/05/20 to global g
-
 tg_hydro(0,1,g.bus.bus,flag);
 
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
@@ -985,12 +1010,10 @@ if ~isempty(g.dc.dcsp_con)
     dc_line(0,1,1,g.bus.bus,flag);
 end
 
-H_sum = sum(g.mac.mac_con(:,16)./g.mac.mac_pot(:,1));
-%% step 3: perform a predictor-corrector integration
-%
-% This doesn't seem to be very predictor correctory.... 5/15/20
-% more to do with time/data point increment
+%H_sum = sum(g.mac.mac_con(:,16)./g.mac.mac_pot(:,1)); % unused?
 
+%% step 3: Start of a predictor-corrector integration
+% Create indicies for simulation
 kt = 0;
 ks = 1;
 
@@ -1133,14 +1156,10 @@ while (kt<=ktmax)
             clear nL kB genBuses
         end
         
-        %% solve
+        %% Solve Network solution 
         h_sol = i_simu(k,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
-        %% Line Monitoring
-        if g.lmon.n_lmon~=0
-            lmon(k)
-        end
-        
+
         %% HVDC
         if g.dc.ndcr_ud~=0
             % calculate the new value of bus angles rectifier user defined control
@@ -1180,17 +1199,17 @@ while (kt<=ktmax)
         end
         
         dc_cont(0,k,10*(k-1)+1,g.bus.bus_sim,flag);
-        
+
         %% network interface for control models
         dpwf(0,k,flag);
         
-        mexc_sig(k);
+        mexc_sig(k);  % executed twice? - thad 07/18/20
         smpexc(0,k,flag);
         smppi(0,k,flag);
         exc_st3(0,k,flag);
         exc_dc12(0,k,flag);
         
-        mtg_sig(k);
+        mtg_sig(k); % executed twice? - thad 07/18/20
         tg(0,k,flag);
         tg_hydro(0,k,g.bus.bus_sim,flag);
         
@@ -1237,7 +1256,7 @@ while (kt<=ktmax)
         %g.sys.sys_freq(k) = 1.0; % why?... 5/21/20 a
         % initialized as all ones on line 764
         
-        mpm_sig(k);
+        mpm_sig(k); 
         
         mac_ind(0,k,g.bus.bus_sim,flag);
         mac_igen(0,k,g.bus.bus_sim,flag);
@@ -1249,13 +1268,13 @@ while (kt<=ktmax)
         dpwf(0,k,flag);
         pss(0,k,flag);
         
-        mexc_sig(k);
+        mexc_sig(k);  % executed twice? - thad 07/18/20
         smpexc(0,k,flag);
         smppi(0,k,flag);
         exc_st3(0,k,flag);
         exc_dc12(0,k,flag);
         
-        mtg_sig(k);
+        mtg_sig(k); % executed twice? - thad 07/18/20
         tg(0,k,flag);
         tg_hydro(0,k,g.bus.bus_sim,flag);
         
@@ -1382,7 +1401,6 @@ while (kt<=ktmax)
             clear d e dd de dst est
         end
         
-        
         %% integrate dc at ten times rate (DC Stuff? 5/14/20)
         mdc_sig(k);
         if g.dc.n_conv~=0
@@ -1486,9 +1504,21 @@ while (kt<=ktmax)
             end
         end
         
+        %% Line Monitoring
+        if g.lmon.n_lmon~=0
+            lmon(k)
+        end
+        
+        %% Average Frequency Calculation
+        calcAveF(k,1);
+        
+        %% Area Total Calcvulations
+        if g.area.n_area ~= 0
+            calcAreaVals(k,1);
+        end        
         
         %% Flag = 1
-        % begining of solutions as j 
+        % begining of solutions as j (i.e. Corrector step)
         flag = 1;
         % mach_ref(j) = mac_ang(syn_ref,j);
         g.sys.mach_ref(j) = 0;
@@ -1550,9 +1580,9 @@ while (kt<=ktmax)
             
         elseif j<k_inc(1)+1  % JHC - DKF thinks k should be j. 
             % Changed to j - thad 07/17/20
-            % Though since this is prefault - it should be handled by 
+            % Though, since this is prefault - it should be handled by 
             % previous elseif statements to handle the single corrector
-            % step between a prefault and fault scenarious
+            % step between a prefault and fault situation.
             
             % pre fault
             g.bus.bus_sim = g.bus.bus;
@@ -1584,8 +1614,6 @@ while (kt<=ktmax)
         
         %% solve
         h_sol = i_simu(j,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
-        
-        
         
         g.mac.vex(:,j) = g.mac.vex(:,k);
         g.dc.cur_ord(:,j) = g.dc.cur_ord(:,k);
@@ -1626,10 +1654,6 @@ while (kt<=ktmax)
             end
         end
         
-        %% Line Monitoring
-        if g.lmon.n_lmon~=0
-            lmon(j)
-        end
         
         %% network interface for control models - 'corrector' step
         dc_cont(0,j,10*(j-1)+1,g.bus.bus_sim,flag);
@@ -1838,7 +1862,7 @@ while (kt<=ktmax)
             dc_line(0, j, j, g.bus.bus_sim, 2);
         end
         
-        %% following statements are corrector steps (Actual RK2 computation)
+        %% following statements are corrector steps (RK2 computation)
         g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*(g.mac.dmac_ang(:,k)+g.mac.dmac_ang(:,j))/2.;
         g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + h_sol*(g.mac.dmac_spd(:,k)+g.mac.dmac_spd(:,j))/2.;
         g.mac.edprime(:,j) = g.mac.edprime(:,k) + h_sol*(g.mac.dedprime(:,k)+g.mac.dedprime(:,j))/2.;
@@ -1928,6 +1952,18 @@ while (kt<=ktmax)
             end
         end
         
+        %% Line Monitoring
+        if g.lmon.n_lmon~=0
+            lmon(j)
+        end
+        %% Average Frequency Calculation
+        calcAveF(j,1);
+        
+        %% Area Total Calculations
+        if g.area.n_area ~= 0
+            calcAreaVals(j,1);
+        end
+        
         %% Live plot call
         if g.sys.livePlotFlag
            livePlot(k)
@@ -1958,14 +1994,15 @@ end
 % [sInjF,sInjT] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% 'line flows' - complex power injection at bus
 
 %% full sim timing
+disp('*** End simulation.')
 et = toc;
 ets = num2str(et);
 g.sys.ElapsedNonLinearTime = ets;
-disp(['elapsed time = ' ets 's'])
-disp('*** End simulation.')
-disp(' ')
+disp(['*** Elapsed Simulation Time = ' ets 's'])
 
 %% Clean up logged DC variables to length of DC simulated time.
+if ~isempty(g.dc.dcsp_con)
+disp('*** Adjusting logged data lengths...')
 g.dc.t_dc = g.dc.t_dc(1:length(g.dc.t_dc)-10);
 g.dc.i_dc = g.dc.i_dc(:,1:length(g.dc.t_dc));
 g.dc.i_dcr = g.dc.i_dcr(:,1:length(g.dc.t_dc));
@@ -1985,6 +2022,7 @@ g.dc.dv_dcc = g.dc.dv_dcc(:,1:length(g.dc.t_dc));
 g.dc.v_dcc = g.dc.v_dcc(:,1:length(g.dc.t_dc));
 g.dc.di_dci = g.dc.di_dci(:,1:length(g.dc.t_dc));
 g.dc.di_dcr = g.dc.di_dcr(:,1:length(g.dc.t_dc));
+end
 
 %% Clean up various temporary and function input values
 clear V1 V2 R X B jj phi % used in calls to line_cur, line_pq
@@ -2006,7 +2044,7 @@ for vName = varNames
         % catches stuctures
         testStr = ['isstruct(',vName{1},')'];
         if eval(testStr)
-            fprintf('Clearing strucuture %s of zeros...\n', vName{1});
+            fprintf('*** Clearing zeros from structure %s...\n', vName{1});
             eval(sprintf('[%s, clearedVars] = cleanZeros(%s, clearedVars);',vName{1},vName{1} )) 
         end
         clear testStr
@@ -2014,4 +2052,7 @@ for vName = varNames
 
 end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
-clear varNames vName zeroTest clearedVars
+clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
+%%
+disp('*** s_simu_Batch End')
+disp(' ')

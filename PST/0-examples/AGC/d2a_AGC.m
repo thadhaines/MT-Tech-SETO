@@ -4,6 +4,11 @@
 % added actual area definition
 % added lmon_con for line monitoring during simulation
 
+enableGov = true;
+enableExciters = true;
+enablePSS = true;
+enableSVC = true;
+
 disp('Two area, 4 machine, AGC test')
 % bus data format
 % bus: 
@@ -25,26 +30,33 @@ disp('Two area, 4 machine, AGC test')
 % col13 v_rated (kV)
 % col14 v_max  pu
 % col15 v_min  pu
-
-bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0  -99.0  22.0  1.1  .9;
-        2  1.01    8.80   7.00   1.76  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0  1.1  .9;
+%
+%           v       ang   pgen   qgen  pL    qL    G     B    type Qmx  Qmn   kv   Vmx  Vmn
+bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0 -99.0 22.0   1.1  .9;
+        2  1.01    8.80   7.00   1.76  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
         3  0.9781  -6.1   0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  500.0  1.5  .5;
-        4  0.95   -10    0.00   0.00  9.76  1.00  0.00  0.00  3  0.0   0.0  115.0  1.05 .95;
+        4  0.95   -10     0.00   0.00  9.76  1.00  0.00  0.00 3  0.0   0.0  115.0  1.05 .95;
         10 1.0103  12.1   0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
         11 1.03    -6.8   7.16   1.49  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
         12 1.01    -16.9  7.00   1.39  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
         13 0.9899  -31.8  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  500.0  1.5  .5;
         14 0.95    -38    0.00   0.00  17.67 1.00  0.00  0.00 3  0.0   0.0  115.0  1.05 .95; 
         20 0.9876    2.1  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
-       101 1.05    -19.3  0.00   8.00  0.00  0.00  0.00  0.00 2  99.0  -99.0  500.0  1.5  .5; % SVC is on gen bus
+       101 1.05    -19.3  0.00   8.00  0.00  0.00  0.00  0.00 3  99.0  -99.0  500.0  1.5  .5; % SVC WAS on gen bus
        110 1.0125  -13.4  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5;
        120 0.9938  -23.6  0.00   0.00  0.00  0.00  0.00  0.00 3  0.0   0.0  230.0  1.5  .5 ];
    
-%% area data format
-% should contain same number of rows as bus
+   if enableSVC 
+       % change SVC bus to type 2
+       bus( (bus(:,1)==101), 10 ) = 2;
+       
+   end
+%% area_def data format
+% should contain same number of rows as bus array (i.e. all bus areas defined)
 % col 1 bus number
 % col 2 area number
-area = [    1  1;
+area_def = [ ...
+            1  1;
             2  1;
             3  1;
             4  1;
@@ -68,21 +80,25 @@ line = [...
 3    4  0.0     0.005     0.00   1.0  0. 1.2 0.8 0.05;
 3   20  0.001   0.0100   0.0175  1.0  0. 0.  0.  0.;
 3   101 0.011   0.110    0.1925  1.0  0. 0.  0.  0.;
+
 3   101 0.011   0.110    0.1925  1.0  0. 0.  0.  0.;
 10  20  0.0025  0.025    0.0437  1.0  0. 0.  0.  0.;
 11  110 0.0     0.0167   0.0     1.0  0. 0.  0.  0.;
 12  120 0.0     0.0167   0.0     1.0  0. 0.  0.  0.;
 13   14 0.0     0.005    0.00    1.0  0. 1.2 0.8 0.05;
+
 13  101 0.011   0.11     0.1925  1.0  0. 0.  0.  0.;
 13  101 0.011   0.11     0.1925  1.0  0. 0.  0.  0.;
 13  120 0.001   0.01     0.0175  1.0  0. 0.  0.  0.;
 110 120 0.0025  0.025    0.0437  1.0  0. 0.  0.  0.];
 
-%% line monitoring
-% each value corresponds to a line index in the line_con
-% Real and reactive current and power will be logged during simulation
+%% Line Monitoring
+% Each value corresponds to an array index in the line array.
+% Complex current and power flow on the line will be calculated and logged during simulation
 
-lmon_con = [5, 6, 13]; % lines between bus 3 and 101 and line between 13 and 120
+%lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
+
+lmon_con = [3,10]; % lines to loads
 
 %% Machine data format
 %       1. machine number,
@@ -94,14 +110,12 @@ lmon_con = [5, 6, 13]; % lines between bus 3 and 101 and line between 13 and 120
 %       7. d-axis transient reactance x'_d(pu),
 %       8. d-axis subtransient reactance x"_d(pu),
 %       9. d-axis open-circuit time constant T'_do(sec),
-%      10. d-axis open-circuit subtransient time constant
-%                T"_do(sec),
+%      10. d-axis open-circuit subtransient time constant T"_do(sec),
 %      11. q-axis sychronous reactance x_q(pu),
 %      12. q-axis transient reactance x'_q(pu),
 %      13. q-axis subtransient reactance x"_q(pu),
 %      14. q-axis open-circuit time constant T'_qo(sec),
-%      15. q-axis open circuit subtransient time constant
-%                T"_qo(sec),
+%      15. q-axis open circuit subtransient time constant T"_qo(sec),
 %      16. inertia constant H(sec),
 %      17. damping coefficient d_o(pu),
 %      18. dampling coefficient d_1(pu),
@@ -124,22 +138,23 @@ mac_con = [ ...
   6.5  0  0  12];
 
 %% all dc exciters, no pss
-exc_con = [... % type 1 exciters differ between v2 and v3
-1 1 0.01 46.0   0.06  0     0    1.0   -0.9...
-    0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
-1 2 0.01 46.0   0.06  0     0    1.0   -0.9...
-    0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
-1 3 0.01 46.0   0.06  0     0    1.0   -0.9...
-    0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
-1 4 0.01 46.0   0.06  0     0    1.0   -0.9...
-    0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0];
+% exc_con = [... % type 1 exciters differ between v2 and v3
+% 1 1 0.01 46.0   0.06  0     0    1.0   -0.9...
+%     0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
+% 1 2 0.01 46.0   0.06  0     0    1.0   -0.9...
+%     0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
+% 1 3 0.01 46.0   0.06  0     0    1.0   -0.9...
+%     0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0;
+% 1 4 0.01 46.0   0.06  0     0    1.0   -0.9...
+%     0.0  0.46   3.1   0.33  2.3  0.1   0.1   1.0    0    0   0];
 
-exc_con = [ ... % alternative Type 0 exciters same in all versions
-    0       1       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       2       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       3       0       100      0.01    12.0    1.0     7.5     -6;   
-    0       4       0       100      0.01    12.0    1.0     7.5     -6;  ];
-
+if enableExciters
+    exc_con = [ ... % alternative Type 0 exciters same in all versions
+        0       1       0       100      0.01    12.0    1.0     7.5     -6;   
+        0       2       0       100      0.01    12.0    1.0     7.5     -6;   
+        0       3       0       100      0.01    12.0    1.0     7.5     -6;   
+        0       4       0       100      0.01    12.0    1.0     7.5     -6;  ];
+end
 
 %% governor model
 % tg_con matrix format
@@ -155,12 +170,13 @@ exc_con = [ ... % alternative Type 0 exciters same in all versions
 %  9	HP section time constant   T4	sec
 % 10	reheater time constant    T5	sec
 
-tg_con = [...
-1  1  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
-1  2  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
-1  3  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
-1  4  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0];
-
+if enableGov
+    tg_con = [...
+    1  1  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
+    1  2  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
+    1  3  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
+    1  4  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0];
+end
 
 %% non-conforming load
 % col 1           bus number
@@ -172,9 +188,13 @@ tg_con = [...
 load_con = [...
 4   0  0   0  0;
 14  0  0   0  0;
-%101 0  0   0  0
-]; % SVC
-%disp('svc at bus 101')
+]; 
+
+
+if enableSVC
+    load_con = [load_con; 101 0  0   0  0];
+    disp('svc at bus 101')
+end
 
 %% lmod_con format
 % sets up model for load modulation
@@ -205,11 +225,13 @@ lmod_con = [ ...
 %  8      2nd lag time const T4 (sec)
 %  9      max output limit (pu)
 %  10     min output limit (pu)
-pss_con = [ ...
-%    type gen#      K  Tw T1   T2   T3   T4    max min
-    1    1         30 2  0.25 0.04 0.2  0.03  0.1 -0.1;
-    1    3         30 2  0.25 0.04 0.2  0.03  0.1 -0.1];
 
+if enablePSS
+    pss_con = [ ...
+    %    type gen#      K  Tw T1   T2   T3   T4    max min
+        1    1         30 2  0.25 0.04 0.2  0.03  0.1 -0.1;
+        1    3         30 2  0.25 0.04 0.2  0.03  0.1 -0.1];
+end
 %% svc
 % col 1           svc number
 % col 2           bus number
@@ -217,14 +239,11 @@ pss_con = [ ...
 % col 4           maximum susceptance Bcvmax(pu)
 % col 5           minimum susceptance Bcvmin(pu)
 % col 6           regulator gain
-% col 7		  regulator time constant (s)
+% col 7           regulator time constant (s)
 
-% SVC gain set to zero
-%svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
-
-
-
-    
+if enableSVC
+    svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
+end
 %% Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
 %       col7  initial time step (s)
@@ -252,10 +271,10 @@ pss_con = [ ...
 % row n col1 finishing time (s)  (n indicates that intermediate rows may be inserted)
 ts = 0.004;
 sw_con = [...
-0    0    0    0    0    0    ts;%sets intitial time step
-1.0  101    3  0    0    6    ts; %Do Nothing
-2.0 0    0    0    0    0    ts; %clear fault at bus 3
-3.0 0    0    0    0    0    ts; %clear remote end
-30.0  0    0    0    0    0    0]; % end simulation
+0    0    0    0    0    0    ts;   % sets intitial time step
+1.0  101  3    0    0    6    ts;   % Do Nothing
+5.0  0    0    0    0    0    ts*2;	% increase time step
+10.0 0    0    0    0    0    ts*4; % increase time step
+45.0 0    0    0    0    0    0];   % end simulation
 
 clear ts

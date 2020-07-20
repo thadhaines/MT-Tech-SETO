@@ -1,0 +1,266 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{PST and AGC \\ }
+\lhead{Research \\ 7/20/20}
+\usepackage{minted}
+\usepackage{setspace}
+\begin{document}
+\onehalfspacing
+\paragraph{Intro} \ \\
+Document to explain PST additions for AGC.
+
+
+\paragraph{Area Definitions} \ \\
+To enable area calculations, each bus  in the \verb|bus| array must be assigned to an area in the \verb|area_def| array.
+An \verb|area_def| array may 
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+%% area_def data format
+% should contain same number of rows as bus array (i.e. all bus areas defined)
+% col 1 bus number
+% col 2 area number
+area_def = [ ...
+            1  1;
+            2  1;
+            3  1;
+            4  1;
+            10 1;
+            11 2;
+            12 2;
+            13 2;
+            14 2; 
+            20 1;
+           101 1; 
+           110 2;
+           120 2];
+\end{minted}
+
+It should be noted that rows may not have to be in the same order as the bus array (untested).
+The \verb|area_def| array is automatically placed into the global g structure.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+>> g.area
+ans = 
+    area_def: [13x2 double]
+      n_area: 2
+        area: [1x2 struct]
+\end{minted}
+
+Each area currently contains values that may be relevant to AGC calculations.
+The \verb|calcAreaVals| function is used to calculate and store such values.
+An example of what is stored in the \verb|g.area.area(x)| structure is shown below.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+>> g.area.area(2)
+ans = 
+         number: 2
+      areaBuses: [6x1 double]
+         macBus: [2x1 double]
+      macBusNdx: [3 4]
+        loadBus: [4x1 double]
+     loadBusNdx: [8 9 12 13]
+         genBus: [2x1 double]
+      genBusNdx: [6 7]
+           totH: [1x4063 double]
+           aveF: [1x4063 double]
+         totGen: [1x4063 double]
+        totLoad: []
+            icA: [1x4063 double]
+            icS: []
+  exportLineNdx: [11 12]
+  importLineNdx: []
+       n_export: 2
+       n_import: []
+\end{minted}
+It should be noted that \verb|icS| represents a placeholder for a scheduled interchange value and the \verb|totLoad|  is a field for collected total load.
+The collection of actual running load values may prove more complicated as the bus array does not seem to be updated every step, only a reduced Y matrix used in the \verb|nc_load| function called from \verb|i_simu|. 
+
+\paragraph{Line Monitoring} \ \\
+Power flow on a line must be calculated each step as AGC requires actual area interchange for the ACE calculation.
+The previously existing \verb|line_pq| function performed this task, but was not fully implemented into the simulation to allow calculation during execution.
+This minor oversight has been resolved, however the \verb|lmon_con| array is still used to define monitored lines.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+%% Line Monitoring
+% Each value corresponds to an array index in the line array.
+% Complex current and power flow on the line will be calculated and logged during simulation
+
+%lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
+
+lmon_con = [3,10]; % lines to loads
+\end{minted}
+
+Line monitoring data is collected in the \verb|g.lmon| field of the global variable.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+>> g.lmon
+ans = 
+     lmon_con: [3 10]
+       n_lmon: 2
+    busFromTo: [2x2 double]
+         line: [1x2 struct]
+\end{minted}
+
+Each \verb|g.lmon.line| entry contains the following fields:
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+>> g.lmon.line(2)
+ans = 
+    busArrayNdx: 10
+        FromBus: 13
+          ToBus: 14
+          iFrom: [1x4063 double]
+            iTo: [1x4063 double]
+          sFrom: [1x4063 double]
+            sTo: [1x4063 double]
+\end{minted}
+
+\paragraph{Weighted Average Frequency} \ \\
+An average weighted frequency is calculated for the total system and for each area if there are areas detected.
+The calculation involves a sum of system inertias that may change with generator trips.
+The current algorithm does not account for tripped generators, but was designed to incorporate this feature in the future.
+
+In a system with $N$ generators, $M$ areas, and $N_M$ generators in area $M$, the \verb|calcAveF| function performs the following calculations for each area $M$:
+
+\begin{align*}
+%         % calculate weighted average frequency for each area, sum for system
+%         runningSysF = 0;
+%         runningSysH = 0;
+%         for areaN=1:g.area.n_area
+%             % calculate area total inertia
+%             mNdx = g.area.area(areaN).macBusNdx;
+%             g.area.area(areaN).totH(k) = sum(g.mac.mac_con(mNdx,16).*g.mac.mac_con(mNdx,3));
+%             % calculate ave weighted f = sum(mac_speed.*MVA.*H) / totH
+%             g.area.area(areaN).aveF(k) = sum(g.mac.mac_spd(mNdx,k).*g.mac.mac_con(mNdx,3).*g.mac.mac_con(mNdx,16)) ...
+%                 /g.area.area(areaN).totH(k);
+%             
+%             runningSysF = runningSysF + g.area.area(areaN).aveF(k);
+%             runningSysH = runningSysH + g.area.area(areaN).totH(k);
+%         end
+%         
+%         %g.sys.totH(k) = sum(g.mac.mac_con(:,16).*g.mac.mac_con(:,3));
+%         g.sys.totH(k) = runningSysH;
+%         g.sys.aveF(k) = runningSysF/g.area.n_area;
+H_{tot_M} &= \sum_{i}^{N_M} MVA_{base_i}H_i \\
+F_{ave_M} &= \left( \sum_{i}^{N_M}Mach_{speed_i}MVA_{base_i}H_i \right) / H_{tot_M}
+\end{align*}
+
+Then system total values are calculated as
+\begin{align*}
+H_{tot} &= \sum_{i}^{M} H_{tot_M} \\
+F_{ave} &= \left( \sum_{i}^{M} f_{ave_M} \right)/M
+\end{align*}
+
+If $M=0$, \verb|calcAveF| performs
+\begin{align*}
+H_{tot} &= \sum_{i}^{N} MVA_{base_i}H_i \\
+F_{ave} &= \left( \sum_{i}^{N}(Mach_{speed_i}MVA_{base_i}H_i) \right) / H_{tot}
+\end{align*}
+
+\paragraph{Automatic Generation Control} \ \\
+Under development...
+
+
+\pagebreak
+\paragraph{General Example Scenario Details} \ \\
+
+\begin{center}
+\includegraphics[width=.75\linewidth]{sysOneLineAreas}
+\end{center}
+\begin{itemize}
+\item kundur  4 packaged with PST
+\item Constant Z load model
+\item All machines, exciters, and govs identical
+\item PSS on gen 1 and 3
+\item SVC on bus 101
+\item event: 50 MW load step of load on bus 4 at t=1
+\end{itemize}
+
+\pagebreak
+\paragraph{Initial simulation results (No AGC)} \ \\
+
+
+\begin{center}
+\newcommand{\caseName}{NoAGC}
+\includegraphics[width=.45\linewidth]{\caseName f1} %
+\includegraphics[width=.45\linewidth]{\caseName f2} \\%
+\includegraphics[width=.45\linewidth]{\caseName f3} %
+\includegraphics[width=.45\linewidth]{\caseName f4} \\%
+\includegraphics[width=.45\linewidth]{\caseName f5} %
+\includegraphics[width=.45\linewidth]{\caseName f6} \\%
+\end{center}
+
+\begin{comment}
+
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+XxXxX
+
+\end{minted}
+
+\end{comment}
+
+
+\end{document}

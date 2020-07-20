@@ -4,7 +4,7 @@ function lmon(k)
 %
 % Syntax: LMON
 %
-%   NOTES: 
+%   NOTES:  Could/should be expanded to calculate line flows for area interchanges...
 % 
 %   Input: 
 %   k - data index
@@ -28,7 +28,7 @@ tap = g.line.line(g.lmon.lmon_con,6);
 phi = g.line.line(g.lmon.lmon_con,7);
             
 jay = sqrt(-1);
-[nline,dummy] = size(V1);
+nline = size(V1,1);
 
 for i = 1:nline
   if tap(i) == 0
@@ -43,10 +43,11 @@ tps = diag(tps);
 z = R + jay*X;
 y = diag(ones(nline,1)./z);
 chg = diag(jay*B/2);
+
 cur1 = tps*(y*(tpsi*V1-V2) + chg*V1); % iFrom
-cur2 = y*(V2 - tpsi*V1) + chg*V2; % i to
-S1 = V1.*conj(cur1); % sfrom
-S2 = V2.*conj(cur2); % sto
+cur2 = y*(V2 - tpsi*V1) + chg*V2; % iTo
+S1 = V1.*conj(cur1); % sFrom
+S2 = V2.*conj(cur2); % sTo
 
 % may not be ideal data structure for this...
 for Lndx=1:g.lmon.n_lmon

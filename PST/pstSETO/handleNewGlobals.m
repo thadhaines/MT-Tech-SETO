@@ -194,6 +194,14 @@ else
     g.lmon.lmon_con = [];
 end
 
+%% area_def
+if exist('area_def','var')
+    g.area.area_def = area_def;
+    clear area_def;
+else
+    g.area.area_def = [];
+end
+
 %% Global for plot flag
 if exist('livePlotFlag','var')
     g.sys.livePlotFlag = livePlotFlag;
