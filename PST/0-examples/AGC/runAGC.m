@@ -81,15 +81,20 @@ if printFigs
 end
 %% change in area interchange
 figure
-plot(g.sys.t, real(g.area.area(1).icA) - real(g.area.area(1).icA(1)))
+plot(g.sys.t, real(g.area.area(1).icA) - real(g.area.area(1).icA(1)),'--')
 hold on
-plot(g.sys.t, real(g.area.area(2).icA)- real(g.area.area(2).icA(1)))
+plot(g.sys.t, real(g.area.area(2).icA)- real(g.area.area(2).icA(1)),'--')
+
+% RACE
+plot(g.sys.t, g.agc.agc(1).race)
+plot(g.sys.t, g.agc.agc(2).race)
 
 grid on
 ylabel('MW [PU]')
 xlabel('Time [sec]')
-title('Change in Area Interchange')
-legend({'Area 1', 'Area 2'},'location','best')
+title('AGC values')
+legend({'Area 1 IC error', 'Area 2 IC error', ...
+    'Area 1 RACE', 'Area 2 RACE'},'location','best')
 
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
@@ -145,6 +150,7 @@ if printFigs
     set(gcf,'color','w'); % to remove border of figure
     export_fig([caseName,'f6'],'-pdf'); % to print fig
 end
+
 %% The following linear code was used to test new global functionality
 % the event is probably too large for reasonable linear simulation
 

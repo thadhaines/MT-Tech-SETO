@@ -21,6 +21,7 @@
 %   07/13/20    11:14   Thad Haines     addition of ind_con and mld_con 
 %   07/14/20    12:33   Thad Haines     addition of DC related globals
 %   07/17/20    07:57   Thad Haines     addition of bus, line, line mon
+%   07/20/20    19:48   Thad Haines     addition of AGC
 
 global g
 
@@ -200,6 +201,14 @@ if exist('area_def','var')
     clear area_def;
 else
     g.area.area_def = [];
+end
+
+%% AGC
+if exist('agc','var')
+    g.agc.agc = agc;
+    clear agc;
+else
+    g.agc.agc = [];
 end
 
 %% Global for plot flag

@@ -190,7 +190,6 @@ load_con = [...
 14  0  0   0  0;
 ]; 
 
-
 if enableSVC
     load_con = [load_con; 101 0  0   0  0];
     disp('svc at bus 101')
@@ -244,6 +243,54 @@ end
 if enableSVC
     svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
 end
+
+%% AGC definition
+%{
+Required info:
+
+Area number / controlled area
+start time
+action time
+B - Fixed frequency bias Value
+Btype - Fixed frequency bias type (abs, percent of max capacity...)
+Bv - Varaible frequency bias gain
+Conditional ACE flag
+
+Controlled Generator Buses
+participation Factor - corresponds
+
+Filter Gain
+Kp - Proportional gain
+a - ratio between integral and proportional gain (placement of zero)
+
+Unsure how to do IACE in a good way to work with variable timestes...
+%}
+agc(1).area = 1;
+agc(1).startTime = 10;
+agc(1).actionTime = 10;
+agc(1).B = 1;
+agc(1).Btype = 1; % per max area capacity
+agc(1).kBv = 0; % no variable bias
+agc(1).condAce = 0; % no conditional ACE
+agc(1).ctrlGen_con = [ ...
+    %col 1 gen bus
+    %col 2 participation Factor
+    %col 3 low pass filter time constant [seconds]
+    1, 0.75, 1;
+    2, 0.25, 2;
+    ];
+agc(1).Kp = 0.07;
+agc(1).a = 0.0001;
+
+agc(2)=agc(1);
+agc(2).area = 2;
+agc(2).ctrlGens = [...
+%    col 1 gen bus
+%    col 2 participation Factor
+    11, 0.25, 1;
+    12, 0.75, 1;
+    ];
+
 %% Switching file defines the simulation control
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
 %       col7  initial time step (s)

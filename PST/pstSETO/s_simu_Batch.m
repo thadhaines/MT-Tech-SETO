@@ -196,6 +196,7 @@ rlm_indx();
 pwrmod_indx(g.bus.bus); 
 lmon_indx;
 area_indx;
+agc_indx;
 
 % Handled in mac_indx
 % g.ind.n_mot = size(g.ind.ind_con,1); % inductive motors
@@ -690,10 +691,27 @@ if g.area.n_area ~=0
         g.area.area(areaN).totGen = zeros(1,k);
         g.area.area(areaN).totLoad = zeros(1,k);
         g.area.area(areaN).icA = zeros(1,k); % Actual interchange
-        g.area.area(areaN).icS = zeros(1,k); % Scheduled interchange
+        g.area.area(areaN).icS = ones(1,k); % Scheduled interchange
     end
 end
 clear areaN
+
+%% Initialize zeros agc
+if g.agc.n_agc ~=0
+    for ndx = 1:g.agc.n_agc
+       g.agc.agc(ndx).race = zeros(1,k);
+       g.agc.agc(ndx).dsace = zeros(1,k); % derivative
+       g.agc.agc(ndx).sace = zeros(1,k);
+       g.agc.agc(ndx).ace2dist = zeros(1,k);
+       
+       for gndx=1:g.agc.agc(ndx).n_ctrlGen
+           g.agc.agc(ndx).ctrlGen(gndx).input = zeros(1,k);
+           g.agc.agc(ndx).ctrlGen(gndx).dx = zeros(1,k);
+           g.agc.agc(ndx).ctrlGen(gndx).x = zeros(1,k);
+       end
+    end
+end
+clear ndx
 
 %% Initialize zeros for logged system values
 g.sys.aveF = zeros(1,k);
@@ -987,6 +1005,12 @@ else
     g.ncl.nload = 0;
 end
 
+%% Initialize AGC
+if g.agc.n_agc ~= 0
+    calcAreaVals(1,1); % requried for interchange values
+    agc(1,0); % initialize
+end 
+
 %% DC Stuff ? (5/22/20)
 if ~isempty(g.dc.dcsp_con)
 % Seems like this should be put in a seperate script - thad 06/08/20
@@ -1275,8 +1299,17 @@ while (kt<=ktmax)
         exc_dc12(0,k,flag);
         
         mtg_sig(k); % executed twice? - thad 07/18/20
+        %% AGC calculations after tg_sig, before tg dynamics
+        if g.agc.n_agc ~= 0
+            agc(k,flag); % perform calculations
+        end
+        
         tg(0,k,flag);
         tg_hydro(0,k,g.bus.bus_sim,flag);
+        
+        
+        
+        % place to integrate AGC states... -thad 07/20/20
         
         if g.svc.n_svc~=0
             v_svc = abs(g.bus.bus_v(g.bus.bus_int(g.svc.svc_con(:,2)),k));
@@ -1515,7 +1548,7 @@ while (kt<=ktmax)
         %% Area Total Calcvulations
         if g.area.n_area ~= 0
             calcAreaVals(k,1);
-        end        
+        end  
         
         %% Flag = 1
         % begining of solutions as j (i.e. Corrector step)
@@ -1703,6 +1736,8 @@ while (kt<=ktmax)
             end
         end
         
+
+        
         %% Flag = 2, for 'corrector step' d's
         flag = 2;
         mac_ind(0,j,g.bus.bus_sim,flag);
@@ -1721,9 +1756,13 @@ while (kt<=ktmax)
         exc_dc12(0,j,flag);
         
         mtg_sig(j);% modulation
+        %% AGC calculations after tg_sig, before tg dynamics
+        if g.agc.n_agc ~= 0
+            agc(j,flag); % perform calculations
+        end
         tg(0,j,flag);
         tg_hydro(0,j,g.bus.bus_sim,flag);
-        
+                
         if g.svc.n_svc~=0
             msvc_sig(j);% modulation
             if g.svc.n_dcud~=0
