@@ -1,16 +1,20 @@
 % Two Area Test Case
 % Altered to type 0 exciters, fault removed, alternate distrubance expected.
-% removed svc
+% allow for selectable govs, exciters, pss, svc
+
 % added actual area definition
 % added lmon_con for line monitoring during simulation
+% added agc
 
 enableGov = true;
 enableExciters = true;
 enablePSS = true;
 enableSVC = true;
+enableAGC = true;
 
 disp('Two area, 4 machine, AGC test')
-% bus data format
+%% bus data format
+%{
 % bus: 
 % col1 number
 % col2 voltage magnitude(pu)
@@ -30,7 +34,7 @@ disp('Two area, 4 machine, AGC test')
 % col13 v_rated (kV)
 % col14 v_max  pu
 % col15 v_min  pu
-%
+%}
 %           v       ang   pgen   qgen  pL    qL    G     B    type Qmx  Qmn   kv   Vmx  Vmn
 bus = [ 1  1.03    18.5   7.00   1.61  0.00  0.00  0.00  0.00 1  99.0 -99.0 22.0   1.1  .9;
         2  1.01    8.80   7.00   1.76  0.00  0.00  0.00  0.00 2  5.0  -2.0  22.0   1.1  .9;
@@ -101,6 +105,7 @@ line = [...
 lmon_con = [3,10]; % lines to loads
 
 %% Machine data format
+%{
 %       1. machine number,
 %       2. bus number,
 %       3. base mva,
@@ -122,6 +127,7 @@ lmon_con = [3,10]; % lines to loads
 %      19. bus number
 %
 % note: all the following machines use sub-transient model
+%}
 mac_con = [ ...
 
 1 1 900 0.200  0.0025  1.8  0.30  0.25 8.00  0.03...
@@ -157,6 +163,7 @@ if enableExciters
 end
 
 %% governor model
+%{
 % tg_con matrix format
 %column	       data			unit
 %  1	turbine model number (=1)	
@@ -169,7 +176,7 @@ end
 %  8	transient gain time constant T3	sec
 %  9	HP section time constant   T4	sec
 % 10	reheater time constant    T5	sec
-
+%}
 if enableGov
     tg_con = [...
     1  1  1  25.0  1.0  0.1  0.5 0.0 1.25 5.0;
@@ -179,12 +186,13 @@ if enableGov
 end
 
 %% non-conforming load
+%{
 % col 1           bus number
 % col 2           fraction const active power load
 % col 3           fraction const reactive power load
 % col 4           fraction const active current load
 % col 5           fraction const reactive current load
-
+%}
 load_con = [...
 4   0  0   0  0;
 14  0  0   0  0;
@@ -196,6 +204,7 @@ if enableSVC
 end
 
 %% lmod_con format
+%{
 % sets up model for load modulation
 % col	variable  						unit
 % 1  	load modulation number 
@@ -205,6 +214,7 @@ end
 % 5  	minimum conductance lmod_min 	pu
 % 6  	regulator gain K  				pu
 % 7  	regulator time constant T_R  	sec
+%}
 lmod_con = [ ...
   % 1   2   3       4       5       6       7
     1   4   100     10.0     0.0     1.0     0.004;
@@ -212,6 +222,7 @@ lmod_con = [ ...
    ];
 
 %% PSS model
+%{
 % pss_con matrix format
 %column        data         unit
 %  1      Type input (1=spd, 2=power)
@@ -224,7 +235,7 @@ lmod_con = [ ...
 %  8      2nd lag time const T4 (sec)
 %  9      max output limit (pu)
 %  10     min output limit (pu)
-
+%}
 if enablePSS
     pss_con = [ ...
     %    type gen#      K  Tw T1   T2   T3   T4    max min
@@ -232,6 +243,7 @@ if enablePSS
         1    3         30 2  0.25 0.04 0.2  0.03  0.1 -0.1];
 end
 %% svc
+%{
 % col 1           svc number
 % col 2           bus number
 % col 3           svc base MVA
@@ -239,59 +251,73 @@ end
 % col 5           minimum susceptance Bcvmin(pu)
 % col 6           regulator gain
 % col 7           regulator time constant (s)
-
+%}
 if enableSVC
     svc_con = [1  101  600  1  0  5  0.05]; %1  101  600  1  0  10  0.05
 end
 
 %% AGC definition
-%{
-Required info:
+%{ 
+Experimental model definition akin to Trudnowski experimental code.
+Each agc(x) has following fields:
+    area        - Area number / controlled area
+    startTime   - Time of first AGC signal to send
+    actionTime  - Interval of time between all following AGC signals
+    gain        - Gain of output ACE signal
+    Btype       - Fixed frequency bias type (abs, percent of max capacity...)
+        0 - absolute - Input B value is set as Frequency bias
+      	1 - percent of max area capacity
+    B           - Fixed frequency bias Value
+    kBv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w)
+    condAce     - Conditional ACE flag
+        0 - Conditional ACE not considered
+        1 - TODO: ACE only sent if sign matches delta_w (i.e. in area event)
 
-Area number / controlled area
-start time
-action time
-B - Fixed frequency bias Value
-Btype - Fixed frequency bias type (abs, percent of max capacity...)
-Bv - Varaible frequency bias gain
-Conditional ACE flag
+    (PI Filter Values)
+    Kp          - Proportional gain
+    a           - ratio between integral and proportional gain (placement of zero)
 
-Controlled Generator Buses
-participation Factor - corresponds
-
-Filter Gain
-Kp - Proportional gain
-a - ratio between integral and proportional gain (placement of zero)
-
-Unsure how to do IACE in a good way to work with variable timestes...
+    ctrlGen_con - Controlled generator information (see format note below)
 %}
 agc(1).area = 1;
-agc(1).startTime = 10;
-agc(1).actionTime = 10;
-agc(1).B = 1;
+agc(1).startTime = 25;
+agc(1).actionTime = 15;
+agc(1).gain = 2; % gain of output signal
+agc(1).Kiace = 3; % gain of window integration average...
 agc(1).Btype = 1; % per max area capacity
+agc(1).B = 1;
 agc(1).kBv = 0; % no variable bias
 agc(1).condAce = 0; % no conditional ACE
+agc(1).Kp = 0.04;
+agc(1).a = 0.001;
 agc(1).ctrlGen_con = [ ...
+    % ctrlGen_con Format:
     %col 1 gen bus
     %col 2 participation Factor
     %col 3 low pass filter time constant [seconds]
-    1, 0.75, 1;
+    1, 0.75, 15;
     2, 0.25, 2;
     ];
-agc(1).Kp = 0.07;
-agc(1).a = 0.0001;
 
-agc(2)=agc(1);
+agc(2)=agc(1); % duplicate most settings from AGC 1 to AGC 2
+
 agc(2).area = 2;
-agc(2).ctrlGens = [...
+agc(2).ctrlGen_con = [...
 %    col 1 gen bus
 %    col 2 participation Factor
-    11, 0.25, 1;
-    12, 0.75, 1;
+    %col 3 low pass filter time constant [seconds]
+    11, 0.25, 10;
+    12, 0.75, 5;
     ];
 
+if ~enableAGC
+    % set gains to zero
+    agc(1).gain = 0;
+    agc(2).gain = 0;
+end
+
 %% Switching file defines the simulation control
+%{
 % row 1 col1  simulation start time (s) (cols 2 to 6 zeros)
 %       col7  initial time step (s)
 % row 2 col1  fault application time (s)
@@ -312,16 +338,14 @@ agc(2).ctrlGens = [...
 %       col7  time step for fault cleared simulation (s)
 % row 5 col1  time to change step length (s)
 %       col7  time step (s)
-%
-%
-%
 % row n col1 finishing time (s)  (n indicates that intermediate rows may be inserted)
+%}
 ts = 0.004;
 sw_con = [...
 0    0    0    0    0    0    ts;   % sets intitial time step
 1.0  101  3    0    0    6    ts;   % Do Nothing
 5.0  0    0    0    0    0    ts*2;	% increase time step
 10.0 0    0    0    0    0    ts*4; % increase time step
-45.0 0    0    0    0    0    0];   % end simulation
+120.0 0    0    0    0    0    0];   % end simulation
 
-clear ts
+clear ts enableExciters enableGov enablePSS enableSVC

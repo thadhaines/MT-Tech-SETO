@@ -53,16 +53,16 @@ copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % use updated model
 copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 
 %% Save cleaned output data
-caseName = 'NoAGC';
-printFigs = 0 ;
+caseName = 'AGC';
+printFigs = 1 ;
 
-save([pstVer,'testAGC.mat']); %Save simulation outputs
+save([caseName,'test.mat']); %Save simulation outputs
 
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
     export_fig([caseName,'f1'],'-png'); % to print fig
 end
-%% system frequency
+%% system frequencies
 figure
 plot(g.sys.t, g.area.area(1).aveF,'--')
 hold on
@@ -70,7 +70,7 @@ plot(g.sys.t, g.area.area(2).aveF,'--')
 plot(g.sys.t, g.sys.aveF,'k','linewidth',1.5)
 
 grid on
-title('Weighted Average Frequency')
+title('Weighted Average Frequencies')
 ylabel('Frequency [PU]')
 xlabel('Time [sec]')
 legend({'Area 1', 'Area 2', 'Total System'},'location','best')
@@ -79,26 +79,57 @@ if printFigs
     set(gcf,'color','w'); % to remove border of figure
     export_fig([caseName,'f2'],'-pdf'); % to print fig
 end
-%% change in area interchange
+%% AGC values
 figure
-plot(g.sys.t, real(g.area.area(1).icA) - real(g.area.area(1).icA(1)),'--')
+plot(g.sys.t, real(g.area.area(1).icA) - real(g.area.area(1).icA(1)),'.-','linewidth',2)
 hold on
-plot(g.sys.t, real(g.area.area(2).icA)- real(g.area.area(2).icA(1)),'--')
+plot(g.sys.t, real(g.area.area(2).icA)- real(g.area.area(2).icA(1)),'.-','linewidth',2)
 
 % RACE
 plot(g.sys.t, g.agc.agc(1).race)
 plot(g.sys.t, g.agc.agc(2).race)
+
+% SACE
+plot(g.sys.t, g.agc.agc(1).sace, ':','linewidth',2)
+plot(g.sys.t, g.agc.agc(2).sace, ':','linewidth',2)
+
+% ace2dist - signal actively being applied to area generators
+plot(g.sys.t, g.agc.agc(1).ace2dist, '--' )
+plot(g.sys.t, g.agc.agc(2).ace2dist, '--')
 
 grid on
 ylabel('MW [PU]')
 xlabel('Time [sec]')
 title('AGC values')
 legend({'Area 1 IC error', 'Area 2 IC error', ...
-    'Area 1 RACE', 'Area 2 RACE'},'location','best')
+    'Area 1 RACE', 'Area 2 RACE', ...
+    'Area 1 SACE', 'Area 2 SACE', ...
+    'Area 1 DACE', 'Area 2 DACE'} ...
+    ,'location','best')
 
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
     export_fig([caseName,'f3'],'-pdf'); % to print fig
+end
+
+%% tg values
+figure
+
+plot(g.sys.t, g.tg.tg_sig(1,:))
+hold on
+plot(g.sys.t, g.tg.tg_sig(2,:))
+plot(g.sys.t, g.tg.tg_sig(3,:))
+plot(g.sys.t, g.tg.tg_sig(4,:))
+
+grid on
+ylabel('MW [PU]')
+xlabel('Time [sec]')
+title('Signal sent to governor Pref (tg\_sig)')
+legend({'Gov 1', 'Gov 2','Gov 3', 'Gov 4'},'location','best')
+
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f4'],'-pdf'); % to print fig
 end
 %% change area generation
 figure
@@ -114,8 +145,9 @@ legend({'Area 1', 'Area 2'},'location','best')
 
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([caseName,'f4'],'-pdf'); % to print fig
+    export_fig([caseName,'f5'],'-pdf'); % to print fig
 end
+
 %% power to load bus via lmon
 figure
 plot(g.sys.t, real(g.lmon.line(1).sFrom)-real(g.lmon.line(1).sFrom(1)))
@@ -132,7 +164,7 @@ legend({'REAL - Bus 4', 'REAL - Bus 14','REAC - Bus 4', 'REAC - Bus 14'},'locati
 
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([caseName,'f5'],'-pdf'); % to print fig
+    export_fig([caseName,'f6'],'-pdf'); % to print fig
 end
 %% monitored load bus voltages
 figure
@@ -148,8 +180,10 @@ legend({'Bus 4', 'Bus 14'},'location','best')
 
 if printFigs
     set(gcf,'color','w'); % to remove border of figure
-    export_fig([caseName,'f6'],'-pdf'); % to print fig
+    export_fig([caseName,'f7'],'-pdf'); % to print fig
 end
+
+
 
 %% The following linear code was used to test new global functionality
 % the event is probably too large for reasonable linear simulation

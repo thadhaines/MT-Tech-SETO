@@ -4,7 +4,8 @@ function agc_indx
 %
 % Syntax: agc_indx
 %
-%   NOTES:  idea is to 'piggy back' agc into tg_sig modulation (but with a lowpass filter)
+%   NOTES:  idea is to 'piggy back' agc into tg_sig modulation 
+%           with a lowpass filter
 %
 %   Input:
 %   VOID
@@ -14,7 +15,7 @@ function agc_indx
 %
 %   History:
 %   Date        Time    Engineer        Description
-%   07/20/20    19:42   Thad Haines     Version 1.0.0
+%   07/21/20    15:58   Thad Haines     Version 1.0.0
 
 global g
 
@@ -29,7 +30,7 @@ if ~isempty(g.agc.agc)
         end
         
         % count number of ctrl gens
-        g.agc.agc(ndx).n_ctrlGen = size(g.agc.agc(1).ctrlGen_con,1);
+        g.agc.agc(ndx).n_ctrlGen = size(g.agc.agc(ndx).ctrlGen_con,1);
         
         g.agc.agc(ndx).macBusNdx = [];
         g.agc.agc(ndx).tgNdx = [];
@@ -39,11 +40,11 @@ if ~isempty(g.agc.agc)
         for gNdx =1:g.agc.agc(ndx).n_ctrlGen            
             % collect ctrl gen machine index
             g.agc.agc(ndx).macBusNdx = [ g.agc.agc(ndx).macBusNdx , ...
-                intersect(g.mac.mac_con(:,2) , ...
+                find(g.mac.mac_con(:,2) == ...
                 g.agc.agc(ndx).ctrlGen_con(gNdx,1))];
             % collect turbine governor index
             g.agc.agc(ndx).tgNdx = [ g.agc.agc(ndx).tgNdx, ...
-                intersect(g.tg.tg_con(:,2) , ...
+                find(g.tg.tg_con(:,2) == ...
                 g.agc.agc(ndx).macBusNdx(gNdx))];
             
             % put bus number into ctrlGen struct

@@ -104,7 +104,8 @@ ans =
 \end{minted}
 It should be noted that \verb|icS| represents a placeholder for a scheduled interchange value and the \verb|totLoad|  is a field for collected total load.
 The collection of actual running load values may prove more complicated as the bus array does not seem to be updated every step, only a reduced Y matrix used in the \verb|nc_load| function called from \verb|i_simu|. 
-
+ 
+ \pagebreak
 \paragraph{Line Monitoring} \ \\
 Power flow on a line must be calculated each step as AGC requires actual area interchange for the ACE calculation.
 The previously existing \verb|line_pq| function performed this task, but was not fully implemented into the simulation to allow calculation during execution.
@@ -169,6 +170,7 @@ ans =
             sTo: [1x4063 double]
 \end{minted}
 
+\pagebreak
 \paragraph{Weighted Average Frequency} \ \\
 An average weighted frequency is calculated for the total system and for each area if there are areas detected.
 The calculation involves a sum of system inertias that may change with generator trips.
@@ -211,9 +213,74 @@ H_{tot} &= \sum_{i}^{N} MVA_{base_i}H_i \\
 F_{ave} &= \left( \sum_{i}^{N}(Mach_{speed_i}MVA_{base_i}H_i) \right) / H_{tot}
 \end{align*}
 
+\pagebreak
 \paragraph{Automatic Generation Control} \ \\
 Under development...
 
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+%% AGC definition
+%{ 
+Experimental model definition akin to Trudnowski experimental code.
+Each agc(x) has following fields:
+    area        - Area number / controlled area
+    startTime   - Time of first AGC signal to send
+    actionTime  - Interval of time between all following AGC signals
+    gain        - Gain of output ACE signal
+    Btype       - Fixed frequency bias type (abs, percent of max capacity...)
+        0 - absolute - Input B value is set as Frequency bias
+      	1 - percent of max area capacity
+    B           - Fixed frequency bias Value
+    kBv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w)
+    condAce     - Conditional ACE flag
+        0 - Conditional ACE not considered
+        1 - TODO: ACE only sent if sign matches delta_w (i.e. in area event)
+
+    (PI Filter Values)
+    Kp          - Proportional gain
+    a           - ratio between integral and proportional gain (placement of zero)
+
+    ctrlGen_con - Controlled generator information (see format note below)
+%}
+agc(1).area = 1;
+agc(1).startTime = 25;
+agc(1).actionTime = 15;
+agc(1).gain = 2; % gain of output signal
+agc(1).Kiace = 3; % gain of window integration average...
+agc(1).Btype = 1; % per max area capacity
+agc(1).B = 1;
+agc(1).kBv = 0; % no variable bias
+agc(1).condAce = 0; % no conditional ACE
+agc(1).Kp = 0.04;
+agc(1).a = 0.001;
+agc(1).ctrlGen_con = [ ...
+    % ctrlGen_con Format:
+    %col 1 gen bus
+    %col 2 participation Factor
+    %col 3 low pass filter time constant [seconds]
+    1, 0.75, 15;
+    2, 0.25, 2;
+    ];
+
+agc(2)=agc(1); % duplicate most settings from AGC 1 to AGC 2
+
+agc(2).area = 2;
+agc(2).ctrlGen_con = [...
+%    col 1 gen bus
+%    col 2 participation Factor
+    %col 3 low pass filter time constant [seconds]
+    11, 0.25, 10;
+    12, 0.75, 5;
+    ];
+\end{minted}
 
 \pagebreak
 \paragraph{General Example Scenario Details} \ \\
@@ -242,6 +309,20 @@ Under development...
 \includegraphics[width=.45\linewidth]{\caseName f4} \\%
 \includegraphics[width=.45\linewidth]{\caseName f5} %
 \includegraphics[width=.45\linewidth]{\caseName f6} \\%
+\end{center}
+
+\pagebreak
+\paragraph{Initial simulation results (with AGC)} \ \\
+
+
+\begin{center}
+\newcommand{\caseName}{AGC}
+\includegraphics[width=.45\linewidth]{\caseName f4} %
+\includegraphics[width=.45\linewidth]{\caseName f2} \\%
+\includegraphics[width=.45\linewidth]{\caseName f3} %
+\includegraphics[width=.45\linewidth]{\caseName f5} \\%
+\includegraphics[width=.45\linewidth]{\caseName f6} %
+\includegraphics[width=.45\linewidth]{\caseName f7} \\%
 \end{center}
 
 \begin{comment}

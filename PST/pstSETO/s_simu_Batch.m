@@ -51,6 +51,7 @@
 %   07/15/20    14:27   Thad Haines     Version 2.0 - Revised format of globals and internal function documentation
 %   07/16/20    11:19   Thad Haines     V 2.0.1 - Added cleanZeros to end of script to clean global g
 %   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
+%   07/21/20    16:20   Thad haines     V 2.0.3 - Added AGC
 
 %%
 %clear all
@@ -700,9 +701,10 @@ clear areaN
 if g.agc.n_agc ~=0
     for ndx = 1:g.agc.n_agc
        g.agc.agc(ndx).race = zeros(1,k);
-       g.agc.agc(ndx).dsace = zeros(1,k); % derivative
+       g.agc.agc(ndx).d_sace = zeros(1,k); % derivative
        g.agc.agc(ndx).sace = zeros(1,k);
        g.agc.agc(ndx).ace2dist = zeros(1,k);
+       g.agc.agc(ndx).iace = zeros(1,k); % window integrator...
        
        for gndx=1:g.agc.agc(ndx).n_ctrlGen
            g.agc.agc(ndx).ctrlGen(gndx).input = zeros(1,k);
@@ -1299,18 +1301,14 @@ while (kt<=ktmax)
         exc_dc12(0,k,flag);
         
         mtg_sig(k); % executed twice? - thad 07/18/20
-        %% AGC calculations after tg_sig, before tg dynamics
+        % AGC calculations after tg_sig, before tg dynamics
         if g.agc.n_agc ~= 0
             agc(k,flag); % perform calculations
         end
         
         tg(0,k,flag);
         tg_hydro(0,k,g.bus.bus_sim,flag);
-        
-        
-        
-        % place to integrate AGC states... -thad 07/20/20
-        
+
         if g.svc.n_svc~=0
             v_svc = abs(g.bus.bus_v(g.bus.bus_int(g.svc.svc_con(:,2)),k));
             if g.svc.n_dcud~=0
@@ -1534,6 +1532,19 @@ while (kt<=ktmax)
             for index=1:n_ivm
                 ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*divmmod_d_sigst{index}(:,k);
                 ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*divmmod_e_sigst{index}(:,k);
+            end
+        end
+        
+        %% agc predictor integration
+        if g.agc.n_agc ~=0
+            for ndx = 1:g.agc.n_agc
+               g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + h_sol*g.agc.agc(ndx).d_sace(k);
+               
+               % integrate lowpass filter outs...
+               for gndx=1:g.agc.agc(ndx).n_ctrlGen
+                   g.agc.agc(ndx).ctrlGen(gndx).x(j) = g.agc.agc(ndx).ctrlGen(gndx).x(k)...
+                    + h_sol * g.agc.agc(ndx).ctrlGen(gndx).dx(k)  ;
+               end
             end
         end
         
@@ -1988,6 +1999,19 @@ while (kt<=ktmax)
                 % make global? -thad 07/06/20
                 ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
                 ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
+            end
+        end
+        
+       %% agc corrector integration
+        if g.agc.n_agc ~=0
+            for ndx = 1:g.agc.n_agc
+               g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + h_sol*(g.agc.agc(ndx).d_sace(j)+g.agc.agc(ndx).d_sace(k))/2;
+               
+               % integrate lowpass filter outs...
+               for gndx=1:g.agc.agc(ndx).n_ctrlGen
+                   g.agc.agc(ndx).ctrlGen(gndx).x(j) = g.agc.agc(ndx).ctrlGen(gndx).x(k)...
+                    + h_sol *(g.agc.agc(ndx).ctrlGen(gndx).dx(j)+  g.agc.agc(ndx).ctrlGen(gndx).dx(k))/2  ;
+               end
             end
         end
         
