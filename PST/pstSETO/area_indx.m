@@ -16,6 +16,7 @@ function area_indx
 %   Date        Time    Engineer        Description
 %   07/18/20    05:07   Thad Haines     Version 1.0.0
 %   07/19/20    15:18   Thad Haines     Version 1.0.1 - minor additions to indices, area counts
+%   07/20/20    19:42   Thad Haines     Version 1.0.2 - added max capacity to area init
 
 global g
 
@@ -49,6 +50,8 @@ if ~isempty(g.area.area_def)
             g.area.area(areaN).macBusNdx = [ g.area.area(areaN).macBusNdx ...
                 , find(g.mac.mac_con(:,2) == g.area.area(areaN).macBus(mNdx))]; % for references to machine array values
         end
+        % calculate area max capacity
+        g.area.area(areaN).maxCapacity = sum(g.mac.mac_con(g.area.area(areaN).macBusNdx, 3));
         
         % collect area load bus numbers
         g.area.area(areaN).loadBus = intersect(loadBus, g.area.area(areaN).areaBuses);
