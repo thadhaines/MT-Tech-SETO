@@ -6,8 +6,7 @@ function agc(k,flag)
 %
 %   NOTES:  Idea is to piggy back AGC signals to the tg_sig variable.
 %           No integrator windup is present in PI filter.
-%           Coonditional logic not coded yet.
-%           IACE inclusion is not super refined, but exists.
+%           IACE inclusion is pretty shoddy, but exists - use at own risk.
 %
 %   Input:
 %   k - data index
@@ -21,6 +20,7 @@ function agc(k,flag)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/21/20    15:58   Thad Haines     Version 1
+%   07/22/20    10:17   Thad Haines     Version 1.0.1 - Added conditional AGC
 
 global g
 
@@ -31,8 +31,6 @@ if flag == 0
     for n = 1:g.agc.n_agc
         % set initial ACE signal to zero
         g.agc.agc(n).aceSig = 0;
-        g.agc.agc(n).iaceStartNdx = 1;
-        g.agc.agc(n).iaceN = 0; % number of  iace vals in window intergrator
         
         % set icS intial condition
         g.area.area(g.agc.agc(n).area).icS = g.area.area(g.agc.agc(n).area).icS ...
@@ -71,9 +69,9 @@ if flag == 2 && k ~=1 % skip first step
             g.area.area(g.agc.agc(n).area).icS(j);
         
         % handle frequency bias scaling
-        fError = delta_w * g.agc.agc(n).Bcalc * 10 * (1+abs(delta_w)*g.agc.agc(n).kBv);
+        fError = delta_w * g.agc.agc(n).Bcalc * 10 * (1+abs(delta_w)*g.agc.agc(n).Kbv);
         % calculate race using real power and PU fError
-        g.agc.agc(n).race(k) = real(icError) + fError*(g.sys.Fbase/g.sys.basmva); % ensure PU value
+        g.agc.agc(n).race(k) = real(icError) + fError*(g.sys.Fbase/g.sys.basmva); % ensure PU value scaled correctly
         
         % set derivative of smoothed ace
         g.agc.agc(n).d_sace(k) = g.agc.agc(n).race(k);
@@ -83,8 +81,9 @@ if flag == 2 && k ~=1 % skip first step
         
         %TODO: add windup correction ?
         
-        g.agc.agc(n).iace(k) = (g.agc.agc(n).iace(k) + g.agc.agc(n).iace(j))/2;
-        g.agc.agc(n).iaceN = g.agc.agc(n).iaceN + 1;
+%         % handle integration of RACE -> IACE (not used...)
+%         g.agc.agc(n).iace(k) = g.agc.agc(n).iace(j) + (g.agc.agc(n).race(k) + g.agc.agc(n).race(j)) /2 ...
+%             * abs(g.sys.t(k)-g.sys.t(j));
         
         % check if due to distribute
         if g.sys.t(k) >= g.agc.agc(n).nextActionTime
@@ -92,25 +91,25 @@ if flag == 2 && k ~=1 % skip first step
             % placeholder notification
             fprintf('*** t = %4.5f Distributing Area %d ACE...\n',g.sys.t(k), g.agc.agc(n).area);
             
-            % TODO: create conditional logic here
+            % Conditional logic
+            if g.agc.agc(n).condAce == 1
+                % check if current SACE is of the same sign as delta_w
+                condOk = sign(g.agc.agc(n).sace(k)) == sign(delta_w);
+            else
+                condOk = 1;
+            end
             
-            % aceSig is the output of the PI filter with scaled iace included...
-            % updatd every actionTime
-
-            % attempt at window intergration 'average window value'
-            g.agc.agc(n).aceSig = g.agc.agc(n).aceSig + g.agc.agc(n).sace(k)...
-                + g.agc.agc(n).Kiace * sum(g.agc.agc(n).iace(g.agc.agc(n).iaceStartNdx:k)) ...
-                / g.agc.agc(n).iaceN;
-
-            g.agc.agc(n).iaceStartNdx = k; % set next start index
-            g.agc.agc(n).iaceN = 0; % reset counter
+            % aceSig is signal sent to all generators (after a gain)
+            g.agc.agc(n).aceSig = g.agc.agc(n).aceSig + ...
+                g.agc.agc(n).sace(k)*condOk;
             
             % increment nextActionTime
             g.agc.agc(n).nextActionTime = g.agc.agc(n).nextActionTime ...
                 + g.agc.agc(n).actionTime;
+            
         end
         
-        % Log ace2dist
+        % Gain aceSig and Log ace2dist
         g.agc.agc(n).ace2dist(k) = g.agc.agc(n).aceSig * g.agc.agc(n).gain;
         
         % ensure agc signal updated in tg model for each agc ctrlGen

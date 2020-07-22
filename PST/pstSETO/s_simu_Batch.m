@@ -704,7 +704,7 @@ if g.agc.n_agc ~=0
        g.agc.agc(ndx).d_sace = zeros(1,k); % derivative
        g.agc.agc(ndx).sace = zeros(1,k);
        g.agc.agc(ndx).ace2dist = zeros(1,k);
-       g.agc.agc(ndx).iace = zeros(1,k); % window integrator...
+       %g.agc.agc(ndx).iace = zeros(1,k); % window integrator not implemented
        
        for gndx=1:g.agc.agc(ndx).n_ctrlGen
            g.agc.agc(ndx).ctrlGen(gndx).input = zeros(1,k);
@@ -1111,7 +1111,7 @@ while (kt<=ktmax)
             Y4 = g.int.Y_ncpf2;
             Vr1 = g.int.V_rgpf2;
             Vr2 = g.int.V_rncpf2;
-            bo = g.int.bopf2;
+            bo = g.int.bopf2; 
             
             % i_simu forms the network interface variables
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);

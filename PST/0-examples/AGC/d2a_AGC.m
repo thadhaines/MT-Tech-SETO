@@ -268,10 +268,10 @@ Each agc(x) has following fields:
         0 - absolute - Input B value is set as Frequency bias (positive MW/0.1Hz)
         1 - percent of max area capacity
     B           - Fixed frequency bias Value
-    kBv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w))
+    Kbv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w))
     condAce     - Conditional ACE flag
         0 - Conditional ACE not considered
-        1 - TODO: ACE only sent if sign matches delta_w (i.e. in area event)
+        1 - ace2dist updated only if sign matches delta_w (i.e. in area event)
 
     (PI Filter Values)
     Kp          - Proportional gain
@@ -283,11 +283,10 @@ agc(1).area = 1;
 agc(1).startTime = 25;
 agc(1).actionTime = 15;
 agc(1).gain = 2; % gain of output signal
-agc(1).Kiace = 3; % gain of window integration average...
 agc(1).Btype = 1; % per max area capacity
 agc(1).B = 1;
-agc(1).kBv = 0; % no variable bias
-agc(1).condAce = 0; % no conditional ACE
+agc(1).Kbv = 0; % no variable bias
+agc(1).condAce = 0; % conditional ACE
 agc(1).Kp = 0.04;
 agc(1).a = 0.001;
 agc(1).ctrlGen_con = [ ...
@@ -340,12 +339,16 @@ end
 %       col7  time step (s)
 % row n col1 finishing time (s)  (n indicates that intermediate rows may be inserted)
 %}
+
 ts = 0.004;
 sw_con = [...
 0    0    0    0    0    0    ts;   % sets intitial time step
-1.0  101  3    0    0    6    ts;   % Do Nothing
+0.5  101  3    0    0    6    ts;   % Do Nothing
+0.75  0  0      0    0    0    ts;   % Do Nothing
+1.0  0      0    0    0    0    ts;   % Do Nothing
 5.0  0    0    0    0    0    ts*2;	% increase time step
-10.0 0    0    0    0    0    ts*4; % increase time step
+10.0 0    0    0    0    0    ts*4; % increase time step % this timestep size blows up when a load ramp is simulated
 120.0 0    0    0    0    0    0];   % end simulation
+% probably has to due with the Y  matrix ....
 
 clear ts enableExciters enableGov enablePSS enableSVC

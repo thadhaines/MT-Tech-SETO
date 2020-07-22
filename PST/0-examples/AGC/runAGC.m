@@ -32,12 +32,13 @@ load PSTpath.mat
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d2a_AGC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
-copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
+copyfile([PSTpath 'livePlot_2.m'],[PSTpath 'livePlot.m']); % specify plot operation
 livePlotFlag = 1;
 
 % Handle load modulation
 if useGlobalG
-    copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
+   copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
+   % copyfile( 'ml_sig_rampG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
 else
     copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 end
@@ -54,7 +55,7 @@ copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 
 %% Save cleaned output data
 caseName = 'AGC';
-printFigs = 0 ;
+printFigs = 1;
 
 save([caseName,'test.mat']); %Save simulation outputs
 

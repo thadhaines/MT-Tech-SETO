@@ -216,8 +216,14 @@ F_{ave} &= \left( \sum_{i}^{N}(Mach_{speed_i}MVA_{base_i}H_i) \right) \dfrac{1}{
 
 \pagebreak
 \paragraph{Automatic Generation Control} \ \\
-Under development...\\
-The following AGC settings are rather fast and meant only to show and test the  functionality of the AGC model.
+
+\includegraphics[width=\linewidth]{200722-AGCblockdiagram-p1} \\%
+\includegraphics[width=.95\linewidth]{200722-AGCblockdiagram-p2} \\%
+\includegraphics[width=.9\linewidth]{200722-AGCblockdiagram-p3} %
+
+\pagebreak
+\paragraph{Example AGC settings}
+The following AGC settings are not entirely realistic, but useful in showing and testing the  functionality of the AGC model.
 
 \begin{minted}[
 		frame=lines,
@@ -229,6 +235,7 @@ The following AGC settings are rather fast and meant only to show and test the  
 		breaklines
 		]{MATLAB}
 %% AGC definition
+
 %{ 
 Experimental model definition akin to Trudnowski experimental code.
 Each agc(x) has following fields:
@@ -240,10 +247,10 @@ Each agc(x) has following fields:
         0 - absolute - Input B value is set as Frequency bias (positive MW/0.1Hz)
         1 - percent of max area capacity
     B           - Fixed frequency bias Value
-    kBv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w))
+    Kbv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w))
     condAce     - Conditional ACE flag
         0 - Conditional ACE not considered
-        1 - TODO: ACE only sent if sign matches delta_w (i.e. in area event)
+        1 - ace2dist updated only if sign matches delta_w (i.e. in area event)
 
     (PI Filter Values)
     Kp          - Proportional gain
@@ -251,15 +258,15 @@ Each agc(x) has following fields:
 
     ctrlGen_con - Controlled generator information (see format note below)
 %}
+
 agc(1).area = 1;
 agc(1).startTime = 25;
 agc(1).actionTime = 15;
 agc(1).gain = 2; % gain of output signal
-agc(1).Kiace = 3; % gain of window integration average...
 agc(1).Btype = 1; % per max area capacity
 agc(1).B = 1;
-agc(1).kBv = 0; % no variable bias
-agc(1).condAce = 0; % no conditional ACE
+agc(1).Kbv = 0; % no variable bias
+agc(1).condAce = 0; % conditional ACE
 agc(1).Kp = 0.04;
 agc(1).a = 0.001;
 agc(1).ctrlGen_con = [ ...
@@ -272,19 +279,24 @@ agc(1).ctrlGen_con = [ ...
     ];
 
 agc(2)=agc(1); % duplicate most settings from AGC 1 to AGC 2
-
 agc(2).area = 2;
 agc(2).ctrlGen_con = [...
-    % ctrlGen_con Format:
-    %col 1 gen bus
-    %col 2 participation Factor
+%    col 1 gen bus
+%    col 2 participation Factor
     %col 3 low pass filter time constant [seconds]
     11, 0.25, 10;
     12, 0.75, 5;
     ];
+
+if ~enableAGC
+    % set gains to zero
+    agc(1).gain = 0;
+    agc(2).gain = 0;
+end
+
 \end{minted}
 
-\pagebreak
+%\pagebreak
 \paragraph{General Example Scenario Details} \ \\
 
 \begin{center}
@@ -316,7 +328,6 @@ agc(2).ctrlGen_con = [...
 \pagebreak
 \paragraph{Initial simulation results (with AGC)} \ \\
 
-
 \begin{center}
 \newcommand{\caseName}{AGC}
 \includegraphics[width=.45\linewidth]{\caseName f4} %
@@ -327,6 +338,19 @@ agc(2).ctrlGen_con = [...
 \includegraphics[width=.45\linewidth]{\caseName f7} \\%
 \end{center}
 
+\pagebreak
+\paragraph{Initial simulation results (with conditional AGC)} \ \\
+
+
+\begin{center}
+\newcommand{\caseName}{AGCcond}
+\includegraphics[width=.45\linewidth]{\caseName f4} %
+\includegraphics[width=.45\linewidth]{\caseName f2} \\%
+\includegraphics[width=.45\linewidth]{\caseName f3} %
+\includegraphics[width=.45\linewidth]{\caseName f5} \\%
+\includegraphics[width=.45\linewidth]{\caseName f6} %
+\includegraphics[width=.45\linewidth]{\caseName f7} \\%
+\end{center}
 \begin{comment}
 
 
