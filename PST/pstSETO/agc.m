@@ -7,6 +7,7 @@ function agc(k,flag)
 %   NOTES:  Idea is to piggy back AGC signals to the tg_sig variable.
 %           No integrator windup is present in PI filter.
 %           Coonditional logic not coded yet.
+%           IACE inclusion is not super refined, but exists.
 %
 %   Input:
 %   k - data index
@@ -93,8 +94,8 @@ if flag == 2 && k ~=1 % skip first step
             
             % TODO: create conditional logic here
             
-            % aceSig is the output of the PI filter - updatd every actionTime
-%             g.agc.agc(n).aceSig = g.agc.agc(n).aceSig + g.agc.agc(n).sace(k); % no IACE?
+            % aceSig is the output of the PI filter with scaled iace included...
+            % updatd every actionTime
 
             % attempt at window intergration 'average window value'
             g.agc.agc(n).aceSig = g.agc.agc(n).aceSig + g.agc.agc(n).sace(k)...
@@ -122,7 +123,7 @@ if flag == 2 && k ~=1 % skip first step
                 +  g.agc.agc(n).ctrlGen(gNdx).input(k))/g.agc.agc(n).ctrlGen_con(gNdx,3);
             % send filtered signal to governor
             g.tg.tg_sig(g.agc.agc(n).tgNdx(gNdx),k) = g.tg.tg_sig(g.agc.agc(n).tgNdx(gNdx),k) ...
-                - g.agc.agc(n).ctrlGen(gNdx).x(k);
+                - g.agc.agc(n).ctrlGen(gNdx).x(k); % NOTE: negative sign is important here.
         end
     end
 end

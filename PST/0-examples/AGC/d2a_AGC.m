@@ -265,10 +265,10 @@ Each agc(x) has following fields:
     actionTime  - Interval of time between all following AGC signals
     gain        - Gain of output ACE signal
     Btype       - Fixed frequency bias type (abs, percent of max capacity...)
-        0 - absolute - Input B value is set as Frequency bias
-      	1 - percent of max area capacity
+        0 - absolute - Input B value is set as Frequency bias (positive MW/0.1Hz)
+        1 - percent of max area capacity
     B           - Fixed frequency bias Value
-    kBv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w)
+    kBv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w))
     condAce     - Conditional ACE flag
         0 - Conditional ACE not considered
         1 - TODO: ACE only sent if sign matches delta_w (i.e. in area event)

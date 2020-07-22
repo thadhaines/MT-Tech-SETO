@@ -1,6 +1,6 @@
 function calcAreaVals(k,flag)
-%CALCAREAVALS calculates total area generation, load, and interchange.
-% CALCAREAVALS calculates total area generation, load, and interchange.
+%CALCAREAVALS calculates total area generation and interchange.
+% CALCAREAVALS calculates total area generation and interchange.
 %
 % Syntax: calcAreaVals(k,flag)
 %

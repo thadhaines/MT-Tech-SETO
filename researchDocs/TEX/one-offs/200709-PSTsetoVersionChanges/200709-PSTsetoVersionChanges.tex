@@ -8,7 +8,7 @@
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
 \chead{Changes to PST  SETO \\ }
-\lhead{Research \\7/09/20}
+\lhead{Research - Created: 7/09/20 \\ Updated: \today}
 
 \usepackage{setspace}
 \usepackage{minted}
@@ -80,21 +80,34 @@ The \verb|livePlot| function is designed to be overwritten in a similar fashion 
 %===========================================================================================================
 \paragraph{lmon} \ \\
 Coded to actually monitor line current and power flow during non-linear simulation.
+The \verb|lmon_indx| function creates the required data structures and indices.
 %===========================================================================================================
 \paragraph{area} \ \\
-Created area functionality via the \verb|area_def|
+Created area functionality via the \verb|area_def|.
+The \verb|area_indx| function creates the required data structures and indices.
 
 %===========================================================================================================
 \paragraph{calcAveF} \ \\
 Calculates system and area weighted average frequency.
 System values stored in \verb|g.sys.aveF| and area values stored in \verb|g.area.area(x).aveF|.
 
+%===========================================================================================================
+\paragraph{calcAreaVals} \ \\
+Calculates total area generation and interchange.
+Intentions were to also sum total load, but there were complications with that and work in that direction seemed not entirely useful.
 
 %===========================================================================================================
 \paragraph{agc} \ \\
-Calculated agc model that calculates RACE and distributes signal to defined controlled generators according to participation factor.
-The ACE signal is filtered through a PI before being distributed to each generator through a unique low pass filter that adds to the governor \verb|tg_sig| value.
-( NOTE: the \verb|tg_sig| value is equavelnt to an addition to the governors $P_{ref}$ value)
+Automatic generation control model that calculates RACE and distributes signal to defined controlled generators according to participation factor.
+The ACE signal is filtered through a PI before being distributed to each generator through a unique low pass filter that adds the negative of the value to the governor \verb|tg_sig| value.
+( NOTE: the \verb|tg_sig| value is equivalent to an addition to the governors $P_{ref}$ value)
+The \verb|agc_indx| function creates the required data structures and indices.
+
+%---------------------------------------------------------------------------------------------------
+\paragraph{cleanZeros} \ \\
+Function that cleans all zero variables from the global g.
+Executed at the end of \verb|s_simu_Batch|.
+Stores cleared variable names in the \verb|clearedVars| cell that is stored in \verb|g.sys|
 
 
 
@@ -344,7 +357,7 @@ ans =
        bopf2: [13x1 double]
 \end{minted}
 %---------------------------------------------------------------------------------------------------
-\subparagraph{lmon}
+\subparagraph{lmon} \ \\
 This contains variables for line monitoring not previously collected during simulation.
 An example of lmon contents is shown below.
 \begin{minted}{MATLAB}
@@ -367,7 +380,7 @@ ans =
 
 \pagebreak
 %---------------------------------------------------------------------------------------------------
-\subparagraph{area}
+\subparagraph{area} \ \\
 This contains variables for area calculation and operation.
 An example of area variables are shown below.
 \begin{minted}{MATLAB}
@@ -402,7 +415,7 @@ ans =
 
 \pagebreak
 %---------------------------------------------------------------------------------------------------
-\subparagraph{agc}
+\subparagraph{agc} \ \\
 This contains variables for agc calculation and operation.
 An example of AGC variables are shown below
 
@@ -441,10 +454,6 @@ ans =
     nextActionTime: 130
 \end{minted}
 
-%---------------------------------------------------------------------------------------------------
-\subparagraph{cleanZeros}
-Function that cleans all zero variables from the global g.
-Executed at the end of \verb|s_simu_Batch|.
 
 \begin{comment}
 

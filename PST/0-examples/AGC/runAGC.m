@@ -33,7 +33,7 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d2a_AGC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
-livePlotFlag = 0;
+livePlotFlag = 1;
 
 % Handle load modulation
 if useGlobalG
@@ -54,7 +54,7 @@ copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 
 %% Save cleaned output data
 caseName = 'AGC';
-printFigs = 1 ;
+printFigs = 0 ;
 
 save([caseName,'test.mat']); %Save simulation outputs
 
@@ -182,7 +182,6 @@ if printFigs
     set(gcf,'color','w'); % to remove border of figure
     export_fig([caseName,'f7'],'-pdf'); % to print fig
 end
-
 
 
 %% The following linear code was used to test new global functionality
