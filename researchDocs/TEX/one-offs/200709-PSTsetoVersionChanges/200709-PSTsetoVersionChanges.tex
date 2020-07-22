@@ -57,6 +57,7 @@ Commented out code that prevented the setting equal of the transient reactances.
 %===========================================================================================================
 \paragraph{lmod and rlmod} \ \\
 Fixed state limiting.
+ While if over-limit, the derivative was set to zero, the state was not set to the maximum/minimum value correctly.
 
 %===========================================================================================================
 \paragraph{pwrmod} \ \\
@@ -79,6 +80,23 @@ The \verb|livePlot| function is designed to be overwritten in a similar fashion 
 %===========================================================================================================
 \paragraph{lmon} \ \\
 Coded to actually monitor line current and power flow during non-linear simulation.
+%===========================================================================================================
+\paragraph{area} \ \\
+Created area functionality via the \verb|area_def|
+
+%===========================================================================================================
+\paragraph{calcAveF} \ \\
+Calculates system and area weighted average frequency.
+System values stored in \verb|g.sys.aveF| and area values stored in \verb|g.area.area(x).aveF|.
+
+
+%===========================================================================================================
+\paragraph{agc} \ \\
+Calculated agc model that calculates RACE and distributes signal to defined controlled generators according to participation factor.
+The ACE signal is filtered through a PI before being distributed to each generator through a unique low pass filter that adds to the governor \verb|tg_sig| value.
+( NOTE: the \verb|tg_sig| value is equavelnt to an addition to the governors $P_{ref}$ value)
+
+
 
 %===========================================================================================================
 \pagebreak
@@ -292,14 +310,141 @@ Contains \verb|line| and all altered line arrays associated with faults created 
 %---------------------------------------------------------------------------------------------------
 \subparagraph{int} \ \\
 Contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with faults.
-
+Example variables are shown below.
+\begin{minted}{MATLAB}
+>> g.int
+ans = 
+      Y_gprf: [4x4 double]
+    Y_gncprf: [4x3 double]
+    Y_ncgprf: [3x4 double]
+     Y_ncprf: [3x3 double]
+     V_rgprf: [10x4 double]
+    V_rncprf: [10x3 double]
+       boprf: [13x1 double]
+        Y_gf: [4x4 double]
+      Y_gncf: [4x3 double]
+      Y_ncgf: [3x4 double]
+       Y_ncf: [3x3 double]
+       V_rgf: [10x4 double]
+      V_rncf: [10x3 double]
+         bof: [13x1 double]
+      Y_gpf1: [4x4 double]
+    Y_gncpf1: [4x3 double]
+    Y_ncgpf1: [3x4 double]
+     Y_ncpf1: [3x3 double]
+     V_rgpf1: [10x4 double]
+    V_rncpf1: [10x3 double]
+       bopf1: [13x1 double]
+      Y_gpf2: [4x4 double]
+    Y_gncpf2: [4x3 double]
+    Y_ncgpf2: [3x4 double]
+     Y_ncpf2: [3x3 double]
+     V_rgpf2: [10x4 double]
+    V_rncpf2: [10x3 double]
+       bopf2: [13x1 double]
+\end{minted}
 %---------------------------------------------------------------------------------------------------
 \subparagraph{lmon}
+This contains variables for line monitoring not previously collected during simulation.
+An example of lmon contents is shown below.
 \begin{minted}{MATLAB}
-global lmon_con
+>> g.lmon
+ans = 
+     lmon_con: [3 10]
+       n_lmon: 2
+    busFromTo: [2x2 double]
+         line: [1x2 struct]
+ >> g.lmon.line(1)
+ ans = 
+     busArrayNdx: 3
+         FromBus: 3
+           ToBus: 4
+           iFrom: [1x8751 double]
+             iTo: [1x8751 double]
+           sFrom: [1x8751 double]
+             sTo: [1x8751 double]
 \end{minted}
-This will contain variables for line monitoring not previously collected during simulation.
 
+\pagebreak
+%---------------------------------------------------------------------------------------------------
+\subparagraph{area}
+This contains variables for area calculation and operation.
+An example of area variables are shown below.
+\begin{minted}{MATLAB}
+>> g.area
+ans = 
+    area_def: [13x2 double]
+      n_area: 2
+        area: [1x2 struct]
+>> g.area.area(1)
+ans = 
+           number: 1
+        areaBuses: [7x1 double]
+           macBus: [2x1 double]
+        macBusNdx: [1 2]
+      maxCapacity: 1800
+          loadBus: [4x1 double]
+       loadBusNdx: [3 4 5 10]
+           genBus: [3x1 double]
+        genBusNdx: [1 2 11]
+             totH: [1x8751 double]
+             aveF: [1x8751 double]
+           totGen: [1x8751 double]
+          totLoad: []
+              icA: [1x8751 double]
+              icS: [1x8751 double]
+    exportLineNdx: []
+    importLineNdx: [11 12]
+         n_export: []
+         n_import: 2
+\end{minted}
+
+
+\pagebreak
+%---------------------------------------------------------------------------------------------------
+\subparagraph{agc}
+This contains variables for agc calculation and operation.
+An example of AGC variables are shown below
+
+\begin{minted}{MATLAB}
+>> g.agc
+ans = 
+      agc: [1x2 struct]
+    n_agc: 2
+>> g.agc.agc(1)
+ans = 
+              area: 1
+         startTime: 25
+        actionTime: 15
+              gain: 2
+             Kiace: 3
+             Btype: 1
+                 B: 1
+               kBv: []
+           condAce: []
+                Kp: 0.0400
+                 a: 1.0000e-03
+       ctrlGen_con: [2x3 double]
+         n_ctrlGen: 2
+         macBusNdx: [1 2]
+             tgNdx: [1 2]
+           ctrlGen: [1x2 struct]
+              race: [1x8751 double]
+            d_sace: [1x8751 double]
+              sace: [1x8751 double]
+          ace2dist: [1x8751 double]
+              iace: []
+            aceSig: -0.0144
+      iaceStartNdx: 8439
+             iaceN: 624
+             Bcalc: 18
+    nextActionTime: 130
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subparagraph{cleanZeros}
+Function that cleans all zero variables from the global g.
+Executed at the end of \verb|s_simu_Batch|.
 
 \begin{comment}
 

@@ -33,7 +33,7 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d2a_AGC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
-livePlotFlag = 1;
+livePlotFlag = 0;
 
 % Handle load modulation
 if useGlobalG
