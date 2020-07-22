@@ -73,6 +73,7 @@ ans =
 Each area currently contains values that may be relevant to AGC calculations.
 The \verb|calcAreaVals| function is used to calculate and store such values.
 An example of what is stored in the \verb|g.area.area(x)| structure is shown below.
+\pagebreak
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -177,6 +178,7 @@ An average weighted frequency is calculated for the total system and for each ar
 The calculation involves a sum of system inertias that may change with generator trips.
 The current algorithm does not account for tripped generators, but was designed to incorporate this feature in the future.
 
+\vspace{1em}
 In a system with $N$ generators, $M$ areas, and $N_M$ generators in area $M$, the \verb|calcAveF| function performs the following calculations for each area $M$:
 
 \begin{align*}
@@ -216,14 +218,25 @@ F_{ave} &= \left( \sum_{i}^{N}(Mach_{speed_i}MVA_{base_i}H_i) \right) \dfrac{1}{
 
 \pagebreak
 \paragraph{Automatic Generation Control} \ \\
+RACE and SACE are calculated using PU values assuming B is a positive non-PU value with units of $MW/0.1Hz$
+If $K_{bv}$ is not zero, the resulting $RACE$ is not the industry standard $RACE$ value.
 
 \includegraphics[width=\linewidth]{200722-AGCblockdiagram-p1} \\%
+
+The action of the AGC model is determined by the \verb|startTime| and \verb|actionTime| variables.
+Assuming action, the conditional logic is processed before altering the \verb|aceSig| which is then gained to become \verb|ace2dist|.
+
 \includegraphics[width=.95\linewidth]{200722-AGCblockdiagram-p2} \\%
+
+The \verb|ace2dist| value is distributed to all controlled generators according to their respective participation factor \verb|pF|.
+Each \verb|ctrlGen| has a unique low pass filter that processes the signal that is then gained by -1 and applied to the associated governor via the \verb|tg_sig| value.
+
+\vspace{1em}
 \includegraphics[width=.9\linewidth]{200722-AGCblockdiagram-p3} %
 
 \pagebreak
-\paragraph{Example AGC settings}
-The following AGC settings are not entirely realistic, but useful in showing and testing the  functionality of the AGC model.
+\paragraph{Example AGC settings} \ \\ 
+The following AGC settings are not entirely realistic, but useful in demonstrating the  functionality of the AGC model.
 
 \begin{minted}[
 		frame=lines,
@@ -287,13 +300,6 @@ agc(2).ctrlGen_con = [...
     11, 0.25, 10;
     12, 0.75, 5;
     ];
-
-if ~enableAGC
-    % set gains to zero
-    agc(1).gain = 0;
-    agc(2).gain = 0;
-end
-
 \end{minted}
 
 %\pagebreak
