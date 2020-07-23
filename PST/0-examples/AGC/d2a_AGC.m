@@ -11,6 +11,7 @@ enableExciters = true;
 enablePSS = true;
 enableSVC = true;
 enableAGC = true;
+conditionalAGC = 0; % 1 or 0
 
 disp('Two area, 4 machine, AGC test')
 %% bus data format
@@ -286,7 +287,7 @@ agc(1).gain = 2; % gain of output signal
 agc(1).Btype = 1; % per max area capacity
 agc(1).B = 1;
 agc(1).Kbv = 0; % no variable bias
-agc(1).condAce = 0; % conditional ACE
+agc(1).condAce = conditionalAGC; % conditional ACE
 agc(1).Kp = 0.04;
 agc(1).a = 0.001;
 agc(1).ctrlGen_con = [ ...
@@ -351,4 +352,4 @@ sw_con = [...
 120.0 0    0    0    0    0    0];   % end simulation
 % probably has to due with the Y  matrix ....
 
-clear ts enableExciters enableGov enablePSS enableSVC
+clear ts enableExciters enableGov enablePSS enableSVC conditionalAGC

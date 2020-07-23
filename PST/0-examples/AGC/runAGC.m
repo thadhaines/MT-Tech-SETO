@@ -55,7 +55,7 @@ copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 2 pss
 
 %% Save cleaned output data
 caseName = 'AGC';
-printFigs = 1;
+printFigs = 0;
 
 save([caseName,'test.mat']); %Save simulation outputs
 

@@ -60,22 +60,34 @@
 	\node [input, name=ace2distIn, label=ace2dist] {};
 	\coordinate [right=of ace2distIn]  (inputSpace) {};
 	
-	
+	% pf gain
 	\node [block, above right=of inputSpace, name=gen1Pf] {ctrlGen(1).pF};
 	\node [input, below=of gen1Pf, label=\Large \vdots]  (dots1) {};
 	\node [block, below right=of inputSpace, name=gennPf] {ctrlGen(n).pF};
 	
+	% filter
 	\node [block, right=of gen1Pf, name=gen1lp] {$\dfrac{1}{1+T_1\$}$};
 	\node [input, below=of gen1lp, label=\Large \vdots]  (dots2) {};
 	\node [block, right=of gennPf, name=gennlp] {$\dfrac{1}{1+T_n\$}$};
 	
+	% gain
 	\node [block, right=of gen1lp, name=gain1] {$-1$};
 	\node [input, below=of gain1, label=\Large \vdots]  (dots3) {};
 	\node [block, right=of gennlp, name=gain2] {$-1$};
 	
-	\node [output, right=of gain1, name=out1, label=tg\_sig$_1$] {};
-	\node [input, right=1.95cm of dots3, label=\Large \vdots]  (dots4) {};
-	\node [output, right=of gain2, name=out2, label=tg\_sig$_n$] {};
+	%sum
+	\node [sum, right=of gain1, name=sum1] {$\Sigma$};
+	\node [input, right=2.4cm of dots3, label=\Large \vdots]  (dots5) {};
+	\node [sum, right=of gain2, name=sum2] {$\Sigma$};
+	
+	%tg input
+		\node [input, above=of gain1, name=tgIn1 , label=tg\_sig$_1$] {};
+		\node [input, below=of gain2, name=tgIn2, label=tg\_sig$_n$] {};
+	
+	%output
+	\node [output, right=of sum1, name=out1, label=tg\_sig$_1$] {};
+	\node [input, right=1.25 cm of dots5, label=\Large \vdots]  (dots6) {};
+	\node [output, right=of sum2, name=out2, label=tg\_sig$_n$] {};
 	
 	%%lines
 	\draw [-] (ace2distIn) -- (inputSpace); 
@@ -85,7 +97,11 @@
 	\draw [->] (gennPf) -- (gennlp); 
 	\draw [->] (gen1lp) -- (gain1); 
 	\draw [->] (gennlp) -- (gain2); 
-	\draw [->] (gain1) |- (out1); 
-	\draw [->] (gain2) |- (out2); 
+	\draw [->] (gain1) -- (sum1); 
+	\draw [->] (gain2) -- (sum2);
+	\draw [->] (tgIn1) -| (sum1); 
+	\draw [->] (tgIn2) -| (sum2);
+	\draw [->] (sum1) -- (out1); 
+	\draw [->] (sum2) -- (out2); 
 	\end{tikzpicture} 
 \end{document}
