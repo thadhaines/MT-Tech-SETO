@@ -26,6 +26,9 @@ function [tripOut,mac_trip_states] = mac_trip_logic(tripStatus,mac_trip_states,t
 % global cur_re cur_im %gen pu currents
 % global mac_con n_mac
 
+% NOTE: could probably be altered to take no inputs as all inputs are global...
+% -thad 07/23/20
+
 global g
 %% Initialize
 tripOut = false(g.mac.n_mac,1);

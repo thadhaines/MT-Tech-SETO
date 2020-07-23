@@ -182,6 +182,10 @@ global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
 global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
 global pm_sig n_pm 
 global  psi_re psi_im cur_re cur_im
+
+% added
+global mac_trip_flags
+global mac_trip_states
 \end{minted}
 %---------------------------------------------------------------------------------------------------
 \subparagraph{pss}
@@ -306,6 +310,7 @@ global v_coni dv_coni
 global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
 global dcr_dc dci_dc % damping control
 global  ldc_idx
+global rec_par inv_par line_par
 \end{minted}
 Some DC related functions reused global variable names for local values but avoided conflict by not importing the specific globals.
 During global conversion this caused some issues with accidental casting to global and overwriting issues.
@@ -455,12 +460,25 @@ ans =
 \end{minted}
 
 
+%---------------------------------------------------------------------------------------------------
+\subparagraph{k} \ \\
+To allow for functionalized running, various index values were placed into the global
+
+\begin{minted}{MATLAB}
+global k_inc h ks h_sol
+golbal k_incdc h_dc
+\end{minted}
+
+
+
+
+%---------------------------------------------------------------------------------------------------
 \begin{comment}
 
 template for subparagraphs
 
 %---------------------------------------------------------------------------------------------------
-\subparagraph{xxx}
+\subparagraph{xxx} % \ \\
 \begin{minted}{MATLAB}
 
 \end{minted}

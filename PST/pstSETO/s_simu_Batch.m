@@ -180,7 +180,10 @@ else
     [bus_sol,line,~,rec_par, inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
     g.bus.bus = bus_sol;
     g.line.line = line;
-    clear bus_sol line
+    g.dc.rec_par = rec_par;
+    g.dc.inv_par = inv_par;
+    g.dc.line_par = line_par;
+    clear bus_sol line rec_par inv_par line_par
     %save sim_fle.mat bus line rec_par  inv_par line_par% no need in batch runs - thad 07/17/20
 end
 
@@ -235,57 +238,60 @@ kdc = 1;
 
 n_switch = length(g.sys.sw_con(:,1));
 
-k_inc = zeros(n_switch-1,1);
-k_incdc = zeros(n_switch-1,1);
+g.k.k_inc = zeros(n_switch-1,1);
+g.k.k_incdc = zeros(n_switch-1,1);
 
 t_switch = zeros(n_switch,1);
-h = zeros(n_switch,1);
-h_dc = zeros(n_switch,1);
+g.k.h = zeros(n_switch,1);
+g.k.h_dc = zeros(n_switch,1);
 
 for sw_count = 1:n_switch-1
-    h(sw_count) = g.sys.sw_con(sw_count,7);%specified time step
+    g.k.h(sw_count) = g.sys.sw_con(sw_count,7);%specified time step
     
-    if h(sw_count)==0
-        h(sw_count) = 0.01;
+    if g.k.h(sw_count)==0
+        g.k.h(sw_count) = 0.01;
     end % default time step
     
-    k_inc(sw_count) = fix((g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/h(sw_count));%nearest lower integer
+    g.k.k_inc(sw_count) = fix((g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/g.k.h(sw_count));%nearest lower integer
     
-    if k_inc(sw_count)==0
-        k_inc(sw_count)=1;
+    if g.k.k_inc(sw_count)==0
+        g.k.k_inc(sw_count)=1;
     end% minimum 1
     
-    h(sw_count) = (g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/k_inc(sw_count);%step length
-    h_dc(sw_count) = h(sw_count)/10;
-    k_incdc(sw_count) = 10*k_inc(sw_count);
-    t_switch(sw_count+1) = t_switch(sw_count) +  k_inc(sw_count)*h(sw_count);
-    t(k:k-1+k_inc(sw_count)) = t_switch(sw_count):h(sw_count):t_switch(sw_count+1)-h(sw_count);
+    g.k.h(sw_count) = (g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/g.k.k_inc(sw_count);%step length
+    g.k.h_dc(sw_count) = g.k.h(sw_count)/10;
+    g.k.k_incdc(sw_count) = 10*g.k.k_inc(sw_count);
+    t_switch(sw_count+1) = t_switch(sw_count) +  g.k.k_inc(sw_count)*g.k.h(sw_count);
+    t(k:k-1+g.k.k_inc(sw_count)) = t_switch(sw_count):g.k.h(sw_count):t_switch(sw_count+1)-g.k.h(sw_count);
     if ~isempty(g.dc.dcl_con)
-        g.dc.t_dc(kdc:kdc-1+k_incdc(sw_count)) = t_switch(sw_count):h_dc(sw_count):t_switch(sw_count+1)-h_dc(sw_count);
+        g.dc.t_dc(kdc:kdc-1+g.k.k_incdc(sw_count)) = t_switch(sw_count):g.k.h_dc(sw_count):t_switch(sw_count+1)-g.k.h_dc(sw_count);
     end
-    k = k+k_inc(sw_count);
-    kdc = kdc+k_incdc(sw_count);
+    k = k + g.k.k_inc(sw_count);
+    kdc = kdc + g.k.k_incdc(sw_count);
 end
 
 % time for dc - multi-rate...
 if ~isempty(g.dc.dcsp_con)
-    g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
+    g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
     for kk=1:10
         kdc=kdc+1;
-        g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+h_dc(sw_count);
+        g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
     end
 end
-k = sum(k_inc)+1; % k is the total number of time steps in the simulation
+k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation
 
 t(k) = g.sys.sw_con(n_switch,1);
-n = size(g.mac.mac_con, 1) ;
 
 % add time array t to global g - thad
 g.sys.t = t;
 
+%% =====================================================================================================   
+%% Start of Initializing Zeros =========================================================================
+ 
 %% create zero matrices for variables to make algorithm more efficient?
 warning('*** Initialize zero matricies...')
 
+n = size(g.mac.mac_con, 1) ;
 z = zeros(n,k);
 
 zm = zeros(1,k);
@@ -334,30 +340,30 @@ if g.dc.n_conv~=0
     % Modified by Rui on Oct. 5, 2016
     for ihvdc_count=1:g.dc.n_dcl
         ire = g.dc.r_idx(ihvdc_count);
-        g.dc.Vdc(ire,:) = rec_par(ihvdc_count,2);
-        g.dc.i_dc(ire,:) = line_par(ihvdc_count);    % for PDCI
+        g.dc.Vdc(ire,:) = g.dc.rec_par(ihvdc_count,2);
+        g.dc.i_dc(ire,:) = g.dc.line_par(ihvdc_count);    % for PDCI
         g.dc.i_dcr(ihvdc_count,:) = g.dc.i_dc(ire,:);
-        g.dc.alpha(ihvdc_count,:) = rec_par(ihvdc_count,1)*pi/180;
+        g.dc.alpha(ihvdc_count,:) = g.dc.rec_par(ihvdc_count,1)*pi/180;
     end
     
     for ihvdc_count=1:g.dc.n_dcl
         iin=g.dc.i_idx(ihvdc_count);
-        g.dc.Vdc(iin,:)=inv_par(ihvdc_count,2);
-        g.dc.i_dc(iin,:) = line_par(ihvdc_count);
+        g.dc.Vdc(iin,:)= g.dc.inv_par(ihvdc_count,2);
+        g.dc.i_dc(iin,:) = g.dc.line_par(ihvdc_count);
         g.dc.i_dci(ihvdc_count,:) = g.dc.i_dc(iin,:);
-        g.dc.gamma(ihvdc_count,:) = inv_par(ihvdc_count,1)*pi/180;
+        g.dc.gamma(ihvdc_count,:) = g.dc.inv_par(ihvdc_count,1)*pi/180;
     end
     % end modification by Rui
     clear ihvdc_count
     
-    g.dc.Vdc(g.dc.r_idx,:) = rec_par(:,2);
-    g.dc.Vdc(g.dc.i_idx,:) = inv_par(:,2);
-    g.dc.i_dc(g.dc.r_idx,:) = line_par;
-    g.dc.i_dc(g.dc.i_idx,:) = line_par;
+    g.dc.Vdc(g.dc.r_idx,:) = g.dc.rec_par(:,2);
+    g.dc.Vdc(g.dc.i_idx,:) = g.dc.inv_par(:,2);
+    g.dc.i_dc(g.dc.r_idx,:) = g.dc.line_par;
+    g.dc.i_dc(g.dc.i_idx,:) = g.dc.line_par;
     g.dc.i_dcr(:,:) = g.dc.i_dc(g.dc.r_idx,:);
     g.dc.i_dci(:,:) = g.dc.i_dc(g.dc.i_idx,:);
-    g.dc.alpha(:,:) = rec_par(:,1)*pi/180;
-    g.dc.gamma(:,:) = inv_par(:,1)*pi/180;
+    g.dc.alpha(:,:) = g.dc.rec_par(:,1)*pi/180;
+    g.dc.gamma(:,:) = g.dc.inv_par(:,1)*pi/180;
     
     if g.dc.ndcr_ud~=0
         for j = 1:g.dc.ndcr_ud
@@ -718,6 +724,10 @@ clear ndx
 g.sys.aveF = zeros(1,k);
 g.sys.totH = zeros(1,k);
 
+ %% =====================================================================================================   
+ %% Start Initialization ================================================================================
+ 
+
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
 disp('constructing reduced y matrices')
@@ -735,6 +745,7 @@ y_switch % calculates the reduced y matrices for the different switching conditi
 disp('initializing other models...')
 
 %% step 2: initialization
+n_bus = length(g.bus.bus(:,1));
 g.bus.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
 g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(1:n_bus,1)); %complex bus voltage
 
@@ -829,6 +840,7 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
         clear j
     end
 end
+
 
 %% Flag = 0 == Initialization
 warning('*** Dynamic model initialization via functions/scripts:')
@@ -1027,7 +1039,7 @@ if ~isempty(g.dc.dcsp_con)
     Vr2 = g.int.V_rncprf;
     bo = g.int.boprf;
     
-    h_sol = i_simu(1,1,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+    g.k.h_sol = i_simu(1,1,g.k.k_inc,g.k.h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     % reinitialize dc controls
     mdc_sig(1);
     dc_cont(0,1,1,g.bus.bus,flag);
@@ -1040,16 +1052,16 @@ end
 %% step 3: Beginning of Huen's  (predictor-corrector) method
 % Create indicies for simulation
 kt = 0;
-ks = 1;
+g.k.ks = 1;
 
-k_tot = sum(k_inc);
-lswitch = length(k_inc);
-ktmax = k_tot-k_inc(lswitch);
+k_tot = sum(g.k.k_inc);
+lswitch = length(g.k.k_inc);
+ktmax = k_tot-g.k.k_inc(lswitch);
 g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
-mac_trip_flags = false(g.mac.n_mac,1);
-mac_trip_states = 0;
+g.mac.mac_trip_flags = false(g.mac.n_mac,1);
+g.mac.mac_trip_states = 0;
 
 %% Simulation loop start
 warning('*** Simulation Loop Start')
@@ -1057,19 +1069,21 @@ while (kt<=ktmax)
     k_start = kt+1;
     
     if kt==ktmax
-        k_end = kt + k_inc(ks);
+        k_end = kt + g.k.k_inc(g.k.ks);
     else
-        k_end = kt + k_inc(ks) + 1;
+        k_end = kt + g.k.k_inc(g.k.ks) + 1;
     end
     
     for k = k_start:k_end
-        %% step 3a: network solution
-        
-        % display k and t at k_inc and every ...th step - thad
+
+        % display k and t at g.k.k_inc and every ...th step - thad
         if ( mod(k,50)==0 ) || k == 1 || k == k_end
             fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
         end
         
+     
+        %% step 3a: network solution
+         
         % mach_ref(k) = mac_ang(syn_ref,k);
         g.sys.mach_ref(k) = 0;
         g.mac.pmech(:,k+1) = g.mac.pmech(:,k);
@@ -1080,12 +1094,16 @@ while (kt<=ktmax)
         end
         
         % Trip gen - Copied from v2.3 06/01/20 - thad
-        [f,mac_trip_states] = mac_trip_logic(mac_trip_flags,mac_trip_states,g.sys.t,k);
-        mac_trip_flags = mac_trip_flags | f;
+        [f,g.mac.mac_trip_states] = mac_trip_logic(g.mac.mac_trip_flags,g.mac.mac_trip_states,g.sys.t,k);
+        g.mac.mac_trip_flags = g.mac.mac_trip_flags | f;
         
+ %% =====================================================================================================   
+ %% Start of Network Solution 1 =========================================================================
+  
         %% Flag = 1
         flag = 1;
-        timestep = int2str(k); % not used? 06/09/20
+        %timestep = int2str(k); % not used? 06/09/20
+        g.sys.mach_ref(k) = 0;
         % network-machine interface
         mac_ind(0,k,g.bus.bus_sim,flag);
         mac_igen(0,k,g.bus.bus_sim,flag);
@@ -1098,7 +1116,7 @@ while (kt<=ktmax)
         dc_cont(0,k,10*(k-1)+1,g.bus.bus_sim,flag); % Models the action of HVDC link pole controllers
         
         %% Calculate current injections and bus voltages and angles
-        if k >= sum(k_inc(1:3))+1
+        if k >= sum(g.k.k_inc(1:3))+1
             %% fault cleared - post fault 2
             g.line.line_sim = g.line.line_pf2;
             g.bus.bus_sim = g.bus.bus_pf2;
@@ -1117,7 +1135,7 @@ while (kt<=ktmax)
             % duplicate call?
             % h_sol calculated after this 'if' block...
             
-        elseif k >=sum(k_inc(1:2))+1
+        elseif k >=sum(g.k.k_inc(1:2))+1
             %% near bus cleared - post fault 1
             g.line.line_sim = g.line.line_pf1;
             
@@ -1134,7 +1152,7 @@ while (kt<=ktmax)
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif k>=k_inc(1)+1
+        elseif k>=g.k.k_inc(1)+1
             %% fault applied - fault
             g.line.line_sim = g.line.line_f;
             g.bus.bus_sim = g.bus.bus_f;
@@ -1151,7 +1169,7 @@ while (kt<=ktmax)
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif k<k_inc(1)+1
+        elseif k<g.k.k_inc(1)+1
             %% pre fault
             g.line.line_sim = g.line.line;
             g.bus.bus_sim = g.bus.bus;
@@ -1170,8 +1188,8 @@ while (kt<=ktmax)
         end
         
         %% apply gen trip - added from v2.3 - 06/01/20 - thad
-        if sum(mac_trip_flags)>0.5
-            genBuses = g.mac.mac_con(mac_trip_flags==1,2);
+        if sum(g.mac.mac_trip_flags)>0.5
+            genBuses = g.mac.mac_con(g.mac.mac_trip_flags==1,2);
             for kB=1:length(genBuses)
                 nL = find(genBuses(kB)==g.line.line_sim(:,1) | genBuses(kB)==g.line.line_sim(:,2));
                 if isempty(nL); error(' '); end
@@ -1182,7 +1200,11 @@ while (kt<=ktmax)
         end
         
         %% Solve Network solution
-        h_sol = i_simu(k,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        g.k.h_sol = i_simu(k,g.k.ks,g.k.k_inc,g.k.h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        
+        % Executed in step 2, added here for consistancy... -thad 07/23/20
+        g.mac.vex(:,k+1) = g.mac.vex(:,k);
+        g.dc.cur_ord(:,k+1) = g.dc.cur_ord(:,k);
         
         %% HVDC
         if g.dc.ndcr_ud~=0
@@ -1275,6 +1297,9 @@ while (kt<=ktmax)
             end
         end
         
+ %% =====================================================================================================   
+ %% Start Dynamic Solution 1 ============================================================================
+ 
         %% step 3b: compute dynamics and integrate
         flag = 2;
         %g.sys.sys_freq(k) = 1.0; % why?... 5/21/20 -thad
@@ -1430,10 +1455,13 @@ while (kt<=ktmax)
             clear d e dd de dst est
         end
         
+ %% =====================================================================================================   
+ %% Start of DC solution 1 ==============================================================================
+ 
         %% integrate dc at ten times rate (DC Stuff? 5/14/20)
         mdc_sig(k);
         if g.dc.n_conv~=0
-            hdc_sol = h_sol/10;
+            hdc_sol = g.k.h_sol/10;
             for kk = 1:10
                 kdc=10*(k-1)+kk;
                 [g.dc.xdcr_dc(:,kdc:kdc+1),g.dc.dxdcr_dc(:,kdc:kdc+1),g.dc.xdci_dc(:,kdc:kdc+1),g.dc.dxdci_dc(:,kdc:kdc+1)] = ...
@@ -1443,109 +1471,115 @@ while (kt<=ktmax)
             dc_cont(0,k,k,g.bus.bus_sim,2);
             dc_line(0,k,k,g.bus.bus_sim,2);
         end
-        
+ 
+ %% =====================================================================================================   
+ %% Start of Pretictor Integration ======================================================================
+ 
         %% following statements are predictor steps
         j = k+1;
-        g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*g.mac.dmac_ang(:,k);
-        g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + h_sol*g.mac.dmac_spd(:,k);
-        g.mac.edprime(:,j) = g.mac.edprime(:,k) + h_sol*g.mac.dedprime(:,k);
-        g.mac.eqprime(:,j) = g.mac.eqprime(:,k) + h_sol*g.mac.deqprime(:,k);
-        g.mac.psikd(:,j) = g.mac.psikd(:,k) + h_sol*g.mac.dpsikd(:,k);
-        g.mac.psikq(:,j) = g.mac.psikq(:,k) + h_sol*g.mac.dpsikq(:,k);
+        g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + g.k.h_sol*g.mac.dmac_ang(:,k);
+        g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + g.k.h_sol*g.mac.dmac_spd(:,k);
+        g.mac.edprime(:,j) = g.mac.edprime(:,k) + g.k.h_sol*g.mac.dedprime(:,k);
+        g.mac.eqprime(:,j) = g.mac.eqprime(:,k) + g.k.h_sol*g.mac.deqprime(:,k);
+        g.mac.psikd(:,j) = g.mac.psikd(:,k) + g.k.h_sol*g.mac.dpsikd(:,k);
+        g.mac.psikq(:,j) = g.mac.psikq(:,k) + g.k.h_sol*g.mac.dpsikq(:,k);
         
         % Exciter integration
-        g.exc.Efd(:,j) = g.exc.Efd(:,k) + h_sol*g.exc.dEfd(:,k);
-        g.exc.V_R(:,j) = g.exc.V_R(:,k) + h_sol*g.exc.dV_R(:,k);
-        g.exc.V_As(:,j) = g.exc.V_As(:,k) + h_sol*g.exc.dV_As(:,k);
-        g.exc.R_f(:,j) = g.exc.R_f(:,k) + h_sol*g.exc.dR_f(:,k);
-        g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*g.exc.dV_TR(:,k);
+        g.exc.Efd(:,j) = g.exc.Efd(:,k) + g.k.h_sol*g.exc.dEfd(:,k);
+        g.exc.V_R(:,j) = g.exc.V_R(:,k) + g.k.h_sol*g.exc.dV_R(:,k);
+        g.exc.V_As(:,j) = g.exc.V_As(:,k) + g.k.h_sol*g.exc.dV_As(:,k);
+        g.exc.R_f(:,j) = g.exc.R_f(:,k) + g.k.h_sol*g.exc.dR_f(:,k);
+        g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + g.k.h_sol*g.exc.dV_TR(:,k);
         
         if n_dpw ~= 0
             % only calculate if dpw filter is used
-            sdpw1(:,j) = sdpw1(:,k) + h_sol*dsdpw1(:,k);
-            sdpw2(:,j) = sdpw2(:,k) + h_sol*dsdpw2(:,k);
-            sdpw3(:,j) = sdpw3(:,k) + h_sol*dsdpw3(:,k);
-            sdpw4(:,j) = sdpw4(:,k) + h_sol*dsdpw4(:,k);
-            sdpw5(:,j) = sdpw5(:,k) + h_sol*dsdpw5(:,k);
-            sdpw6(:,j) = sdpw6(:,k) + h_sol*dsdpw6(:,k);
+            sdpw1(:,j) = sdpw1(:,k) + g.k.h_sol*dsdpw1(:,k);
+            sdpw2(:,j) = sdpw2(:,k) + g.k.h_sol*dsdpw2(:,k);
+            sdpw3(:,j) = sdpw3(:,k) + g.k.h_sol*dsdpw3(:,k);
+            sdpw4(:,j) = sdpw4(:,k) + g.k.h_sol*dsdpw4(:,k);
+            sdpw5(:,j) = sdpw5(:,k) + g.k.h_sol*dsdpw5(:,k);
+            sdpw6(:,j) = sdpw6(:,k) + g.k.h_sol*dsdpw6(:,k);
         end
         
-        g.pss.pss1(:,j) = g.pss.pss1(:,k) + h_sol*g.pss.dpss1(:,k);
-        g.pss.pss2(:,j) = g.pss.pss2(:,k) + h_sol*g.pss.dpss2(:,k);
-        g.pss.pss3(:,j) = g.pss.pss3(:,k) + h_sol*g.pss.dpss3(:,k);
+        g.pss.pss1(:,j) = g.pss.pss1(:,k) + g.k.h_sol*g.pss.dpss1(:,k);
+        g.pss.pss2(:,j) = g.pss.pss2(:,k) + g.k.h_sol*g.pss.dpss2(:,k);
+        g.pss.pss3(:,j) = g.pss.pss3(:,k) + g.k.h_sol*g.pss.dpss3(:,k);
         
         % modified to g - thad
-        g.tg.tg1(:,j) = g.tg.tg1(:,k) + h_sol*g.tg.dtg1(:,k);
-        g.tg.tg2(:,j) = g.tg.tg2(:,k) + h_sol*g.tg.dtg2(:,k);
-        g.tg.tg3(:,j) = g.tg.tg3(:,k) + h_sol*g.tg.dtg3(:,k);
-        g.tg.tg4(:,j) = g.tg.tg4(:,k) + h_sol*g.tg.dtg4(:,k);
-        g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*g.tg.dtg5(:,k);
+        g.tg.tg1(:,j) = g.tg.tg1(:,k) + g.k.h_sol*g.tg.dtg1(:,k);
+        g.tg.tg2(:,j) = g.tg.tg2(:,k) + g.k.h_sol*g.tg.dtg2(:,k);
+        g.tg.tg3(:,j) = g.tg.tg3(:,k) + g.k.h_sol*g.tg.dtg3(:,k);
+        g.tg.tg4(:,j) = g.tg.tg4(:,k) + g.k.h_sol*g.tg.dtg4(:,k);
+        g.tg.tg5(:,j) = g.tg.tg5(:,k) + g.k.h_sol*g.tg.dtg5(:,k);
         
         % induction motor integrations
         if g.ind.n_mot ~= 0
-            g.ind.vdp(:,j) = g.ind.vdp(:,k) + h_sol*g.ind.dvdp(:,k);
-            g.ind.vqp(:,j) = g.ind.vqp(:,k) + h_sol*g.ind.dvqp(:,k);
-            g.ind.slip(:,j) = g.ind.slip(:,k) + h_sol*g.ind.dslip(:,k);
+            g.ind.vdp(:,j) = g.ind.vdp(:,k) + g.k.h_sol*g.ind.dvdp(:,k);
+            g.ind.vqp(:,j) = g.ind.vqp(:,k) + g.k.h_sol*g.ind.dvqp(:,k);
+            g.ind.slip(:,j) = g.ind.slip(:,k) + g.k.h_sol*g.ind.dslip(:,k);
         end
         
         % induction generator integrations
         if g.igen.n_ig ~=0
-            g.igen.vdpig(:,j) = g.igen.vdpig(:,k) + h_sol*g.igen.dvdpig(:,k);
-            g.igen.vqpig(:,j) = g.igen.vqpig(:,k) + h_sol*g.igen.dvqpig(:,k);
-            g.igen.slig(:,j) = g.igen.slig(:,k) + h_sol*g.igen.dslig(:,k);
+            g.igen.vdpig(:,j) = g.igen.vdpig(:,k) + g.k.h_sol*g.igen.dvdpig(:,k);
+            g.igen.vqpig(:,j) = g.igen.vqpig(:,k) + g.k.h_sol*g.igen.dvqpig(:,k);
+            g.igen.slig(:,j) = g.igen.slig(:,k) + g.k.h_sol*g.igen.dslig(:,k);
         end
         
         % svc
         if g.svc.n_svc ~= 0
-            g.svc.B_cv(:,j) = g.svc.B_cv(:,k) + h_sol*g.svc.dB_cv(:,k);
-            g.svc.B_con(:,j) = g.svc.B_con(:,k) + h_sol*g.svc.dB_con(:,k);
-            g.svc.xsvc_dc(:,j) = g.svc.xsvc_dc(:,k) + h_sol* g.svc.dxsvc_dc(:,k);
+            g.svc.B_cv(:,j) = g.svc.B_cv(:,k) + g.k.h_sol*g.svc.dB_cv(:,k);
+            g.svc.B_con(:,j) = g.svc.B_con(:,k) + g.k.h_sol*g.svc.dB_con(:,k);
+            g.svc.xsvc_dc(:,j) = g.svc.xsvc_dc(:,k) + g.k.h_sol* g.svc.dxsvc_dc(:,k);
         end
         
         %tcsc
         if g.tcsc.n_tcsc ~= 0
-            g.tcsc.B_tcsc(:,j) = g.tcsc.B_tcsc(:,k) + h_sol*g.tcsc.dB_tcsc(:,k);
-            g.tcsc.xtcsc_dc(:,j) = g.tcsc.xtcsc_dc(:,k) + h_sol* g.tcsc.dxtcsc_dc(:,k);
+            g.tcsc.B_tcsc(:,j) = g.tcsc.B_tcsc(:,k) + g.k.h_sol*g.tcsc.dB_tcsc(:,k);
+            g.tcsc.xtcsc_dc(:,j) = g.tcsc.xtcsc_dc(:,k) + g.k.h_sol* g.tcsc.dxtcsc_dc(:,k);
         end
         
         if g.lmod.n_lmod~=0
-            g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*g.lmod.dlmod_st(:,k); % line using g
+            g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + g.k.h_sol*g.lmod.dlmod_st(:,k); % line using g
         end
         
         if g.rlmod.n_rlmod~=0
-            g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+h_sol*g.rlmod.drlmod_st(:,k);
+            g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k)+g.k.h_sol*g.rlmod.drlmod_st(:,k);
         end
         %% Copied from v2.3 - 06/01/20 - thad
-        g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*g.pwr.dpwrmod_p_st(:,k);
-        g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*g.pwr.dpwrmod_q_st(:,k);
+        g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+g.k.h_sol*g.pwr.dpwrmod_p_st(:,k);
+        g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+g.k.h_sol*g.pwr.dpwrmod_q_st(:,k);
         %% pwrmod
         if g.pwr.n_pwrmod~=0
             for index=1:g.pwr.n_pwrmod
-                pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*dpwrmod_p_sigst{index}(:,k);
-                pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*dpwrmod_q_sigst{index}(:,k);
+                pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+g.k.h_sol*dpwrmod_p_sigst{index}(:,k);
+                pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+g.k.h_sol*dpwrmod_q_sigst{index}(:,k);
             end
         end
         %% ivmmod
         if n_ivm~=0
             for index=1:n_ivm
-                ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*divmmod_d_sigst{index}(:,k);
-                ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*divmmod_e_sigst{index}(:,k);
+                ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+g.k.h_sol*divmmod_d_sigst{index}(:,k);
+                ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+g.k.h_sol*divmmod_e_sigst{index}(:,k);
             end
         end
         
         %% agc predictor integration
         if g.agc.n_agc ~=0
             for ndx = 1:g.agc.n_agc
-                g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + h_sol*g.agc.agc(ndx).d_sace(k);
+                g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + g.k.h_sol*g.agc.agc(ndx).d_sace(k);
                 
                 % integrate lowpass filter outs...
                 for gndx=1:g.agc.agc(ndx).n_ctrlGen
                     g.agc.agc(ndx).ctrlGen(gndx).x(j) = g.agc.agc(ndx).ctrlGen(gndx).x(k)...
-                        + h_sol * g.agc.agc(ndx).ctrlGen(gndx).dx(k)  ;
+                        + g.k.h_sol * g.agc.agc(ndx).ctrlGen(gndx).dx(k)  ;
                 end
             end
         end
         
+ %% =====================================================================================================   
+ %% Predictor Line Monitoring and Area Calculations =====================================================
+         
         %% Line Monitoring
         if g.lmon.n_lmon~=0
             lmon(k)
@@ -1559,6 +1593,9 @@ while (kt<=ktmax)
             calcAreaVals(k,1);
         end
         
+ %% =====================================================================================================   
+ %% Start of Network Solution 2 =========================================================================
+ 
         %% Flag = 1
         % begining of solutions as j (i.e. Corrector step)
         flag = 1;
@@ -1578,7 +1615,7 @@ while (kt<=ktmax)
         dc_cont(0,j,10*(j-1)+1,g.bus.bus_sim,flag);
         
         % Calculate current injections and bus voltages and angles
-        if j >= sum(k_inc(1:3))+1
+        if j >= sum(g.k.k_inc(1:3))+1
             % fault cleared
             g.bus.bus_sim = g.bus.bus_pf2;
             g.bus.bus_int = g.bus.bus_intpf2;
@@ -1592,7 +1629,7 @@ while (kt<=ktmax)
             bo = g.int.bopf2;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif j >=sum(k_inc(1:2))+1
+        elseif j >=sum(g.k.k_inc(1:2))+1
             % near bus cleared
             g.bus.bus_sim = g.bus.bus_pf1;
             g.bus.bus_int = g.bus.bus_intpf1;
@@ -1606,7 +1643,7 @@ while (kt<=ktmax)
             bo = g.int.bopf1;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif j>=k_inc(1)+1
+        elseif j>=g.k.k_inc(1)+1
             % fault applied
             g.bus.bus_sim = g.bus.bus_f;
             g.bus.bus_int = g.bus.bus_intf;
@@ -1620,7 +1657,7 @@ while (kt<=ktmax)
             bo = g.int.bof;
             %h_sol = i_simu(j,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif j<k_inc(1)+1  % JHC - DKF thinks k should be j.
+        elseif j<g.k.k_inc(1)+1  % JHC - DKF thinks k should be j.
             % Changed to j - thad 07/17/20
             % Though, since this is prefault - it should be handled by
             % previous elseif statements to handle the single corrector
@@ -1641,8 +1678,8 @@ while (kt<=ktmax)
         end
         
         % apply gen trip - copied from v2.3 - 06/01/20 - thad
-        if sum(mac_trip_flags)>0.5
-            genBuses = g.mac.mac_con(mac_trip_flags==1,2);
+        if sum(g.mac.mac_trip_flags)>0.5
+            genBuses = g.mac.mac_con(g.mac.mac_trip_flags==1,2);
             for kB=1:length(genBuses)
                 nL = find(genBuses(kB)==g.line.line_sim(:,1) | genBuses(kB)==g.line.line_sim(:,2));
                 if isempty(nL)
@@ -1655,10 +1692,12 @@ while (kt<=ktmax)
         end
         
         %% solve
-        h_sol = i_simu(j,ks,k_inc,h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        g.k.h_sol = i_simu(j,g.k.ks,g.k.k_inc,g.k.h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
+        % only in step 2...
         g.mac.vex(:,j) = g.mac.vex(:,k);
         g.dc.cur_ord(:,j) = g.dc.cur_ord(:,k);
+        
         % calculate the new value of bus angles rectifier user defined control
         if g.dc.ndcr_ud~=0
             tot_states=0;
@@ -1744,10 +1783,17 @@ while (kt<=ktmax)
             end
         end
         
+ %% =====================================================================================================   
+ %% Start of Dynamic Solution 2 =========================================================================
+ 
         %% Flag = 2, for 'corrector step' d's
         flag = 2;
+        
+        mpm_sig(j); % added for consistancy between steps
+        
         mac_ind(0,j,g.bus.bus_sim,flag);
         mac_igen(0,j,g.bus.bus_sim,flag);
+        
         mac_sub(0,j,g.bus.bus_sim,flag);
         mac_tra(0,j,g.bus.bus_sim,flag);
         mac_em(0,j,g.bus.bus_sim,flag);
@@ -1766,6 +1812,7 @@ while (kt<=ktmax)
         if g.agc.n_agc ~= 0
             agc(j,flag); % perform calculations
         end
+        
         tg(0,j,flag);
         tg_hydro(0,j,g.bus.bus_sim,flag);
         
@@ -1894,9 +1941,12 @@ while (kt<=ktmax)
         end
         % end copied from...
         
+ %% =====================================================================================================   
+ %% Start of DC Solution 2 ==============================================================================
+                 
         %%integrate dc at ten times rate (DC Solution)
         if g.dc.n_conv~=0
-            hdc_sol = h_sol/10;
+            hdc_sol = g.k.h_sol/10;
             for kk = 1:10
                 jdc=10*(j-1)+kk;
                 [g.dc.xdcr_dc(:,jdc:jdc+1),g.dc.dxdcr_dc(:,jdc:jdc+1),g.dc.xdci_dc(:,jdc:jdc+1),g.dc.dxdci_dc(:,jdc:jdc+1)] = ...
@@ -1907,108 +1957,114 @@ while (kt<=ktmax)
             dc_line(0, j, j, g.bus.bus_sim, 2);
         end
         
+ %% =====================================================================================================   
+ %% Start of Corrector Integration ======================================================================
+ 
         %% following statements are corrector steps (RK2 computation)
-        g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*(g.mac.dmac_ang(:,k)+g.mac.dmac_ang(:,j))/2.;
-        g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + h_sol*(g.mac.dmac_spd(:,k)+g.mac.dmac_spd(:,j))/2.;
-        g.mac.edprime(:,j) = g.mac.edprime(:,k) + h_sol*(g.mac.dedprime(:,k)+g.mac.dedprime(:,j))/2.;
-        g.mac.eqprime(:,j) = g.mac.eqprime(:,k) + h_sol*(g.mac.deqprime(:,k)+g.mac.deqprime(:,j))/2.;
-        g.mac.psikd(:,j) = g.mac.psikd(:,k) + h_sol*(g.mac.dpsikd(:,k)+g.mac.dpsikd(:,j))/2.;
-        g.mac.psikq(:,j) = g.mac.psikq(:,k) + h_sol*(g.mac.dpsikq(:,k)+g.mac.dpsikq(:,j))/2.;
+        g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + g.k.h_sol*(g.mac.dmac_ang(:,k)+g.mac.dmac_ang(:,j))/2.;
+        g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + g.k.h_sol*(g.mac.dmac_spd(:,k)+g.mac.dmac_spd(:,j))/2.;
+        g.mac.edprime(:,j) = g.mac.edprime(:,k) + g.k.h_sol*(g.mac.dedprime(:,k)+g.mac.dedprime(:,j))/2.;
+        g.mac.eqprime(:,j) = g.mac.eqprime(:,k) + g.k.h_sol*(g.mac.deqprime(:,k)+g.mac.deqprime(:,j))/2.;
+        g.mac.psikd(:,j) = g.mac.psikd(:,k) + g.k.h_sol*(g.mac.dpsikd(:,k)+g.mac.dpsikd(:,j))/2.;
+        g.mac.psikq(:,j) = g.mac.psikq(:,k) + g.k.h_sol*(g.mac.dpsikq(:,k)+g.mac.dpsikq(:,j))/2.;
         
         % exciter integration
-        g.exc.Efd(:,j) = g.exc.Efd(:,k) + h_sol*(g.exc.dEfd(:,k)+g.exc.dEfd(:,j))/2.;
-        g.exc.V_R(:,j) = g.exc.V_R(:,k) + h_sol*(g.exc.dV_R(:,k)+g.exc.dV_R(:,j))/2.;
-        g.exc.V_As(:,j) = g.exc.V_As(:,k) + h_sol*(g.exc.dV_As(:,k)+g.exc.dV_As(:,j))/2.;
-        g.exc.R_f(:,j) = g.exc.R_f(:,k) + h_sol*(g.exc.dR_f(:,k)+g.exc.dR_f(:,j))/2.;
-        g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + h_sol*(g.exc.dV_TR(:,k)+g.exc.dV_TR(:,j))/2.;
+        g.exc.Efd(:,j) = g.exc.Efd(:,k) + g.k.h_sol*(g.exc.dEfd(:,k)+g.exc.dEfd(:,j))/2.;
+        g.exc.V_R(:,j) = g.exc.V_R(:,k) + g.k.h_sol*(g.exc.dV_R(:,k)+g.exc.dV_R(:,j))/2.;
+        g.exc.V_As(:,j) = g.exc.V_As(:,k) + g.k.h_sol*(g.exc.dV_As(:,k)+g.exc.dV_As(:,j))/2.;
+        g.exc.R_f(:,j) = g.exc.R_f(:,k) + g.k.h_sol*(g.exc.dR_f(:,k)+g.exc.dR_f(:,j))/2.;
+        g.exc.V_TR(:,j) = g.exc.V_TR(:,k) + g.k.h_sol*(g.exc.dV_TR(:,k)+g.exc.dV_TR(:,j))/2.;
         
         % removed extra 1 in global names. - thad 07/06/20
         if n_dpw ~= 0
             % only calculate if dpw filter is used
-            sdpw1(:,j) = sdpw1(:,k) +h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
-            sdpw2(:,j) = sdpw2(:,k) +h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
-            sdpw3(:,j) = sdpw3(:,k) +h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
-            sdpw4(:,j) = sdpw4(:,k) +h_sol*(dsdpw4(:,k)+dsdpw4(:,j))/2.;
-            sdpw5(:,j) = sdpw5(:,k) +h_sol*(dsdpw5(:,k)+dsdpw5(:,j))/2.;
-            sdpw6(:,j) = sdpw6(:,k) +h_sol*(dsdpw6(:,k)+dsdpw6(:,j))/2.;
+            sdpw1(:,j) = sdpw1(:,k) +g.k.h_sol*(dsdpw1(:,k)+dsdpw1(:,j))/2.;
+            sdpw2(:,j) = sdpw2(:,k) +g.k.h_sol*(dsdpw2(:,k)+dsdpw2(:,j))/2.;
+            sdpw3(:,j) = sdpw3(:,k) +g.k.h_sol*(dsdpw3(:,k)+dsdpw3(:,j))/2.;
+            sdpw4(:,j) = sdpw4(:,k) +g.k.h_sol*(dsdpw4(:,k)+dsdpw4(:,j))/2.;
+            sdpw5(:,j) = sdpw5(:,k) +g.k.h_sol*(dsdpw5(:,k)+dsdpw5(:,j))/2.;
+            sdpw6(:,j) = sdpw6(:,k) +g.k.h_sol*(dsdpw6(:,k)+dsdpw6(:,j))/2.;
         end
         
-        g.pss.pss1(:,j) = g.pss.pss1(:,k) +h_sol*(g.pss.dpss1(:,k)+g.pss.dpss1(:,j))/2.;
-        g.pss.pss2(:,j) = g.pss.pss2(:,k) +h_sol*(g.pss.dpss2(:,k)+g.pss.dpss2(:,j))/2.;
-        g.pss.pss3(:,j) = g.pss.pss3(:,k) +h_sol*(g.pss.dpss3(:,k)+g.pss.dpss3(:,j))/2.;
+        g.pss.pss1(:,j) = g.pss.pss1(:,k) +g.k.h_sol*(g.pss.dpss1(:,k)+g.pss.dpss1(:,j))/2.;
+        g.pss.pss2(:,j) = g.pss.pss2(:,k) +g.k.h_sol*(g.pss.dpss2(:,k)+g.pss.dpss2(:,j))/2.;
+        g.pss.pss3(:,j) = g.pss.pss3(:,k) +g.k.h_sol*(g.pss.dpss3(:,k)+g.pss.dpss3(:,j))/2.;
         
         % modified to g
-        g.tg.tg1(:,j) = g.tg.tg1(:,k) + h_sol*(g.tg.dtg1(:,k) + g.tg.dtg1(:,j))/2.;
-        g.tg.tg2(:,j) = g.tg.tg2(:,k) + h_sol*(g.tg.dtg2(:,k) + g.tg.dtg2(:,j))/2.;
-        g.tg.tg3(:,j) = g.tg.tg3(:,k) + h_sol*(g.tg.dtg3(:,k) + g.tg.dtg3(:,j))/2.;
-        g.tg.tg4(:,j) = g.tg.tg4(:,k) + h_sol*(g.tg.dtg4(:,k) + g.tg.dtg4(:,j))/2.;
-        g.tg.tg5(:,j) = g.tg.tg5(:,k) + h_sol*(g.tg.dtg5(:,k) + g.tg.dtg5(:,j))/2.;
+        g.tg.tg1(:,j) = g.tg.tg1(:,k) + g.k.h_sol*(g.tg.dtg1(:,k) + g.tg.dtg1(:,j))/2.;
+        g.tg.tg2(:,j) = g.tg.tg2(:,k) + g.k.h_sol*(g.tg.dtg2(:,k) + g.tg.dtg2(:,j))/2.;
+        g.tg.tg3(:,j) = g.tg.tg3(:,k) + g.k.h_sol*(g.tg.dtg3(:,k) + g.tg.dtg3(:,j))/2.;
+        g.tg.tg4(:,j) = g.tg.tg4(:,k) + g.k.h_sol*(g.tg.dtg4(:,k) + g.tg.dtg4(:,j))/2.;
+        g.tg.tg5(:,j) = g.tg.tg5(:,k) + g.k.h_sol*(g.tg.dtg5(:,k) + g.tg.dtg5(:,j))/2.;
         
         % induction motor integrations
         if g.ind.n_mot ~= 0
-            g.ind.vdp(:,j) = g.ind.vdp(:,k) + h_sol*(g.ind.dvdp(:,j) + g.ind.dvdp(:,k))/2.;
-            g.ind.vqp(:,j) = g.ind.vqp(:,k) + h_sol*(g.ind.dvqp(:,j) + g.ind.dvqp(:,k))/2.;
-            g.ind.slip(:,j) = g.ind.slip(:,k) + h_sol*(g.ind.dslip(:,j) + g.ind.dslip(:,k))/2.;
+            g.ind.vdp(:,j) = g.ind.vdp(:,k) + g.k.h_sol*(g.ind.dvdp(:,j) + g.ind.dvdp(:,k))/2.;
+            g.ind.vqp(:,j) = g.ind.vqp(:,k) + g.k.h_sol*(g.ind.dvqp(:,j) + g.ind.dvqp(:,k))/2.;
+            g.ind.slip(:,j) = g.ind.slip(:,k) + g.k.h_sol*(g.ind.dslip(:,j) + g.ind.dslip(:,k))/2.;
         end
         
         % induction generator integrations
         if g.igen.n_ig ~=0
-            g.igen.vdpig(:,j) = g.igen.vdpig(:,k) + h_sol*(g.igen.dvdpig(:,j) + g.igen.dvdpig(:,k))/2.;
-            g.igen.vqpig(:,j) = g.igen.vqpig(:,k) + h_sol*(g.igen.dvqpig(:,j) + g.igen.dvqpig(:,k))/2.;
-            g.igen.slig(:,j) = g.igen.slig(:,k) + h_sol*(g.igen.dslig(:,j) + g.igen.dslig(:,k))/2.;
+            g.igen.vdpig(:,j) = g.igen.vdpig(:,k) + g.k.h_sol*(g.igen.dvdpig(:,j) + g.igen.dvdpig(:,k))/2.;
+            g.igen.vqpig(:,j) = g.igen.vqpig(:,k) + g.k.h_sol*(g.igen.dvqpig(:,j) + g.igen.dvqpig(:,k))/2.;
+            g.igen.slig(:,j) = g.igen.slig(:,k) + g.k.h_sol*(g.igen.dslig(:,j) + g.igen.dslig(:,k))/2.;
         end
         
         % svc
         if g.svc.n_svc ~= 0
-            g.svc.B_cv(:,j) = g.svc.B_cv(:,k) + h_sol*(g.svc.dB_cv(:,j) + g.svc.dB_cv(:,k))/2.;
-            g.svc.B_con(:,j) = g.svc.B_con(:,k) + h_sol*(g.svc.dB_con(:,j) + g.svc.dB_con(:,k))/2.;
-            g.svc.xsvc_dc(:,j) = g.svc.xsvc_dc(:,k) + h_sol*(g.svc.dxsvc_dc(:,j) + g.svc.dxsvc_dc(:,k))/2.;
+            g.svc.B_cv(:,j) = g.svc.B_cv(:,k) + g.k.h_sol*(g.svc.dB_cv(:,j) + g.svc.dB_cv(:,k))/2.;
+            g.svc.B_con(:,j) = g.svc.B_con(:,k) + g.k.h_sol*(g.svc.dB_con(:,j) + g.svc.dB_con(:,k))/2.;
+            g.svc.xsvc_dc(:,j) = g.svc.xsvc_dc(:,k) + g.k.h_sol*(g.svc.dxsvc_dc(:,j) + g.svc.dxsvc_dc(:,k))/2.;
         end
         
         %tcsc
         if g.tcsc.n_tcsc ~= 0
-            g.tcsc.B_tcsc(:,j) = g.tcsc.B_tcsc(:,k) + h_sol*(g.tcsc.dB_tcsc(:,j) + g.tcsc.dB_tcsc(:,k))/2.;
-            g.tcsc.xtcsc_dc(:,j) = g.tcsc.xtcsc_dc(:,k) + h_sol*(g.tcsc.dxtcsc_dc(:,j) + g.tcsc.dxtcsc_dc(:,k))/2.;
+            g.tcsc.B_tcsc(:,j) = g.tcsc.B_tcsc(:,k) + g.k.h_sol*(g.tcsc.dB_tcsc(:,j) + g.tcsc.dB_tcsc(:,k))/2.;
+            g.tcsc.xtcsc_dc(:,j) = g.tcsc.xtcsc_dc(:,k) + g.k.h_sol*(g.tcsc.dxtcsc_dc(:,j) + g.tcsc.dxtcsc_dc(:,k))/2.;
         end
         
         if g.lmod.n_lmod~=0
-            g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
+            g.lmod.lmod_st(:,j) = g.lmod.lmod_st(:,k) + g.k.h_sol*(g.lmod.dlmod_st(:,j) + g.lmod.dlmod_st(:,k))/2.; % modified line with g
         end
         if g.rlmod.n_rlmod~=0
-            g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
+            g.rlmod.rlmod_st(:,j) = g.rlmod.rlmod_st(:,k) + g.k.h_sol*(g.rlmod.drlmod_st(:,j) + g.rlmod.drlmod_st(:,k))/2.;
         end
         
         % Copied from v2.3 - 06/01/20 - thad
-        g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*(g.pwr.dpwrmod_p_st(:,j) + g.pwr.dpwrmod_p_st(:,k))/2;
-        g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*(g.pwr.dpwrmod_q_st(:,j) + g.pwr.dpwrmod_q_st(:,k))/2;
+        g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+g.k.h_sol*(g.pwr.dpwrmod_p_st(:,j) + g.pwr.dpwrmod_p_st(:,k))/2;
+        g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+g.k.h_sol*(g.pwr.dpwrmod_q_st(:,j) + g.pwr.dpwrmod_q_st(:,k))/2;
         if g.pwr.n_pwrmod~=0
             for index=1:g.pwr.n_pwrmod
                 % make global? -thad 07/06/20
-                pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*(dpwrmod_p_sigst{index}(:,j) + dpwrmod_p_sigst{index}(:,k))/2;
-                pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*(dpwrmod_q_sigst{index}(:,j) + dpwrmod_q_sigst{index}(:,k))/2;
+                pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+g.k.h_sol*(dpwrmod_p_sigst{index}(:,j) + dpwrmod_p_sigst{index}(:,k))/2;
+                pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+g.k.h_sol*(dpwrmod_q_sigst{index}(:,j) + dpwrmod_q_sigst{index}(:,k))/2;
             end
         end
         
         if n_ivm~=0
             for index=1:n_ivm
                 % make global? -thad 07/06/20
-                ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
-                ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
+                ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+g.k.h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
+                ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+g.k.h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
             end
         end
         
         %% agc corrector integration
         if g.agc.n_agc ~=0
             for ndx = 1:g.agc.n_agc
-                g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + h_sol*(g.agc.agc(ndx).d_sace(j)+g.agc.agc(ndx).d_sace(k))/2;
+                g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + g.k.h_sol*(g.agc.agc(ndx).d_sace(j)+g.agc.agc(ndx).d_sace(k))/2;
                 
                 % integrate lowpass filter outs...
                 for gndx=1:g.agc.agc(ndx).n_ctrlGen
                     g.agc.agc(ndx).ctrlGen(gndx).x(j) = g.agc.agc(ndx).ctrlGen(gndx).x(k)...
-                        + h_sol *(g.agc.agc(ndx).ctrlGen(gndx).dx(j)+  g.agc.agc(ndx).ctrlGen(gndx).dx(k))/2  ;
+                        + g.k.h_sol *(g.agc.agc(ndx).ctrlGen(gndx).dx(j)+  g.agc.agc(ndx).ctrlGen(gndx).dx(k))/2  ;
                 end
             end
         end
+        
+ %% =====================================================================================================   
+ %% Corrector Line Monitoring and Area Calculations =====================================================  
         
         %% Line Monitoring
         if g.lmon.n_lmon~=0
@@ -2022,15 +2078,19 @@ while (kt<=ktmax)
             calcAreaVals(j,1);
         end
         
+ %% =====================================================================================================   
+ %% end  of j step calculations =========================================================================
+         
         %% Live plot call
         if g.sys.livePlotFlag
             livePlot(k)
         end
         
-    end
+
+    end % end of k= k_start:k_end;
     % counter increment
-    kt = kt + k_inc(ks);
-    ks = ks+1;
+    kt = kt + g.k.k_inc(g.k.ks);
+    g.k.ks = g.k.ks+1;
 end% end simulation loop
 
 %% Final 'live' plot call

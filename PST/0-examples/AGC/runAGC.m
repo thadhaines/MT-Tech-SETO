@@ -23,6 +23,8 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
+addpath([PSTpath, 'test', filesep]) % to handle new functionized code
+
 save PSTpath.mat PSTpath pstVer useGlobalG
 clear folderDepth pathParts pNdx PSTpath
 
@@ -46,7 +48,8 @@ end
 copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % use updated model
 copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use version 2 pss
 
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+% s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
 
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % reset modulation file
 copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot

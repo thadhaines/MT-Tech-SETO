@@ -28,6 +28,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
+addpath([PSTpath, 'test', filesep]) % to handle new functionized code
 save PSTpath.mat PSTpath pstVer useGlobalG
 clear folderDepth pathParts pNdx PSTpath
 
@@ -44,7 +45,8 @@ else
     copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 end
 
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+% s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
 
 % % reset modulation file
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']);
