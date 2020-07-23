@@ -132,7 +132,7 @@ if f_type < 4
     g.bus.bus_pf1(max_pf1b,1) = new_bus; % fault bus number
     g.bus.bus_pf1(max_pf1b,2) = 1.0;
     g.bus.bus_pf1(max_pf1b,3:7)=zeros(1,5);
-    g.bus.bus_pf1(max_pf1b,9) = g.bus.bus_f(bus_idx(1),9); % B
+    g.bus.bus_pf1(max_pf1b,9) = g.bus.bus_f(g.bus.bus_idx(1),9); % B
     g.bus.bus_pf1(max_pf1b,10) = 3; % bus type
     
     dlpf1 = length(g.line.line_pf1(:,1))+1; % add new line
