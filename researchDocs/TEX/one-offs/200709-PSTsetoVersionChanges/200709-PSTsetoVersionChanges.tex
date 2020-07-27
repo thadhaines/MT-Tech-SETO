@@ -217,6 +217,9 @@ global  load_con load_pot nload
 \subparagraph{sys}
 \begin{minted}{MATLAB}
 global  basmva basrad syn_ref mach_ref sys_freq
+
+% used for state and derivative handling required in vts simulation
+global fsdn 
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
@@ -459,16 +462,25 @@ ans =
     nextActionTime: 130
 \end{minted}
 
+\pagebreak
 
 %---------------------------------------------------------------------------------------------------
 \subparagraph{k} \ \\
-To allow for functionalized running, various index values were placed into the global
+To allow for functionalized running, various index values were placed into the global structure
 
 \begin{minted}{MATLAB}
 global k_inc h ks h_sol
 golbal k_incdc h_dc
 \end{minted}
 
+%---------------------------------------------------------------------------------------------------
+\subparagraph{vts} \ \\
+Globals associated with variable time step simulation runs were placed in the \verb|g.vts| field.
+
+\begin{minted}{MATLAB}
+global dataN
+global dxVec
+\end{minted}
 
 
 

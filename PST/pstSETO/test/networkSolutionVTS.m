@@ -1,4 +1,4 @@
-function networkSolution(k)
+function networkSolution(k, vts_t)
 %NETWORKSOLUTION Performs the network solution for index k
 % NETWORKSOLUTION Performs the network solution for index k
 %
@@ -15,6 +15,7 @@ function networkSolution(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    11:28   Thad Haines     Version 1
+%   07/27/20    11:09   Thad Haines     Version 1.0.1 - alteration to use vts_t for switching
 
 %% Remaining 'loose' globals
 % ivm variables - 5
@@ -50,7 +51,7 @@ global g
         % ======================================================================
         
         % Calculate current injections and bus voltages and angles
-        if k >= sum(g.k.k_inc(1:3))+1
+        if vts_t >= g.vts.t_block(4,1)% > 3 %k >= sum(g.k.k_inc(1:3))+1
             %% fault cleared - post fault 2
             g.line.line_sim = g.line.line_pf2;
             g.bus.bus_sim = g.bus.bus_pf2;
@@ -69,7 +70,7 @@ global g
             % duplicate call?
             % h_sol calculated after this 'if' block...
             
-        elseif k >=sum(g.k.k_inc(1:2))+1
+        elseif vts_t >= g.vts.t_block(3,1) && vts_t <= g.vts.t_block(3,2) %vts_t >= g.vts.t_block(g.vts.t_blockN,1) %g.vts.t_blockN == 3 %k >=sum(g.k.k_inc(1:2))+1
             %% near bus cleared - post fault 1
             g.line.line_sim = g.line.line_pf1;
             
@@ -86,7 +87,7 @@ global g
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif k>=g.k.k_inc(1)+1
+        elseif vts_t >= g.vts.t_block(2,1) && vts_t <= g.vts.t_block(2,2) %g.vts.t_blockN == 2 %k>=g.k.k_inc(1)+1
             %% fault applied - fault
             g.line.line_sim = g.line.line_f;
             g.bus.bus_sim = g.bus.bus_f;
@@ -103,7 +104,7 @@ global g
             
             %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
             
-        elseif k<g.k.k_inc(1)+1
+        elseif vts_t < g.vts.t_block(2,1) %g.vts.t_blockN == 1 %k<g.k.k_inc(1)+1
             %% pre fault
             g.line.line_sim = g.line.line;
             g.bus.bus_sim = g.bus.bus;
@@ -134,7 +135,7 @@ global g
         end
         
         %% Solve Network solution
-        g.k.h_sol = i_simu(k,g.k.ks,g.k.k_inc,g.k.h,g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+        g.k.h_sol = i_simu(k, g.k.ks, g.k.k_inc, g.k.h, g.bus.bus_sim, Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
         
         % Executed in step 2, added here for consistancy... -thad 07/23/20
         g.mac.vex(:,k+1) = g.mac.vex(:,k);

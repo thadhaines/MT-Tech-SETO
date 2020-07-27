@@ -26,7 +26,8 @@
 		\itemsep0em 
 				\footnotesize
 				\raggedright
-					\item ...
+					\item g.k
+					\item g.vts
 				\end{itemize}
 		\end{multicols}
 		\end{minipage}
@@ -39,7 +40,7 @@
 								\begin{itemize}
 						\itemsep0em 
 								\footnotesize
-						\item Adddc conditional ACE
+						\item Added conditional ACE
 						\item created algorithm block diagram
 									
 								\end{itemize}
@@ -47,7 +48,9 @@
 						\end{minipage}
 		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200720-PSTandAGC/200720-PSTandAGC.pdf}
 				{Updated AGC example documentation}
-		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200709-PSTsetoVersionChanges/200709-PSTsetoVersionChanges.pdf}
+\item Created \verb|handleStDx| function
+\item Created \verb|s_simu_BatchTestF| - a more functionalized	simulation script
+	\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200709-PSTsetoVersionChanges/200709-PSTsetoVersionChanges.pdf}
 		{Updated pst SETO change doc}
 		
 		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
@@ -145,10 +148,10 @@
 \pagebreak
 \paragraph{Loose ends:} % Random stuff that will be left undone...
 	\begin{enumerate}
-		\item \verb|tgh| model not converted for use with global g. (no examples of use could be found)
+		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov could be found)
 		\item In original \verb|s_simu_Batch|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times.
 		\item Constant Power or Current loads seem to require a portion of constant Impedance...?
-		\item PSS design not explored
+		\item PSS design functionality not explored
 		\item No examples of user defined damping controls for SVC of TCSC models
 		\item No examples of delta P omega filter model
 		\item Differences in \verb|mac_ind| between pst 2 and 3. Seem backward compatible - untested.
