@@ -2,8 +2,10 @@
 % Tested as working in all Versions
 % output the same in all versions
 % commented out g.xxx variables required for SETO runs
+% added functionality to test s_simu_BatchTestF
 
 clear all; close all; clc
+case2run = 1; % 1= fault, 2 = load step
 
 %% Add pst path to MATLAB
 % generate relative path generically
@@ -18,53 +20,46 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath pstVer
-clear folderDepth pathParts pNdx PSTpath
+addpath([PSTpath, 'test', filesep]) % to handle new functionized code
 
+% save PSTpath.mat PSTpath pstVer
+% clear folderDepth pathParts pNdx PSTpath
+% 
 %% Run nonlinear simulation and store results
-clear all; close all; clc
-load PSTpath.mat
+% clear all; clc
+% load PSTpath.mat
+
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
+if case2run == 1
+    copyfile('data3Trip.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
+else
 copyfile('data3mIg.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
+copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
+% copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
+end
 
 % move inductive load
 copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
 % move modulation file
-copyfile( 'ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % For global G pstSETO
-% copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 
 
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
+livePlotFlag = 1;
+
+% s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
 
 %reset inductive load file
 copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
 % reset modulation file
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % copy system data file to batch run location
+copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
-
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-    zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-    if zeroTest
-        eval(sprintf('clear %s',vName{1}) ); % clear variable
-        clearedVars{end+1} = vName{1}; % add name to cell for reference
-    end
-    catch ME
-        disp(ME.message)
-        disp(vName)
-    end
-
-end
-clear varNames vName zeroTest
 
 %% Save cleaned output data
 save([pstVer,'INDnonLIN.mat']); %Save simulation outputs
 
+if case2run == 2 % only execute linear sim if load step
 %% PST linear system creation
 clear all; close all;
 
@@ -143,3 +138,4 @@ legend(legNames,'location','best')
 title('Bus Voltage Angle')
 xlabel('Time [sec]')
 ylabel('Angle [PU]')
+end

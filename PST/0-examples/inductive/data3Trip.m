@@ -165,10 +165,11 @@ lmod_con = [ ...
 
 sw_con = [...
 0    0    0    0    0    0    0.005;%sets intitial time step
-%0.1  4    5  0    0    0    0.0025; %apply three phase fault at bus 4, on line 4-5
-0.1  4    5  0    0    6    0.0025; % do nothing
+0.1  4    5  0    0    0    0.0025; %apply three phase fault at bus 4, on line 4-5
+%0.1  4    5  0    0    6    0.0025; % do nothing
 0.15 0    0    0    0    0    0.0025; %clear fault at bus 4
 0.20 0    0    0    0    0    0.0025; %clear remote end
 0.50 0    0    0    0    0    0.005; % increase time step 
 10.0  0    0    0    0    0    0]; % end simulation
+
 

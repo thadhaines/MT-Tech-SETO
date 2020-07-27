@@ -15,6 +15,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
+addpath([PSTpath, 'test', filesep]) % to handle new functionized code
 save PSTpath.mat PSTpath pstVer caseName
 clear folderDepth pathParts pNdx PSTpath
 
@@ -30,9 +31,10 @@ copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % specify machine mo
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
 livePlotFlag = 1;
 
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+% s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
 
-copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % reset pss
+copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % reset pss
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % reset mac_sub
 copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 

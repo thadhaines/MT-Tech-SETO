@@ -1,0 +1,43 @@
+Same PST operation through initialization
+same usage of 'time blocks' for simulation
+
+requires intialization of global data log index = 1
+may require initialization of collected derivative vector...
+(as a global to prevent repreated allocation)
+
+when k=k_Start:k_end,
+instead of stepping through each k, send 'time block' to ode sovler 
+
+To use ODE solver:
+
+create ODE input function to:
+
+    calculate network solution
+    calculate dynamic solution
+    retrun  newest derivatives via handlStDx.
+    (executed each step)
+
+create 'OutputFcn' that handles 3 flag conditions:
+(Called internally by ODE solver)
+
+    Init flag must:
+    log initial conditions
+    y data in y vector -> Globals via handleStDx
+    t(1) data in t vector -> Global time vector
+
+    Step function:
+    increments data index
+    logs solution data (in y vector) via handlStDx
+    log time data (in t variable)
+    Calculate line monitoring values etc...
+    check for live plotting action
+
+    Output function:
+    increment data index
+
+
+Once each 'time block' is processed:
+loop back to assignment of k range using ks.
+call ODE function with next 'time block' range to solve
+
+repeat until simulation over.
