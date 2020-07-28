@@ -12,6 +12,8 @@ To use ODE solver:
 
 create ODE input function to:
 
+    perform initStep... (required?) 
+
     calculate network solution
     calculate dynamic solution
     retrun  newest derivatives via handlStDx.
