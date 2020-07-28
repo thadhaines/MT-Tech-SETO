@@ -22,6 +22,20 @@ global g
 if g.vts.dataN  > 1
     handleStDx(g.vts.dataN - 1, y, 2)
 end
+%% =============================================================================
+%% Line Monitoring and Area Calculations =======================================
+    %% Line Monitoring
+    if g.lmon.n_lmon~=0
+        lmon(g.vts.dataN)
+    end
+    
+    %% Average Frequency Calculation
+    calcAveF(g.vts.dataN,1);
+    
+    %% Area Total Calcvulations
+    if g.area.n_area ~= 0
+        calcAreaVals(g.vts.dataN,1);
+    end
 
 %% =============================================================================
 %% Start initStep action =======================================================

@@ -1,0 +1,66 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Variable Step Size PST Results \\ Compared to Fixed Step PST Results}
+\lhead{Research \\ 7/28/20}
+
+\usepackage{setspace}
+\usepackage{multicol}
+\begin{document}
+\onehalfspacing
+\paragraph{14ms 3 Phase Fault using NE 39 Bus, 10 Machine Benchmark System} \ \\
+System and event
+
+\paragraph{Summary} \ \\
+table stuff
+
+\begin{table}[!ht]
+	\centering
+	\begin{tabular}{@{} L{2cm} 
+	R{2cm} R{4cm}  R{3cm} C{3cm}@{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+Method & 	Number of Steps & 	 Max Step Post Disturbance [ms]	& SS Error Magnitude & Octave compatible\\ \midrule
+Fixed & 14,401 & $\approx$4 & - & *\\
+ODE45 & 2,426 & 30 & $10^{-4}$ & *\\
+ODE23 & 803 & 75 & $10^{-4}$ & * \\
+ODE113 & 1,298 & 75 & $10^{-4}$\\
+ODE15s & 71 & 20,000 & $10^{-8}$ & *\\
+ODE23s & 45 & 20,000 & $10^{-9}$\\
+ODE23t & 72 & $\approx$17,000 & $10^{-9}$\\
+ODE23tb & 49 & 20,000 & $10^{-8}$\\
+		\bottomrule
+	\end{tabular}
+\end{table}
+
+\paragraph{Observations of Note}
+\begin{enumerate}
+\item   ODE45 not compatible - returns 4 solutions per integration step.
+\item ODE 23s requires ~ 200 solutions per step (not useful)
+
+\end{enumerate}
+ejhda
+\pagebreak
+% fixed: 8.1207 seconds total, 1000 steps i.e., 2k network solutions (2 solutions per step)
+%ode113 time: 19.849
+%ode15s time: 25.6757
+%ode23 time: 17.6041
+%ode23t time: 23.178
+%ode23tb time: 26.278
+ 
+\foreach \name in {ode113, ode15s, ode23, ode23t, ode23tb}{
+\subparagraph{\name} \ \\
+\includegraphics[width=\linewidth]{\name comp} \\
+
+\includegraphics[width=\linewidth]{\name steps} 
+\pagebreak
+}% end for each?
+
+\end{document}

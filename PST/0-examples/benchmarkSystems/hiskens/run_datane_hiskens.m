@@ -32,8 +32,8 @@ copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operat
 livePlotFlag = 1;
 
 % s_simu_Batch %Run PST with original format
-% s_simu_BatchTestF %Run PST functionalized test
-s_simu_BatchVTS %Run PST with variable timestep
+s_simu_BatchTestF %Run PST functionalized test
+% s_simu_BatchVTS %Run PST with variable timestep
 
 copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % reset pss
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % reset mac_sub
@@ -41,7 +41,7 @@ copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
 
 %% Save cleaned output data
-save([pstVer, caseName, '.mat']); %Save simulation outputs
+save(['FTS',pstVer, caseName, '.mat']); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')

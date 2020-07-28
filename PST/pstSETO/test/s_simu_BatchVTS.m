@@ -54,6 +54,7 @@
 %   07/21/20    16:20   Thad haines     V 2.0.3 - Added AGC
 %   07/23/20    11:24   Thad Haines     Begining work on functionalization of solution.
 %   07/27/20    09:54   Thad Haines     Begining work on Variable Time step simulation
+%   07/28/20    16:20   Thad Haines     Initial working VTS simulation
 
 %%
 %clear all
@@ -639,7 +640,8 @@ g.mac.mac_trip_states = 0;
 
 %% creation of time blocks
 initTblocks()
-%% defining ODE input function
+
+%% defining ODE input function and integration settings
 inputFcn = str2func('vtsInputFcn');
 outputFcn = str2func('vtsOutputFcn');
 
@@ -659,6 +661,9 @@ warning('*** Simulation Loop Start')
 g.vts.dataN = 1;
 g.vts.iter = 0; % for keeping track of iteration...
 g.vts.tot_iter = 0;
+g.vts.slns = zeros(1, size(g.sys.t,2));
+
+
 for simTblock = 1:size(g.vts.t_block)
     g.vts.t_blockN = simTblock;
     % 15s - slower during transients - faster when no action.
@@ -667,31 +672,38 @@ for simTblock = 1:size(g.vts.t_block)
     % ode23tb - occasionally hundereds of iterations, sometimes not... decent
     % ode23 - similar to 23tb, timstep doesn't get very large
     % ode23t - works...
-    ode15s(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
-    %feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+    %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+    feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
        
 end% end simulation loop
 
-% handle extraneous data index addition
-g.vts.dataN = g.vts.dataN-1;
+% last step solution.
+networkSolution(g.vts.dataN)
+dynamicSolution(g.vts.dataN)
+g.vts.tot_iter = g.vts.tot_iter + 1;
+
+%% =============================================================================
+%% Line Monitoring and Area Calculations =======================================
+%% Line Monitoring
+if g.lmon.n_lmon~=0
+    lmon(g.vts.dataN)
+end
+
+%% Average Frequency Calculation
+calcAveF(g.vts.dataN,1);
+
+%% Area Total Calcvulations
+if g.area.n_area ~= 0
+    calcAreaVals(g.vts.dataN,1);
+end
+
+% trim logged values to length of g.vts.dataN
+trimLogs(g.vts.dataN)   
 
 %% Final 'live' plot call
 if g.sys.livePlotFlag
     livePlot('end')
 end
-
-% Now handled during simulation via lmon - below code can be used to verify functionality
-% %% calculation of line currents post sim
-% V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
-% V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
-% R = g.line.line(:,3);
-% X = g.line.line(:,4);
-% B = g.line.line(:,5);
-% g.dc.tap = g.line.line(:,6);
-% phi = g.line.line(:,7);
-%
-% [ilf,ilt] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);%line currents
-% [sInjF,sInjT] = line_pq(V1,V2,R,X,B,g.dc.tap,phi);% 'line flows' - complex power injection at bus
 
 %% full sim timing
 disp('*** End simulation.')
@@ -702,7 +714,6 @@ disp(['*** Elapsed Simulation Time = ' ets 's'])
 disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
 disp(['*** Total data points = ' int2str(g.vts.dataN)])
 
-%% TODO: trim logged values to length of g.vts.dataN
 
 %% Clean up logged DC variables to length of DC simulated time.
 if ~isempty(g.dc.dcsp_con)
@@ -757,6 +768,8 @@ for vName = varNames
 end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
 clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
+
+
 %%
 disp('*** s_simu_BatchTestF End')
 disp(' ')
