@@ -165,3 +165,4 @@
 *.out
 /PST/0-examples/benchmarkSystems/hiskens/VTSdatane_hiskens.mat
 /PST/0-examples/benchmarkSystems/hiskens/FTSpstSETOdatane_hiskens.mat
+/PST/0-examples/benchmarkSystems/hiskens/VTSpstSETOdatane_hiskens.mat

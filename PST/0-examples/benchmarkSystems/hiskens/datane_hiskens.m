@@ -316,12 +316,12 @@ sw_con = [
 
 % Hiskens event
 ne_tstep = 0.02; % 20 ms, same as Hiskens report
-ne_tstep = 0.001; % for allocating vts arrays....
+%ne_tstep = 0.001; % for allocating vts arrays....
 sw_con = [
   0.00   0    0    0        0       0    ne_tstep;  % sets intitial time step
   0.5   16   17    0.001    0.001 	7    ne_tstep;  % apply three-phase fault at bus 16 with fault impedance
   0.64   0    0    0        0       0    ne_tstep;  % clear fault at bus 16
   0.7    0    0    0        0       0    ne_tstep;  % clear remote end (may do nothing)
- 10.00   0    0    0        0       0    ne_tstep]; % end simulation
+ 20.00   0    0    0        0       0    ne_tstep]; % end simulation
 
 % eof

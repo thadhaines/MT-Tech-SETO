@@ -39,17 +39,16 @@ if isempty(flag) % normal step completion
         livePlot(g.vts.dataN)
     end
     
-    g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
     % after each successful integration step by solver:
+    g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
     g.sys.t(g.vts.dataN) = t; % log step time
     g.vts.stVec = y; % update state vector
     % i.e. call handleStDx to place new solution results into associated globals
     handleStDx(g.vts.dataN, y, 2)
     
-    fprintf('* Data step: %d\t%3.5f\n', g.vts.dataN, t)
-    
-
-    
+    fprintf('* Data step: %6d\tat time:\t%8.4f\tused %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
+    g.vts.tot_iter = g.vts.tot_iter  + g.vts.iter; % count total iterations...
+    g.vts.iter = 0; % reset iteration (solution) counter
     
     %{
     The solver calls myOutputFcn([tspan(1) tspan(end)],y0,'init') before
@@ -62,7 +61,7 @@ elseif flag(1) == 'i' % init solver for time period t
     g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
     g.sys.t(g.vts.dataN) = t(1); % log step time
     handleStDx(g.vts.dataN, y, 2) % log initial conditions
-    %networkSolutionVTS(g.vts.dataN, t(1))
+    
     % debug display
     disp('*** ')
     disp('Flag == init')
@@ -76,11 +75,10 @@ elseif flag(1) == 'd' % time period complete
     % debug display
     disp('*** ')
     disp('Flag == done')
-    fprintf('Last complete data step: %d\t%3.5f\n', g.vts.dataN, t)
+    fprintf('Last complete data step: %d\t%8.4f\n', g.vts.dataN, g.sys.t(g.vts.dataN))
     
     % NOTE: Called after last normal integration step
-    %%% g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
-    %networkSolution(g.vts.dataN)
+    %%%g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
     % included here as init does not increment data index
     % NOTE: extra index must be removed after all simulated times are complete
 end

@@ -232,6 +232,8 @@ end
 
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
+% allocate more time by decreasing sw_con ts...
+g.sys.sw_con(:,7) = g.sys.sw_con(:,7)./20;
 
 %tswitch(1) = g.sys.sw_con(1,1); -unused -thad 07/16/20
 
@@ -655,16 +657,20 @@ handleStDx(1, [], 3) % update g.vts.stVec to initial conditions
 %% Simulation loop start
 warning('*** Simulation Loop Start')
 g.vts.dataN = 1;
-
+g.vts.iter = 0; % for keeping track of iteration...
+g.vts.tot_iter = 0;
 for simTblock = 1:size(g.vts.t_block)
     g.vts.t_blockN = simTblock;
-    % 15s - works well - slower during transients - faster when no action...
+    % 15s - slower during transients - faster when no action.
     % 113 - works well during transierts, slower during no action 
-    ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+    % ode23s - many iterations per step - not very viable
+    % ode23tb - occasionally hundereds of iterations, sometimes not... decent
+    % ode23 - similar to 23tb, timstep doesn't get very large
+    % ode23t - works...
+    ode15s(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
     %feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
        
 end% end simulation loop
-
 
 % handle extraneous data index addition
 g.vts.dataN = g.vts.dataN-1;
@@ -693,6 +699,10 @@ et = toc;
 ets = num2str(et);
 g.sys.ElapsedNonLinearTime = ets;
 disp(['*** Elapsed Simulation Time = ' ets 's'])
+disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
+disp(['*** Total data points = ' int2str(g.vts.dataN)])
+
+%% TODO: trim logged values to length of g.vts.dataN
 
 %% Clean up logged DC variables to length of DC simulated time.
 if ~isempty(g.dc.dcsp_con)

@@ -19,8 +19,8 @@ function [dxVec] = vtsInputFcn(t, y)
 global g
 
 %% call handleStDx with flag==2 to update global states with newest passed in soln..
-if g.vts.dataN > 1
-handleStDx(g.vts.dataN-1, y, 2)
+if g.vts.dataN  > 1
+    handleStDx(g.vts.dataN - 1, y, 2)
 end
 
 %% =============================================================================
@@ -30,19 +30,20 @@ initStep(g.vts.dataN)
 %% =============================================================================
 %% Start of Network Solution ===================================================
 networkSolutionVTS(g.vts.dataN, t)
-fprintf(' solved network....' );
+
 %% =============================================================================
 %% Start Dynamic Solution ======================================================
-dynamicSolution(g.vts.dataN)
+dynamicSolution(g.vts.dataN )
 
 %% =============================================================================
 %% Start of DC solution ========================================================
-dcSolution(g.vts.dataN)
+dcSolution(g.vts.dataN )
 
 %% call handleStDx with flag==1 to update global dxVec
-handleStDx(g.vts.dataN, [], 1) % update g.vts.dxVec (solution vector not needed)
+handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec (solution vector not needed)
 
 dxVec = g.vts.dxVec; % return for ODE fcn requirements
 
+g.vts.iter = g.vts.iter + 1;
 end % end vtsInputFcn
 

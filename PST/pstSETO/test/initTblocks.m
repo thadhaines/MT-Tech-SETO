@@ -15,6 +15,7 @@ function initTblocks
 %   History:
 %   Date        Time    Engineer        Description
 %   07/27/20    11:06   Thad Haines     Version 1
+%   07/28/20    08:55   Thad Haines     Version 1.0.1 - Allowed for time block overlap
 
 global g
 
@@ -22,7 +23,7 @@ g.vts.t_block = zeros(size(g.sys.sw_con,1)-1, 2);
 
 for n = 1:size(g.sys.sw_con,1)-1
     g.vts.t_block(n,1) = g.sys.sw_con(n,1); % start time
-    g.vts.t_block(n,2) = g.sys.sw_con(n+1,1) - g.sys.sw_con(n+1,7); % end time minus timestep
+    g.vts.t_block(n,2) = g.sys.sw_con(n+1,1);% - g.sys.sw_con(n+1,7); % REMOVED end time minus timestep i.e. allow duplicate time points...
 end
 
 g.vts.t_block(end,2) = g.sys.sw_con(end,1); % ensure simulation end time correct
