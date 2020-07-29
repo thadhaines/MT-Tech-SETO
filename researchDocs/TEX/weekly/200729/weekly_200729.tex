@@ -33,6 +33,8 @@
 		\end{minipage}
 		%\item \href{https://github.com/thadhaines/MT-Tech-SETO/tree/master/PST/0-examples/AGC}
 		%{Created AGC example}
+		\item Added Variable time step simulation via standard MATLAB ODE solvers into PST.
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200728-VTScomp1/200728-VTScomp1.pdf}{Documented initial VTS results.}		
 		
 		\item Refined AGC implementation.
 				\begin{minipage}{\linewidth}
@@ -70,7 +72,7 @@
 			\item Continue development of pwrmod / ivmmod models and their implementation in PST.
 			%\item Be aware of multi rate methods % mostly TAMU/Power world
 			\item Decide on PST base version (3.1$\longrightarrow$SETO)
-			\item Plan for variable time step methods
+			\item Explore variable time step methods
 	\end{itemize}
 	
 \paragraph{Current Questions:}
@@ -93,19 +95,20 @@
 \paragraph{Current Tasks:}
 	\begin{enumerate}
 		\itemsep 0em 
-		\item Think about using standard ODE solvers
-				\item Requirements for variable step methods:
-						\begin{minipage}{\linewidth}
-							\begin{itemize}
-								\itemsep0em 
-								\footnotesize
-								\item Functionalized Network solution
-								\item Functionalized Derivative calculation
-								\item Functionalized collection and return of calculated derivatives
-								\item `outputfunction' that handles logging of correct output values and indexing
-								\item updated scheduler to run simulation in `blocks' between known events.
-							\end{itemize}
-						\end{minipage}
+		\item Refine VTS operation (add AGC)
+	%	\item Think about using standard ODE solvers
+	%			\item Requirements for variable step methods:
+	%					\begin{minipage}{\linewidth}
+	%						\begin{itemize}
+	%							\itemsep0em 
+	%							\footnotesize
+	%							\item Functionalized Network solution
+	%							\item Functionalized Derivative calculation
+	%							\item Functionalized collection and return of calculated derivatives
+	%							\item `outputfunction' that handles logging of correct output values and indexing
+	%							\item updated scheduler to run simulation in `blocks' between known events.
+	%						\end{itemize}
+	%					\end{minipage}
 		\item Decisions concerning remaining globals:
 		\begin{minipage}{\linewidth}
 				%\begin{multicols}{2}
@@ -119,7 +122,7 @@
 				\end{minipage}
 	
 		%\item Think about cleaning up or flowcharting svm\_mgen\_Batch
-		\item Update pstSETO flowchart of \verb|s_simu_Batch|
+		\item Create pstSETO flowchart of \verb|s_simu_BatchVTS|
 		%\item Reference Trudnowski code for `structured array, functionalized' approach.
 		%\item Reference Stajcar code for basic transient stability simulation flow.
 		\item Work on understanding PST operation
@@ -133,36 +136,33 @@
 	\begin{enumerate}
 
 		\itemsep 0em 
-		\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category.
-		\item Create new \verb|s_simu_Batch| style script that functionalizes the newtork and dynamic calculations so that standard MATLAB ODE solvers may be used.
+	%	\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category.
+	%	\item Create new \verb|s_simu_Batch| style script that functionalizes the newtork and dynamic calculations so that standard MATLAB ODE solvers may be used.
 		%\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
 	%	This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
 	%	Would enable addition of area definitions to models.
 	%	\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
 	%	Possibly employ \verb|feval| for a more dynamic calculation routine.
 		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
-		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+%		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
 		\item Generate comparison scripts to verify simulated results match after code changes.
+		\item Allow for changing of solver/method during VTS.
 
 	\end{enumerate}
 	
-\pagebreak
+
 \paragraph{Loose ends:} % Random stuff that will be left undone...
 	\begin{enumerate}
-		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov could be found)
+		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov)
 		\item In original \verb|s_simu_Batch|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times.
-		\item Constant Power or Current loads seem to require a portion of constant Impedance...?
+		\item Constant Power or Current loads seem to require a portion of constant Impedance.
 		\item PSS design functionality not explored
-		\item No examples of user defined damping controls for SVC of TCSC models
-		\item No examples of delta P omega filter model
+		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
 		\item Differences in \verb|mac_ind| between pst 2 and 3. Seem backward compatible - untested.
 		\item A tripped generators inertia should be removed from total inertia calculations of average frequency used in the AGC model.
 	\end{enumerate}
 \vfill\null
-\columnbreak
 
-
-\vfill\null
 \end{multicols}
 
 
