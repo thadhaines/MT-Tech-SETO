@@ -7,7 +7,7 @@
 
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
-\chead{Variable Step Size PST Results \\ Compared to Fixed Step PST Results}
+\chead{Variable Time Step PST Results \\ Compared to Fixed Step PST Results}
 \lhead{Research \\ 7/28/20}
 
 \usepackage{setspace}
@@ -15,18 +15,20 @@
 \begin{document}
 \onehalfspacing
 \paragraph{Scenario} \ \\
-A 14 ms 3 Phase Fault in the New England 39 Bus, 10 Machine Benchmark System was simulated using the standard PST fixed time step method (Huen's Method) and five of the standard MATLAB ODE solvers that employ variable time step (VTS) methods.
-The simulation was only 20 seconds to verify transient dynamics could be captured, and confirm if the VTS methods increased the time step in a desirable way.
+A 14 ms three phase fault in the New England 39 bus, 10 machine benchmark system was simulated using PST.
+Results from the standard PST fixed time step method (Huen's Method) and five of the MATLAB variable time step (VTS) ODE solvers were compared.
+The simulation was only 20 seconds to verify transient dynamics could be captured, and confirm VTS methods managed the time step size in a desirable way.
 
 \paragraph{Summary} 
-\begin{itemize}
+\begin{enumerate}
 \item Variable time step (VTS) simulation works in PST.
 \item Bus Voltage and Angle, Machine Speed, Average System Frequency, Exciter Efd, and PSS out dynamics from the VTS simulations seem to match fixed results well.
-\item Some methods do not work (ODE45, ODE23s)
-\item For this relatively short simulation (20 Seconds), all VTS simulations took $\approx$3 times longer than the standard PST fixed method.
-\item The VTS methods rely on tolerances to change the time step (no minimum step size option).
+
+\item All VTS simulations took $\approx$3 times longer and performed more system solutions than the standard PST fixed method.
+\item Most VTS methods took fewer steps, while all methods had a larger maximum time step.
+\item The VTS methods rely on tolerances to vary time step size (no minimum step size option).
 \item Some steps require hundreds of network and dynamic solutions before being accepted.
-\end{itemize}
+\end{enumerate}
 
 
 \begin{table}[!ht]
@@ -39,35 +41,39 @@ The simulation was only 20 seconds to verify transient dynamics could be capture
 		\raggedright % for non justified table text
 
 	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{\shortstack{Solutions\\ Per Step}}			&		&		&		\\	
-Method	&	Max	&	Min	&	Ave	&	Total Steps	&	Ave.	&	Max.	&	Total Slns	&	Sim time	&	Speed Up	\\ \midrule	
-Fixed	&	0.020	&	0.02	&	0.0200	&	1000	&	2	&	2	&	2000	&	8.1207	&	1	\\	
-ODE113	&	0.133	&	5.16E-05	&	0.0148	&	1350	&	2	&	7	&	2937	&	19.849	&	0.409	\\	
-ODE15s	&	0.110	&	1.37E-05	&	0.0276	&	725	&	8	&	382	&	5715	&	25.6757	&	0.316	\\	
-ODE23	&	0.185	&	1.27E-05	&	0.0216	&	925	&	3	&	15	&	3023	&	17.6041	&	0.461	\\	
-ODE23t	&	0.372	&	3.73E-05	&	0.0266	&	753	&	6	&	382	&	4817	&	23.178	&	0.350	\\	
-ODE23tb	&	0.546	&	1.51E-05	&	0.0327	&	612	&	9	&	383	&	5645	&	26.278	&	0.309	\\	\bottomrule
+Method	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. time	&	Speed Up	\\ \midrule	
+Fixed	&	0.020	&	2.00E-02	&	0.0200	&	1000	&	2	&	2	&	2000	&	8.1207	&	1	\\	
+ODE113	&	0.133	&	5.16E-05	&	0.0148	&	1350	&	2	&	7	&	2937	&	19.8490	&	0.41	\\	
+ODE15s	&	0.110	&	1.37E-05	&	0.0276	&	725	&	8	&	382	&	5715	&	25.6757	&	0.32	\\	
+ODE23	&	0.185	&	1.27E-05	&	0.0216	&	925	&	3	&	15	&	3023	&	17.6041	&	0.46	\\	
+ODE23t	&	0.372	&	3.73E-05	&	0.0266	&	753	&	6	&	382	&	4817	&	23.1780	&	0.35	\\	
+ODE23tb	&	0.546	&	1.51E-05	&	0.0327	&	612	&	9	&	383	&	5645	&	26.2780	&	0.31	\\	\bottomrule
 	\end{tabular}
 	}%end resize box
 \end{table}
 
 \paragraph{Observations of Note}
-\begin{enumerate}
+\begin{enumerate}[resume]
+\item The ODE45 method does not work (returns 4 results per integration).\\
+The ODE23s method is very inefficient (hundreds of solution iterations per step).
 %\item   ODE45 not compatible with VTS routine(returns 4 solutions per integration step)
 %\item ODE 23s requires ~ 200 solutions per step (not useful)
-\item A smaller initial step 'may' reduce the number of solutions required at the beginning of 'time blocks'. Alternatively, tolerances may be adjust to further 'tune' simulation operation.
-\item It should be possible to change the solution method and/or ODE solver during simulation.
-\item A longer simulation will probably highlight the benefits of VTS better.
+\item A smaller initial step `may' reduce the number of solutions required at the beginning of `time blocks'. Alternatively, tolerances may be adjusted to further tune simulation operation.
+\item It should be possible to change the solution method and/or ODE solver during simulation.\\ (possibly use a fixed ts or ode113 for transients, and then ode23t for ltd$\ldots$)
+\item A longer simulation may highlight more benefits of VTS.
 
 \end{enumerate}
 
 
 \pagebreak
 % fixed: 8.1207 seconds total, 1000 steps i.e., 2k network solutions (2 solutions per step)
-%ode113 time: 19.849
-%ode15s time: 25.6757
-%ode23 time: 17.6041
-%ode23t time: 23.178
-%ode23tb time: 26.278
+% compareVTSandFTS
+% ode113 time: 19.849
+% ode15s time: 25.6757
+% ode23 time: 17.6041
+% ode23t time: 23.178
+% ode23tb time: 26.278
+% fixed time: 8.1207
  
 \foreach \name in {ode113, ode15s, ode23, ode23t, ode23tb}{
 \subparagraph{\name \ Results} \ \\

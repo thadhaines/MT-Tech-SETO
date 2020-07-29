@@ -14,9 +14,9 @@
 \usepackage{minted}
 \begin{document}
 \onehalfspacing
-\paragraph{Intro} \ \\
+\paragraph{Purpose} \ \\
 The purpose of this document is to record changes of note made to PST over the course of the SETO work that may be worth not forgetting about.
-It should be noted that PST SETO is based on PST version 3.
+It should be noted that PST SETO is based on PST version 3 and not \textbf{all} changes are recorded here.
 
 %===========================================================================================================
 \paragraph{PSS model} \ \\
@@ -108,6 +108,11 @@ The \verb|agc_indx| function creates the required data structures and indices.
 Function that cleans all zero variables from the global g.
 Executed at the end of \verb|s_simu_Batch|.
 Stores cleared variable names in the \verb|clearedVars| cell that is stored in \verb|g.sys|
+
+%---------------------------------------------------------------------------------------------------
+\paragraph{trimLogs} \ \\
+Function that trims all logged values in the global g to a given length \verb|k|.
+Executed near the end of \verb|s_simu_BatchXXX| before cleanZeros.
 
 %---------------------------------------------------------------------------------------------------
 \paragraph{Variable Time Step Simulation} \ \\
@@ -221,9 +226,6 @@ global  load_con load_pot nload
 \subparagraph{sys}
 \begin{minted}{MATLAB}
 global  basmva basrad syn_ref mach_ref sys_freq
-
-% used for state and derivative handling required in vts simulation
-global fsdn 
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
@@ -390,7 +392,7 @@ ans =
              sTo: [1x8751 double]
 \end{minted}
 
-\pagebreak
+
 %---------------------------------------------------------------------------------------------------
 \subparagraph{area} \ \\
 This contains variables for area calculation and operation.
@@ -482,8 +484,16 @@ golbal k_incdc h_dc
 Globals associated with variable time step simulation runs were placed in the \verb|g.vts| field.
 
 \begin{minted}{MATLAB}
-global dataN
-global dxVec
+dataN % used as a the data index for logging values
+fsdn % a cell of fields, states, derivatives, and number of states
+n_states % total system state count
+dxVec % vector used to pass around current dataN derivatives
+stVec % vector used to pass around current dataN states
+t_block % a list of time blocks collected from sw_con
+t_blockN % current time block being executed
+iter % counter to monitor number of solutions per step
+tot_iter % total number of solutions
+slns % a running history of solution iterations
 \end{minted}
 
 

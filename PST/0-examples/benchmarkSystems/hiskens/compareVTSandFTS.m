@@ -1,4 +1,5 @@
-% script to visual compare variable and fixed data....
+% script to visually compare variable and fixed data....
+% note:  a better naming scheme could prevent numerous loads of fixed data...
 
 clear; close all
 printFigs = 0;
@@ -31,7 +32,7 @@ for test=1:length(caseCell);
     
     plot(gv.sys.t(1:gv.vts.dataN), abs(gv.bus.bus_v(busV,1:gv.vts.dataN)),'k','linewidth',1.25)
     hold on
-    plot(g.sys.t,abs(g.bus.bus_v(busV,:)) , 'r--','linewidth',1)
+    plot(g.sys.t,abs(g.bus.bus_v(busV,:)) , 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     title({ ['Bus Voltage Comparison of Bus ',int2str(busV)]})
     ylabel('Voltage [PU]')
@@ -42,7 +43,7 @@ for test=1:length(caseCell);
     subplot(3,2,2)
     plot(gv.sys.t(1:gv.vts.dataN), angle(gv.bus.bus_v(busV,1:gv.vts.dataN)),'k','linewidth',1.25)
     hold on
-    plot(g.sys.t,angle(g.bus.bus_v(busV,:)) , 'r--','linewidth',1)
+    plot(g.sys.t,angle(g.bus.bus_v(busV,:)) , 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     title({ ['Bus Voltage Angle Comparison of Bus ',int2str(busV)]})
     ylabel('Angle [rads]')
@@ -55,7 +56,7 @@ for test=1:length(caseCell);
     
     plot(gv.sys.t, gv.mac.mac_spd(mac,:),'k','linewidth',1.25)
     hold on
-    plot(g.sys.t, g.mac.mac_spd(mac,:), 'r--','linewidth',1)
+    plot(g.sys.t, g.mac.mac_spd(mac,:), 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     title({ ['Machine Speed comparison of Machine ',int2str(mac)]})
     ylabel('Speed [PU]')
@@ -66,7 +67,7 @@ for test=1:length(caseCell);
     subplot(3,2,4)
     plot(gv.sys.t, gv.sys.aveF,'k','linewidth',1.25)
     hold on
-    plot(g.sys.t, g.sys.aveF, 'r--','linewidth',1)
+    plot(g.sys.t, g.sys.aveF, 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     title({ ['Average System Frequency Comparison'];})
     ylabel('Frequency [PU]')
@@ -78,7 +79,7 @@ for test=1:length(caseCell);
     exc = 1;
     plot(gv.sys.t, gv.exc.Efd(exc,:),'k','linewidth',1.25)
     hold on
-    plot(g.sys.t, g.exc.Efd(exc,:), 'r--','linewidth',1)
+    plot(g.sys.t, g.exc.Efd(exc,:), 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     ylabel('Voltage [PU]')
     xlabel('Time [seconds]')
@@ -91,7 +92,7 @@ for test=1:length(caseCell);
     pss = 1;
     plot(gv.sys.t, gv.pss.pss_out(pss,:),'k','linewidth',1.25)
     hold on
-    plot(g.sys.t, g.pss.pss_out(pss,:), 'r--','linewidth',1)
+    plot(g.sys.t, g.pss.pss_out(pss,:), 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     title({ ['PSS Output comparison of PSS ',int2str(mac)];})
     ylabel('Pss Out [PU]')
@@ -124,7 +125,7 @@ for test=1:length(caseCell);
     stairs(gv.sys.t(1:end-1),vts,'k','linewidth',1.25)
     hold on
     grid on
-    stairs(g.sys.t(1:end-1), fts, 'r--','linewidth',1)
+    stairs(g.sys.t(1:end-1), fts, 'm--','linewidth',1)
     
     
     aveSln = mean(vts);
@@ -172,6 +173,7 @@ for test=1:length(caseCell);
         set(gcf,'color','w'); % to remove border of figure
         export_fig([odeN,'steps'],'-pdf'); % to print fig
     end
-    fprintf([odeN,' time: ' gv.sys.ElapsedNonLinearTime],'\n')
+    fprintf('%s time: %s\n', odeN, gv.sys.ElapsedNonLinearTime)
     disp('')
 end
+fprintf('fixed time: %s\n', g.sys.ElapsedNonLinearTime)
