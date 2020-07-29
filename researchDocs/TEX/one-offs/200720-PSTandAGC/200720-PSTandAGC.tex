@@ -110,8 +110,9 @@ The collection of actual running load values may prove more complicated as the b
  \pagebreak
 \paragraph{Line Monitoring} \ \\
 Power flow on a line must be calculated each step as AGC requires actual area interchange for the ACE calculation.
-The previously existing \verb|line_pq| function performed this task, but was not fully implemented into the simulation to allow calculation during execution.
+The previously existing \verb|line_pq| function performed this task, but was not fully incorporated into the simulation to allow calculation during execution.
 This minor oversight has been resolved and the \verb|lmon_con| array is still used to define monitored lines as in previous version of PST.
+It should be noted that areas with AGC automatically track area interchange flows and do not need to be user defined.
 
 \begin{minted}[
 		frame=lines,

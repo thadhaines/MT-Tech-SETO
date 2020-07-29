@@ -18,24 +18,30 @@ function [dxVec] = vtsInputFcn(t, y)
 
 global g
 
-%% call handleStDx with flag==2 to update global states with newest passed in soln..
-if g.vts.dataN  > 1
-    handleStDx(g.vts.dataN - 1, y, 2)
-end
+%% call handleStDx with flag==2 to update global states with newest passed in soln.
+% write slnVec vector of values to associated states at index k+1
+% i.e. update states at g.vts.dataN with newest solution
+% if g.vts.dataN  > 1
+%     handleStDx(g.vts.dataN - 1, y, 2)
+% else
+%     handleStDx(0, y, 2)
+% end
+  handleStDx(g.vts.dataN - 1, y, 2)
+
 %% =============================================================================
 %% Line Monitoring and Area Calculations =======================================
-    %% Line Monitoring
-    if g.lmon.n_lmon~=0
-        lmon(g.vts.dataN)
-    end
-    
-    %% Average Frequency Calculation
-    calcAveF(g.vts.dataN,1);
-    
-    %% Area Total Calcvulations
-    if g.area.n_area ~= 0
-        calcAreaVals(g.vts.dataN,1);
-    end
+%% Line Monitoring
+if g.lmon.n_lmon~=0
+    lmon(g.vts.dataN)
+end
+
+%% Average Frequency Calculation
+calcAveF(g.vts.dataN,1);
+
+%% Area Total Calcvulations
+if g.area.n_area ~= 0
+    calcAreaVals(g.vts.dataN,1);
+end
 
 %% =============================================================================
 %% Start initStep action =======================================================

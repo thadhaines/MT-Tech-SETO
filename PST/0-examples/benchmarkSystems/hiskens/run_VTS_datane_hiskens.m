@@ -38,7 +38,7 @@ livePlotFlag = 1;
 % ode23 - similar to 23tb, timstep doesn't get very large
 % ode23t - works...
 
-odeName = 'ode23t';
+odeName = 'ode23tb';
 
 % s_simu_Batch %Run PST with original format
 % s_simu_BatchTestF %Run PST functionalized test

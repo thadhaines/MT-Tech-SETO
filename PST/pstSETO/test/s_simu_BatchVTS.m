@@ -648,13 +648,13 @@ outputFcn = str2func('vtsOutputFcn');
 % Configure ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-3, 'OutputFcn',outputFcn); % default settings
-options = odeset('RelTol',1e-3,'AbsTol',1e-6, ... %'RelTol',1e-5,'AbsTol',1e-8, ...
+options = odeset('RelTol',1e-3,'AbsTol',1e-5, ... %'RelTol',1e-5,'AbsTol',1e-8, ...
     'InitialStep', 1/60/4, ...
-    'MaxStep',20, ...
+    'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
 
-handleStDx(1, [], 3) % update g.vts.stVec to initial conditions
-
+handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
+handleStDx(1, [], 1) % update g.vts.dxVec to initial conditions of derivatives
 
 %% Simulation loop start
 warning('*** Simulation Loop Start')
@@ -672,6 +672,7 @@ for simTblock = 1:size(g.vts.t_block)
     % ode23tb - occasionally hundereds of iterations, sometimes not... decent
     % ode23 - similar to 23tb, timstep doesn't get very large
     % ode23t - works...
+    
     %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
     feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
        

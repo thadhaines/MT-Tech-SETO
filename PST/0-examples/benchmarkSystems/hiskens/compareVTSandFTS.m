@@ -7,6 +7,8 @@ printFigs = 0;
 caseCell = { 'VTSode113.mat', 'VTSode15s.mat', 'VTSode23.mat', ...
     'VTSode23t.mat', 'VTSode23tb.mat'};
 
+caseCell = { 'VTSode23tb.mat'};
+
 for test=1:length(caseCell);
     
     caseN = caseCell{test};
@@ -121,7 +123,7 @@ for test=1:length(caseCell);
     
     % time step plottings
     figure
-    subplot(2,1,1)
+    subplot(3,1,1)
     stairs(gv.sys.t(1:end-1),vts,'k','linewidth',1.25)
     hold on
     grid on
@@ -153,8 +155,9 @@ for test=1:length(caseCell);
     xlabel('Time [seconds]')
     
     % plot number of solutions
-    subplot(2,1,2)
+    subplot(3,1,2)
     stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
+    %bar(gv.vts.slns,'k','linewidth',1.25)
     
     aveSln = round(mean(gv.vts.slns));
     maxSln = max(gv.vts.slns);
@@ -167,6 +170,17 @@ for test=1:length(caseCell);
     title('Number of Network and Dynamic Solutions')
     xlabel('Time [seconds]')
     ylabel('Number of Solutions')
+    
+    % plot number of solutions detail
+    subplot(3,1,3)
+    stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
+    %bar(gv.vts.slns,'k','linewidth',1.25)
+    ylim([0,aveSln])
+    grid on
+    title('Number of Network and Dynamic Solutions (Detail)')
+    xlabel('Time [seconds]')
+    ylabel('Number of Solutions')
+    
     %% Manipulate size and export
     if printFigs
         set(gcf, 'Position', [1 41 1366 652])
