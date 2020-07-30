@@ -23,35 +23,19 @@ global g
 % i.e. update states at g.vts.dataN with newest solution
   handleStDx(g.vts.dataN, y, 2)
 
-%% =============================================================================
-%% Line Monitoring and Area Calculations =======================================
-%% Line Monitoring
-if g.lmon.n_lmon~=0
-    lmon(g.vts.dataN)
-end
+%% Line Monitoring and Area Calculations ==================================
+monitorSolution(g.vts.dataN);
 
-%% Average Frequency Calculation
-calcAveF(g.vts.dataN,1);
-
-%% Area Total Calcvulations
-if g.area.n_area ~= 0
-    calcAreaVals(g.vts.dataN,1);
-end
-
-%% =============================================================================
-%% Start initStep action =======================================================
+%% Start initStep action ==================================================
 initStep(g.vts.dataN)
 
-%% =============================================================================
-%% Start of Network Solution ===================================================
+%% Start of Network Solution ==============================================
 networkSolutionVTS(g.vts.dataN, t)
 
-%% =============================================================================
-%% Start Dynamic Solution ======================================================
+%% Start Dynamic Solution =================================================
 dynamicSolution(g.vts.dataN )
 
-%% =============================================================================
-%% Start of DC solution ========================================================
+%% Start of DC solution ===================================================
 dcSolution(g.vts.dataN )
 
 %% call handleStDx with flag==1 to update global dxVec
@@ -61,4 +45,3 @@ dxVec = g.vts.dxVec; % return for ODE fcn requirements
 
 g.vts.iter = g.vts.iter + 1;
 end % end vtsInputFcn
-

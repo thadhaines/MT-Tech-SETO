@@ -48,9 +48,8 @@ copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % reset pss
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % reset mac_sub
 copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
-
 %% Save cleaned output data
-save(['VTS',pstVer, caseName, '.mat']); %Save simulation outputs
+% save(['FTS',pstVer, caseName, '.mat']); %Save simulation outputs
 save(['VTS',odeName, '.mat']); %Save simulation outputs
 
 %% temp file clean up

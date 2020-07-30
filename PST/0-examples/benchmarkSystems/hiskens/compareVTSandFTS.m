@@ -7,7 +7,7 @@ printFigs = 0;
 caseCell = { 'VTSode113.mat', 'VTSode15s.mat', 'VTSode23.mat', ...
     'VTSode23t.mat', 'VTSode23tb.mat'};
 
-% caseCell = { 'VTSode23tb.mat'};
+caseCell = { 'VTSode23t.mat'};
 
 for test=1:length(caseCell);
     

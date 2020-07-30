@@ -58,17 +58,12 @@
 %   07/29/20    15:20   Thad Haines     jay -> 1j
 %   07/30/20    08:04   Thad Haines     Re-integrated interactive script running/plotting
 
-%%
-%clear all
-%clear global
-% the above clears were removed to allow for running w/o running DataFile.m 5/20/20
-% assumes required arrays created before this script runs and DataFile is delted/not found
 format compact;
 disp('*** s_simu_BatchVTS Start')
 disp('*** Declare Global Variables')
+
 %% Contents of pst_var copied into this section so that globals highlight
 % globals converted to the global g have been removed
-
 % old method for declaring globals.
 %pst_var % set up global variables (very many)
 
@@ -88,15 +83,19 @@ global ibus_con  netg_con  stab_con
 %% global structured array
 global g
 
-%% place to querry user - assumes all variables up to this point are global...
+%% IF run as a standalone script: querry user 
+% Assumes all variables up to this point are global.
+% A 'clear all' command is the best way to ensure this will run
+
 if all( size(whos('global')) == size(whos()) )
     scriptRunFlag = 1;
+    fprintf('*** Collecting system information from user...\n')
     % input data file
     [fname, pathname]=uigetfile('*.m','Select Data File to load');
     % replace data file in current directory with selected file.
     copyfile([pathname, fname],'DataFile.m'); % copy system data file to batch run location
     % ask for Fbase
-    prompt={'System Frequency Base [Hz]:','System S Base [MW]:'};
+    prompt={'System Frequency Base [Hz]:','System S Base [MW]:' };
     name='Input F and S base values';
     numlines=1;
     defaultanswer={'60','100'};
@@ -107,12 +106,10 @@ if all( size(whos('global')) == size(whos()) )
     Sbase = str2num(answer{2});
     clear fname pathname prompt name numlines defaultanswer answer
 else
-    scriptRunFlag = 'No thanks...';
+    scriptRunFlag = 'No thanks - I like using batch scripts...';
 end
 
-%% input data file from d_*.m file
-% 05/20 Edits - thad
-% Check for Octave, automatically load compatibility script
+%% Check for Octave, automatically load compatibility script
 % Assumes license of Octave will be 'GNU ...'
 dataCheck = license;
 if all(dataCheck(1:3)=='GNU')
@@ -122,8 +119,8 @@ else
     fprintf('*** MATLAB detected.\n')
 end
 clear dataCheck
-%%
-% account for non-existant DataFile (assumes required arrays created other ways...)
+
+%% account for non-existant DataFile
 try
     DataFile %Batch name for data file
 catch ME
@@ -131,15 +128,20 @@ catch ME
     fprintf('*** Continuing with simulation...\n')
 end
 
+% remove copied Data file
+if scriptRunFlag == 1 
+    delete('DataFile.m')
+end
+
 %% run script to handle legacy input to new global g approach
 handleNewGlobals
 
 % check for valid dynamic data file
 if isempty(g.mac.mac_con)
-    error('mac_con is Empty - invalid/incomplete input data.')
+    error('! mac_con is Empty - invalid/incomplete input data!')
 end
 if isempty(g.sys.sw_con)
-    error('sw_con is Empty - simulation has no switching data.')
+    error('! sw_con is Empty - simulation has no switching data!')
 end
 
 %% Allow Fbase and Sbase to be defined in batch runs
@@ -166,8 +168,8 @@ elseif isnumeric(Sbase)
 end
 
 %% other init operations
-tic % set timer
-g.sys.basrad = 2*pi*g.sys.sys_freq; % default system frequency is 60 Hz
+tic % start timer
+g.sys.basrad = 2*pi*g.sys.sys_freq; 
 g.sys.syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = []; % ignore infinite buses in transient simulation
 
@@ -196,7 +198,6 @@ if isempty(g.dc.dcsp_con)
     g.bus.bus = bus_sol;  % solved loadflow solution needed for initialization
     g.line.line = line;
     clear bus_sol line
-    %save sim_fle.mat bus line % no need in batch runs - thad 07/17/20
 else
     % Has HVDC, use DC load flow
     [bus_sol,line,~,rec_par, inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
@@ -206,10 +207,9 @@ else
     g.dc.inv_par = inv_par;
     g.dc.line_par = line_par;
     clear bus_sol line rec_par inv_par line_par
-    %save sim_fle.mat bus line rec_par  inv_par line_par% no need in batch runs - thad 07/17/20
 end
 
-%% set indexes
+%% Set indexes
 % note: dc index set in dc load flow
 mac_indx();
 exc_indx();
@@ -227,7 +227,7 @@ agc_indx;
 
 g.mac.n_pm = g.mac.n_mac; % used for pm modulation -- put into mac or tg indx?
 
-%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q - moved to place after pwrmod is counted (never actually executed prior...) -thad 06/30/20
+%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q 
 if ~isempty(g.pwr.n_pwrmod)
     for kk=1:g.pwr.n_pwrmod
         n = find(g.pwr.pwrmod_con(kk,1)==g.bus.bus(:,1));
@@ -236,13 +236,11 @@ if ~isempty(g.pwr.n_pwrmod)
     clear kk n
 end
 
-%% VTS SPECIFIC: arbitrarilly allocate more space by decreasing sw_con ts.
+%% VTS SPECIFIC: arbitrarilly allocate more space by decreasing sw_con ts col.
 g.sys.sw_con(:,7) = g.sys.sw_con(:,7)./20;
 
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
-
-%tswitch(1) = g.sys.sw_con(1,1); -unused -thad 07/16/20
 
 k = 1;
 kdc = 1;
@@ -297,335 +295,12 @@ t(k) = g.sys.sw_con(n_switch,1);
 g.sys.t = t;
 
 %% =====================================================================================================
-%% Start of Initializing Zeros =========================================================================
+%% Start of Initializing Zeros ============================================
 initZeros(k, kdc)
 
-%% Initialize required VTS globals
-handleStDx(1, 0, 0) % init
-
 %% =====================================================================================================
-%% Start Initialization ================================================================================
-
-%% step 1: construct reduced Y matrices
-warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
-disp('constructing reduced y matrices')
-disp('initializing motor,induction generator, svc and dc control models')
-
-g.bus.bus = mac_ind(0,1,g.bus.bus,0);% initialize induction motor
-g.bus.bus = mac_igen(0,1,g.bus.bus,0); % initialize induction generator
-g.bus.bus = svc(0,1,g.bus.bus,0);%initialize svc
-dc_cont(0,1,1,g.bus.bus,0);% initialize dc controls
-% this has to be done before red_ybus is used since the motor and svc
-% initialization alters the bus matrix and dc parameters are required
-
-y_switch % calculates the reduced y matrices for the different switching conditions
-
-disp('initializing other models...')
-
-%% step 2: initialization
-n_bus = length(g.bus.bus(:,1));
-g.bus.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
-g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(1j*g.bus.theta(1:n_bus,1)); %complex bus voltage
-
-% clear temp variables
-clear z zdc zdcl ze zig zm t n_bus
-
-if g.svc.n_dcud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-    %% calculate the initial magnitude of line current for svc damping controls
-    for j=1:g.svc.n_dcud
-        l_num = g.svc.svc_dc{j,3};
-        svc_num = g.svc.svc_dc{j,2};
-        from_bus = g.bus.bus_int(g.line.line(l_num,1));
-        to_bus = g.bus.bus_int(g.line.line(l_num,2));
-        svc_bn = g.bus.bus_int(g.svc.svc_con(svc_num,2));
-        
-        if svc_bn~= from_bus&& svc_bn  ~= to_bus
-            error('the svc is not at the end of the specified line');
-        end
-        
-        V1 = g.bus.bus_v(from_bus,1);
-        V2 = g.bus.bus_v(to_bus,1);
-        R = g.line.line(l_num,3);
-        X = g.line.line(l_num,4);
-        B = g.line.line(l_num,5);
-        g.dc.tap = line(l_num,6);
-        phi = g.line.line(l_num,7);
-        [l_if,l_it] = line_cur(V1,V2,R,X,B,g.dc.tap,phi);
-        l_if0(j)=l_if;
-        l_it0(j)=l_it;
-        
-        if svc_bn == from_bus
-            d_sig(j,1) = abs(l_if);
-        elseif svc_bn == to_bus
-            d_sig(j,1) = abs(l_it);
-        end
-    end
-    clear j
-end
-
-if g.tcsc.n_tcscud ~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-    %% calculate the initial magnitude of bus voltage magnitude for tcsc damping controls
-    for j=1:g.tcsc.n_tcscud
-        b_num = g.tcsc.tcsc_dc{j,3};
-        tcsc_num = g.tcsc.tcsc_dc{j,2};
-        g.tcsc.td_sig(j,1) =abs(g.bus.bus_v(g.bus.bus_int(b_num),1));
-    end
-    clear j
-end
-
-if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-    %% change dc buses from LT to HT
-    Pr = g.bus.bus(g.dc.rec_ac_bus,6);
-    Pi = g.bus.bus(g.dc.inv_ac_bus,6);
-    Qr = g.bus.bus(g.dc.rec_ac_bus,7);
-    Qi = g.bus.bus(g.dc.inv_ac_bus,7);
-    VLT= g.bus.bus_v(g.dc.ac_bus,1);
-    i_acr = (Pr-1j*Qr)./conj(VLT(g.dc.r_idx));
-    i_aci = (Pi - 1j*Qi)./conj(VLT(g.dc.i_idx));
-    IHT(g.dc.r_idx,1)=i_acr;
-    IHT(g.dc.i_idx,1)=i_aci;
-    g.dc.VHT(g.dc.r_idx,1) = (VLT(g.dc.r_idx) + 1j*g.dc.dcc_pot(:,2).*i_acr);
-    g.dc.VHT(g.dc.i_idx,1) = (VLT(g.dc.i_idx) + 1j*g.dc.dcc_pot(:,4).*i_aci);
-    g.bus.bus_v(g.dc.ac_bus,1) = g.dc.VHT;
-    g.bus.theta(g.dc.ac_bus,1) = angle(g.bus.bus_v(g.dc.ac_bus,1));
-    % modify the bus matrix to the HT buses
-    g.bus.bus(g.dc.ac_bus,2) = abs(g.bus.bus_v(g.dc.ac_bus,1));
-    g.bus.bus(g.dc.ac_bus,3) = g.bus.theta(g.dc.ac_bus,1)*180/pi;
-    SHT = g.dc.VHT.*conj(IHT);
-    g.bus.bus(g.dc.ac_bus,6) = real(SHT);
-    g.bus.bus(g.dc.ac_bus,7) = imag(SHT);
-    
-    if g.dc.ndcr_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-        % calculate the initial value of bus angles rectifier user defined control
-        for j = 1:g.dc.ndcr_ud
-            b_num1 = g.dc.dcr_dc{j,3};
-            b_num2 = g.dc.dcr_dc{j,4};
-            conv_num = g.dc.dcr_dc{j,2};
-            g.dc.angdcr(j,:) = g.bus.theta(g.bus.bus_int(b_num1),1)-g.bus.theta(g.bus.bus_int(b_num2),1);
-            g.dc.dcrd_sig(j,:)=g.dc.angdcr(j,:);
-        end
-        clear j
-    end
-    if g.dc.ndci_ud~=0 % Seems like this should be put in a seperate script - thad 06/08/20
-        % calculate the initial value of bus angles inverter user defined control
-        for j = 1:g.dc.ndci_ud
-            b_num1 = g.dc.dci_dc{j,3};
-            b_num2 = g.dc.dci_dc{j,4};
-            conv_num = g.dc.dci_dc{j,2};
-            g.dc.angdci(j,:) = g.bus.theta(g.bus.bus_int(b_num1),1)-g.bus.theta(g.bus.bus_int(b_num2),1);
-            g.dc.dcid_sig(j,:) = g.dc.angdci(j,:);
-        end
-        clear j
-    end
-end
-
-
-%% Flag = 0 == Initialization
-warning('*** Dynamic model initialization via functions/scripts:')
-flag = 0;
-g.bus.bus_int = g.bus.bus_intprf;% pre-fault system
-
-disp('generators')
-mac_sub(0,1,g.bus.bus,flag); % first
-mac_tra(0,1,g.bus.bus,flag);
-mac_em(0,1,g.bus.bus,flag);
-mac_ivm(0,1,g.bus.bus,flag); % ivm - thad 06/01/20
-
-disp('generator controls')
-dpwf(0,1,flag);
-pss(0,1,flag);
-
-% exciters
-smpexc(0,1,flag);
-smppi(0,1,flag);
-exc_st3(0,1,flag);
-exc_dc12(0,1,flag);
-
-tg(0,1,flag); % modified 06/05/20 to global g
-tg_hydro(0,1,g.bus.bus,flag);
-
-%% initialize ivm modulation control - added from v2.3 06/01/20 - thad
-% Seems like this should be put in a seperate script - thad 06/08/20
-if n_ivm~=0
-    disp('ivm modulation')
-    [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],g.bus.bus,g.sys.t,1,flag);
-    
-    if (~iscell(Dini) || ~iscell(Eini))
-        error('Error in ivmmod_dyn, initial states must be cells');
-    end
-    if (any(size(Dini)-[n_ivm 1]) || any(size(Eini)-[n_ivm 1]))
-        error('Dimension error in ivmmod_dyn');
-    end
-    
-    ivmmod_d_sigst = cell(n_ivm,1);
-    ivmmod_e_sigst = ivmmod_d_sigst;
-    divmmod_d_sigst = ivmmod_d_sigst;
-    divmmod_e_sigst = ivmmod_d_sigst;
-    
-    for index=1:n_ivm
-        if ((size(Dini{index},2)~=1) || (size(Eini{index},2)~=1))
-            error('Dimension error in ivmmod_dyn');
-        end
-        divmmod_d_sigst{index} = zeros(size(Dini{index},1),k);
-        ivmmod_d_sigst{index} = Dini{index}*ones(1,k);
-        divmmod_e_sigst{index} = zeros(size(Eini{index},1),k);
-        ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
-    end
-    clear index Dini Eini
-end
-
-%% initialize svc damping controls
-% Seems like this should be put in a seperate script - thad 06/08/20
-if g.svc.n_dcud~=0
-    disp('svc damping controls')
-    tot_states=0;
-    for i = 1:g.svc.n_dcud
-        ysvcmx = g.svc.svc_dc{i,4};
-        ysvcmn = g.svc.svc_dc{i,5};
-        svc_num = g.svc.svc_dc{i,2};
-        st_state = tot_states+1;
-        svc_states = g.svc.svc_dc{i,6};
-        tot_states = tot_states+svc_states;
-        [g.svc.svc_dsig(svc_num,1),g.svc.xsvc_dc(st_state:tot_states,1),g.svc.dxsvc_dc(st_state:tot_states,1)] =...
-            svc_sud(i,1,flag,g.svc.svc_dc{i,1},d_sig(i,1),ysvcmx,ysvcmn);
-    end
-    clear i
-end
-
-%% initialize tcsc damping controls
-% Seems like this should be put in a seperate script - thad 06/08/20
-if g.tcsc.n_tcscud~=0
-    disp('tcsc damping controls')
-    tot_states=0;
-    for i = 1:g.tcsc.n_tcscud
-        ytcscmx = g.tcsc.tcsc_dc{i,4};
-        ytcscmn = g.tcsc.tcsc_dc{i,5};
-        tcsc_num = g.tcsc.tcsc_dc{i,2};
-        st_state = tot_states+1;
-        tcsc_states = g.tcsc.tcsc_dc{i,6};
-        tot_states = tot_states+tcsc_states;
-        [g.tcsc.tcsc_dsig(tcsc_num,1),g.tcsc.xtcsc_dc(st_state:tot_states,1),g.tcsc.dxtcsc_dc(st_state:tot_states,1)] =...
-            tcsc_sud(i,1,flag,g.tcsc.tcsc_dc{i,1},g.tcsc.td_sig(i,1),ytcscmx,ytcscmn);
-    end
-    clear i
-end
-
-%% initialize rectifier damping controls
-% Seems like this should be put in a seperate script - thad 06/08/20
-if g.dc.ndcr_ud~=0
-    disp('rectifier damping controls')
-    tot_states=0;
-    for i = 1:g.dc.ndcr_ud
-        ydcrmx = g.dc.dcr_dc{i,5};
-        ydcrmn = g.dc.dcr_dc{i,6};
-        rec_num = g.dc.dcr_dc{i,2};
-        st_state = tot_states+1;
-        dcr_states = g.dc.dcr_dc{i,7};
-        tot_states = tot_states+dcr_states;
-        [g.dc.dcr_dsig(rec_num,1),g.dc.xdcr_dc(st_state:tot_states,1),g.dc.dxdcr_dc(st_state:tot_states,1)] = ...
-            dcr_sud(i,1,flag,g.dc.dcr_dc{i,1},g.dc.dcrd_sig(i,1),ydcrmx,ydcrmn);
-    end
-    clear i
-end
-
-%% initialize inverter damping controls
-% Seems like this should be put in a seperate script - thad 06/08/20
-if g.dc.ndci_ud~=0
-    disp('inverter damping controls')
-    tot_states = 0;
-    for i = 1:g.dc.ndci_ud
-        ydcimx = g.dc.dci_dc{i,5};
-        ydcrmn = g.dc.dci_dc{i,6};
-        inv_num = g.dc.dci_dc{i,2};
-        st_state = tot_states+1;
-        dci_states = g.dc.dci_dc{i,7};
-        tot_states = tot_states+dci_states;
-        [g.dc.dci_dsig(inv_num,1),g.dc.xdci_dc(st_state:tot_states,1),g.dc.dxdci_dc(st_state:tot_states,1)] =...
-            dci_sud(i,1,flag,g.dc.dci_dc{i,1},g.dc.dcid_sig(i,1),ydcimx,ydcimn);
-    end
-    clear i
-end
-
-%% initialize load modulation control
-%if ~isempty(lmod_con) % original line - thad
-% if statement redundant - used in script... - thad 06/08/20
-if ~isempty(g.lmod.lmod_con)
-    disp('load modulation')
-    lmod(0,1,flag); % removed bus - thad
-end
-if ~isempty(g.rlmod.rlmod_con)
-    disp('reactive load modulation')
-    rlmod(0,1,flag); % removed bus - thad
-end
-
-%% initialize power modulation control - copied from v2.3 06/01/20 -thad
-% Seems like this should be put in a seperate script - thad 06/08/20
-if g.pwr.n_pwrmod~=0
-    disp('power modulation')
-    pwrmod_p(0,1,g.bus.bus,flag);
-    pwrmod_q(0,1,g.bus.bus,flag);
-    [~,~,~,~,Pini,Qini] = pwrmod_dyn([],[],g.bus.bus,g.sys.t,0,0,g.pwr.n_pwrmod);
-    if (~iscell(Pini) || ~iscell(Qini))
-        error('Error in pwrmod_dyn, P_statesIni and P_statesIni must be cells');
-    end
-    if (any(size(Pini)-[g.pwr.n_pwrmod 1]) || any(size(Qini)-[g.pwr.n_pwrmod 1]))
-        error('Dimension error in pwrmod_dyn');
-    end
-    pwrmod_p_sigst = cell(g.pwr.n_pwrmod,1);
-    pwrmod_q_sigst = pwrmod_p_sigst;
-    dpwrmod_p_sigst = pwrmod_p_sigst;
-    dpwrmod_q_sigst = pwrmod_p_sigst;
-    for index=1:g.pwr.n_pwrmod
-        if ((size(Pini{index},2)~=1) || (size(Qini{index},2)~=1))
-            error('Dimension error in pwrmod_dyn');
-        end
-        dpwrmod_p_sigst{index} = zeros(size(Pini{index},1),k);
-        pwrmod_p_sigst{index} = Pini{index}*ones(1,k);
-        dpwrmod_q_sigst{index} = zeros(size(Qini{index},1),k);
-        pwrmod_q_sigst{index} = Qini{index}*ones(1,k);
-    end
-    clear index dp dq Pini Qini
-end
-
-%% initialize non-linear loads
-% if statement redundant - used in script... - thad 06/08/20
-if ~isempty(g.ncl.load_con)
-    disp('non-linear loads')
-    vnc = nc_load(g.bus.bus,flag,g.int.Y_ncprf,g.int.Y_ncgprf); % return not used? - thad 07/17/20
-else
-    g.ncl.nload = 0;
-end
-
-%% Initialize AGC
-if g.agc.n_agc ~= 0
-    calcAreaVals(1,1); % requried for interchange values
-    agc(1,0); % initialize
-end
-
-%% DC Stuff ? (5/22/20)
-if ~isempty(g.dc.dcsp_con)
-    % Seems like this should be put in a seperate script - thad 06/08/20
-    disp('dc converter specification')
-    
-    g.bus.bus_sim = g.bus.bus;
-    g.bus.bus_int = g.bus.bus_intprf;
-    Y1 = g.int.Y_gprf;
-    Y2 = g.int.Y_gncprf;
-    Y3 = g.int.Y_ncgprf;
-    Y4 = g.int.Y_ncprf;
-    Vr1 = g.int.V_rgprf;
-    Vr2 = g.int.V_rncprf;
-    bo = g.int.boprf;
-    
-    g.k.h_sol = i_simu(1,1,g.k.k_inc, g.k.h, g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
-    % reinitialize dc controls
-    mdc_sig(1);
-    dc_cont(0,1,1,g.bus.bus,flag);
-    % initialize dc line
-    dc_line(0,1,1,g.bus.bus,flag);
-end
-
-%H_sum = sum(g.mac.mac_con(:,16)./g.mac.mac_pot(:,1)); % unused?
+%% Start Initialization ===================================================
+initNLsim()
 
 %% step 3: Beginning of Huen's  (predictor-corrector) method
 % Create indicies for simulation
@@ -642,7 +317,8 @@ g.mac.mac_trip_flags = false(g.mac.n_mac,1);
 g.mac.mac_trip_states = 0;
 
 %% ========================================================================
-% Variable time step specific
+% Variable time step specific ==== Temporary location =====================
+
 % creation of time blocks
 initTblocks()
 
@@ -652,8 +328,7 @@ outputFcn = str2func('vtsOutputFcn');
 
 % Configure ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
-%options = odeset('RelTol',1e-3,'AbsTol',1e-3, 'OutputFcn',outputFcn); % default settings
-options = odeset('RelTol',1e-3,'AbsTol',1e-5, ... %'RelTol',1e-5,'AbsTol',1e-8, ...
+options = odeset('RelTol',1e-3,'AbsTol',1e-5, ... 
     'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
@@ -667,6 +342,8 @@ g.vts.dataN = 1;
 g.vts.iter = 0; % for keeping track of solution iterations
 g.vts.tot_iter = 0;
 g.vts.slns = zeros(1, size(g.sys.t,2));
+
+% temporary debug definition
 odeName = 'ode113';
 
 %% Simulation loop start
@@ -694,22 +371,10 @@ networkSolution(g.vts.dataN)
 dynamicSolution(g.vts.dataN)
 g.vts.tot_iter = g.vts.tot_iter + 1;
 
-% Final Line Monitoring
-if g.lmon.n_lmon~=0
-    lmon(g.vts.dataN)
-end
-
-% Final Average Frequency Calculation
-calcAveF(g.vts.dataN,1);
-
-% Final Area Total Calcvulations
-if g.area.n_area ~= 0
-    calcAreaVals(g.vts.dataN,1);
-end
+monitorSolution(g.vts.dataN);
 
 % Trim logged values to length of g.vts.dataN
 trimLogs(g.vts.dataN)
-
 
 %% Final 'live' plot call
 if g.sys.livePlotFlag
@@ -723,10 +388,9 @@ ets = num2str(et);
 g.sys.ElapsedNonLinearTime = ets;
 disp(['*** Elapsed Simulation Time = ' ets 's'])
 
-%% VTS specific
+%% VTS specific output
 disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
 disp(['*** Total data points = ' int2str(g.vts.dataN)])
-
 
 %% Clean up logged DC variables to length of DC simulated time.
 if ~isempty(g.dc.dcsp_con)
@@ -782,116 +446,9 @@ end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
 clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
 
-%% enable original s_simu plotting if ran as a standalone script
-if scriptRunFlag == 1
-    flag = 0;
-else
-    flag = 1;
-end
-%%
-while(flag == 0)
-    disp('*** Welcom to Plotting!')
-    disp('Enter number:')
-    disp('     1 to plot all machine angles in 3D')
-    disp('     2 to plot all machine speed deviation in 3D')
-    disp('     3 to plot all machine turbine powers')
-    disp('     4 to plot all machine electrical powers')
-    disp('     5 to plot all exciter field voltages')
-    disp('     6 to plot all bus voltage magnitude in 3D')
-    disp('     7 to plot the line power flows')
-    disp('     0 to quit')
-    sel = input('Enter Selection >> ');
-    if isempty(sel)
-        sel = 0;
-    end
-    if sel == 1
-        figure
-        mesh(g.sys.t,1:1:g.mac.n_mac,g.mac.mac_ang*180/pi)
-        title('Machine Angles')
-        xlabel('Time [seconds]')
-        ylabel('Internal Generator Number')
-        zlabel('Angle [degrees]')
-    elseif sel == 2
-        figure
-        lt = length(g.sys.t);
-        mesh(g.sys.t, 1:1:g.mac.n_mac, g.mac.mac_spd- ones(g.mac.n_mac,lt) )
-        title('Machine Speed Deviations')
-        xlabel('Time [seconds]')
-        ylabel('Internal Generator Number')
-        zlabel('Speed [PU]')
-    elseif sel == 3
-        figure
-        plot(g.sys.t,g.mac.pmech)
-        grid on
-        title('Turbine Power')
-        xlabel('Time [seconds]')
-        ylabel('MW [PU]')
-    elseif sel == 4
-        figure
-        plot(g.sys.t,g.mac.pelect)
-        grid on
-        title('Generator Electric Power')
-        xlabel('Time [seconds]')
-        ylabel('MW [PU]')
-    elseif sel == 5
-        figure
-        plot(g.sys.t,g.exc.Efd)
-        grid on
-        title('Exciter Field Voltages')
-        xlabel('Time [seconds]')
-        ylabel('Voltage [PU]')
-    elseif sel == 6
-        figure
-        nbus= size(g.bus.bus_v,1);
-        mesh(g.sys.t,(1:1:nbus),abs(g.bus.bus_v))
-        xlabel('Time [seconds]')
-        ylabel('Bus Number')
-        zlabel('Voltage [PU]')
-        clear nbus
-    elseif sel == 7
-        figure
-        nline = length(g.line.line(:,1));
-        if nline<50
-            V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
-            V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
-            R = g.line.line(:,3);
-            X = g.line.line(:,4);
-            B = g.line.line(:,5);
-            tap = g.line.line(:,6);
-            phi = g.line.line(:,7);
-        else
-            % ask for lines to be plotted
-            disp('Enter a single line, or rangle of lines:')
-            disp('(for example: 2 or 4:5 or [4, 7, 10] )')
-            line_range = input('>> ');
-            if isempty(line_range)
-                line_range = 1:round(size(g.sys.line,1)/8);
-            end
-            V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(line_range,1)),:);
-            V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(line_range,2)),:);
-            R = g.line.line(line_range,3);
-            X = g.line.line(line_range,4);
-            B = g.line.line(line_range,5);
-            tap = g.line.line(line_range,6);
-            phi = g.line.line(line_range,7);
-        end
-        
-        [S1,S2] = line_pq(V1,V2,R,X,B,tap,phi);
-        plot(g.sys.t,real(S1));
-        grid on
-        title('Line Real Power Flow')
-        xlabel('Time [seconds]')
-        ylabel('MW [PU]')
-        
-        clear V1 V2 R X B tap phi S1 S2
-        
-    elseif sel == 0
-        flag = 1;
-    else
-        error('invalid selection...')
-    end
-end
-clear flag sel
+%% execute original s_simu plotting (if run as a standalone script)
+standAlonePlot(scriptRunFlag)
+clear scriptRunFlag
 
 %%
 disp('*** s_simu_BatchVTS End')
