@@ -31,17 +31,9 @@ function tg(i,k,flag)
 %   08/15/97    13:19   xxx             Version 1.x
 %   06/05/20    10:19   Thad Haines     Revised format of globals and internal function documentation
 
-
-global  mac_int pmech mac_spd
-
-%global  tg_con tg_pot
-%global  tg1 tg2 tg3 dtg1 dtg2 dtg3
-%global  tg_idx n_tg tg_sig
-
 global g
 
 
-%jay = sqrt(-1);
 if flag == 0 % initialization
     if i ~= 0
         if g.tg.tg_con(i,1) ~= 1

@@ -50,20 +50,21 @@ function [caf,cat] = rbus_ang(V1,V2,R,X,B,tap,phi,c_vf,c_vt,c_if,c_it)
 %
 %
 % ***********************************************************
-jay = sqrt(-1);
+%   07/29/20    15:20   Thad Haines     jay -> 1j
+
 [nline,dummy] = size(V1);
 for i = 1:nline
   if tap(i) == 0
     tap(i) = 1;
   end
 end
-tps = tap.*exp(jay*phi*pi/180);
+tps = tap.*exp(1j*phi*pi/180);
 tpsi = diag(ones(nline,1)./tps);
 tps = diag(tps);
-z = R + jay*X;
+z = R + 1j*X;
 y = diag(ones(nline,1)./z);
 z = diag(z);
-chg = diag(jay*B/2);
+chg = diag(1j*B/2);
 il = y*(tpsi*V1-V2);
 cf = tps*(c_vt-z*chg*c_vt-z*c_it);
 caf = imag(diag(1./V1)*cf);

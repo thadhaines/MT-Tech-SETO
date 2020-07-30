@@ -54,19 +54,19 @@ B = g.line.line(lines,5);
 tap = g.line.line(lines,6); 
 phi = g.line.line(lines,7);
 
-jay = sqrt(-1);
+
 [nline,~] = size(V1);
 for i = 1:nline
   if tap(i) == 0
     tap(i) = 1;
   end
 end
-tps = tap.*exp(jay*phi*pi/180);
+tps = tap.*exp(1j*phi*pi/180);
 tpsi = diag(ones(nline,1)./tps);
 tps = diag(tps);
-z = R + jay*X;
+z = R + 1j*X;
 y = diag(ones(nline,1)./z);
-chg = diag(jay*B/2);
+chg = diag(1j*B/2);
 cur1 = tps*(y*(tpsi*V1-V2) + chg*V1);
 cur2 = y*(V2 - tpsi*V1) + chg*V2;
 sFrom = V1.*conj(cur1);

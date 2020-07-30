@@ -32,7 +32,6 @@ end
 basmva = input('enter system base MVA - [100]');
 if isempty(basmva);basmva =100;end
 
-jay = sqrt(-1);
 % perform load flow iterations
 errv = 0;
 itermax = 40;
@@ -59,8 +58,8 @@ while (errv == 0&iter<=itermax)
     bus_sol(inv_ac_bus,6) = real(Si);
     bus_sol(rec_ac_bus,7) = imag(Sr);
     bus_sol(inv_ac_bus,7) = imag(Si);
-    Sr_old = bus(rec_ac_bus,6)+jay*bus(rec_ac_bus,7);
-    Si_old = bus(inv_ac_bus,6)+jay*bus(inv_ac_bus,7);
+    Sr_old = bus(rec_ac_bus,6)+1j*bus(rec_ac_bus,7);
+    Si_old = bus(inv_ac_bus,6)+1j*bus(inv_ac_bus,7);
     % check convergence
     errdc = max(abs([(Sr_old-Sr), (Si_old-Si)]));
     if errdc>1e-5

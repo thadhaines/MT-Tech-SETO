@@ -44,10 +44,10 @@ function bus_new = mac_ind(i,k,bus,flag)
 %   06/xx/97    xx:xx   Graham Rogers   Version 2.0 added deep bar, 
 %                                       double cage and leakage inductance saturation
 %   07/13/20    12:22   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay=sqrt(-1);
 bus_new=bus;
 
 if ~isempty(g.ind.ind_con)
@@ -61,7 +61,7 @@ if ~isempty(g.ind.ind_con)
             g.ind.ind_pot(:,2)=ones(motnum,1); %base kv
             mot_vm(:,1)=bus(g.ind.motbus,2); %motor terminal voltage mag
             mot_ang(:,1)=bus(g.ind.motbus,3)*pi/180; %motor term voltage angle
-            v=mot_vm(:,1).*exp(jay*mot_ang(:,1));
+            v=mot_vm(:,1).*exp(1j*mot_ang(:,1));
             g.ind.vdmot(:,1)=real(v);
             g.ind.vqmot(:,1)=imag(v);
             g.ind.p_mot(:,1)=bus(g.ind.motbus,6).*g.ind.ind_con(:,15);%motor power demand
@@ -175,12 +175,12 @@ if ~isempty(g.ind.ind_con)
             zr=rs+y.*g.ind.ind_pot(:,6)./denom;
             zi=g.ind.ind_pot(:,5)+g.ind.ind_pot(:,6)./denom;
             if ~isempty(run_ind)
-                imot(run_ind)=v(run_ind)./(zr(run_ind)+jay*zi(run_ind));
+                imot(run_ind)=v(run_ind)./(zr(run_ind)+1j*zi(run_ind));
                 sm(run_ind)=v(run_ind).*conj(imot(run_ind));
                 pem(run_ind)=real(sm(run_ind));
                 qem(run_ind)=imag(sm(run_ind));
                 %complex initial rotor states
-                vp(run_ind) = v(run_ind) - (rs(run_ind)+ jay* g.ind.ind_pot(run_ind,5)).*imot(run_ind); 
+                vp(run_ind) = v(run_ind) - (rs(run_ind)+ 1j* g.ind.ind_pot(run_ind,5)).*imot(run_ind); 
                 g.ind.vdp(run_ind,1)=real(vp(run_ind));
                 g.ind.vqp(run_ind,1)=imag(vp(run_ind));
             end
@@ -220,11 +220,11 @@ if ~isempty(g.ind.ind_con)
             xr2 = g.ind.ind_con(:,11);
             dbf = g.ind.ind_con(:,12);
            
-            imot = abs(idm+jay*iqm);
+            imot = abs(idm+1j*iqm);
             if ~isempty(g.ind.sat_idx)
                 % saturation of leakage inductance
                 ism = imot(g.ind.sat_idx);isat = g.ind.ind_con(g.ind.sat_idx,13);
-                ir = jay*Xm(g.ind.sat_idx).*(idm(g.ind.sat_idx)+jay*iqm(g.ind.sat_idx))./(rr(g.ind.sat_idx)+jay*g.ind.ind_pot(g.ind.sat_idx,4)); 
+                ir = 1j*Xm(g.ind.sat_idx).*(idm(g.ind.sat_idx)+1j*iqm(g.ind.sat_idx))./(rr(g.ind.sat_idx)+1j*g.ind.ind_pot(g.ind.sat_idx,4)); 
                 gs = dessat(ism,isat);
                 gr = dessat(abs(ir),isat);
                 xs(g.ind.sat_idx) = xs(g.ind.sat_idx).*(1+gs)/2;

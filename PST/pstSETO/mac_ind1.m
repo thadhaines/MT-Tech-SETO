@@ -38,10 +38,10 @@ function [bus_new] = mac_ind(i,k,bus,flag)
 %   Date        Time    Engineer        Description
 %   11/xx/95    xx:xx   Graham Rogers   Version 1.0
 %   07/13/20    12:19   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay=sqrt(-1);
 bus_new=bus;
 
 if ~isempty(g.ind.ind_con)
@@ -55,7 +55,7 @@ if ~isempty(g.ind.ind_con)
             g.ind.ind_pot(:,2)=ones(motnum,1); %base kv
             mot_vm(:,1)=bus(g.ind.motbus,2); %motor terminal voltage mag
             mot_ang(:,1)=bus(g.ind.motbus,3)*pi/180; %motor term voltage angle
-            v=mot_vm(:,1).*exp(jay*mot_ang(:,1));
+            v=mot_vm(:,1).*exp(1j*mot_ang(:,1));
             g.ind.vdmot(:,1)=real(v);
             g.ind.vqmot(:,1)=imag(v);
             g.ind.p_mot(:,1)=bus(g.ind.motbus,6).*g.ind.ind_con(:,15);%motor power demand
@@ -127,12 +127,12 @@ if ~isempty(g.ind.ind_con)
             denom= ones(motnum,1)+y.*y;
             zr=rs+y.*g.ind.ind_pot(:,6)./denom;
             zi=g.ind.ind_pot(:,5)+g.ind.ind_pot(:,6)./denom;
-            imot(run_ind)=v(run_ind)./(zr(run_ind)+jay*zi(run_ind));
+            imot(run_ind)=v(run_ind)./(zr(run_ind)+1j*zi(run_ind));
             sm(run_ind)=v(run_ind).*conj(imot(run_ind));
             pem(run_ind)=real(sm(run_ind));
             qem(run_ind)=imag(sm(run_ind));
             %complex initial rotor states
-            vp = v - (rs+ jay* g.ind.ind_pot(:,5)).*imot;
+            vp = v - (rs+ 1j* g.ind.ind_pot(:,5)).*imot;
             g.ind.vdp(run_ind,1)=real(vp(run_ind));
             g.ind.vqp(run_ind,1)=imag(vp(run_ind));
             % initial motor torque
@@ -155,7 +155,7 @@ if ~isempty(g.ind.ind_con)
             g.ind.ind_pot(i,2)=1.; %base kv
             mot_vm(i,1)=bus(g.ind.motbus,2); %motor terminal voltage mag
             mot_ang(i,1)=bus(g.ind.motbus,3)*pi/180.; %motor term voltage angle
-            v=mot_vm(i,1)*exp(jay*mot_ang(i,1));
+            v=mot_vm(i,1)*exp(1j*mot_ang(i,1));
             g.ind.vdmot(i,1)=real(v);
             g.ind.vqmot(i,1)=imag(v);
             g.ind.p_mot(i,1)=bus(g.ind.motbus,6)*g.ind.ind_con(i,15);%motor power demand
@@ -212,11 +212,11 @@ if ~isempty(g.ind.ind_con)
                 denom= 1+y*y;
                 zr=rs+y*g.ind.ind_pot(i,6)/denom;
                 zi=g.ind.ind_pot(i,5) + g.ind.ind_pot(i,6)/denom;
-                imot=v/(zr+jay*zi); %compex motor current
+                imot=v/(zr+1j*zi); %compex motor current
                 smot=v*conj(imot);
                 pem=real(smot);
                 qem=imag(smot);
-                vp = v-(rs+jay*g.ind.ind_pot(i,5))*imot; %complex initial rotor states
+                vp = v-(rs+1j*g.ind.ind_pot(i,5))*imot; %complex initial rotor states
                 g.ind.vdp(i,1)=real(vp);
                 g.ind.vqp(i,1)=imag(vp);
                 g.ind.t_init(i)=real(vp*conj(imot));

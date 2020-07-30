@@ -37,10 +37,10 @@ function exc_st3(i,k,flag)
 %   06/19/20    11:34   Thad Haines     Revised format of globals and internal function documentation
 %   07/01/20    12:41   Thad Haines     Adjusted theta(n) to theta(n_bus) in calculation of vep per Ryan Elliot (line 131)
 %   07/06/20    13:50   Thad Haines     Completion of global g alterations
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay = sqrt(-1);
 
 if g.exc.n_st3~=0
   if flag == 0 % initialization
@@ -61,11 +61,11 @@ if g.exc.n_st3~=0
       end
       g.exc.exc_pot(i,1) = g.exc.exc_con(i,13)*cos(g.exc.exc_con(i,14)*pi/180);
       g.exc.exc_pot(i,2) = g.exc.exc_con(i,13)*sin(g.exc.exc_con(i,14)*pi/180);
-      iterm = (g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))/(g.mac.eterm(n,1)...
-               *exp(-jay*g.bus.theta(n_bus,1)));
-      vep = g.mac.eterm(n,1)*exp(jay*g.bus.theta(n_bus,1))*(g.exc.exc_pot(i,1) + jay*g.exc.exc_pot(i,2));
-      ve = vep+jay*(g.exc.exc_con(i,15)...
-           + (g.exc.exc_pot(i,1)+jay*g.exc.exc_pot(i,2))*g.exc.exc_con(i,16))*iterm;
+      iterm = (g.mac.pelect(n,1)-1j*g.mac.qelect(n,1))/(g.mac.eterm(n,1)...
+               *exp(-1j*g.bus.theta(n_bus,1)));
+      vep = g.mac.eterm(n,1)*exp(1j*g.bus.theta(n_bus,1))*(g.exc.exc_pot(i,1) + 1j*g.exc.exc_pot(i,2));
+      ve = vep+1j*(g.exc.exc_con(i,15)...
+           + (g.exc.exc_pot(i,1)+1j*g.exc.exc_pot(i,2))*g.exc.exc_con(i,16))*iterm;
       V_E = abs(ve);
       % calculate regulation of potential source
       I_N = g.exc.exc_con(i,17)*g.mac.fldcur(n,1)/V_E;
@@ -119,11 +119,11 @@ if g.exc.n_st3~=0
       end
       g.exc.exc_pot(g.exc.st3_idx,1) = g.exc.exc_con(g.exc.st3_idx,13).*cos(g.exc.exc_con(g.exc.st3_idx,14)*pi/180);
       g.exc.exc_pot(g.exc.st3_idx,2) = g.exc.exc_con(g.exc.st3_idx,13).*sin(g.exc.exc_con(g.exc.st3_idx,14)*pi/180);
-      iterm =(g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))./...
-             (g.mac.eterm(n,1).*exp(-jay*g.bus.theta(n_bus,1))).*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,1).*exp(jay*g.bus.theta(n_bus,1)).*(g.exc.exc_pot(g.exc.st3_idx,1) + jay*g.exc.exc_pot(g.exc.st3_idx,2));% corrected theta index to n_bus from n per Ryan - thad 07/01/20
-      ve = vep+jay*(g.exc.exc_con(g.exc.st3_idx,15)...
-           + (g.exc.exc_pot(g.exc.st3_idx,1)+jay*g.exc.exc_pot(g.exc.st3_idx,2)).*g.exc.exc_con(g.exc.st3_idx,16)).*iterm;
+      iterm =(g.mac.pelect(n,1)-1j*g.mac.qelect(n,1))./...
+             (g.mac.eterm(n,1).*exp(-1j*g.bus.theta(n_bus,1))).*g.mac.mac_pot(n,1);
+      vep = g.mac.eterm(n,1).*exp(1j*g.bus.theta(n_bus,1)).*(g.exc.exc_pot(g.exc.st3_idx,1) + 1j*g.exc.exc_pot(g.exc.st3_idx,2));% corrected theta index to n_bus from n per Ryan - thad 07/01/20
+      ve = vep+1j*(g.exc.exc_con(g.exc.st3_idx,15)...
+           + (g.exc.exc_pot(g.exc.st3_idx,1)+1j*g.exc.exc_pot(g.exc.st3_idx,2)).*g.exc.exc_con(g.exc.st3_idx,16)).*iterm;
       V_E = abs(ve);
  
       % this is the equivalent terminal voltage at the rectifier
@@ -237,11 +237,11 @@ if g.exc.n_st3~=0
       g.mac.eterm(n,k) = sqrt(g.mac.ed(n,k)^2+g.mac.eq(n,k)^2);
       g.mac.pelect(n,k) = g.mac.eq(n,k)*g.mac.curq(n,k) + g.mac.ed(n,k)*g.mac.curd(n,k);
       g.mac.qelect(n,k) = g.mac.eq(n,k)*g.mac.curd(n,k) - g.mac.ed(n,k)*g.mac.curq(n,k);
-      iterm = (g.mac.pelect(n,1)-jay*g.mac.qelect(n,1))/...
-              (g.mac.eterm(n,1)*exp(-jay*g.bus.theta(n_bus,1)))*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,1)*exp(jay*g.bus.theta(n_bus,1))*(g.exc.exc_pot(i,1) + jay*g.exc.exc_pot(i,2));
-      ve = vep+jay*(g.exc.exc_con(i,15)...
-           + (g.exc.exc_pot(i,1)+jay*g.exc.exc_pot(i,2))*g.exc.exc_con(i,16))*iterm;
+      iterm = (g.mac.pelect(n,1)-1j*g.mac.qelect(n,1))/...
+              (g.mac.eterm(n,1)*exp(-1j*g.bus.theta(n_bus,1)))*g.mac.mac_pot(n,1);
+      vep = g.mac.eterm(n,1)*exp(1j*g.bus.theta(n_bus,1))*(g.exc.exc_pot(i,1) + 1j*g.exc.exc_pot(i,2));
+      ve = vep+1j*(g.exc.exc_con(i,15)...
+           + (g.exc.exc_pot(i,1)+1j*g.exc.exc_pot(i,2))*g.exc.exc_con(i,16))*iterm;
       V_E = abs(ve);
       if V_E < 1e-6
         disp('excitation system error:no supply voltage')
@@ -350,12 +350,12 @@ if g.exc.n_st3~=0
       g.mac.eterm(n,k) = sqrt(g.mac.ed(n,k).^2+g.mac.eq(n,k).^2);
       g.mac.pelect(n,k) = g.mac.eq(n,k).*g.mac.curq(n,k) + g.mac.ed(n,k).*g.mac.curd(n,k);
       g.mac.qelect(n,k) = g.mac.eq(n,k).*g.mac.curd(n,k) - g.mac.ed(n,k).*g.mac.curq(n,k);
-      iterm =(g.mac.pelect(n,k)-jay*g.mac.qelect(n,k))./...
-             (g.mac.eterm(n,k).*exp(-jay*g.bus.theta(n_bus,k))).*g.mac.mac_pot(n,1);
-      vep = g.mac.eterm(n,k).*exp(jay*g.bus.theta(n_bus,k)).*(g.exc.exc_pot(g.exc.st3_idx,1)...
-          + jay*g.exc.exc_pot(g.exc.st3_idx,2));
-      ve = vep+jay*(g.exc.exc_con(g.exc.st3_idx,15)...
-           + (g.exc.exc_pot(g.exc.st3_idx,1)+jay*g.exc.exc_pot(g.exc.st3_idx,2))...
+      iterm =(g.mac.pelect(n,k)-1j*g.mac.qelect(n,k))./...
+             (g.mac.eterm(n,k).*exp(-1j*g.bus.theta(n_bus,k))).*g.mac.mac_pot(n,1);
+      vep = g.mac.eterm(n,k).*exp(1j*g.bus.theta(n_bus,k)).*(g.exc.exc_pot(g.exc.st3_idx,1)...
+          + 1j*g.exc.exc_pot(g.exc.st3_idx,2));
+      ve = vep+1j*(g.exc.exc_con(g.exc.st3_idx,15)...
+           + (g.exc.exc_pot(g.exc.st3_idx,1)+1j*g.exc.exc_pot(g.exc.st3_idx,2))...
            .*g.exc.exc_con(g.exc.st3_idx,16)).*iterm;
       V_E = abs(ve); % this is the equivalent terminal voltage at the rectifier
                      %terminals

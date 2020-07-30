@@ -56,7 +56,7 @@ global ac_line n_dcl
 global g
 
 tt = clock;     % start the total time clock
-jay = sqrt(-1);
+
 load_bus = 3;
 gen_bus = 2;
 swing_bus = 1;
@@ -254,13 +254,13 @@ Pl(load_index) = Pg(load_index) - P(load_index);
 Ql(load_index) = Qg(load_index) - Q(load_index);
 
 Pg(SB) = P(SB) + Pl(SB); Qg(SB) = Q(SB) + Ql(SB);
-VV = V.*exp(jay*ang);  % solution voltage 
+VV = V.*exp(1j*ang);  % solution voltage 
 % calculate the line flows and power losses
 tap_index = find(abs(line(:,6))>0);
 tap_ratio = ones(nline,1);
 tap_ratio(tap_index)=line(tap_index,6);
 phase_shift(:,1) = line(:,7);
-tps = tap_ratio.*exp(jay*phase_shift*pi/180); 
+tps = tap_ratio.*exp(1j*phase_shift*pi/180); 
 from_bus = line(:,1);
 from_int = g.bus.bus_int(round(from_bus));
 to_bus = line(:,2);
@@ -268,18 +268,18 @@ to_int = g.bus.bus_int(round(to_bus));
 r = line(:,3);
 rx = line(:,4);
 chrg = line(:,5);
-z = r + jay*rx;
+z = r + 1j*rx;
 y = ones(nline,1)./z;
 
 MW_s = VV(from_int).*conj((VV(from_int) - tps.*VV(to_int)).*y ...
-   + VV(from_int).*(jay*chrg/2))./(tps.*conj(tps));
+   + VV(from_int).*(1j*chrg/2))./(tps.*conj(tps));
 P_s = real(MW_s);     % active power sent out by from_bus
 % to to_bus
 Q_s = imag(MW_s);     % reactive power sent out by 
 % from_bus to to_bus
 MW_r = VV(to_int).*conj((VV(to_int) ...
    - VV(from_int)./tps).*y ...
-   + VV(to_int).*(jay*chrg/2));
+   + VV(to_int).*(1j*chrg/2));
 P_r = real(MW_r);     % active power received by to_bus 
 % from from_bus
 Q_r = imag(MW_r);     % reactive power received by 

@@ -40,19 +40,19 @@ function [l_if,l_it] = line_cur(V1,V2,R,X,B,tap,phi)
 %
 %
 % ***********************************************************
-jay = sqrt(-1);
+
 [nline,dummy] = size(V1);
 for i = 1:nline
   if tap(i) == 0
     tap(i) = 1;
   end
 end
-tps = tap.*exp(jay*phi*pi/180);
+tps = tap.*exp(1j*phi*pi/180);
 tpsi = diag(ones(nline,1)./tps);
 tps = diag(tps);
-z = R + jay*X;
+z = R + 1j*X;
 y = diag(ones(nline,1)./z);
-chg = diag(jay*B/2);
+chg = diag(1j*B/2);
 l_if = tps*(y*(tpsi*V1-V2)) + chg*V1;
 l_it = y*(V2 - tpsi*V1) + chg*V2;
 

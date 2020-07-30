@@ -23,7 +23,7 @@ function i_ac = dc_cur(V,k,kdc)
 
 % Vdc NOT global.
 global g
-jay = sqrt(-1);
+
 V0(g.dc.r_idx,1) = g.dc.dcc_pot(:,7).*abs(V(g.dc.r_idx));
 V0(g.dc.i_idx,1) = g.dc.dcc_pot(:,8).*abs(V(g.dc.i_idx));
 dc_ang(g.dc.r_idx,1) = g.dc.alpha(:,kdc);
@@ -38,6 +38,6 @@ sphi = sqrt(ones(g.dc.n_conv,1) - cphi.*cphi);
 P = Vdc.*idc/g.sys.basmva;
 Q = P.*sphi./cphi;
 P(g.dc.i_idx) = - P(g.dc.i_idx);
-i_ac = (P - jay*Q)./conj(V);
+i_ac = (P - 1j*Q)./conj(V);
 return
  

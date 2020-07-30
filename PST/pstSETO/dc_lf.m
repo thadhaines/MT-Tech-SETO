@@ -29,7 +29,7 @@ function [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
 % NOTE: output tap NOT global. ? -thad 07/14/20
 
 global g
-jay = sqrt(-1);
+
 % determine dc indexes
 dc_indx(bus,line,g.dc.dci_dc,g.dc.dcr_dc);
 
@@ -72,17 +72,17 @@ if g.dc.n_conv~=0 && g.dc.n_dcl~=0
   % calculate commutating voltage
   xequ = sqrt(3)*g.dc.dcsp_con(:,5)./g.dc.dcsp_con(:,6);% eq transformer reactance
   Rc = g.dc.dcsp_con(:,6).*g.dc.dcsp_con(:,5)*3/pi;% in series as far as dc is concerned
-  iac = (P-jay*Q)./(Vac.*exp(-jay*Vang))/sqrt(3);
+  iac = (P-1j*Q)./(Vac.*exp(-1j*Vang))/sqrt(3);
   ang_iac = angle(iac);
   % get specified idc in kA
   idc = g.dc.dcl_con(g.dc.dcli_idx,8)./g.dc.dcsp_con(g.dc.i_idx,4);%dc power/dc voltage
   % adjust ac currents to have same angle as load flow but magnitude
   % corresponding to desired dc current
-  iaci = idc.*g.dc.dcsp_con(g.dc.i_idx,6).*exp(jay*ang_iac(g.dc.i_idx))*sqrt(6)/pi;
-  iacr = idc.*g.dc.dcsp_con(g.dc.r_idx,6).*exp(jay*ang_iac(g.dc.r_idx))*sqrt(6)/pi;
+  iaci = idc.*g.dc.dcsp_con(g.dc.i_idx,6).*exp(1j*ang_iac(g.dc.i_idx))*sqrt(6)/pi;
+  iacr = idc.*g.dc.dcsp_con(g.dc.r_idx,6).*exp(1j*ang_iac(g.dc.r_idx))*sqrt(6)/pi;
   % calculate the equivalent HT bus voltage (commutating voltage)
-  g.dc.VHT(g.dc.i_idx,1) = abs(Vac(g.dc.i_idx).*exp(jay*Vang(g.dc.i_idx)) + jay*xequ(g.dc.i_idx).*iaci);
-  g.dc.VHT(g.dc.r_idx,1) = abs(Vac(g.dc.r_idx).*exp(jay*Vang(g.dc.r_idx)) + jay*xequ(g.dc.r_idx).*iacr);
+  g.dc.VHT(g.dc.i_idx,1) = abs(Vac(g.dc.i_idx).*exp(1j*Vang(g.dc.i_idx)) + 1j*xequ(g.dc.i_idx).*iaci);
+  g.dc.VHT(g.dc.r_idx,1) = abs(Vac(g.dc.r_idx).*exp(1j*Vang(g.dc.r_idx)) + 1j*xequ(g.dc.r_idx).*iacr);
   Vdo = 3*sqrt(2)*g.dc.VHT.*g.dc.dcsp_con(:,6)/pi; % ideal dc voltages
   rdc = g.dc.dcl_con(g.dc.dcli_idx,3);% dc line resistance
   cm = ones(g.dc.n_dcl,1)-g.dc.dcl_con(g.dc.dcli_idx,9)/100;
@@ -137,8 +137,8 @@ if g.dc.n_conv~=0 && g.dc.n_dcl~=0
   % calculate LT reactive power
   Qr = Qr - xequ(g.dc.r_idx).*iacr.*iacr;
   Qi = Qi - xequ(g.dc.i_idx).*iaci.*iaci;
-  Sr = (Pr + jay*Qr);
-  Si = (Pi + jay*Qi);
+  Sr = (Pr + 1j*Qr);
+  Si = (Pi + 1j*Qi);
   rec_par = zeros(g.dc.n_dcl,3);
   inv_par = rec_par;
   rec_par(:,1) = g.dc.alpha;

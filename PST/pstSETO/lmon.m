@@ -15,6 +15,7 @@ function lmon(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/17/20    07:59   Thad Haines     Version 1
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
@@ -27,7 +28,6 @@ B = g.line.line(g.lmon.lmon_con,5);
 tap = g.line.line(g.lmon.lmon_con,6); 
 phi = g.line.line(g.lmon.lmon_con,7);
             
-jay = sqrt(-1);
 nline = size(V1,1);
 
 for i = 1:nline
@@ -37,12 +37,12 @@ for i = 1:nline
 end
 
 % copied from line_pq
-tps = tap.*exp(jay*phi*pi/180);
+tps = tap.*exp(1j*phi*pi/180);
 tpsi = diag(ones(nline,1)./tps);
 tps = diag(tps);
-z = R + jay*X;
+z = R + 1j*X;
 y = diag(ones(nline,1)./z);
-chg = diag(jay*B/2);
+chg = diag(1j*B/2);
 
 cur1 = tps*(y*(tpsi*V1-V2) + chg*V1); % iFrom
 cur2 = y*(V2 - tpsi*V1) + chg*V2; % iTo

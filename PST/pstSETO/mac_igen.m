@@ -37,10 +37,10 @@ function [bus_new] = mac_igen(i,k,bus,flag)
 %   08/18/97    18:28   Graham Rogers   Version 1.0
 %   (c) Copyright Cherry Tree Scientific Software 1997 _ All rights reserved
 %   07/13/20    10:26   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g 
 
-jay=sqrt(-1);
 bus_new = bus;
 if ~isempty(g.igen.igen_con)
    if flag == 0
@@ -55,7 +55,7 @@ if ~isempty(g.igen.igen_con)
          g.igen.igen_pot(:,2)=ones(g.igen.n_ig,1); %base kv
          ig_vm(:,1)=bus(g.igen.igbus,2); %ind gen terminal voltage mag
          ig_ang(:,1)=bus(g.igen.igbus,3)*pi/180; %ind gen term voltage angle
-         v=ig_vm(:,1).*exp(jay*ig_ang(:,1));
+         v=ig_vm(:,1).*exp(1j*ig_ang(:,1));
          g.igen.vdig(:,1)=real(v);
          g.igen.vqig(:,1)=imag(v);
          g.igen.pig(:,1)= bus(g.igen.igbus,6).*g.igen.igen_con(:,15);%ind generator power 
@@ -108,12 +108,12 @@ if ~isempty(g.igen.igen_con)
          denom= ones(g.igen.n_ig,1)+y.*y;
          zr=rs+y.*g.igen.igen_pot(:,6)./denom;
          zi=g.igen.igen_pot(:,5)+g.igen.igen_pot(:,6)./denom;
-         iig =v./(zr+jay*zi);
+         iig =v./(zr+1j*zi);
          sig = v.*conj(iig);
          peig = real(sig);
          qeig = imag(sig);
          %complex initial rotor states
-         vp = v - (rs+ jay* g.igen.igen_pot(:,5)).*iig; 
+         vp = v - (rs+ 1j* g.igen.igen_pot(:,5)).*iig; 
          g.igen.vdpig = real(vp);
          g.igen.vqpig =imag(vp);
          % initial prime mover torque

@@ -25,7 +25,7 @@ function  dc_line(i,k,kdc,bus,flag)
 %   07/15/20    11:04   Thad Haines     Revised format of globals and internal function documentation
 
 global g
-% jay = sqrt(-1);
+
 k = fix(1+(kdc+1)/10);
 % check for dcline data
 if ~isempty(g.dc.dcsp_con)

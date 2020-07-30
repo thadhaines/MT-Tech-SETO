@@ -84,7 +84,7 @@ end
 f = 0;
 
 [nexc dum] =size(exc_con);
-jay = sqrt(-1);
+
 if flag == 0; % initialization
   if i ~= 0  % scalar computation
     n = mac_int(exc_con(i,2)); % machine number

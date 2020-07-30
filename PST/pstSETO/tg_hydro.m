@@ -1,5 +1,5 @@
-function [f] = tg_hydro(i,k,bus,flag)
-% Syntax: [f] = tg_hydro(i,k,bus,flag)  
+function tg_hydro(i,k,bus,flag)
+% Syntax: tg_hydro(i,k,bus,flag)  
 % 1:19 PM 15/08/97
 % Purpose: hydraulic turbine governor model
 %           
@@ -56,8 +56,6 @@ global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
 global  tgh_idx n_tgh tg_sig
 
 
-jay = sqrt(-1);
-f = 0;
 if n_tgh~=0
    if flag == 0; % initialization
       if i~=0

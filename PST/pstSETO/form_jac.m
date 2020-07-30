@@ -33,8 +33,8 @@ function [Jac11,Jac12,Jac21,Jac22]=form_jac(V,ang,Y,ang_red,volt_red)
 % Date:      March 1991
 %
 % ***********************************************************
-jay = sqrt(-1);
-exp_ang = exp(jay*ang);
+
+exp_ang = exp(1j*ang);
 % Voltage rectangular coordinates
 V_rect = V.*exp_ang;
 CV_rect=conj(V_rect);

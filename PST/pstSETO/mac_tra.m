@@ -31,10 +31,10 @@ function mac_tra(i,k,bus,flag)
 %   06/19/20    09:30   Thad Haines     Removal of comments so that x'd==x'q
 %   06/19/20    10:17   Thad Haines     Revised format of globals and internal function documentation
 %   07/07/20    14:10   Thad Haines     Completion of global g alteration
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay = sqrt(-1);
 if g.mac.n_tra~=0
  if flag == 0 % initialization         
   if i ~= 0
@@ -64,17 +64,17 @@ if g.mac.n_tra~=0
               /g.mac.eterm(i,1)*g.mac.mac_pot(i,1);  % current magnitude
       phi = atan2(g.mac.qelect(i,1),g.mac.pelect(i,1)); 
                                         % power factor angle
-      v = g.mac.eterm(i,1)*exp(jay*g.mac.theta(busnum,1)); 
+      v = g.mac.eterm(i,1)*exp(1j*g.mac.theta(busnum,1)); 
                      % voltage in real and imaginary parts
                      % on system reference frame 
-      curr = curr*exp(jay*(g.mac.theta(busnum,1)-phi)); % current in real and 
+      curr = curr*exp(1j*(g.mac.theta(busnum,1)-phi)); % current in real and 
                  % imaginary parts on system reference frame 
-      eprime = v +(g.mac.mac_con(i,5) + jay*g.mac.mac_con(i,7))*curr; 
-      ei = v + (g.mac.mac_con(i,5) + jay*g.mac.mac_con(i,11))*curr;
+      eprime = v +(g.mac.mac_con(i,5) + 1j*g.mac.mac_con(i,7))*curr; 
+      ei = v + (g.mac.mac_con(i,5) + 1j*g.mac.mac_con(i,11))*curr;
       g.mac.mac_ang(i,1) = atan2(imag(ei),real(ei)); 
                                     % machine angle (delta)
       g.mac.mac_spd(i,1) = 1; % machine speed at steady state
-      rot = jay*exp(-jay*g.mac.mac_ang(i,1)); % system reference frame rotation
+      rot = 1j*exp(-1j*g.mac.mac_ang(i,1)); % system reference frame rotation
       g.mac.psi_re(i,1) = real(eprime);
       g.mac.psi_im(i,1) = imag(eprime);
       eprime = eprime*rot;
@@ -141,18 +141,18 @@ if g.mac.n_tra~=0
             ./g.mac.eterm(g.mac.mac_tra_idx,1).*g.mac.mac_pot(g.mac.mac_tra_idx,1);  % current magnitude
     phi = atan2(g.mac.qelect(g.mac.mac_tra_idx,1),g.mac.pelect(g.mac.mac_tra_idx,1)); 
                                         % power factor angle
-    v = g.mac.eterm(g.mac.mac_tra_idx,1).*exp(jay*g.mac.theta(busnum,1)); 
+    v = g.mac.eterm(g.mac.mac_tra_idx,1).*exp(1j*g.mac.theta(busnum,1)); 
                      % voltage in real and imaginary parts
                      % on system reference frame 
-    curr = curr.*exp(jay*(g.mac.theta(busnum,1)-phi)); % current in real and 
+    curr = curr.*exp(1j*(g.mac.theta(busnum,1)-phi)); % current in real and 
                                                 % imaginary parts on system reference frame 
-    eprime = v + (g.mac.mac_con(g.mac.mac_tra_idx,5)+jay*g.mac.mac_con(g.mac.mac_tra_idx,7)).*curr; 
-    ei = v + (g.mac.mac_con(g.mac.mac_tra_idx,5)+jay*g.mac.mac_con(g.mac.mac_tra_idx,11)).*curr;
+    eprime = v + (g.mac.mac_con(g.mac.mac_tra_idx,5)+1j*g.mac.mac_con(g.mac.mac_tra_idx,7)).*curr; 
+    ei = v + (g.mac.mac_con(g.mac.mac_tra_idx,5)+1j*g.mac.mac_con(g.mac.mac_tra_idx,11)).*curr;
     g.mac.mac_ang(g.mac.mac_tra_idx,1) = atan2(imag(ei),real(ei)); 
                                     % machine angle (delta)
     g.mac.mac_spd(g.mac.mac_tra_idx,1) = ones(g.mac.n_tra,1); 
                             % machine speed at steady state
-    rot = jay*exp(-jay*g.mac.mac_ang(g.mac.mac_tra_idx,1)); % system reference frame rotation
+    rot = 1j*exp(-1j*g.mac.mac_ang(g.mac.mac_tra_idx,1)); % system reference frame rotation
     g.mac.psi_re(g.mac.mac_tra_idx,1)=real(eprime);
     g.mac.psi_im(g.mac.mac_tra_idx,1)=imag(eprime);
     eprime = eprime.*rot;
@@ -242,7 +242,7 @@ if g.mac.n_tra~=0
       g.mac.eterm(i,k) = sqrt(g.mac.ed(i,k)^2+g.mac.eq(i,k)^2);
       g.mac.pelect(i,k) = g.mac.eq(i,k)*g.mac.curq(i,k) + g.mac.ed(i,k)*g.mac.curd(i,k);
       g.mac.qelect(i,k) = g.mac.eq(i,k)*g.mac.curd(i,k) - g.mac.ed(i,k)*g.mac.curq(i,k);
-      curmag = abs(g.mac.curdg(i,k) + jay*g.mac.curqg(i,k));
+      curmag = abs(g.mac.curdg(i,k) + 1j*g.mac.curqg(i,k));
       Te = g.mac.pelect(i,k)*g.mac.mac_pot(i,1) + g.mac.mac_con(i,5)*curmag*curmag;
       g.mac.dmac_ang(i,k) = g.sys.basrad*(g.mac.mac_spd(i,k)-1.);
       g.mac.dmac_spd(i,k) = (g.mac.pmech(i,k) + g.mac.pm_sig(i,k) - Te ...   % JHC add missing pm_sig term 2011 0511, per DKF
@@ -278,7 +278,7 @@ if g.mac.n_tra~=0
                             + g.mac.ed(g.mac.mac_tra_idx,k).*g.mac.curd(g.mac.mac_tra_idx,k);
     g.mac.qelect(g.mac.mac_tra_idx,k) = g.mac.eq(g.mac.mac_tra_idx,k).*g.mac.curd(g.mac.mac_tra_idx,k)...
                             - g.mac.ed(g.mac.mac_tra_idx,k).*g.mac.curq(g.mac.mac_tra_idx,k);
-    curmag = abs(g.mac.curdg(g.mac.mac_tra_idx,k) + jay*g.mac.curqg(g.mac.mac_tra_idx,k));
+    curmag = abs(g.mac.curdg(g.mac.mac_tra_idx,k) + 1j*g.mac.curqg(g.mac.mac_tra_idx,k));
     Te = g.mac.pelect(g.mac.mac_tra_idx,k).*g.mac.mac_pot(g.mac.mac_tra_idx,1) + g.mac.mac_con(g.mac.mac_tra_idx,5).*curmag.*curmag;
     g.mac.dmac_ang(g.mac.mac_tra_idx,k) = g.sys.basrad*(g.mac.mac_spd(g.mac.mac_tra_idx,k)-ones(g.mac.n_tra,1));
     g.mac.dmac_spd(g.mac.mac_tra_idx,k) = (g.mac.pmech(g.mac.mac_tra_idx,k)+ g.mac.pm_sig(g.mac.mac_tra_idx,k) - Te ...

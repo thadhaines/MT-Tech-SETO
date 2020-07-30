@@ -30,6 +30,7 @@ function h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y_g,Y_gnc,Y_ncg,Y_nc,rec_V1,rec_V2,
 %   08/xx/97    XX:XX   xxx           	Version 1.1 - add induction generator
 %   Copyright (c) Joe Chow All Rights Reserved
 %   07/15/20    11:53   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
@@ -44,10 +45,10 @@ if isempty(g.igen.n_ig)
     g.igen.n_ig =0;
 end
 
-jay = sqrt(-1);
-psi = g.mac.psi_re(:,k) + jay*g.mac.psi_im(:,k);
-vmp = g.ind.vdp(:,k) + jay*g.ind.vqp(:,k);
-vmpig = g.igen.vdpig(:,k) + jay*g.igen.vqpig(:,k);
+
+psi = g.mac.psi_re(:,k) + 1j*g.mac.psi_im(:,k);
+vmp = g.ind.vdp(:,k) + 1j*g.ind.vqp(:,k);
+vmpig = g.igen.vdpig(:,k) + 1j*g.igen.vqpig(:,k);
 
 if (g.ind.n_mot~=0 && g.igen.n_ig==0) 
     ntot = g.mac.n_mac + g.ind.n_mot;
@@ -92,7 +93,7 @@ g.mac.cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
 if g.ind.n_mot~=0
     g.ind.idmot(:,k) = -real(cur(g.mac.n_mac+1:ngm));%induction motor currents
     g.ind.iqmot(:,k) = -imag(cur(g.mac.n_mac+1:ngm));%current out of network
-    g.ind.s_mot(:,k) = g.bus.bus_v(g.bus.bus_int(g.ind.ind_con(:,2)),k).*(g.ind.idmot(:,k)-jay*g.ind.iqmot(:,k));
+    g.ind.s_mot(:,k) = g.bus.bus_v(g.bus.bus_int(g.ind.ind_con(:,2)),k).*(g.ind.idmot(:,k)-1j*g.ind.iqmot(:,k));
     g.ind.p_mot(:,k) = real(g.ind.s_mot(:,k));
     g.ind.q_mot(:,k) = imag(g.ind.s_mot(:,k));
 end
@@ -100,7 +101,7 @@ if g.igen.n_ig~=0
     g.igen.idig(:,k) = -real(cur(ngm+1:ntot));%induction generator currents
     g.igen.iqig(:,k) = -imag(cur(ngm+1:ntot));%current out of network
     g.igen.s_igen(:,k) = g.bus.bus_v(g.bus.bus_int(g.igen.igen_con(:,2)),k)...
-        .*(g.igen.idig(:,k)-jay*g.igen.iqig(:,k));
+        .*(g.igen.idig(:,k)-1j*g.igen.iqig(:,k));
     g.igen.pig(:,k) = real(g.igen.s_igen(:,k));
     g.igen.qig(:,k) = imag(g.igen.s_igen(:,k));
 end

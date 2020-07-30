@@ -28,7 +28,6 @@ function     [Y,nSW,nPV,nPQ,SB] = ybus(bus,line)
 %
 % ************************************************************
 
-jay = sqrt(-1);
 swing_bus = 1;
 gen_bus = 2;
 load_bus = 3;
@@ -55,7 +54,7 @@ end
   r = line(:,3);
   rx = line(:,4);
   chrg = line(:,5);
-  z = r + jay*rx;     % line impedance
+  z = r + 1j*rx;     % line impedance
   y = ones(nline,1)./z;
 
 for i = 1:nline
@@ -68,7 +67,7 @@ for i = 1:nline
     tap_ratio = 1;
   end
   phase_shift = line(i,7);
-  tps = tap_ratio*exp(jay*phase_shift*pi/180);
+  tps = tap_ratio*exp(1j*phase_shift*pi/180);
   tps2=tap_ratio*tap_ratio;
   % sparse matrix formulation
   j1(1,1) = from_int; 
@@ -79,16 +78,16 @@ for i = 1:nline
   w(2,1) = - y(i)/tps;
   j1(3,1) = from_int; 
   j2(3,1) = from_int;
-  w(3,1) = (y(i) + jay*chrg(i)/2)/tps2;
+  w(3,1) = (y(i) + 1j*chrg(i)/2)/tps2;
   j1(4,1) = to_int; 
   j2(4,1) = to_int;
-  w(4,1) = y(i) + jay*chrg(i)/2;
+  w(4,1) = y(i) + 1j*chrg(i)/2;
   Y = Y + sparse(j1,j2,w,nbus,nbus);
 end; %
 Gb = bus(:,8);     % bus conductance
 Bb = bus(:,9);     % bus susceptance
 % add diagonal shunt admittances
-Y = Y + sparse(ibus,ibus,Gb+jay*Bb,nbus,nbus);
+Y = Y + sparse(ibus,ibus,Gb+1j*Bb,nbus,nbus);
 
 
 if nargout > 1

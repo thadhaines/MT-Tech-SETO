@@ -226,7 +226,6 @@ global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
 global g
 
 
-jay = sqrt(-1);
 %
 %
 % load input data from m.file
@@ -561,7 +560,7 @@ max_state = 6*g.mac.n_mac + 5*g.exc.n_exc+ 3*g.pss.n_pss+ 6*n_dpw ...
 %25 states per generator,3 per motor, 3 per ind. generator,
 % 2 per SVC,1 per tcsc, 1 per lmod,1 per rlmod, 2 per pwrmod, 5 per dc line
 g.bus.theta(:,1) = g.bus.bus(:,3)*pi/180;
-v(:,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(:,1));
+v(:,1) = g.bus.bus(:,2).*exp(1j*g.bus.theta(:,1));
 if g.dc.n_conv ~= 0
    % convert dc LT to Equ HT bus
    Pr = g.bus.bus(g.dc.rec_ac_bus,6);
@@ -569,10 +568,10 @@ if g.dc.n_conv ~= 0
    Qr = g.bus.bus(g.dc.rec_ac_bus,7);
    Qi = g.bus.bus(g.dc.inv_ac_bus,7);
    VLT= v(g.dc.ac_bus,1);
-   i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
-   i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
-   v(g.dc.rec_ac_bus,1) = VLT(g.dc.r_idx) + jay*g.dc.dcc_pot(:,2).*i_acr;
-   v(g.dc.inv_ac_bus,1) = VLT(g.dc.i_idx) + jay*g.dc.dcc_pot(:,4).*i_aci;
+   i_acr = (Pr-1j*Qr)./conj(VLT(g.dc.r_idx));
+   i_aci = (Pi - 1j*Qi)./conj(VLT(g.dc.i_idx));
+   v(g.dc.rec_ac_bus,1) = VLT(g.dc.r_idx) + 1j*g.dc.dcc_pot(:,2).*i_acr;
+   v(g.dc.inv_ac_bus,1) = VLT(g.dc.i_idx) + 1j*g.dc.dcc_pot(:,4).*i_aci;
    g.bus.theta(g.dc.ac_bus,1) = angle(v(g.dc.ac_bus,1));
 end
 g.bus.bus_v(:,1) = v(:,1);  
@@ -740,16 +739,16 @@ mac_tra(0,1,g.bus.bus,flag);
 mac_sub(0,1,g.bus.bus,flag);
 mac_ib(0,1,g.bus.bus,flag);
 %calculate initial electrical torque
-psi = g.mac.psi_re(:,1)+jay*g.mac.psi_im(:,1);
+psi = g.mac.psi_re(:,1)+1j*g.mac.psi_im(:,1);
 if g.ind.n_mot~=0&&g.igen.n_ig==0
-   vmp = g.ind.vdp(:,1) + jay*g.ind.vqp(:,1);
+   vmp = g.ind.vdp(:,1) + 1j*g.ind.vqp(:,1);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
 elseif g.ind.n_mot==0&&g.igen.n_ig~=0
-   vmpig = g.igen.vdpig(:,1) + jay*g.igen.vqpig(:,1);
+   vmpig = g.igen.vdpig(:,1) + 1j*g.igen.vqpig(:,1);
    int_volt = [psi; vmpig]; % int volt of synch and ind generators
 elseif g.ind.n_mot~=0&&g.igen.n_ig~=0
-   vmp = g.ind.vdp(:,1) + jay*g.ind.vqp(:,1);
-   vmpig = g.igen.vdpig(:,1) + jay*g.igen.vqpig(:,1);
+   vmp = g.ind.vdp(:,1) + 1j*g.ind.vqp(:,1);
+   vmpig = g.igen.vdpig(:,1) + 1j*g.igen.vqpig(:,1);
    int_volt = [psi; vmp; vmpig];   
 else
    int_volt = psi;

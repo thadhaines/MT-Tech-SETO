@@ -27,7 +27,7 @@ function [Yrr,Yri,Yir,Yii] = dc_load(V,k,kdc)
 
 %Vdc NOT Global
 global g
-jay = sqrt(-1);
+
 V0(g.dc.r_idx,1) = g.dc.dcc_pot(:,7).*abs(V(g.dc.r_idx));
 V0(g.dc.i_idx,1) = g.dc.dcc_pot(:,8).*abs(V(g.dc.i_idx));
 dc_ang(g.dc.r_idx,1) = g.dc.alpha(:,kdc);
@@ -42,7 +42,7 @@ sphi = sqrt(ones(g.dc.n_conv,1) - cphi.*cphi);
 P = Vdc.*idc/g.sys.basmva;
 Q = P.*sphi./cphi;
 P(g.dc.i_idx) = - P(g.dc.i_idx);
-iac = (P - jay*Q)./conj(V);
+iac = (P - 1j*Q)./conj(V);
 ir = real(iac);
 ii = imag(iac);
 dV0dVr(g.dc.r_idx,1) = g.dc.dcc_pot(:,7).*real(V(g.dc.r_idx))./abs(V(g.dc.r_idx));

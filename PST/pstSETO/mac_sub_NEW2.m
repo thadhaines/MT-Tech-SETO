@@ -34,10 +34,10 @@ function mac_sub(i,k,bus,flag)
 %   07/02/20    13:17   Thad Haines     Completion of global g
 %   07/15/20    06:50   Thad Haines     Created from mac_sub_NEW - changes to psi_re, psi_im and Te 
 %                                       calculation around lines: 152, 157, 209
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay = sqrt(-1);
 if g.mac.n_sub~=0
   if flag == 0 % initialization
       % vectorized computation
@@ -85,12 +85,12 @@ if g.mac.n_sub~=0
       curr = sqrt(g.mac.pelect(g.mac.mac_sub_idx,1).^2+g.mac.qelect(g.mac.mac_sub_idx,1).^2) ...
             ./g.mac.eterm(g.mac.mac_sub_idx,1).*g.mac.mac_pot(g.mac.mac_sub_idx,1);  % current magnitude on generator base
       phi = atan2(g.mac.qelect(g.mac.mac_sub_idx,1),g.mac.pelect(g.mac.mac_sub_idx,1)); % power factor angle
-      v = g.mac.eterm(g.mac.mac_sub_idx,1).*exp(jay*g.bus.theta(busnum,1)); % voltage in real and imaginary parts in system reference frame 
-      curr = curr.*exp(jay*(g.bus.theta(busnum,1)-phi));  % complex current in system reference frame 
-      ei = v + (g.mac.mac_con(g.mac.mac_sub_idx,5)+jay*g.mac.mac_con(g.mac.mac_sub_idx,11)).*curr; % voltage behind sub-transient reactance in system frame
+      v = g.mac.eterm(g.mac.mac_sub_idx,1).*exp(1j*g.bus.theta(busnum,1)); % voltage in real and imaginary parts in system reference frame 
+      curr = curr.*exp(1j*(g.bus.theta(busnum,1)-phi));  % complex current in system reference frame 
+      ei = v + (g.mac.mac_con(g.mac.mac_sub_idx,5)+1j*g.mac.mac_con(g.mac.mac_sub_idx,11)).*curr; % voltage behind sub-transient reactance in system frame
       g.mac.mac_ang(g.mac.mac_sub_idx,1) = atan2(imag(ei),real(ei)); % machine angle (delta)
       g.mac.mac_spd(g.mac.mac_sub_idx,1) = ones(g.mac.n_sub,1); % machine speed at steady state
-      rot = jay*exp(-jay*g.mac.mac_ang(g.mac.mac_sub_idx,1)); % system reference frame rotation to Park's frame
+      rot = 1j*exp(-1j*g.mac.mac_ang(g.mac.mac_sub_idx,1)); % system reference frame rotation to Park's frame
       curr = curr.*rot;% current on generator base in Park's frame
       mcurmag = abs(curr);
       g.mac.pmech(g.mac.mac_sub_idx,1) = g.mac.pelect(g.mac.mac_sub_idx,1).*g.mac.mac_pot(g.mac.mac_sub_idx,1)...
@@ -173,7 +173,7 @@ if g.mac.n_sub~=0
                             sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.mac.cur_im(g.mac.mac_sub_idx,k); % q-axis current
       g.mac.curdg(g.mac.mac_sub_idx,k) = g.mac.curd(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1);
       g.mac.curqg(g.mac.mac_sub_idx,k) = g.mac.curq(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1);
-      mcurmag = abs(g.mac.curdg(g.mac.mac_sub_idx,k)+jay*g.mac.curqg(g.mac.mac_sub_idx,k));
+      mcurmag = abs(g.mac.curdg(g.mac.mac_sub_idx,k)+1j*g.mac.curqg(g.mac.mac_sub_idx,k));
       
       %No saturation for now
       E_Isat = g.mac.eqprime(g.mac.mac_sub_idx,k);      

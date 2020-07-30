@@ -10,6 +10,8 @@ function f =mac_ib(i,k,bus,flag)
 % uses the appropriate initialization model to determine the initial
 % internal voltage
 
+%   07/29/20    15:20   Thad Haines     jay -> 1j
+
 % infinite bus indexes
 global mac_con mac_ib_sub mac_ib_tra mac_ib_em mac_ib_idx not_ib_idx
 global n_ib n_ib_sub n_ib_tra n_ib_em
@@ -27,7 +29,6 @@ global  pmech pelect qelect
 f = 0;
 % exit if no infinite buses
 if n_ib~=0
-   jay = sqrt(-1);
    if flag ==0
       %initialize
       if i~=0 % non-vector initialization
@@ -55,16 +56,16 @@ if n_ib~=0
                      /eterm(i,1)*mac_pot(i,1);  % current magnitude
                   phi = atan2(qelect(i,1),pelect(i,1)); 
                   % power factor angle
-                  v = eterm(i,1)*exp(jay*theta(busnum,1)); 
+                  v = eterm(i,1)*exp(1j*theta(busnum,1)); 
                   % voltage in real and imaginary parts
                   % on system reference frame 
-                  curr = curr*exp(jay*(theta(busnum,1)-phi)); % current in real and 
+                  curr = curr*exp(1j*(theta(busnum,1)-phi)); % current in real and 
                   % imaginary parts on system reference frame 
-                  eprime = v + jay*mac_con(i,7)*curr; 
+                  eprime = v + 1j*mac_con(i,7)*curr; 
                   ei = eprime;
                   mac_ang(i,1) = atan2(imag(ei),real(ei)); 
                   % machine angle (delta)
-                  rot = jay*exp(-jay*mac_ang(i,1)); 
+                  rot = 1j*exp(-1j*mac_ang(i,1)); 
                   % system reference frame rotation
                   eprime = eprime*rot;
                   edprime(i,1) = real(eprime); 
@@ -93,16 +94,16 @@ if n_ib~=0
                      /eterm(i,1)*mac_pot(i,1);  % current magnitude
                   phi = atan2(qelect(i,1),pelect(i,1)); 
                   % power factor angle
-                  v = eterm(i,1)*exp(jay*theta(busnum,1)); 
+                  v = eterm(i,1)*exp(1j*theta(busnum,1)); 
                   % voltage in real and imaginary parts
                   % on system reference frame 
-                  curr = curr*exp(jay*(theta(busnum,1)-phi)); % current in real and 
+                  curr = curr*exp(1j*(theta(busnum,1)-phi)); % current in real and 
                   % imaginary parts on system reference frame 
-                  eprime = v +(mac_con(i,5) + jay*mac_con(i,7))*curr; 
-                  ei = v + (mac_con(i,5) + jay*mac_con(i,11))*curr;
+                  eprime = v +(mac_con(i,5) + 1j*mac_con(i,7))*curr; 
+                  ei = v + (mac_con(i,5) + 1j*mac_con(i,11))*curr;
                   mac_ang(i,1) = atan2(imag(ei),real(ei)); 
                   % machine angle (delta)
-                  rot = jay*exp(-jay*mac_ang(i,1)); % system reference frame rotation
+                  rot = 1j*exp(-1j*mac_ang(i,1)); % system reference frame rotation
                   eprime = eprime*rot;
                   edprime(i,1) = real(eprime); 
                   eqprime(i,1) = imag(eprime); 
@@ -130,15 +131,15 @@ if n_ib~=0
                      /eterm(i,1)*mac_pot(i,1);  % current magnitude
                   phi = atan2(qelect(i,1),pelect(i,1)); 
                   % power factor angle
-                  v = eterm(i,1)*exp(jay*theta(busnum,1)); 
+                  v = eterm(i,1)*exp(1j*theta(busnum,1)); 
                   % voltage in real and imaginary parts
                   % on system reference frame 
-                  curr = curr*exp(jay*(theta(busnum,1)-phi)); % current in real and 
+                  curr = curr*exp(1j*(theta(busnum,1)-phi)); % current in real and 
                   % imaginary parts on system reference frame 
-                  ei = v + (mac_con(i,5)+jay*mac_con(i,11))*curr;
+                  ei = v + (mac_con(i,5)+1j*mac_con(i,11))*curr;
                   mac_ang(i,1) = atan2(imag(ei),real(ei)); 
                   % machine angle (delta)
-                  rot = jay*exp(-jay*mac_ang(i,1));  % system reference frame rotation
+                  rot = 1j*exp(-1j*mac_ang(i,1));  % system reference frame rotation
                   curr = curr*rot;
                   curdg(i,1) = real(curr); curqg(i,1) = imag(curr);
                   v = v*rot;
@@ -177,16 +178,16 @@ if n_ib~=0
                ./eterm(mac_ib_em,1).*mac_pot(mac_ib_em,1);  % current magnitude
             phi = atan2(qelect(mac_ib_em,1),pelect(mac_ib_em,1)); 
             % power factor angle
-            v = eterm(mac_ib_em,1).*exp(jay*theta(busnum,1)); 
+            v = eterm(mac_ib_em,1).*exp(1j*theta(busnum,1)); 
             % voltage in real and imaginary parts
             % on system reference frame 
-            curr = curr.*exp(jay*(theta(busnum,1)-phi)); % current in real and 
+            curr = curr.*exp(1j*(theta(busnum,1)-phi)); % current in real and 
             % imaginary parts on system reference frame 
-            eprime = v + jay*mac_con(mac_ib_em,7).*curr; 
+            eprime = v + 1j*mac_con(mac_ib_em,7).*curr; 
             ei = eprime;
             mac_ang(mac_ib_em,1) = atan2(imag(ei),real(ei)); 
             % machine angle (delta)
-            rot = jay*exp(-jay*mac_ang(mac_ib_em,1)); 
+            rot = 1j*exp(-1j*mac_ang(mac_ib_em,1)); 
             % system reference frame rotation
             eprime = eprime.*rot;
             edprime(mac_ib_em,1) = real(eprime); 
@@ -211,16 +212,16 @@ if n_ib~=0
                ./eterm(mac_ib_tra,1).*mac_pot(mac_ib_tra,1);  % current magnitude
             phi = atan2(qelect(mac_ib_tra,1),pelect(mac_ib_tra,1)); 
             % power factor angle
-            v = eterm(mac_ib_tra,1).*exp(jay*theta(busnum,1)); 
+            v = eterm(mac_ib_tra,1).*exp(1j*theta(busnum,1)); 
             % voltage in real and imaginary parts
             % on system reference frame 
-            curr = curr.*exp(jay*(theta(busnum,1)-phi)); % current in real and 
+            curr = curr.*exp(1j*(theta(busnum,1)-phi)); % current in real and 
             % imaginary parts on system reference frame 
-            eprime = v + (mac_con(mac_ib_tra,5)+jay*mac_con(mac_ib_tra,7)).*curr; 
-            ei = v + (mac_con(mac_ib_tra,5)+jay*mac_con(mac_ib_tra,11)).*curr;
+            eprime = v + (mac_con(mac_ib_tra,5)+1j*mac_con(mac_ib_tra,7)).*curr; 
+            ei = v + (mac_con(mac_ib_tra,5)+1j*mac_con(mac_ib_tra,11)).*curr;
             mac_ang(mac_ib_tra,1) = atan2(imag(ei),real(ei)); 
             % machine angle (delta)
-            rot = jay*exp(-jay*mac_ang(mac_ib_tra,1)); % system reference frame rotation
+            rot = 1j*exp(-1j*mac_ang(mac_ib_tra,1)); % system reference frame rotation
             eprime = eprime.*rot;
             edprime(mac_ib_tra,1) = real(eprime); 
             eqprime(mac_ib_tra,1) = imag(eprime); 
@@ -246,15 +247,15 @@ if n_ib~=0
                ./eterm(mac_ib_sub,1).*mac_pot(mac_ib_sub,1);  % current magnitude
             phi = atan2(qelect(mac_ib_sub,1),pelect(mac_ib_sub,1)); 
             % power factor angle
-            v = eterm(mac_ib_sub,1).*exp(jay*theta(busnum,1)); 
+            v = eterm(mac_ib_sub,1).*exp(1j*theta(busnum,1)); 
             % voltage in real and imaginary parts
             % on system reference frame 
-            curr = curr.*exp(jay*(theta(busnum,1)-phi)); % current in real and 
+            curr = curr.*exp(1j*(theta(busnum,1)-phi)); % current in real and 
             % imaginary parts on system reference frame 
-            ei = v + (mac_con(mac_ib_sub,5)+jay*mac_con(mac_ib_sub,11)).*curr;
+            ei = v + (mac_con(mac_ib_sub,5)+1j*mac_con(mac_ib_sub,11)).*curr;
             mac_ang(mac_ib_sub,1) = atan2(imag(ei),real(ei)); 
             % machine angle (delta)
-            rot = jay*exp(-jay*mac_ang(mac_ib_sub,1)); % system reference frame rotation
+            rot = 1j*exp(-1j*mac_ang(mac_ib_sub,1)); % system reference frame rotation
             curr = curr.*rot;
             curdg(mac_ib_sub,1) = real(curr); 
             curqg(mac_ib_sub,1) = imag(curr);

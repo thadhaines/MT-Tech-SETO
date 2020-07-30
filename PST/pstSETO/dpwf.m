@@ -33,7 +33,7 @@ global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6 
 global  mac_con mac_int mac_spd pelect basmva 
     
-   jay = sqrt(-1);   
+
    if flag == 0; % initialization
       if i ~= 0  % scalar computation
          error('vector computation only for dpwf')

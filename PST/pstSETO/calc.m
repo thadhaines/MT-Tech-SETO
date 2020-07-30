@@ -45,12 +45,12 @@ function [delP,delQ,P,Q,conv_flag] = ...
 % Date:      March 1991
 %
 % ************************************************************
-jay = sqrt(-1);
+
 swing_bus = 1;
 gen_bus = 2;
 load_bus = 3;
 % voltage in rectangular coordinate
-V_rect = V.*exp(jay*ang);  
+V_rect = V.*exp(1j*ang);  
 % bus current injection
 cur_inj = Y*V_rect;
 % power output based on voltages 

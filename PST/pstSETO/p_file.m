@@ -7,6 +7,7 @@
 % Added code for pwrmod, D. Trudnowski, 2015
 % All Rights Reserved
 % step 3a: network solution
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 flag = 1;
 %generators
@@ -16,17 +17,17 @@ mac_tra(0,2,g.bus.bus,flag);
 mac_sub(0,2,g.bus.bus,flag);
 mac_ind(0,2,g.bus.bus,flag); 
 mac_igen(0,2,g.bus.bus,flag);
-psi = g.mac.psi_re(:,2) + jay*g.mac.psi_im(:,2);
+psi = g.mac.psi_re(:,2) + 1j*g.mac.psi_im(:,2);
 
 if g.ind.n_mot~=0&&g.igen.n_ig==0
-   vmp = g.ind.vdp(:,2) + jay*g.ind.vqp(:,2);
+   vmp = g.ind.vdp(:,2) + 1j*g.ind.vqp(:,2);
    int_volt=[psi; vmp]; % internal voltages of generators and motors 
 elseif g.ind.n_mot==0&&g.igen.n_ig~=0
-   vmpig = g.igen.vdpig(:,2) + jay*g.igen.vqpig(:,2);
+   vmpig = g.igen.vdpig(:,2) + 1j*g.igen.vqpig(:,2);
    int_volt=[psi; vmpig]; % internal voltages of sync and ind. generators  
 elseif g.ind.n_mot~=0&&g.igen.n_ig~=0
-   vmp = g.ind.vdp(:,2) + jay*g.ind.vqp(:,2);
-   vmpig = g.igen.vdpig(:,2) + jay*g.igen.vqpig(:,2);
+   vmp = g.ind.vdp(:,2) + 1j*g.ind.vqp(:,2);
+   vmpig = g.igen.vdpig(:,2) + 1j*g.igen.vqpig(:,2);
    int_volt = [psi;vmp;vmpig];
 else
    int_volt = psi;

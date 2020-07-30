@@ -5,7 +5,7 @@
 % added functionality to test s_simu_BatchTestF
 
 clear all; close all; clc
-case2run = 1; % 1= fault, 2 = load step
+case2run = 2; % 1= fault, 2 = load step
 
 %% Add pst path to MATLAB
 % generate relative path generically

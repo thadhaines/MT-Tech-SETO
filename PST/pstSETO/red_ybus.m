@@ -35,10 +35,10 @@ function [Y11,Y12,Y21,Y22,rec_V1,rec_V2,bus_order] = red_ybus(bus_sol,line)
 %   07/02/20    14:29   Thad Haines     Revised format of globals and internal function documentation
 %   07/13/20    12:09   Thad Haines     Added induction gen/motor variables to global g
 %   07/15/20    14:04   Thad Haines     Added HVDC variables to global g
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay = sqrt(-1);
 swing_bus = 1;
 gen_bus = 2;
 load_bus = 3;
@@ -103,7 +103,7 @@ Pl(netgen) = Pl(netgen) - bus_sol(netgen,4);  % convert generation
 Ql(netgen) = Ql(netgen) - bus_sol(netgen,5);  %   to negative load
 
 % form constant impedance load admittance for all buses
-yl = (Pl - jay*Ql)./V.^2;
+yl = (Pl - 1j*Ql)./V.^2;
 ii = [1:1:nbus]';
 y1 = sparse(ii,ii,yl,nbus,nbus);
 Y_d = Y_d + y1; %add to system y matrix
@@ -125,7 +125,7 @@ end
 if ~isempty(txp)
    xd(txp,1) = g.mac.mac_con(txp,7)*g.sys.basmva./g.mac.mac_con(txp,3); %xpd
 end 
-y(1:n,1) = ones(n,1)./(ra+jay*xd); 
+y(1:n,1) = ones(n,1)./(ra+1j*xd); 
    
 jg = g.bus.bus_int(round(g.mac.mac_con(:,2)));  % buses connected to
                                       % generator
@@ -161,7 +161,7 @@ motmax=0;
 if length(g.ind.ind_con)~=0
       xsp = g.ind.ind_pot(:,5).*g.ind.ind_pot(:,1);
       rs=g.ind.ind_con(:,4).*g.ind.ind_pot(:,1);
-      y(n+1:ngm,1) = ones(nmot,1)./(rs+jay*xsp);     
+      y(n+1:ngm,1) = ones(nmot,1)./(rs+1j*xsp);     
       jm = g.bus.bus_int(round(g.ind.ind_con(:,2)));  % bus connected to induction motor
         % check for multiple induction motors at a bus
        perm = eye(nmot);
@@ -191,7 +191,7 @@ igmax=0;
 if nig~=0
       xsp = g.igen.igen_pot(:,5).*g.igen.igen_pot(:,1);
       rs=g.igen.igen_con(:,4).*g.igen.igen_pot(:,1);
-      y(ngm+1:n_tot,1) = ones(nig,1)./(rs+jay*xsp);     
+      y(ngm+1:n_tot,1) = ones(nig,1)./(rs+1j*xsp);     
       jm = g.bus.bus_int(round(g.igen.igen_con(:,2)));  % bus connected to induction generator
         % check for multiple induction generators at a bus
        perm = eye(nig);
@@ -279,21 +279,21 @@ if nargout <= 2
            vr3 = rec_V2(:,n_start:nload);
            
            % make modifications
-           kdc = eye(g.dc.n_conv) - jay*y33*diag(x_dc);
+           kdc = eye(g.dc.n_conv) - 1j*y33*diag(x_dc);
            kdc = inv(kdc);
            y31 = kdc*y31;
            y32 = kdc*y32;
            y33 = kdc*y33;
            
-           y11 = y11 + jay*y13*diag(x_dc)*y31;
-           y12 = y12 + jay*y13*diag(x_dc)*y32;
-           y13 = y13 + jay*y13*diag(x_dc)*y33;
-           y21 = y21 + jay*y23*diag(x_dc)*y31;
-           y22 = y22 + jay*y23*diag(x_dc)*y32;
-           y23 = y23 + jay*y23*diag(x_dc)*y33;
-           vr1 = vr1 + jay*vr3*diag(x_dc)*y31;
-           vr2 = vr2 + jay*vr3*diag(x_dc)*y32;
-           vr3 = vr3 + jay*vr3*diag(x_dc)*y33;
+           y11 = y11 + 1j*y13*diag(x_dc)*y31;
+           y12 = y12 + 1j*y13*diag(x_dc)*y32;
+           y13 = y13 + 1j*y13*diag(x_dc)*y33;
+           y21 = y21 + 1j*y23*diag(x_dc)*y31;
+           y22 = y22 + 1j*y23*diag(x_dc)*y32;
+           y23 = y23 + 1j*y23*diag(x_dc)*y33;
+           vr1 = vr1 + 1j*vr3*diag(x_dc)*y31;
+           vr2 = vr2 + 1j*vr3*diag(x_dc)*y32;
+           vr3 = vr3 + 1j*vr3*diag(x_dc)*y33;
            
            Y11 = y11;
            Y12(:,1:n_fin) = y12;
@@ -315,14 +315,14 @@ if nargout <= 2
            y21 = Y21;
            vr1 = rec_V1;
            vr2 = rec_V2;
-           kdc = eye(g.dc.n_conv) - jay*y22*diag(x_dc);
+           kdc = eye(g.dc.n_conv) - 1j*y22*diag(x_dc);
            kdc = inv(kdc);
            y21 = kdc*y21;
            y22 = kdc*y22;
-           y11 = y11 + jay*y12*diag(x_dc)*y21;
-           y12 = y12 + jay*y12*diag(x_dc)*y22;
-           vr1 = vr1 + jay*vr2*diag(x_dc)*y21;
-           vr2 = vr2 + jay*vr2*diag(x_dc)*y22;
+           y11 = y11 + 1j*y12*diag(x_dc)*y21;
+           y12 = y12 + 1j*y12*diag(x_dc)*y22;
+           vr1 = vr1 + 1j*vr2*diag(x_dc)*y21;
+           vr2 = vr2 + 1j*vr2*diag(x_dc)*y22;
            Y11 = y11;
            Y12 = y12;
            Y21 = y21;

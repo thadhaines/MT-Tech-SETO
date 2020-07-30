@@ -32,7 +32,6 @@ function     [Y,nSW,nPV,nPQ,SB] = y_sparse(bus,line)
 % ************************************************************
 global g
 
-jay = sqrt(-1);
 swing_bus = 1;
 gen_bus = 2;
 load_bus = 3;
@@ -58,8 +57,8 @@ g.bus.bus_int(round(bus(:,1))) = ibus;
 % process line data and build admittance matrix Y
   r = line(:,3);
   rx = line(:,4);
-  chrg =jay*sparse(diag( 0.5*line(:,5)));
-  z = r + jay*rx;     % line impedance
+  chrg =1j*sparse(diag( 0.5*line(:,5)));
+  z = r + 1j*rx;     % line impedance
   y = sparse(diag(ones(nline,1)./z));
 
 % determine connection matrices including tap changers and phase shifters
@@ -71,8 +70,8 @@ g.bus.bus_int(round(bus(:,1))) = ibus;
   tap=ones(nline,1);
   tap(tap_index)=1. ./line(tap_index,6);
   phase_shift = line(:,7);
-  tap = tap.*exp(-jay*phase_shift*pi/180); % Graham's code with - sign
-  % tap = tap.*exp(jay*phase_shift*pi/180);   % Joe's original code 
+  tap = tap.*exp(-1j*phase_shift*pi/180); % Graham's code with - sign
+  % tap = tap.*exp(1j*phase_shift*pi/180);   % Joe's original code 
 
   % sparse matrix formulation
   iline = [1:1:nline]';
@@ -87,7 +86,7 @@ g.bus.bus_int(round(bus(:,1))) = ibus;
   Bb = bus(:,9);     % bus susceptance
 
 % add diagonal shunt admittances
-  Y = Y + sparse(ibus,ibus,Gb+jay*Bb,nbus,nbus);
+  Y = Y + sparse(ibus,ibus,Gb+1j*Bb,nbus,nbus);
 
 if nargout > 1
   % count buses of different types

@@ -52,6 +52,7 @@
 %   07/16/20    11:19   Thad Haines     V 2.0.1 - Added cleanZeros to end of script to clean global g
 %   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
 %   07/21/20    16:20   Thad haines     V 2.0.3 - Added AGC
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 %%
 %clear all
@@ -63,8 +64,6 @@ disp('*** s_simu_Batch Start')
 
 close % close graphics windows
 tic % set timer
-
-jay = sqrt(-1);
 
 disp('*** Declare Global Variables')
 %% Contents of pst_var copied into this section so that globals highlight
@@ -747,7 +746,7 @@ disp('initializing other models...')
 %% step 2: initialization
 n_bus = length(g.bus.bus(:,1));
 g.bus.theta(1:n_bus,1) = g.bus.bus(:,3)*pi/180;
-g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(jay*g.bus.theta(1:n_bus,1)); %complex bus voltage
+g.bus.bus_v(1:n_bus,1) = g.bus.bus(:,2).*exp(1j*g.bus.theta(1:n_bus,1)); %complex bus voltage
 
 % clear temp variables
 clear z zdc zdcl ze zig zm t n_bus
@@ -802,12 +801,12 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
     Qr = g.bus.bus(g.dc.rec_ac_bus,7);
     Qi = g.bus.bus(g.dc.inv_ac_bus,7);
     VLT= g.bus.bus_v(g.dc.ac_bus,1);
-    i_acr = (Pr-jay*Qr)./conj(VLT(g.dc.r_idx));
-    i_aci = (Pi - jay*Qi)./conj(VLT(g.dc.i_idx));
+    i_acr = (Pr-1j*Qr)./conj(VLT(g.dc.r_idx));
+    i_aci = (Pi - 1j*Qi)./conj(VLT(g.dc.i_idx));
     IHT(g.dc.r_idx,1)=i_acr;
     IHT(g.dc.i_idx,1)=i_aci;
-    g.dc.VHT(g.dc.r_idx,1) = (VLT(g.dc.r_idx) + jay*g.dc.dcc_pot(:,2).*i_acr);
-    g.dc.VHT(g.dc.i_idx,1) = (VLT(g.dc.i_idx) + jay*g.dc.dcc_pot(:,4).*i_aci);
+    g.dc.VHT(g.dc.r_idx,1) = (VLT(g.dc.r_idx) + 1j*g.dc.dcc_pot(:,2).*i_acr);
+    g.dc.VHT(g.dc.i_idx,1) = (VLT(g.dc.i_idx) + 1j*g.dc.dcc_pot(:,4).*i_aci);
     g.bus.bus_v(g.dc.ac_bus,1) = g.dc.VHT;
     g.bus.theta(g.dc.ac_bus,1) = angle(g.bus.bus_v(g.dc.ac_bus,1));
     % modify the bus matrix to the HT buses

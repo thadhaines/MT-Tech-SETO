@@ -36,12 +36,13 @@ function [bus_sol,line_sol,line_flow,rec_par,inv_par,line_par] = lfdcs(bus,line,
 %   02/xx/97    XX:XX   Graham Rogers  	Version 1.0
 %   (c) copyright Joe Chow 1991-1997  - All rights reserved
 %   07/15/20    13:43   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
 disp('load flow with HVDC')
 
-jay = sqrt(-1);
+
 % perform load flow iterations
 errv = 0;
 itermax = 40;
@@ -67,8 +68,8 @@ while (errv == 0&&iter<=itermax)
     bus_sol(g.dc.inv_ac_bus,6) = real(Si);
     bus_sol(g.dc.rec_ac_bus,7) = imag(Sr);
     bus_sol(g.dc.inv_ac_bus,7) = imag(Si);
-    Sr_old = bus(g.dc.rec_ac_bus,6)+jay*bus(g.dc.rec_ac_bus,7);
-    Si_old = bus(g.dc.inv_ac_bus,6)+jay*bus(g.dc.inv_ac_bus,7);
+    Sr_old = bus(g.dc.rec_ac_bus,6)+1j*bus(g.dc.rec_ac_bus,7);
+    Si_old = bus(g.dc.inv_ac_bus,6)+1j*bus(g.dc.inv_ac_bus,7);
     % check convergence
     errdc = max(abs([(Sr_old-Sr), (Si_old-Si)]));
     if errdc>1e-5
@@ -87,7 +88,7 @@ while (errv == 0&&iter<=itermax)
      Q = bus_sol(g.dc.ac_bus,7);
      Vac = bus_sol(g.dc.ac_bus,2);
      Vang = bus_sol(g.dc.ac_bus,3)*pi/180;
-     i_ac = (P - jay*Q)./Vac./exp(-jay*Vang);
+     i_ac = (P - 1j*Q)./Vac./exp(-1j*Vang);
      Vac = Vac.*bus_sol(g.dc.ac_bus,13); %convert to kV
      % convert ac currents to dc
      idceq = abs(i_ac)*pi*g.sys.basmva/3/sqrt(2)...
@@ -96,7 +97,7 @@ while (errv == 0&&iter<=itermax)
      i_ac = i_ac*g.sys.basmva/sqrt(3)./bus_sol(g.dc.ac_bus,13);
      %calculate equivalent HT bus voltage
      xequ = sqrt(3)*g.dc.dcsp_con(:,5)./g.dc.dcsp_con(:,6);% eq transformer reactance
-     g.dc.VHT = abs(Vac.*exp(jay*Vang) + jay*xequ.*i_ac);
+     g.dc.VHT = abs(Vac.*exp(1j*Vang) + 1j*xequ.*i_ac);
      Vdo = 3*sqrt(2)*g.dc.VHT.*g.dc.dcsp_con(:,6)/pi;% ideal dc voltages
      %calculate dc voltages
      dc_ang(g.dc.r_idx,1)  = rec_par(:,1)*pi/180;

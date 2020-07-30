@@ -27,11 +27,11 @@ function mac_em(i,k,bus,flag)
 %   (c) Copyright 1991-1997 Joe H. Chow/ Cherry Tree Scientific Software - All Rights Reserved
 %   06/19/20    09:52   Thad Haines     Revised format of globals and internal function documentation
 %   07/07/20    14:32   Thad Haines     Completion of global g alteration
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
 if g.mac.n_em ~=0
- jay = sqrt(-1);
  if flag == 0 % initialization
    if i~=0
       % non-vector calculation
@@ -54,18 +54,18 @@ if g.mac.n_em ~=0
                                          % on generator base
         phi = atan2(g.mac.qelect(i,1),g.mac.pelect(i,1)); 
                                         % power factor angle
-        v = g.mac.eterm(i,1)*exp(jay*g.bus.theta(busnum,1)); 
+        v = g.mac.eterm(i,1)*exp(1j*g.bus.theta(busnum,1)); 
                      % voltage in real and imaginary parts
                      % on system reference frame 
-        curr = curr*exp(jay*(g.bus.theta(busnum,1)-phi)); % complex current  
+        curr = curr*exp(1j*(g.bus.theta(busnum,1)-phi)); % complex current  
                                                     % in system reference frame 
-        eprime = v + jay*g.mac.mac_con(i,7)*curr; 
+        eprime = v + 1j*g.mac.mac_con(i,7)*curr; 
         % voltage behind transient reactance
         ei = eprime;
         g.mac.mac_ang(i,1) = atan2(imag(ei),real(ei)); 
                                     % machine angle (delta)
         g.mac.mac_spd(i,1) = 1; % machine speed at steady state
-        rot = jay*exp(-jay*g.mac.mac_ang(i,1)); 
+        rot = 1j*exp(-1j*g.mac.mac_ang(i,1)); 
                           % system reference frame rotation
         g.mac.psi_re(i,1) = real(eprime);
         g.mac.psi_im(i,1) = imag(eprime);
@@ -105,18 +105,18 @@ if g.mac.n_em ~=0
                                                            % on generator base
       phi = atan2(g.mac.qelect(g.mac.mac_em_idx,1),g.mac.pelect(g.mac.mac_em_idx,1)); 
                                         % power factor angle
-      v = g.mac.eterm(g.mac.mac_em_idx,1).*exp(jay*g.bus.theta(busnum,1)); 
+      v = g.mac.eterm(g.mac.mac_em_idx,1).*exp(1j*g.bus.theta(busnum,1)); 
                      % voltage in real and imaginary parts
                      % on system reference frame 
-      curr = curr.*exp(jay*(g.bus.theta(busnum,1)-phi)); % current in real and 
+      curr = curr.*exp(1j*(g.bus.theta(busnum,1)-phi)); % current in real and 
                  % imaginary parts on system reference frame 
-      eprime = v + jay*g.mac.mac_con(g.mac.mac_em_idx,7).*curr; 
+      eprime = v + 1j*g.mac.mac_con(g.mac.mac_em_idx,7).*curr; 
       ei = eprime;
       g.mac.mac_ang(g.mac.mac_em_idx,1) = atan2(imag(ei),real(ei)); 
                                     % machine angle (delta)
       g.mac.mac_spd(g.mac.mac_em_idx,1) = ones(g.mac.n_em,1); 
                             % machine speed at steady state
-      rot = jay*exp(-jay*g.mac.mac_ang(g.mac.mac_em_idx,1)); 
+      rot = 1j*exp(-1j*g.mac.mac_ang(g.mac.mac_em_idx,1)); 
                           % system reference frame rotation
       g.mac.psi_re(g.mac.mac_em_idx,1) = real(eprime);
       g.mac.psi_im(g.mac.mac_em_idx,1) = imag(eprime);

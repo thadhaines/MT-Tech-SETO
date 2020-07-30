@@ -42,11 +42,12 @@ function V_nc = nc_load(bus,flag,Y22,Y21,psi,V_o,tol,k,kdc)
 %   (c) Copyright 1991-1997 Joe H. Chow/Cherry Tree Scientific Software All Rights Reserved
 %   02/xx/15    xx:xx   Dan Trudnowski  Version 2.3 - Added power modulation
 %   07/15/20    13:50   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g 
 
 if ~isempty(g.ncl.load_con)
-   jay = sqrt(-1);
+    
    if flag == 0 % initialization
        
       g.ncl.nload = size(g.ncl.load_con,1);
@@ -55,12 +56,12 @@ if ~isempty(g.ncl.load_con)
       %  vectorized computation
       j = g.bus.bus_int(g.ncl.load_con(:,1));
       % no need for special treatment for dc buses on initialization
-      V_nc = bus(j,2).*exp(jay*bus(j,3)*pi/180);
+      V_nc = bus(j,2).*exp(1j*bus(j,3)*pi/180);
       % constant power component
       g.ncl.load_pot(:,1) = bus(j,6).*g.ncl.load_con(:,2) ...
-                      + jay*bus(j,7).*g.ncl.load_con(:,3);
+                      + 1j*bus(j,7).*g.ncl.load_con(:,3);
       S_cc = bus(j,6).*g.ncl.load_con(:,4) ...
-             + jay*bus(j,7).*g.ncl.load_con(:,5);
+             + 1j*bus(j,7).*g.ncl.load_con(:,5);
       % constant current component
       g.ncl.load_pot(:,2) = S_cc./abs(V_nc);
       g.ncl.load_pot(:,3) = g.ncl.load_pot(:,1)./V_nc./conj(V_nc);% const impedance equ of const power load
@@ -81,13 +82,13 @@ if ~isempty(g.ncl.load_con)
       
       if g.svc.n_svc~=0
          j = g.svc.svc_idx;    
-         Y22(j,j) = Y22(j,j)+jay*diag(g.svc.B_cv(:,k));% note that Y22 is a local variable
+         Y22(j,j) = Y22(j,j)+1j*diag(g.svc.B_cv(:,k));% note that Y22 is a local variable
       end
       if g.tcsc.n_tcsc~=0
          j = g.tcsc.tcscf_idx; 
          jj = g.tcsc.tcsct_idx;
-         Y22(j,j)=Y22(j,j) + jay*diag(g.tcsc.B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - jay*diag(g.tcsc.B_tcsc(:,k));
-         Y22(jj,j)=Y22(jj,j) - jay*diag(g.tcsc.B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + jay*diag(g.tcsc.B_tcsc(:,k));
+         Y22(j,j)=Y22(j,j) + 1j*diag(g.tcsc.B_tcsc(:,k));Y22(j,jj)=Y22(j,jj) - 1j*diag(g.tcsc.B_tcsc(:,k));
+         Y22(jj,j)=Y22(jj,j) - 1j*diag(g.tcsc.B_tcsc(:,k));Y22(jj,jj)=Y22(jj,jj) + 1j*diag(g.tcsc.B_tcsc(:,k));
       end
       if g.lmod.n_lmod ~=0 
          j = g.lmod.lmod_idx;
@@ -95,7 +96,7 @@ if ~isempty(g.ncl.load_con)
       end
       if g.rlmod.n_rlmod ~=0
          j = g.rlmod.rlmod_idx;
-         Y22(j,j) = Y22(j,j) + jay*diag(g.rlmod.rlmod_st(:,k));
+         Y22(j,j) = Y22(j,j) + 1j*diag(g.rlmod.rlmod_st(:,k));
       end
       
       %pwrmod % added 06/11/20
@@ -103,13 +104,13 @@ if ~isempty(g.ncl.load_con)
       if g.pwr.n_pwrmod~=0
           for index=1:g.pwr.n_pwrmod
             if (g.ncl.load_con(g.pwr.pwrmod_idx(index),2)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(index),3)==1)
-                load_pot_mod(g.pwr.pwrmod_idx(index),1) = - (g.pwr.pwrmod_p_st(index,k) + jay*g.pwr.pwrmod_q_st(index,k)); %power modulation
+                load_pot_mod(g.pwr.pwrmod_idx(index),1) = - (g.pwr.pwrmod_p_st(index,k) + 1j*g.pwr.pwrmod_q_st(index,k)); %power modulation
 %                 load_pot_mod(pwrmod_idx(index),3) = ...
-%                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/(V_nc(index)*conj(V_nc(index))); %power modulation with v<0.5 - maybe disable?
+%                     - (pwrmod_p_st(index,k) + 1j*pwrmod_q_st(index,k))/(V_nc(index)*conj(V_nc(index))); %power modulation with v<0.5 - maybe disable?
             elseif (g.ncl.load_con(g.pwr.pwrmod_idx(index),4)==1 && g.ncl.load_con(g.pwr.pwrmod_idx(index),5)==1)
-                load_pot_mod(g.pwr.pwrmod_idx(index),2) = - (g.pwr.pwrmod_p_st(index,k) + jay*g.pwr.pwrmod_q_st(index,k)); %current modulation
+                load_pot_mod(g.pwr.pwrmod_idx(index),2) = - (g.pwr.pwrmod_p_st(index,k) + 1j*g.pwr.pwrmod_q_st(index,k)); %current modulation
 %                 load_pot_mod(pwrmod_idx(index),4) = ...
-%                     - (pwrmod_p_st(index,k) + jay*pwrmod_q_st(index,k))/abs(V_nc(index)); %current modulation with v<.5 - maybe disable?
+%                     - (pwrmod_p_st(index,k) + 1j*pwrmod_q_st(index,k))/abs(V_nc(index)); %current modulation with v<.5 - maybe disable?
             end
           end
       end
@@ -187,7 +188,7 @@ if ~isempty(g.ncl.load_con)
             Y22_imag+diag(v_s21)   Y22_real+diag(v_s22)];
          b = [ real(curr_mis); imag(curr_mis) ];
          x = Jac_nc\b;   % solve for voltage increment
-         V_nc = V_nc + x(1:g.ncl.nload,1) + jay*x(g.ncl.nload+1:2*g.ncl.nload,1);
+         V_nc = V_nc + x(1:g.ncl.nload,1) + 1j*x(g.ncl.nload+1:2*g.ncl.nload,1);
          % update voltage
          count = count + 1;
          lv_idx = find(abs(V_nc)<=0.5);

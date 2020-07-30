@@ -27,7 +27,7 @@ disp('vstab demo program')
 load_bus = 3;
 gen_bus=2;
 swing_bus=1;
-jay=sqrt(-1);
+
 % load input data from m.file
 
 [dfile,pathname]=uigetfile('d*.m','Select Data File');

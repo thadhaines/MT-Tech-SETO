@@ -30,10 +30,10 @@ function mac_sub(i,k,bus,flag)
 %   09/xx/97    xx:xx   -               Version 2.1 - modified for low Eqprime
 %   (c) Copyright 1991-1999 Joe H. Chow/Cherry Tree Scientific Software - All Rights Reserved
 %   06/19/20    10:16   Thad Haines     Revised format of globals and internal function documentation
+%   07/29/20    15:20   Thad Haines     jay -> 1j
 
 global g
 
-jay = sqrt(-1);
 if g.mac.n_sub~=0
     if flag == 0 % initialization
         if i ~= 0
@@ -86,16 +86,16 @@ if g.mac.n_sub~=0
                 %on genenearor base
                 phi = atan2(g.mac.qelect(i,1),g.mac.pelect(i,1));
                 % power factor angle
-                v = g.mac.eterm(i,1)*exp(jay*g.bus.theta(busnum,1));
+                v = g.mac.eterm(i,1)*exp(1j*g.bus.theta(busnum,1));
                 % complex voltage
                 % in system reference frame
-                curr = curr*exp(jay*(g.bus.theta(busnum,1)-phi)); % complex current
+                curr = curr*exp(1j*(g.bus.theta(busnum,1)-phi)); % complex current
                 % in system reference frame
-                ei = v + (g.mac.mac_con(i,5)+jay*g.mac.mac_con(i,11))*curr;
+                ei = v + (g.mac.mac_con(i,5)+1j*g.mac.mac_con(i,11))*curr;
                 g.mac.mac_ang(i,1) = atan2(imag(ei),real(ei));
                 % machine angle (delta)
                 g.mac.mac_spd(i,1) = 1; % machine speed at steady state
-                rot = jay*exp(-jay*g.mac.mac_ang(i,1));  % system reference frame rotation
+                rot = 1j*exp(-1j*g.mac.mac_ang(i,1));  % system reference frame rotation
                 curr = curr*rot;
                 g.mac.curdg(i,1) = real(curr); 
                 g.mac.curqg(i,1) = imag(curr);% current in Park's frame
@@ -188,18 +188,18 @@ if g.mac.n_sub~=0
             % current magnitude on generator base
             phi = atan2(g.mac.qelect(g.mac.mac_sub_idx,1),g.mac.pelect(g.mac.mac_sub_idx,1));
             % power factor angle
-            v = g.mac.eterm(g.mac.mac_sub_idx,1).*exp(jay*g.bus.theta(busnum,1));
+            v = g.mac.eterm(g.mac.mac_sub_idx,1).*exp(1j*g.bus.theta(busnum,1));
             % voltage in real and imaginary parts
             % in system reference frame
-            curr = curr.*exp(jay*(g.bus.theta(busnum,1)-phi));
+            curr = curr.*exp(1j*(g.bus.theta(busnum,1)-phi));
             % complex current in system reference frame
-            ei = v + (g.mac.mac_con(g.mac.mac_sub_idx,5)+jay*g.mac.mac_con(g.mac.mac_sub_idx,11)).*curr;
+            ei = v + (g.mac.mac_con(g.mac.mac_sub_idx,5)+1j*g.mac.mac_con(g.mac.mac_sub_idx,11)).*curr;
             % voltage behind sub-transient reactance in system frame
             g.mac.mac_ang(g.mac.mac_sub_idx,1) = atan2(imag(ei),real(ei));
             % machine angle (delta)
             g.mac.mac_spd(g.mac.mac_sub_idx,1) = ones(g.mac.n_sub,1);
             % machine speed at steady state
-            rot = jay*exp(-jay*g.mac.mac_ang(g.mac.mac_sub_idx,1));
+            rot = 1j*exp(-1j*g.mac.mac_ang(g.mac.mac_sub_idx,1));
             % system reference frame rotation to Park's frame
             curr = curr.*rot;
             % current on generator base in Park's frame
@@ -299,7 +299,7 @@ if g.mac.n_sub~=0
                     sin(g.mac.mac_ang(i,k))*g.mac.cur_im(i,k); % q-axis current
                 g.mac.curdg(i,k) = g.mac.curd(i,k)*g.mac.mac_pot(i,1);
                 g.mac.curqg(i,k) = g.mac.curq(i,k)*g.mac.mac_pot(i,1);
-                mcurmag = abs(g.mac.curdg(i,k) + jay*g.mac.curqg(i,k));
+                mcurmag = abs(g.mac.curdg(i,k) + 1j*g.mac.curqg(i,k));
                 E_Isat = g.mac.mac_pot(i,3)*g.mac.eqprime(i,k)^2 ...
                     + g.mac.mac_pot(i,4)*g.mac.eqprime(i,k) + g.mac.mac_pot(i,5);
                 if g.mac.eqprime(k,1)<0.8
@@ -343,7 +343,7 @@ if g.mac.n_sub~=0
                 sin(g.mac.mac_ang(g.mac.mac_sub_idx,k)).*g.mac.cur_im(g.mac.mac_sub_idx,k); % q-axis current
             g.mac.curdg(g.mac.mac_sub_idx,k) = g.mac.curd(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1);
             g.mac.curqg(g.mac.mac_sub_idx,k) = g.mac.curq(g.mac.mac_sub_idx,k).*g.mac.mac_pot(g.mac.mac_sub_idx,1);
-            mcurmag = abs(g.mac.curdg(g.mac.mac_sub_idx,k)+jay*g.mac.curqg(g.mac.mac_sub_idx,k));
+            mcurmag = abs(g.mac.curdg(g.mac.mac_sub_idx,k)+1j*g.mac.curqg(g.mac.mac_sub_idx,k));
             E_Isat = g.mac.mac_pot(g.mac.mac_sub_idx,3).*g.mac.eqprime(g.mac.mac_sub_idx,k).^2 ...
                 + g.mac.mac_pot(g.mac.mac_sub_idx,4).*g.mac.eqprime(g.mac.mac_sub_idx,k) + g.mac.mac_pot(g.mac.mac_sub_idx,5);
             nosat_idx=find(g.mac.eqprime(g.mac.mac_sub_idx,1)<.8);
