@@ -33,7 +33,7 @@ if isempty(flag) % normal step completion
     % i.e. call handleStDx to place new solution results into associated globals
     handleStDx(g.vts.dataN, y, 2)
     
-    fprintf('* Data step: %6d\tat time:\t%8.4f\tused %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
+    fprintf('* dataN: %6d\tat time:\t%8.6f\trequired %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
     g.vts.tot_iter = g.vts.tot_iter  + g.vts.iter; % count total iterations...
     g.vts.slns(g.vts.dataN) = g.vts.iter;
     g.vts.iter = 0; % reset iteration (solution) counter
@@ -44,7 +44,7 @@ beginning the integration to allow the output function to initialize.
 tspan and y0 are the input arguments to the ODE solver.
     %}
 elseif flag(1) == 'i' % init solver for time period t
-    g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
+    %g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
     g.sys.t(g.vts.dataN) = t(1); % log step time
     
     handleStDx(g.vts.dataN, y, 2) % log initial conditions
@@ -62,12 +62,8 @@ elseif flag(1) == 'd' % time period complete
     % debug display
     disp('*** ')
     disp('Flag == done')
-    fprintf('Last complete data step: %d\t%8.4f\n', g.vts.dataN, g.sys.t(g.vts.dataN))
+    fprintf('Last complete data step: %d\t%8.10f\n', g.vts.dataN, g.sys.t(g.vts.dataN))
 
-    % NOTE: Called after last normal integration step
-    %%%g.vts.dataN = g.vts.dataN+1; % increment logged data index 'dataN'
-    % included here as init does not increment data index
-    % NOTE: extra index must be removed after all simulated times are complete
 end
 
 end

@@ -7,7 +7,7 @@ printFigs = 0;
 caseCell = { 'VTSode113.mat', 'VTSode15s.mat', 'VTSode23.mat', ...
     'VTSode23t.mat', 'VTSode23tb.mat'};
 
-caseCell = { 'VTSode23tb.mat'};
+% caseCell = { 'VTSode23tb.mat'};
 
 for test=1:length(caseCell);
     
@@ -43,9 +43,9 @@ for test=1:length(caseCell);
     
     %% bus angle
     subplot(3,2,2)
-    plot(gv.sys.t(1:gv.vts.dataN), angle(gv.bus.bus_v(busV,1:gv.vts.dataN)),'k','linewidth',1.25)
+    plot(gv.sys.t(1:gv.vts.dataN), unwrap(angle(gv.bus.bus_v(busV,1:gv.vts.dataN))),'k','linewidth',1.25)
     hold on
-    plot(g.sys.t,angle(g.bus.bus_v(busV,:)) , 'm--','linewidth',1)
+    plot(g.sys.t,unwrap(angle(g.bus.bus_v(busV,:))) , 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
     title({ ['Bus Voltage Angle Comparison of Bus ',int2str(busV)]})
     ylabel('Angle [rads]')
@@ -101,7 +101,8 @@ for test=1:length(caseCell);
     xlabel('Time [seconds]')
     grid on
     %NE 39 bus 10 machine - 14 ms 3 Phase Fault
-    mtit(odeN, 'xoff',0.0, 'yoff',0.025)
+    
+    mtit(odeN, 'xoff',0.0, 'yoff',0.025) % subplot master title - is custom function added to path
     
     %% Manipulate size and export
     if printFigs
@@ -157,7 +158,8 @@ for test=1:length(caseCell);
     % plot number of solutions
     subplot(3,1,2)
     stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
-    %bar(gv.vts.slns,'k','linewidth',1.25)
+    hold on
+    bar(gv.sys.t, gv.vts.slns,'k')
     
     aveSln = round(mean(gv.vts.slns));
     maxSln = max(gv.vts.slns);
@@ -168,14 +170,19 @@ for test=1:length(caseCell);
     grid on
     text(7, maxSln*.7,txtBlk)
     title('Number of Network and Dynamic Solutions')
-    xlabel('Time [seconds]')
+    %xlabel('Time [seconds]')
+    %ylim([aveSln*10, maxSln*1.2])
     ylabel('Number of Solutions')
+    
+    xlim([min(gv.sys.t), max(gv.sys.t)])
     
     % plot number of solutions detail
     subplot(3,1,3)
     stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
-    %bar(gv.vts.slns,'k','linewidth',1.25)
+    hold on
+    bar(gv.sys.t, gv.vts.slns,'k')
     ylim([0,aveSln])
+    xlim([min(gv.sys.t), max(gv.sys.t)])
     grid on
     title('Number of Network and Dynamic Solutions (Detail)')
     xlabel('Time [seconds]')

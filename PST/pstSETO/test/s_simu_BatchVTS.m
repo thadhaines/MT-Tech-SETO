@@ -56,6 +56,7 @@
 %   07/27/20    09:54   Thad Haines     Begining work on Variable Time step simulation
 %   07/28/20    16:20   Thad Haines     Initial working VTS simulation
 %   07/29/20    15:20   Thad Haines     jay -> 1j
+%   07/30/20    08:04   Thad Haines     Re-integrated interactive script running/plotting
 
 %%
 %clear all
@@ -64,10 +65,6 @@
 % assumes required arrays created before this script runs and DataFile is delted/not found
 format compact;
 disp('*** s_simu_BatchVTS Start')
-
-close % close graphics windows
-tic % set timer
-
 disp('*** Declare Global Variables')
 %% Contents of pst_var copied into this section so that globals highlight
 % globals converted to the global g have been removed
@@ -91,15 +88,27 @@ global ibus_con  netg_con  stab_con
 %% global structured array
 global g
 
-%% unused/unimplemented damping controls -thad 07/15/20
-% intentionally removed/ignored?
-g.svc.svc_dc=[];
-
-g.tcsc.tcsc_dc=[];
-g.tcsc.n_tcscud = 0;
-
-g.dc.dcr_dc=[];
-g.dc.dci_dc=[];
+%% place to querry user - assumes all variables up to this point are global...
+if all( size(whos('global')) == size(whos()) )
+    scriptRunFlag = 1;
+    % input data file
+    [fname, pathname]=uigetfile('*.m','Select Data File to load');
+    % replace data file in current directory with selected file.
+    copyfile([pathname, fname],'DataFile.m'); % copy system data file to batch run location
+    % ask for Fbase
+    prompt={'System Frequency Base [Hz]:','System S Base [MW]:'};
+    name='Input F and S base values';
+    numlines=1;
+    defaultanswer={'60','100'};
+    
+    answer=inputdlg(prompt,name,numlines,defaultanswer);
+    
+    Fbase = str2num(answer{1});
+    Sbase = str2num(answer{2});
+    clear fname pathname prompt name numlines defaultanswer answer
+else
+    scriptRunFlag = 'No thanks...';
+end
 
 %% input data file from d_*.m file
 % 05/20 Edits - thad
@@ -113,7 +122,7 @@ else
     fprintf('*** MATLAB detected.\n')
 end
 clear dataCheck
-
+%%
 % account for non-existant DataFile (assumes required arrays created other ways...)
 try
     DataFile %Batch name for data file
@@ -157,9 +166,20 @@ elseif isnumeric(Sbase)
 end
 
 %% other init operations
+tic % set timer
 g.sys.basrad = 2*pi*g.sys.sys_freq; % default system frequency is 60 Hz
 g.sys.syn_ref = 0 ;     % synchronous reference frame
-g.mac.ibus_con = []; % ignore infinite buses in transient simulation 
+g.mac.ibus_con = []; % ignore infinite buses in transient simulation
+
+%% unused/unimplemented damping controls -thad 07/15/20
+% intentionally removed/ignored?
+g.svc.svc_dc=[];
+
+g.tcsc.tcsc_dc=[];
+g.tcsc.n_tcscud = 0;
+
+g.dc.dcr_dc=[];
+g.dc.dci_dc=[];
 
 %% solve for loadflow - loadflow parameter
 warning('*** Solve initial loadflow')
@@ -205,20 +225,6 @@ lmon_indx;
 area_indx;
 agc_indx;
 
-% Handled in mac_indx
-% g.ind.n_mot = size(g.ind.ind_con,1); % inductive motors
-% g.igen.n_ig = size(g.igen.igen_con,1); % inductive generators
-%
-% if isempty(g.ind.n_mot)
-%     g.ind.n_mot = 0;
-% end
-% if isempty(g.igen.n_ig)
-%     g.igen.n_ig = 0;
-% end
-
-% ntot = g.mac.n_mac+g.ind.n_mot+g.igen.n_ig; % unused? commented out - thad 07/16/20
-% ngm = g.mac.n_mac + g.ind.n_mot;
-
 g.mac.n_pm = g.mac.n_mac; % used for pm modulation -- put into mac or tg indx?
 
 %% Make sure bus max/min Q is the same as the pwrmod_con max/min Q - moved to place after pwrmod is counted (never actually executed prior...) -thad 06/30/20
@@ -230,10 +236,11 @@ if ~isempty(g.pwr.n_pwrmod)
     clear kk n
 end
 
+%% VTS SPECIFIC: arbitrarilly allocate more space by decreasing sw_con ts.
+g.sys.sw_con(:,7) = g.sys.sw_con(:,7)./20;
+
 %% construct simulation switching sequence as defined in sw_con
 warning('*** Initialize time and switching variables')
-% allocate more time by decreasing sw_con ts...
-g.sys.sw_con(:,7) = g.sys.sw_con(:,7)./20;
 
 %tswitch(1) = g.sys.sw_con(1,1); -unused -thad 07/16/20
 
@@ -289,19 +296,16 @@ t(k) = g.sys.sw_con(n_switch,1);
 % add time array t to global g - thad
 g.sys.t = t;
 
-
-
-%% =====================================================================================================   
+%% =====================================================================================================
 %% Start of Initializing Zeros =========================================================================
 initZeros(k, kdc)
 
 %% Initialize required VTS globals
-g.vts.dataN = 1;
 handleStDx(1, 0, 0) % init
 
- %% =====================================================================================================   
- %% Start Initialization ================================================================================
- 
+%% =====================================================================================================
+%% Start Initialization ================================================================================
+
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
 disp('constructing reduced y matrices')
@@ -637,10 +641,12 @@ g.bus.bus_sim = g.bus.bus;
 g.mac.mac_trip_flags = false(g.mac.n_mac,1);
 g.mac.mac_trip_states = 0;
 
-%% creation of time blocks
+%% ========================================================================
+% Variable time step specific
+% creation of time blocks
 initTblocks()
 
-%% defining ODE input function and integration settings
+% defining ODE input and output functions
 inputFcn = str2func('vtsInputFcn');
 outputFcn = str2func('vtsOutputFcn');
 
@@ -652,53 +658,58 @@ options = odeset('RelTol',1e-3,'AbsTol',1e-5, ... %'RelTol',1e-5,'AbsTol',1e-8, 
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
 
+% initialize global st/dx vectors
 handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
 handleStDx(1, [], 1) % update g.vts.dxVec to initial conditions of derivatives
 
-%% Simulation loop start
-warning('*** Simulation Loop Start')
+% intialize counters and solution iteration log
 g.vts.dataN = 1;
-g.vts.iter = 0; % for keeping track of iteration...
+g.vts.iter = 0; % for keeping track of solution iterations
 g.vts.tot_iter = 0;
 g.vts.slns = zeros(1, size(g.sys.t,2));
+odeName = 'ode113';
 
-
+%% Simulation loop start
+warning('*** Simulation Loop Start')
 for simTblock = 1:size(g.vts.t_block)
     g.vts.t_blockN = simTblock;
     % 15s - slower during transients - faster when no action.
-    % 113 - works well during transierts, slower during no action 
+    % 113 - works well during transierts, slower during no action
     % ode23s - many iterations per step - not very viable
     % ode23tb - occasionally hundereds of iterations, sometimes not... decent
     % ode23 - similar to 23tb, timstep doesn't get very large
     % ode23t - works...
-    
-    %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+    % odeName defined prior to running s_simu
     feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
-       
+    
+    % Alternative example of using actual function name:
+    %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+    
 end% end simulation loop
 
-% last step solution.
+%% ========================================================================
+%% Other Variable step specific cleanup ===================================
+% final network/state solution
 networkSolution(g.vts.dataN)
 dynamicSolution(g.vts.dataN)
 g.vts.tot_iter = g.vts.tot_iter + 1;
 
-%% =============================================================================
-%% Line Monitoring and Area Calculations =======================================
-%% Line Monitoring
+% Final Line Monitoring
 if g.lmon.n_lmon~=0
     lmon(g.vts.dataN)
 end
 
-%% Average Frequency Calculation
+% Final Average Frequency Calculation
 calcAveF(g.vts.dataN,1);
 
-%% Area Total Calcvulations
+% Final Area Total Calcvulations
 if g.area.n_area ~= 0
     calcAreaVals(g.vts.dataN,1);
 end
 
-% trim logged values to length of g.vts.dataN
-trimLogs(g.vts.dataN)   
+% Trim logged values to length of g.vts.dataN
+trimLogs(g.vts.dataN)
+
 
 %% Final 'live' plot call
 if g.sys.livePlotFlag
@@ -711,6 +722,8 @@ et = toc;
 ets = num2str(et);
 g.sys.ElapsedNonLinearTime = ets;
 disp(['*** Elapsed Simulation Time = ' ets 's'])
+
+%% VTS specific
 disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
 disp(['*** Total data points = ' int2str(g.vts.dataN)])
 
@@ -769,7 +782,117 @@ end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
 clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
 
+%% enable original s_simu plotting if ran as a standalone script
+if scriptRunFlag == 1
+    flag = 0;
+else
+    flag = 1;
+end
+%%
+while(flag == 0)
+    disp('*** Welcom to Plotting!')
+    disp('Enter number:')
+    disp('     1 to plot all machine angles in 3D')
+    disp('     2 to plot all machine speed deviation in 3D')
+    disp('     3 to plot all machine turbine powers')
+    disp('     4 to plot all machine electrical powers')
+    disp('     5 to plot all exciter field voltages')
+    disp('     6 to plot all bus voltage magnitude in 3D')
+    disp('     7 to plot the line power flows')
+    disp('     0 to quit')
+    sel = input('Enter Selection >> ');
+    if isempty(sel)
+        sel = 0;
+    end
+    if sel == 1
+        figure
+        mesh(g.sys.t,1:1:g.mac.n_mac,g.mac.mac_ang*180/pi)
+        title('Machine Angles')
+        xlabel('Time [seconds]')
+        ylabel('Internal Generator Number')
+        zlabel('Angle [degrees]')
+    elseif sel == 2
+        figure
+        lt = length(g.sys.t);
+        mesh(g.sys.t, 1:1:g.mac.n_mac, g.mac.mac_spd- ones(g.mac.n_mac,lt) )
+        title('Machine Speed Deviations')
+        xlabel('Time [seconds]')
+        ylabel('Internal Generator Number')
+        zlabel('Speed [PU]')
+    elseif sel == 3
+        figure
+        plot(g.sys.t,g.mac.pmech)
+        grid on
+        title('Turbine Power')
+        xlabel('Time [seconds]')
+        ylabel('MW [PU]')
+    elseif sel == 4
+        figure
+        plot(g.sys.t,g.mac.pelect)
+        grid on
+        title('Generator Electric Power')
+        xlabel('Time [seconds]')
+        ylabel('MW [PU]')
+    elseif sel == 5
+        figure
+        plot(g.sys.t,g.exc.Efd)
+        grid on
+        title('Exciter Field Voltages')
+        xlabel('Time [seconds]')
+        ylabel('Voltage [PU]')
+    elseif sel == 6
+        figure
+        nbus= size(g.bus.bus_v,1);
+        mesh(g.sys.t,(1:1:nbus),abs(g.bus.bus_v))
+        xlabel('Time [seconds]')
+        ylabel('Bus Number')
+        zlabel('Voltage [PU]')
+        clear nbus
+    elseif sel == 7
+        figure
+        nline = length(g.line.line(:,1));
+        if nline<50
+            V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
+            V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
+            R = g.line.line(:,3);
+            X = g.line.line(:,4);
+            B = g.line.line(:,5);
+            tap = g.line.line(:,6);
+            phi = g.line.line(:,7);
+        else
+            % ask for lines to be plotted
+            disp('Enter a single line, or rangle of lines:')
+            disp('(for example: 2 or 4:5 or [4, 7, 10] )')
+            line_range = input('>> ');
+            if isempty(line_range)
+                line_range = 1:round(size(g.sys.line,1)/8);
+            end
+            V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(line_range,1)),:);
+            V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(line_range,2)),:);
+            R = g.line.line(line_range,3);
+            X = g.line.line(line_range,4);
+            B = g.line.line(line_range,5);
+            tap = g.line.line(line_range,6);
+            phi = g.line.line(line_range,7);
+        end
+        
+        [S1,S2] = line_pq(V1,V2,R,X,B,tap,phi);
+        plot(g.sys.t,real(S1));
+        grid on
+        title('Line Real Power Flow')
+        xlabel('Time [seconds]')
+        ylabel('MW [PU]')
+        
+        clear V1 V2 R X B tap phi S1 S2
+        
+    elseif sel == 0
+        flag = 1;
+    else
+        error('invalid selection...')
+    end
+end
+clear flag sel
 
 %%
-disp('*** s_simu_BatchTestF End')
+disp('*** s_simu_BatchVTS End')
 disp(' ')

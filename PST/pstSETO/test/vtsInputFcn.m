@@ -19,14 +19,9 @@ function [dxVec] = vtsInputFcn(t, y)
 global g
 
 %% call handleStDx with flag==2 to update global states with newest passed in soln.
-% write slnVec vector of values to associated states at index k+1
+% write slnVec vector of values to associated states at index k
 % i.e. update states at g.vts.dataN with newest solution
-% if g.vts.dataN  > 1
-%     handleStDx(g.vts.dataN - 1, y, 2)
-% else
-%     handleStDx(0, y, 2)
-% end
-  handleStDx(g.vts.dataN - 1, y, 2)
+  handleStDx(g.vts.dataN, y, 2)
 
 %% =============================================================================
 %% Line Monitoring and Area Calculations =======================================

@@ -31,14 +31,14 @@ copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % specify machine mo
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
 livePlotFlag = 1;
 
-% 15s - slower during transients - faster when no action.
-% 113 - works well during transierts, slower during no action 
+% ode15s - slower during transients - faster when no action.
+% ode113 - works well during transierts, slower during no action 
 % ode23s - many iterations per step (~200) not viable
 % ode23tb - occasionally hundereds of iterations, sometimes not... decent
 % ode23 - similar to 23tb, timstep doesn't get very large
 % ode23t - works...
 
-odeName = 'ode23tb';
+odeName = 'ode23t';
 
 % s_simu_Batch %Run PST with original format
 % s_simu_BatchTestF %Run PST functionalized test
@@ -56,4 +56,4 @@ save(['VTS',odeName, '.mat']); %Save simulation outputs
 %% temp file clean up
 delete('PSTpath.mat')
 
-compareVTSandFTS
+%compareVTSandFTS
