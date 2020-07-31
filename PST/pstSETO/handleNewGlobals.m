@@ -22,6 +22,7 @@
 %   07/14/20    12:33   Thad Haines     addition of DC related globals
 %   07/17/20    07:57   Thad Haines     addition of bus, line, line mon
 %   07/20/20    19:48   Thad Haines     addition of AGC
+%   07/30/20    19:15   Thad Haines     addition of variable solver solver_con
 
 global g
 
@@ -209,6 +210,18 @@ if exist('agc','var')
     clear agc;
 else
     g.agc.agc = [];
+end
+
+%% Varaible solver methods
+if exist('solver_con','var')
+    g.vts.solver_con = solver_con;
+    clear solver_con
+else
+    % create solver_con with all huens methods
+    g.vts.solver_con = {};
+    for n=1:size(g.sys.sw_con,1)-1
+        g.vts.solver_con{end+1} = 'huens';
+    end
 end
 
 %% Global for plot flag

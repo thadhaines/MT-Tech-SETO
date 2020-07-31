@@ -8,6 +8,7 @@ caseCell = { 'VTSode113.mat', 'VTSode15s.mat', 'VTSode23.mat', ...
     'VTSode23t.mat', 'VTSode23tb.mat'};
 
 caseCell = { 'VTSode23t.mat'};
+caseCell = { 'VTStest.mat'};
 
 for test=1:length(caseCell);
     
@@ -20,7 +21,8 @@ for test=1:length(caseCell);
     clear g;
     
     % load fixed data
-    load('FTSpstSETOdatane_hiskens.mat')
+    %load('FTSpstSETOdatane_hiskens.mat')
+    load('FTStest.mat')
     
     %% fig 1
     % bus v, bus angle

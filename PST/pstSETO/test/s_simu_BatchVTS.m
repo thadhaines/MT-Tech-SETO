@@ -57,6 +57,7 @@
 %   07/28/20    16:20   Thad Haines     Initial working VTS simulation
 %   07/29/20    15:20   Thad Haines     jay -> 1j
 %   07/30/20    08:04   Thad Haines     Re-integrated interactive script running/plotting
+%   07/30/20    20:34   Thad Haines     Added selectable solution methods
 
 format compact;
 disp('*** s_simu_BatchVTS Start')
@@ -83,9 +84,9 @@ global ibus_con  netg_con  stab_con
 %% global structured array
 global g
 
-%% IF run as a standalone script: querry user 
+%% IF run as a standalone script: querry user
 % Assumes all variables up to this point are global.
-% A 'clear all' command is the best way to ensure this will run
+% A 'clear all'  and 'close all' command is the best way to ensure this will run properly
 
 if all( size(whos('global')) == size(whos()) )
     scriptRunFlag = 1;
@@ -95,15 +96,16 @@ if all( size(whos('global')) == size(whos()) )
     % replace data file in current directory with selected file.
     copyfile([pathname, fname],'DataFile.m'); % copy system data file to batch run location
     % ask for Fbase
-    prompt={'System Frequency Base [Hz]:','System S Base [MW]:' };
-    name='Input F and S base values';
+    prompt={'System Frequency Base [Hz]:','System S Base [MW]:','Live Plot?' };
+    name='Input F and S base values and optional Live Plot Flag';
     numlines=1;
-    defaultanswer={'60','100'};
+    defaultanswer={'60','100','1'};
     
     answer=inputdlg(prompt,name,numlines,defaultanswer);
     
     Fbase = str2num(answer{1});
     Sbase = str2num(answer{2});
+    livePlotFlag = str2num(answer{3});
     clear fname pathname prompt name numlines defaultanswer answer
 else
     scriptRunFlag = 'No thanks - I like using batch scripts...';
@@ -129,7 +131,7 @@ catch ME
 end
 
 % remove copied Data file
-if scriptRunFlag == 1 
+if scriptRunFlag == 1
     delete('DataFile.m')
 end
 
@@ -169,7 +171,7 @@ end
 
 %% other init operations
 tic % start timer
-g.sys.basrad = 2*pi*g.sys.sys_freq; 
+g.sys.basrad = 2*pi*g.sys.sys_freq;
 g.sys.syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = []; % ignore infinite buses in transient simulation
 
@@ -227,7 +229,7 @@ agc_indx;
 
 g.mac.n_pm = g.mac.n_mac; % used for pm modulation -- put into mac or tg indx?
 
-%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q 
+%% Make sure bus max/min Q is the same as the pwrmod_con max/min Q
 if ~isempty(g.pwr.n_pwrmod)
     for kk=1:g.pwr.n_pwrmod
         n = find(g.pwr.pwrmod_con(kk,1)==g.bus.bus(:,1));
@@ -319,6 +321,11 @@ g.mac.mac_trip_states = 0;
 %% ========================================================================
 % Variable time step specific ==== Temporary location =====================
 
+%% VTS SPECIFIC: retruns sw_con to original state...
+g.sys.sw_con(:,7) = g.sys.sw_con(:,7).*20;
+g.k.h = g.k.h .*20;
+g.k.h_dc = g.k.h_dc.*20;
+
 % creation of time blocks
 initTblocks()
 
@@ -328,10 +335,11 @@ outputFcn = str2func('vtsOutputFcn');
 
 % Configure ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
-options = odeset('RelTol',1e-3,'AbsTol',1e-5, ... 
+options = odeset('RelTol',1e-3,'AbsTol',1e-5, ...
     'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
+g.vts.options = options;
 
 % initialize global st/dx vectors
 handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
@@ -343,35 +351,108 @@ g.vts.iter = 0; % for keeping track of solution iterations
 g.vts.tot_iter = 0;
 g.vts.slns = zeros(1, size(g.sys.t,2));
 
-% temporary debug definition
-odeName = 'ode113';
+% machine ref that's always set to zero....
+g.sys.mach_ref = zeros(1, size(g.sys.t,2));
+
 
 %% Simulation loop start
 warning('*** Simulation Loop Start')
 for simTblock = 1:size(g.vts.t_block)
-    g.vts.t_blockN = simTblock;
-    % 15s - slower during transients - faster when no action.
-    % 113 - works well during transierts, slower during no action
-    % ode23s - many iterations per step - not very viable
-    % ode23tb - occasionally hundereds of iterations, sometimes not... decent
-    % ode23 - similar to 23tb, timstep doesn't get very large
-    % ode23t - works...
-    % odeName defined prior to running s_simu
-    feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
     
-    % Alternative example of using actual function name:
-    %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+    g.vts.t_blockN = simTblock;
+    g.k.ks = simTblock; % required for fixed solutions....
+    
+    if ~isempty(g.vts.solver_con)
+        odeName = g.vts.solver_con{g.vts.t_blockN};
+    else
+        odeName = 'huens'; % default PST solver
+    end
+    
+    if strcmp( odeName, 'huens')
+        % use standard PST huens method
+        fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+            odeName, g.vts.t_blockN, ...
+            g.vts.fts{g.vts.t_blockN}(1), g.vts.fts{g.vts.t_blockN}(end))
+        
+        % add fixed time vector to system time vector
+        nSteps = length(g.vts.fts{g.vts.t_blockN});
+        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{g.vts.t_blockN};
+        
+        % account for pretictor last step time check
+        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(g.vts.t_blockN,7);
+        for fStep = 1:nSteps
+            k = g.vts.dataN;
+            j = k+1;
+            
+            % display k and t at every first, last, and 50th step
+            if ( mod(k,50)==0 ) || fStep == 1 || fStep == nSteps
+                fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
+            end
+            
+            %% Time step start
+            initStep(k)
+            
+            %% Predictor Solution =========================================
+            networkSolutionVTS(k, g.sys.t(g.vts.dataN))
+            dynamicSolution(k)
+            dcSolution(k)
+            predictorIntegration(k, j, g.k.h_sol)
+            monitorSolution(k);
+            
+            %% Corrector Solution =========================================
+            networkSolutionVTS(j, g.sys.t(g.vts.dataN+1))
+            dynamicSolution(j)
+            dcSolution(j)
+            correctorIntegration(k, j, g.k.h_sol)
+            monitorSolution(j);
+            
+            %% Live plot call
+            if g.sys.livePlotFlag
+                livePlot(k)
+            end
+            
+            % index handling
+            g.vts.dataN = g.vts.dataN +1;
+            g.vts.tot_iter = g.vts.tot_iter  + 2;
+            g.vts.slns(g.vts.dataN) = 2;
+        end
+        handleStDx(g.vts.dataN-1 , [], 3) % update g.vts.stVec to initial conditions of states
+        handleStDx(g.vts.dataN-1 , [], 1) % update g.vts.dxVec to initial conditions of derivatives
+        
+    else % use given variable method
+        fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+            odeName, g.vts.t_blockN, ...
+            g.vts.t_block(g.vts.t_blockN, 1), g.vts.t_block(g.vts.t_blockN, 2))
+        % 113 - works well during transients, consistent # of slns, time step stays relatively small
+        % 15s - large number of slns during init, time step increases to reasonable size
+        % ode23 - realtively consisten # of required slns, timstep doesn't get very large
+        % ode23s - many iterations per step - not efficient...
+        % ode23t - occasionally hundereds of iterations, sometimes not... decent
+        % ode23tb - similar to 23t, sometimes more large sln counts
+        % odeName defined prior to running s_simu
+        feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+        
+        % Alternative example of using actual function name:
+        %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+    end
     
 end% end simulation loop
 
 %% ========================================================================
 %% Other Variable step specific cleanup ===================================
-% final network/state solution
-networkSolution(g.vts.dataN)
-dynamicSolution(g.vts.dataN)
-g.vts.tot_iter = g.vts.tot_iter + 1;
 
-monitorSolution(g.vts.dataN);
+
+% check if last time block used huens, remove last extra predictor step
+if strcmp(g.vts.solver_con{end}, 'huens')
+    g.vts.dataN = g.vts.dataN-1;
+else
+    % final network/state solution
+    networkSolution(g.vts.dataN)
+    dynamicSolution(g.vts.dataN)
+    g.vts.tot_iter = g.vts.tot_iter + 1;
+    monitorSolution(g.vts.dataN);
+end
+
 
 % Trim logged values to length of g.vts.dataN
 trimLogs(g.vts.dataN)
@@ -420,6 +501,7 @@ end
 clear V1 V2 R X B jj phi % used in calls to line_cur, line_pq
 clear Y1 Y2 Y3 Y4 Vr1 Vr2 bo % used in calls to i_simu, red_ybus
 clear et ets % used to store/display elapsed time
+clear nSteps odeName simTblock inputFcn OutputFcn options% used in VTS
 
 %% Remove all zero only data
 varNames = who()'; % all variable names in workspace

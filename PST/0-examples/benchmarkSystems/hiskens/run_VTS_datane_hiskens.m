@@ -50,7 +50,7 @@ copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
 %% Save cleaned output data
 % save(['FTS',pstVer, caseName, '.mat']); %Save simulation outputs
-save(['VTS',odeName, '.mat']); %Save simulation outputs
+save(['FTStest.mat']); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')

@@ -19,7 +19,7 @@ If length(tspan) > 2, then the output is produced at every point in tspan.
 If length(tspan) = 2, then the output is produced according to the Refine option.
 %}
 if isempty(flag) % normal step completion
-
+    
     
     %% Live plot call
     if g.sys.livePlotFlag
@@ -33,7 +33,11 @@ if isempty(flag) % normal step completion
     % i.e. call handleStDx to place new solution results into associated globals
     handleStDx(g.vts.dataN, y, 2)
     
-    fprintf('* dataN: %6d\tat time:\t%8.6f\trequired %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
+    % display k and t at every first, last, and 50th step
+    if ( mod(g.vts.dataN,50)==0 ) || g.vts.iter > 100
+        fprintf('* dataN: %6d\tat time:\t%8.6f\trequired %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
+    end
+    
     g.vts.tot_iter = g.vts.tot_iter  + g.vts.iter; % count total iterations...
     g.vts.slns(g.vts.dataN) = g.vts.iter;
     g.vts.iter = 0; % reset iteration (solution) counter
@@ -53,7 +57,7 @@ elseif flag(1) == 'i' % init solver for time period t
     disp('*** ')
     disp('Flag == init')
     fprintf('Data step: %d\t%3.5f\n', g.vts.dataN, t(1))
-
+    
     %{
     The solver calls myOutputFcn([],[],'done') once integration is
 complete to allow the output function to perform cleanup tasks.
@@ -63,7 +67,7 @@ elseif flag(1) == 'd' % time period complete
     disp('*** ')
     disp('Flag == done')
     fprintf('Last complete data step: %d\t%8.10f\n', g.vts.dataN, g.sys.t(g.vts.dataN))
-
+    
 end
 
 end

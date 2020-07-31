@@ -322,6 +322,17 @@ sw_con = [
   0.5   16   17    0.001    0.001 	7    ne_tstep;  % apply three-phase fault at bus 16 with fault impedance
   0.64   0    0    0        0       0    ne_tstep;  % clear fault at bus 16
   0.7    0    0    0        0       0    ne_tstep;  % clear remote end (may do nothing)
+  5.0    0    0    0        0       0    ne_tstep;  % clear remote end (may do nothing)
  20.00   0    0    0        0       0    ne_tstep]; % end simulation
+
+% % to avoid making the sw_con a cell and all the data handling implications...
+% % a seperate cell definition might work best for variable solver control.
+solver_con ={ ...
+    'huens'; % pre fault - fault
+    'huens'; % fault - post fault 1
+    'huens'; % post fault 1 - post fault 2
+    'ode113'; % post fault 2 - 5
+    'ode23tb'; % 5- end
+    };
 
 % eof
