@@ -1,14 +1,11 @@
 % script to visually compare variable and fixed data....
-% note:  a better naming scheme could prevent numerous loads of fixed data...
+% note:  For AGC
 
 clear; close all
 printFigs = 0;
 
-caseCell = { 'VTSode113.mat', 'VTSode15s.mat', 'VTSode23.mat', ...
-    'VTSode23t.mat', 'VTSode23tb.mat'};
 
-caseCell = { 'VTSode23t.mat'};
-caseCell = { 'VTStest.mat'};
+caseCell = { 'AGCtestVTS.mat'};
 
 for test=1:length(caseCell);
     
@@ -22,7 +19,7 @@ for test=1:length(caseCell);
     
     % load fixed data
     %load('FTSpstSETOdatane_hiskens.mat')
-    load('FTSpstSETOdatane_hiskens.mat') % fixed - using OG s_simu_batch
+    load('AGCtestFTS.mat') % fixed - using OG s_simu_batch
     
     %% fig 1
     % bus v, bus angle
@@ -32,9 +29,9 @@ for test=1:length(caseCell);
     figure
     %% bus voltage
     subplot(3,2,1)
-    busV = 16;
+    busV = 4;
     
-    plot(gv.sys.t(1:gv.vts.dataN), abs(gv.bus.bus_v(busV,1:gv.vts.dataN)),'k','linewidth',1.25)
+    plot(gv.sys.t, abs(gv.bus.bus_v(busV,:)),'k','linewidth',1.25)
     hold on
     plot(g.sys.t,abs(g.bus.bus_v(busV,:)) , 'm--','linewidth',1)
     legend('VTS','FTS','location','best')
@@ -150,9 +147,9 @@ for test=1:length(caseCell);
         ['Maximum Time Step: ', num2str(maxSln,3)];  ...
         ['Minimum Time Step: ', num2str(minSln,3)]   };
     grid on
-    text(3, maxSln*.85,txtBlk)
+    text( 2.5/6*g.sys.t(end) , maxSln*.85,txtBlk)
     
-    legend({'Variable TS', ['Fixed TS (', num2str(fts(10)), ' sec)'] }, 'location', 'north')
+    legend({'Variable TS', ['Fixed TS (', num2str(fts(10)), ' sec)'] }, 'location', 'northwest')
     title({odeN;'Time Step Comparison'})
     ylabel('Time Step Size [seconds]')
     xlabel('Time [seconds]')
@@ -170,7 +167,7 @@ for test=1:length(caseCell);
         ['Total Solutions: ', int2str(gv.vts.tot_iter)]; ...
         ['Total Steps: ', int2str(gv.vts.dataN)]         };
     grid on
-    text(7, maxSln*.7,txtBlk)
+    text(2.5/6*g.sys.t(end) , maxSln*.7,txtBlk)
     title('Number of Network and Dynamic Solutions')
     %xlabel('Time [seconds]')
     %ylim([aveSln*10, maxSln*1.2])
@@ -183,7 +180,7 @@ for test=1:length(caseCell);
     stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
     hold on
     bar(gv.sys.t, gv.vts.slns,'k')
-    ylim([0,aveSln])
+    ylim([0,aveSln*5+0.5])
     xlim([min(gv.sys.t), max(gv.sys.t)])
     grid on
     title('Number of Network and Dynamic Solutions (Detail)')
@@ -198,5 +195,120 @@ for test=1:length(caseCell);
     end
     fprintf('%s time: %s\n', odeN, gv.sys.ElapsedNonLinearTime)
     disp('')
+    
+    %% tg values
+figure
+plot(g.sys.t, g.tg.tg_sig(1,:))
+hold on
+plot(g.sys.t, g.tg.tg_sig(2,:))
+plot(g.sys.t, g.tg.tg_sig(3,:))
+plot(g.sys.t, g.tg.tg_sig(4,:))
+
+
+plot(gv.sys.t, gv.tg.tg_sig(1,:),'--')
+hold on
+plot(gv.sys.t, gv.tg.tg_sig(2,:),'--')
+plot(gv.sys.t, gv.tg.tg_sig(3,:),'--')
+plot(gv.sys.t, gv.tg.tg_sig(4,:),'--')
+
+grid on
+ylabel('MW [PU]')
+xlabel('Time [sec]')
+title('Signal sent to governor Pref (tg\_sig)')
+legend({'Gov 1 FTS', 'Gov 2 FTS','Gov 3 FTS', 'Gov 4 FTS', ...
+    'Gov 1 VTS', 'Gov 2 VTS','Gov 3 VTS', 'Gov 4 VTS'},'location','best')
+
+if printFigs
+    set(gcf,'color','w'); % to remove border of figure
+    export_fig([caseName,'f4'],'-pdf'); % to print fig
 end
+
+%%
+figure
+
+% % RACE
+% plot(g.sys.t, g.agc.agc(1).race)
+% hold on
+% plot(g.sys.t, g.agc.agc(2).race)
+
+% SACE
+plot(g.sys.t, g.agc.agc(1).sace,'linewidth',2)
+hold on
+plot(g.sys.t, g.agc.agc(2).sace,'linewidth',2)
+
+% % RACE
+% plot(gv.sys.t, gv.agc.agc(1).race, '--')
+% plot(gv.sys.t, gv.agc.agc(2).race, '--')
+
+% SACE
+plot(gv.sys.t, gv.agc.agc(1).sace, '--','linewidth',2)
+plot(gv.sys.t, gv.agc.agc(2).sace, '--','linewidth',2)
+legend({'SACE 1 FTS', 'SACE 2 FTS', 'SACE 1 VTS', 'SACE 2 VTS'})
+
+%% ace sig
+figure 
+
+plot(g.sys.t, g.agc.agc(1).aceSig,'linewidth',2)
+hold on
+plot(g.sys.t, g.agc.agc(2).aceSig,'linewidth',2)
+
+plot(gv.sys.t, gv.agc.agc(1).aceSig, '--','linewidth',2)
+hold on
+plot(gv.sys.t, gv.agc.agc(2).aceSig, '--','linewidth',2)
+
+title('aceSig comparison')
+legend({'FTS1', 'FTS2', 'VTS1', 'VTS2'})
+grid on
+
+%% ace2dist
+figure 
+plot(g.sys.t, g.agc.agc(1).ace2dist,'linewidth',2)
+hold on
+plot(g.sys.t, g.agc.agc(2).ace2dist,'linewidth',2)
+
+plot(gv.sys.t, gv.agc.agc(1).ace2dist, '--','linewidth',2)
+hold on
+plot(gv.sys.t, gv.agc.agc(2).ace2dist, '--','linewidth',2)
+
+title('ace2dist comparison')
+legend({'FTS1', 'FTS2', 'VTS1', 'VTS2'})
+grid on
+
+%% ctrlgen input
+figure
+hold on
+
+for n = 1:g.agc.n_agc
+    for cg=1:g.agc.agc(n).n_ctrlGen
+        plot(g.sys.t, g.agc.agc(n).ctrlGen(cg).input)
+        plot(gv.sys.t, gv.agc.agc(n).ctrlGen(cg).input, '--')
+    end
+end
+title('filter input')
+
+%% ctrlgen x
+figure
+hold on
+
+for n = 1:g.agc.n_agc
+    for cg=1:g.agc.agc(n).n_ctrlGen
+        plot(g.sys.t, g.agc.agc(n).ctrlGen(cg).x)
+        plot(gv.sys.t, gv.agc.agc(n).ctrlGen(cg).x, '--')
+    end
+end
+title('filter x')
+
+%% ctrlgen dx
+figure
+hold on
+
+for n = 1:g.agc.n_agc
+    for cg=1:g.agc.agc(n).n_ctrlGen
+        plot(g.sys.t, g.agc.agc(n).ctrlGen(cg).dx)
+        plot(gv.sys.t, gv.agc.agc(n).ctrlGen(cg).dx, '--')
+    end
+end
+title('filter dx')
+
 fprintf('fixed time: %s\n', g.sys.ElapsedNonLinearTime)
+end

@@ -21,10 +21,10 @@ global g
 %% call handleStDx with flag==2 to update global states with newest passed in soln.
 % write slnVec vector of values to associated states at index k
 % i.e. update states at g.vts.dataN with newest solution
-  handleStDx(g.vts.dataN, y, 2)
+handleStDx(g.vts.dataN, y, 2)
 
-%% Line Monitoring and Area Calculations ==================================
-monitorSolution(g.vts.dataN);
+% %% Line Monitoring and Area Calculations ==================================
+% monitorSolution(g.vts.dataN); % moved to output function
 
 %% Start initStep action ==================================================
 initStep(g.vts.dataN)
@@ -43,5 +43,10 @@ handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec (solution vector not needed
 
 dxVec = g.vts.dxVec; % return for ODE fcn requirements
 
-g.vts.iter = g.vts.iter + 1;
+if g.vts.iter == 0
+    % save initial network solution
+    handleNetworkSln(g.vts.dataN ,1)
+end
+
+g.vts.iter = g.vts.iter + 1; % increment iteration number
 end % end vtsInputFcn

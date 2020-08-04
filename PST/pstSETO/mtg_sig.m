@@ -2,6 +2,8 @@ function mtg_sig(k)
 % MTG_SIG Defines modulation signal for turbine power reference
 % Syntax: f = mtg_sig(k)
 %
+%   NOTE: Can be totally blank IF tg_sig not manipulated in anyway (i.e. AGC)
+%
 %   History:
 %   Date        Time    Engineer        Description
 %   07/xx/98    12:37   Graham Rogers   Version 1
@@ -9,13 +11,7 @@ function mtg_sig(k)
 %   in, no dummy varibale f passed out. Default behavior commented out.
 %
 
-%global g
+global g
+g.tg.tg_sig(:,k) = zeros(size(g.tg.tg_sig,1),1);
 
-%fprintf('%4.4f \t %d\n', t(k), k); % DEBUG
-
-%if g.sys.t(k) > 4
-    % Pref step
-    %g.lmod.lmod_sig(1,k) = 0.25; % modify first load only
-    %g.tg.tg_sig(1,k) = 0.25; % to counter lmod above...
-%end
-return
+end% end function

@@ -1,6 +1,6 @@
 %% File to New England 39 bus system
 clear all; close all; clc
-caseName = 'datane_hiskens';
+caseName = 'datane_hiskens_VTS';
 
 %% Add pst path to MATLAB
 % generate relative path generically
@@ -23,6 +23,8 @@ clear folderDepth pathParts pNdx PSTpath
 clear all; close all; clc
 load PSTpath.mat
 
+
+
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile([caseName, '.m'],[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
@@ -30,15 +32,6 @@ copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % specify pss model
 copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % specify machine model
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
 livePlotFlag = 1;
-
-% ode15s - slower during transients - faster when no action.
-% ode113 - works well during transierts, slower during no action 
-% ode23s - many iterations per step (~200) not viable
-% ode23tb - occasionally hundereds of iterations, sometimes not... decent
-% ode23 - similar to 23tb, timstep doesn't get very large
-% ode23t - works...
-
-odeName = 'ode23t';
 
 % s_simu_Batch %Run PST with original format
 % s_simu_BatchTestF %Run PST functionalized test
@@ -50,7 +43,7 @@ copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
 %% Save cleaned output data
 % save(['FTS',pstVer, caseName, '.mat']); %Save simulation outputs
-save(['FTStest.mat']); %Save simulation outputs
+save(['VTStest.mat']); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')

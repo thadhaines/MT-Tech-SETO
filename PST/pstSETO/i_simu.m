@@ -84,12 +84,14 @@ if g.ncl.nload~=0
     b_v(bo(g.ncl.nload+1:nbus),1) = b_v(bo(g.ncl.nload+1:nbus),1)+rec_V2*vnc;
     cur = cur + Y_gnc*vnc;% modify generator currents for nc loads
 end
+
 % note: the dc bus voltages are the equivalent HT bus voltages
 %       and not the LT bus voltages
 g.bus.bus_v(g.bus.bus_int(bus_sim(:,1)),k) = b_v;
 g.bus.theta(g.bus.bus_int(bus_sim(:,1)),k) = angle(b_v);
 g.mac.cur_re(:,k) = real(cur(1:g.mac.n_mac));
 g.mac.cur_im(:,k) = imag(cur(1:g.mac.n_mac)); % generator currents
+
 if g.ind.n_mot~=0
     g.ind.idmot(:,k) = -real(cur(g.mac.n_mac+1:ngm));%induction motor currents
     g.ind.iqmot(:,k) = -imag(cur(g.mac.n_mac+1:ngm));%current out of network

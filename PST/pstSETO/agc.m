@@ -21,6 +21,7 @@ function agc(k,flag)
 %   Date        Time    Engineer        Description
 %   07/21/20    15:58   Thad Haines     Version 1
 %   07/22/20    10:17   Thad Haines     Version 1.0.1 - Added conditional AGC
+%   08/04/20    06:07   Thad Haines     Version 1.0.2 - adjusted for VTS
 
 global g
 
@@ -29,8 +30,8 @@ if flag == 0
     
     % for each defined agc
     for n = 1:g.agc.n_agc
-        % set initial ACE signal to zero
-        g.agc.agc(n).aceSig = 0;
+        % set initial ACE signal to zero for all time
+        g.agc.agc(n).aceSig = g.agc.agc(n).ace2dist;
         
         % set icS intial condition
         g.area.area(g.agc.agc(n).area).icS = g.area.area(g.agc.agc(n).area).icS ...
@@ -56,7 +57,7 @@ end
 
 % No action if flag == 1
 
-if flag == 2 && k ~=1 % skip first step
+if flag == 2 && k ~=1  % skip first step
     
     % create index for most recent monitored values
     j = k-1;
@@ -85,8 +86,8 @@ if flag == 2 && k ~=1 % skip first step
 %         g.agc.agc(n).iace(k) = g.agc.agc(n).iace(j) + (g.agc.agc(n).race(k) + g.agc.agc(n).race(j)) /2 ...
 %             * abs(g.sys.t(k)-g.sys.t(j));
         
-        % check if due to distribute
-        if g.sys.t(k) >= g.agc.agc(n).nextActionTime
+        % check if due to distribute        
+        if (g.sys.t(k) >= g.agc.agc(n).nextActionTime) 
             % update ACE signal via RACE
             % placeholder notification
             fprintf('*** t = %4.5f Distributing Area %d ACE...\n',g.sys.t(k), g.agc.agc(n).area);
@@ -99,18 +100,17 @@ if flag == 2 && k ~=1 % skip first step
                 condOk = 1;
             end
             
-            % aceSig is signal sent to all generators (after a gain)
-            g.agc.agc(n).aceSig = g.agc.agc(n).aceSig + ...
+            % aceSig is signal sent to all generators (after a gain) % maybe not the most efficient method...
+            g.agc.agc(n).aceSig(k:end) = g.agc.agc(n).aceSig(k) + ... % modified..
                 g.agc.agc(n).sace(k)*condOk;
             
             % increment nextActionTime
             g.agc.agc(n).nextActionTime = g.agc.agc(n).nextActionTime ...
                 + g.agc.agc(n).actionTime;
-            
-        end
+        end        
         
         % Gain aceSig and Log ace2dist
-        g.agc.agc(n).ace2dist(k) = g.agc.agc(n).aceSig * g.agc.agc(n).gain;
+        g.agc.agc(n).ace2dist(k) = g.agc.agc(n).aceSig(k) * g.agc.agc(n).gain;
         
         % ensure agc signal updated in tg model for each agc ctrlGen
         for gNdx = 1:g.agc.agc(n).n_ctrlGen
@@ -123,7 +123,7 @@ if flag == 2 && k ~=1 % skip first step
             % send filtered signal to governor
             g.tg.tg_sig(g.agc.agc(n).tgNdx(gNdx),k) = g.tg.tg_sig(g.agc.agc(n).tgNdx(gNdx),k) ...
                 - g.agc.agc(n).ctrlGen(gNdx).x(k); % NOTE: negative sign is important here.
-        end
+        end        
     end
 end
 end% end function

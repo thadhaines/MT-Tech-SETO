@@ -1,0 +1,48 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{PST Versions \\ }
+\lhead{Research - Created: 08/04/20 \\ Updated: \today}
+
+\usepackage{setspace}
+\usepackage{minted}
+
+\usepackage[hidelinks]{hyperref} % allow links in pdf
+
+\begin{document}
+\onehalfspacing
+\raggedright
+\paragraph{Purpose} \ \\
+To document past, present, and future PST versions.
+
+\paragraph{Current Versions}
+\begin{itemize}
+\item 2.3 - Based on PST 2, includes Dan Trudnowski's pwrmod, ivmmod, and generator tripping modifications.
+\item 3.0 - From Joe Chow's website. 
+Includes fixes and alterations. Notibably multiple DC lines and PSS modifications.
+\item 3.1 - Based on 3.0, includes Dan Trudnowski's pwrmod and ivmmod models in non-linear simulation. 
+pwrmod included linear simulation and various model patches. 
+Generator tripping is included, but untested.
+\item 3.1.1 - Based on 3.1. Ryan Elliott's version with energy storage and updated linear simulation along with various other fixes and code cleanup alterations. 
+Not to be included in GitHub repository.
+\item SETO - Based on 3.1. New global structure. 
+Includes automatic generation (AGC) models and variable time step (VTS) options. 
+Also includes many patches as documented in 
+\href{https://github.com/thadhaines/MT-Tech-SETO/tree/master/researchDocs/TEX/one-offs/200709-PSTsetoVersionChanges}{PSTsetoVersionChanges}. 
+% 
+Will become 4.0 after clean up actions taken.
+\end{itemize}
+
+\paragraph{Planned Versions}
+\begin{itemize}
+\item 4.0 - Cleaned up SETO version 
+\item 4.1 - Based on 4.0 - planned to incorporate energy storage models for non-linear simulation. Possibly updated linear simulation based on 3.1.1
+\end{itemize}
+
+\end{document}

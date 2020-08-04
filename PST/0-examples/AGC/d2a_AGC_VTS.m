@@ -352,4 +352,26 @@ sw_con = [...
 120.0 0    0    0    0    0    0];   % end simulation
 % probably has to due with the Y  matrix ....
 
+%% solver_con format
+% A cell with a solver method in each row corresponding to the specified
+% 'time blocks' defined in sw_con
+%
+% Valid solver names:
+% huens - Fixed time step default to PST
+% ode113 - works well during transients, consistent # of slns, time step stays relatively small
+% ode15s - large number of slns during init, time step increases to reasonable size
+% ode23 - realtively consisten # of required slns, timstep doesn't get very large
+% ode23s - many iterations per step - not efficient...
+% ode23t - occasionally hundereds of iterations, sometimes not... decent
+% ode23tb - similar to 23t, sometimes more large sln counts
+
+solver_con ={ ...
+    'huens'; % pre fault - fault
+    'huens'; % fault - post fault 1
+    'huens'; % post fault 1 - post fault 2
+    'huens'; % post fault 2 - 5
+    'huens'; % post fault 2 - 5
+    'ode23t'; % 5 - end
+    };
+
 clear ts enableExciters enableGov enablePSS enableSVC conditionalAGC

@@ -20,6 +20,11 @@ If length(tspan) = 2, then the output is produced according to the Refine option
 %}
 if isempty(flag) % normal step completion
     
+    % restore network to initial solution
+    handleNetworkSln(g.vts.dataN ,2)
+    
+    %% Line Monitoring and Area Calculations ==============================
+    monitorSolution(g.vts.dataN);
     
     %% Live plot call
     if g.sys.livePlotFlag

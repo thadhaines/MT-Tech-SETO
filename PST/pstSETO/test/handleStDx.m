@@ -1,8 +1,8 @@
 function handleStDx(k, slnVec, flag)
 %HANDLESTDX Performs required state and derivative handling for ODE solvers
 % HANDLESTDX Performs various state and derivative handling functions to
-% allow for MATLAB varialbe timestep integration techniques. 
-% Uses dynamic field names. 
+% allow for MATLAB varialbe timestep integration techniques.
+% Uses dynamic field names.
 %
 % Syntax: handleStDx(k, slnVec, flag)
 %
@@ -27,6 +27,7 @@ function handleStDx(k, slnVec, flag)
 %   Date        Time    Engineer        Description
 %   07/24/20    10:45   Thad Haines     Version 1
 %   07/27/20    09:57   Thad Haines     Version 1.0.1 - integrated into VTS sim
+%   08/03/20    15:31   Thad Haines     Version 1.0.2 - added AGC
 
 %% Remaining 'loose' globals - Not required for now -thad 07/24/20
 % % ivm variables - 5
@@ -104,11 +105,21 @@ if flag == 0
         fsdn = [fsdn; {'tcsc', 'xtcsc_dc','dxtcsc_dc',0}];
     end
     
+    % real load modulation
     if g.lmod.n_lmod~=0
         fsdn = [fsdn; {'lmod', 'lmod_st','dlmod_st',0}];
     end
+    
+    % reactive load modulation
     if g.rlmod.n_rlmod~=0
         fsdn = [fsdn; {'rlmod', 'rlmod_st','drlmod_st',0}];
+    end
+    
+    % AGC
+    % Each AGC has a sace and d_sace state and derivative
+    % and a variable number of controlled generator x and dx
+    if g.agc.n_agc ~=0
+        fsdn = [fsdn; {'agc', {'sace','x'}, {'d_sace','dx'}, 0}];
     end
     
     %fsdn % debug output
@@ -116,14 +127,29 @@ if flag == 0
     % Count number of allocated states, update fsdn
     nStates = 0;
     for ndx=1:size(fsdn,1)
-        f1 = fsdn{ndx,1};
+        f1 = fsdn{ndx, 1};
         f2 = fsdn{ndx, 2};
-        fsdn{ndx, 4} = size( g.(f1).(f2), 1);
-        nStates = nStates + fsdn{ndx, 4};
+        
+        if strcmp(f1, 'agc')
+            agcStateVec = zeros(g.agc.n_agc,1); % each row will be number of states associated with each agc
+            agcStateTot = 0;
+            % for each agc
+            for n = 1: g.agc.n_agc
+                % collect number of agc
+                agcStateVec(n) = 1 + g.agc.agc(n).n_ctrlGen; % SACE, ctrl_gen LPF
+                agcStateTot = agcStateTot + agcStateVec(n);
+            end
+            fsdn{ndx, 4} = agcStateVec;
+            nStates = nStates + agcStateTot;
+            
+        else
+            fsdn{ndx, 4} = size( g.(f1).(f2), 1);
+            nStates = nStates + fsdn{ndx, 4};
+        end
     end
     
     % store required globals g
-    g.vts.fsdn = fsdn; 
+    g.vts.fsdn = fsdn;
     g.vts.n_states = nStates;
     g.vts.dxVec = zeros(nStates,1);
     g.vts.stVec = zeros(nStates,1);
@@ -144,15 +170,27 @@ if flag == 1
     for ndx=1:size(g.vts.fsdn,1)
         
         % If the number of allocated states is larger than zero
-        if g.vts.fsdn{ndx, 4} ~= 0
+        if all(g.vts.fsdn{ndx, 4} ~= 0)
             % collect derivative loction
-            f1 = g.vts.fsdn{ndx,1};
+            f1 = g.vts.fsdn{ndx, 1};
             f2 = g.vts.fsdn{ndx, 3};
             
-            % place derivatives into dxVec using dynamic field names
-            g.vts.dxVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
-            
-            startN = startN + g.vts.fsdn{ndx,4}; % increment starting dxVec index
+            if strcmp(f1, 'agc')
+                for n = 1:g.agc.n_agc
+                    % collect d_sace for each agc
+                    g.vts.dxVec(startN) = g.agc.agc(n).d_sace(k);
+                    startN = startN+1;
+                    for cg = 1:g.agc.agc(n).n_ctrlGen
+                        % collect low pass dx for each controlled gen
+                        g.vts.dxVec(startN) = g.agc.agc(n).ctrlGen(cg).dx(k);
+                        startN = startN +1;
+                    end
+                end
+            else
+                % place derivatives into dxVec using dynamic field names
+                g.vts.dxVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
+                startN = startN + g.vts.fsdn{ndx,4}; % increment starting dxVec index
+            end
         else
             % probably not executed...
             disp(['skpping... ', g.vts.fsdn(ndx,1), g.vts.fsdn(ndx,3) ] );
@@ -177,10 +215,25 @@ if flag == 2
             % collect field and state name
             f1 = g.vts.fsdn{ndx,1};
             f2 = g.vts.fsdn{ndx, 2};
-            for i=1:g.vts.fsdn{ndx, 4}
-                g.(f1).(f2)(i,k) = slnVec(startN+i-1); % write to state col j
+            
+            if strcmp(f1, 'agc')
+                for n = 1:g.agc.n_agc
+                    % write new states to sace
+                    g.agc.agc(n).sace(k) = slnVec(startN);
+                    startN = startN+1;
+                    for cg = 1:g.agc.agc(n).n_ctrlGen
+                        % write new states to controlled gen x
+                        g.agc.agc(n).ctrlGen(cg).x(k)  = slnVec(startN);
+                        startN = startN +1;
+                    end
+                end
+            else
+                
+                for i=1:g.vts.fsdn{ndx, 4}
+                    g.(f1).(f2)(i,k) = slnVec(startN+i-1); % write to state col k
+                end
+                startN = startN+g.vts.fsdn{ndx, 4};
             end
-            startN = startN+g.vts.fsdn{ndx, 4};
         else
             % probably not executed...
             disp(['skpping... ', g.vts.fsdn(ndx,1), g.vts.fsdn(ndx,2) ] );
@@ -197,17 +250,32 @@ if flag == 3
     
     startN = 1; % used to split up vector according to number of states
     
-    for ndx=1:size(g.vts.fsdn,1)        
+    for ndx=1:size(g.vts.fsdn,1)
         % If the number of allocated states is larger than zero
         if g.vts.fsdn{ndx, 4} ~= 0
             % collect derivative loction
             f1 = g.vts.fsdn{ndx, 1};
             f2 = g.vts.fsdn{ndx, 2};
             
-            % place state into stVec using dynamic field names
-            g.vts.stVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
             
-            startN = startN + g.vts.fsdn{ndx,4}; % increment starting stVec index
+            if strcmp(f1, 'agc')
+                for n = 1:g.agc.n_agc
+                    % write new states to sace
+                    g.vts.stVec(startN) = g.agc.agc(n).sace(k);
+                    startN = startN+1;
+                    for cg = 1:g.agc.agc(n).n_ctrlGen
+                        % write new states to controlled gen x
+                        g.vts.stVec(startN) = g.agc.agc(n).ctrlGen(cg).x(k);
+                        startN = startN +1;
+                    end
+                end
+            else
+                
+                % place state into stVec using dynamic field names
+                g.vts.stVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
+                
+                startN = startN + g.vts.fsdn{ndx,4}; % increment starting stVec index
+            end
         else
             % probably not executed...
             disp(['skpping... ', g.vts.fsdn(ndx,1), g.vts.fsdn(ndx,3) ] );
@@ -219,7 +287,7 @@ end
 if flag == 4
     %% DEBUG verify write
     % input ...
-    % include at all?
+    % include at all? - Not updated to accomodate for agc...
     for ndx=1:size(g.vts.fsdn,1)
         if g.vts.fsdn{ndx, 4} ~= 0
             % collect field and state name

@@ -329,27 +329,30 @@ g.k.h_dc = g.k.h_dc.*20;
 % creation of time blocks
 initTblocks()
 
+% initialize global st/dx vectors
+handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
+handleStDx(1, [], 1) % update g.vts.dxVec to initial conditions of derivatives
+
+% initlaize network solution handling
+handleNetworkSln([],0)
+
 % defining ODE input and output functions
 inputFcn = str2func('vtsInputFcn');
 outputFcn = str2func('vtsOutputFcn');
 
 % Configure ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
-options = odeset('RelTol',1e-3,'AbsTol',1e-5, ...
-    'InitialStep', 1/60/4, ...
+options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
+   % 'InitialStep', 1/60/4, ...
 g.vts.options = options;
-
-% initialize global st/dx vectors
-handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
-handleStDx(1, [], 1) % update g.vts.dxVec to initial conditions of derivatives
 
 % intialize counters and solution iteration log
 g.vts.dataN = 1;
 g.vts.iter = 0; % for keeping track of solution iterations
 g.vts.tot_iter = 0;
-g.vts.slns = zeros(1, size(g.sys.t,2));
+g.vts.slns = zeros(1, size(g.sys.t,2)); % number of networks solutions used per step
 
 % machine ref that's always set to zero....
 g.sys.mach_ref = zeros(1, size(g.sys.t,2));
@@ -360,7 +363,7 @@ warning('*** Simulation Loop Start')
 for simTblock = 1:size(g.vts.t_block)
     
     g.vts.t_blockN = simTblock;
-    g.k.ks = simTblock; % required for fixed solutions....
+    g.k.ks = simTblock; % required for huen's solution method.
     
     if ~isempty(g.vts.solver_con)
         odeName = g.vts.solver_con{g.vts.t_blockN};
@@ -370,8 +373,8 @@ for simTblock = 1:size(g.vts.t_block)
     
     if strcmp( odeName, 'huens')
         % use standard PST huens method
-        fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            odeName, g.vts.t_blockN, ...
+        fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+            g.vts.t_blockN, ...
             g.vts.fts{g.vts.t_blockN}(1), g.vts.fts{g.vts.t_blockN}(end))
         
         % add fixed time vector to system time vector
@@ -380,6 +383,7 @@ for simTblock = 1:size(g.vts.t_block)
         
         % account for pretictor last step time check
         g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(g.vts.t_blockN,7);
+        
         for fStep = 1:nSteps
             k = g.vts.dataN;
             j = k+1;
@@ -394,53 +398,50 @@ for simTblock = 1:size(g.vts.t_block)
             
             %% Predictor Solution =========================================
             networkSolutionVTS(k, g.sys.t(g.vts.dataN))
+            monitorSolution(k);
             dynamicSolution(k)
             dcSolution(k)
             predictorIntegration(k, j, g.k.h_sol)
-            monitorSolution(k);
             
             %% Corrector Solution =========================================
             networkSolutionVTS(j, g.sys.t(g.vts.dataN+1))
             dynamicSolution(j)
             dcSolution(j)
             correctorIntegration(k, j, g.k.h_sol)
-            monitorSolution(j);
             
+            % most recent network solution based on completely calculated states is k
+            monitorSolution(k);
             %% Live plot call
             if g.sys.livePlotFlag
                 livePlot(k)
             end
             
             % index handling
-            g.vts.dataN = g.vts.dataN +1;
+            g.vts.dataN = g.vts.dataN + 1;
             g.vts.tot_iter = g.vts.tot_iter  + 2;
             g.vts.slns(g.vts.dataN) = 2;
         end
-        handleStDx(g.vts.dataN-1 , [], 3) % update g.vts.stVec to initial conditions of states
-        handleStDx(g.vts.dataN-1 , [], 1) % update g.vts.dxVec to initial conditions of derivatives
+        handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
+        handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives 
+        handleNetworkSln(k, 1) % update saved network solution
+        fprintf('k is %d\n',k)
+        fprintf('dataN is %d\n', g.vts.dataN)
         
     else % use given variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
             odeName, g.vts.t_blockN, ...
             g.vts.t_block(g.vts.t_blockN, 1), g.vts.t_block(g.vts.t_blockN, 2))
-        % 113 - works well during transients, consistent # of slns, time step stays relatively small
-        % 15s - large number of slns during init, time step increases to reasonable size
-        % ode23 - realtively consisten # of required slns, timstep doesn't get very large
-        % ode23s - many iterations per step - not efficient...
-        % ode23t - occasionally hundereds of iterations, sometimes not... decent
-        % ode23tb - similar to 23t, sometimes more large sln counts
-        % odeName defined prior to running s_simu
         feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
         
         % Alternative example of using actual function name:
         %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
+        % feval used for now, could be replaced with if statements.
     end
     
 end% end simulation loop
 
 %% ========================================================================
-%% Other Variable step specific cleanup ===================================
-
+%% Variable step specific cleanup =========================================
 
 % check if last time block used huens, remove last extra predictor step
 if strcmp(g.vts.solver_con{end}, 'huens')
@@ -452,7 +453,6 @@ else
     g.vts.tot_iter = g.vts.tot_iter + 1;
     monitorSolution(g.vts.dataN);
 end
-
 
 % Trim logged values to length of g.vts.dataN
 trimLogs(g.vts.dataN)
