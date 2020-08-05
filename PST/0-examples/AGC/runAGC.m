@@ -29,7 +29,6 @@ save PSTpath.mat PSTpath pstVer useGlobalG
 clear folderDepth pathParts pNdx PSTpath
 
 
-
 %% Run nonlinear simulation and store results
 clear all; close all; clc
 load PSTpath.mat
@@ -71,7 +70,7 @@ caseName = 'AGC';
 printFigs = 0;
 
 if strcmp(FTS,'no')
-    save([caseName,'testVTS.mat']); %Save simulation outputs
+    save([caseName,'testVTS2.mat']); %Save simulation outputs
 else
     save([caseName,'testFTS.mat']); %Save simulation outputs
 end

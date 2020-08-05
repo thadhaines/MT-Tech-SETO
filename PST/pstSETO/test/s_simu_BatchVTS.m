@@ -342,10 +342,11 @@ outputFcn = str2func('vtsOutputFcn');
 
 % Configure ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
-options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
+options = odeset('RelTol',1e-3,'AbsTol',1e-6, ...
+    'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
-   % 'InitialStep', 1/60/4, ...
+
 g.vts.options = options;
 
 % intialize counters and solution iteration log
@@ -424,9 +425,7 @@ for simTblock = 1:size(g.vts.t_block)
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
         handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives 
         handleNetworkSln(k, 1) % update saved network solution
-        fprintf('k is %d\n',k)
-        fprintf('dataN is %d\n', g.vts.dataN)
-        
+
     else % use given variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
             odeName, g.vts.t_blockN, ...

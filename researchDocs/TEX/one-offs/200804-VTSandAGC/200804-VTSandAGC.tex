@@ -1,0 +1,98 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Variable Time Step (VTS) AGC Results \\ Compared to Fixed Time Step (FTS) Results }
+\lhead{Research \\ 08/04/20}
+
+\usepackage{setspace}
+\usepackage{multicol}
+\begin{document}
+\onehalfspacing
+\paragraph{Scenario} \begin{center}
+\begin{minipage}{.47\linewidth}
+\includegraphics[width=\linewidth]{sysOneLineAreas}
+\end{minipage} %
+\begin{minipage}{.47\linewidth}
+\begin{itemize}
+\footnotesize
+\itemsep 0em
+\item Kundur  4 machine system packaged with PST
+\item Constant Z load model
+\item System has governors, exciters, and PSS.
+\item +50 MW (0.5 PU) step of load on bus 4 at t=1
+\item VTS mixed method:\\ \verb|huens| switches to \verb|ode23t| when t=10
+\item AGC and VTS available in pstSETO only
+\end{itemize}
+\end{minipage}
+
+\end{center}
+
+\paragraph{Summary} 
+\begin{enumerate}
+\item AGC works in variable time step simulation.
+\item VTS takes larger steps, which often means fewer network and dynamic solutions. \\
+This leads to a noticeable speed up.
+\item AGC action was accounted for without VTS requiring a `time block break'. 
+\item Variable step network and dynamic values seem to match fixed results well.
+\end{enumerate}
+
+
+\begin{table}[!ht]
+\resizebox{\linewidth}{!}{
+	\centering
+	\begin{tabular}{@{} L{1.75cm} 
+	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{0.75cm} R{1.5cm} R{2cm} R{2cm}@{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+
+	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{\shortstack{Solutions\\ Per Step}}			&		&		&		\\	
+Method	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. time	&	Speed Up	\\ \midrule	
+Huen's	&	0.016	&	0.004	&	0.014	&	8,749	&	2	&	2	&	17,498	&	57.45	&	1	\\	
+ode23t	&	1.060	&	1.97E-5	&	0.142	&	846	&	2	&	109	&	2,030	&	9.31	&	6.17	\\	
+Mixed	&	1.030	&	0.004	&	0.048	&	2,483	&	2	&	106	&	4,780	&	15.86	&	3.62	\\	\bottomrule
+	\end{tabular}
+	}%end resize box
+\end{table}
+
+\paragraph{Observations of Note}
+\begin{enumerate}[resume]
+\item Mixed solutions may be more efficient if fixed steps are used for initialization and all faulting condition switches then switching to a variable step method.
+\item Solution tolerances of ODE solver were: \verb|'RelTol',1e-3,'AbsTol',1e-6,|
+\item \verb|mtg_sig| must set \verb|tg_sig| to zero (or other desired modulated value). \\i.e. \verb|mtg_sig| cannot just be empty.
+
+\end{enumerate}
+
+
+\pagebreak
+% fixed: 8749 steps i.e., 17498 network solutions 
+
+%>> compareVTSandFTS
+%VTS time: 15.8579
+%fixed time: 57.4479
+ 
+
+\subparagraph{ode23t Results} \ \\
+
+\includegraphics[width=\linewidth]{AGCsteps2}
+
+\pagebreak
+\subparagraph{Mixed Results (Huen's and ode23t)} \ \\
+
+\includegraphics[width=\linewidth]{AGCsteps}
+
+\pagebreak
+\paragraph{Both/Either Method} (visually undifferentiatable) \ \\
+
+\includegraphics[width=.5\linewidth]{AGCcalcs} %
+\includegraphics[width=.5\linewidth]{AGCtgSig}
+
+\includegraphics[width=\linewidth]{AGCcomp} 
+
+\end{document}

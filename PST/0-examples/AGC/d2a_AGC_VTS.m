@@ -373,5 +373,13 @@ solver_con ={ ...
     'huens'; % post fault 2 - 5
     'ode23t'; % 5 - end
     };
+solver_con ={ ...
+    'ode23t'; % pre fault - fault
+    'ode23t'; % fault - post fault 1
+    'ode23t'; % post fault 1 - post fault 2
+    'ode23t'; % post fault 2 - 5
+    'ode23t'; % post fault 2 - 5
+    'ode23t'; % 5 - end
+    };
 
 clear ts enableExciters enableGov enablePSS enableSVC conditionalAGC

@@ -1,0 +1,214 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Research Update \\ Week of August 5th, 2020}
+\lhead{Research \\ }
+
+\usepackage[hidelinks]{hyperref} % allow links in pdf
+%\href{https://digitalcommons.mtech.edu/grad_rsch/242/}{Long-Term Dynamic Simulation of Power Systems using Python, \\Agent Based Modeling, and Time-Sequenced Power Flows}
+\begin{document}
+\begin{multicols}{2}
+\raggedright
+
+\paragraph{Recent Progress:}
+	\begin{enumerate}
+		\itemsep0em 
+		\item Non-linear Simulation modifications:
+			\begin{itemize}
+			\itemsep0em 
+			\footnotesize
+				\item replaced 'jay' with \verb|1j|
+				\item re-introduced 'stand-alone' running	
+			\end{itemize}
+		%\item \href{https://github.com/thadhaines/MT-Tech-SETO/tree/master/PST/0-examples/AGC}
+		%{Created AGC example}
+		
+		\item Refined VTS operation:
+			\begin{itemize}
+			\itemsep0em 
+			\footnotesize
+				\item Allow for changing integration method during simulation.
+				\item Ensure unique time vector
+				\item More functionalized
+				\item Rethought network solution handling
+			\end{itemize}
+		
+		\item Added AGC to VTS
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/onne-offs/200804-VTSandAGC/200804-VTSandAGC.pdf}{Documented initial AGC VTS results.}		
+		
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/00-PST-Versioning/00-PST-Versioning.pdf}
+		{Created PST version document}
+		
+		\item\href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200804-VTSexplained/200804-VTSexplained.pdf}{Created VTS draft documentation}
+%	\item %\href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200709-PSTsetoVersionChanges/200709-PSTsetoVersionChanges.pdf}
+	%	{Updated pst SETO change doc}
+		
+		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
+		%\item Started work on batch unit testing
+		%\item ODE test for variable time step\
+		%\item Found example for SVC - shows version difference between 2 and 3 - possibly due to \verb|exc_dc12| model.
+		%\item Created more MATLAB plot functions to compare PST data
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO}{GitHub updated:}\\
+	{\footnotesize \verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
+	\item Employment ``good'' till 09/18/20
+	\end{enumerate}
+
+\paragraph{Current Tasks:}
+	\begin{enumerate}
+		\itemsep 0em 
+	\item Confirm VTS operation
+	\item Generate extended term simulation events.
+		\item Decisions concerning remaining globals:
+		\begin{minipage}{\linewidth}
+				%\begin{multicols}{2}
+						\begin{itemize}
+				\itemsep0em 
+						\footnotesize
+							\item IVM (waiting for linear code?)
+							\item PWR (only cell data not global)
+						\end{itemize}
+				%\end{multicols}
+				\end{minipage}
+		\item Incorporate pwrmod (ivmmod) into VTS	
+		\item Refine VTS documentation	
+		\item Work towards PST 4.0	
+		\item Work on understanding PST operation
+		\item Document findings of PST functionality
+		\item Investigate Octave compatibility
+\end{enumerate}
+
+\paragraph{Action Items From Sandia:}
+	\begin{itemize}
+		\itemsep 0em 
+			\item Continue development of pwrmod / ivmmod models and their implementation in PST.
+			%\item Be aware of multi rate methods % mostly TAMU/Power world
+			\item Decide on PST base version (3.1$\longrightarrow$SETO$\longrightarrow$4.0)
+			\item Explore variable time step methods
+	\end{itemize}
+	
+
+\vfill\null
+\columnbreak
+
+\paragraph{Coding Thoughts:} 
+	\begin{enumerate}
+
+		\itemsep 0em 
+	%	\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category.
+	%	\item Create new \verb|s_simu_Batch| style script that functionalizes the newtork and dynamic calculations so that standard MATLAB ODE solvers may be used.
+		%\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+	%	This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+	%	Would enable addition of area definitions to models.
+	%	\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+	%	Possibly employ \verb|feval| for a more dynamic calculation routine.
+		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
+%		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+		\item Generate comparison scripts to verify simulated results match after code changes.
+		
+
+	\end{enumerate}
+
+
+
+\paragraph{Current Questions:}
+	\begin{enumerate}
+	\itemsep0em 
+	
+	
+	\item Induction machines have no speed?\\ only angle?
+	\item PST modeling of transformers?
+	\item Play in data for variable solar irradiance? (Slow Sine with step events for clouds.)
+	\item PSS design doesn't seem to be used in normal simulation?
+	\item Deadlines of any sort?
+	
+	\end{enumerate}	
+
+\paragraph{Loose ends:} % Random stuff that will be left undone...
+	\begin{enumerate}
+	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
+		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov)
+		\item In original \verb|s_simu_Batch|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times.
+		\item Constant Power or Current loads seem to require a portion of constant Impedance.
+		\item PSS design functionality not explored
+		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
+		\item Differences in \verb|mac_ind| between pst 2 and 3. Seem backward compatible - untested.
+		\item A tripped generators inertia should be removed from total inertia calculations of average frequency used in the AGC model.
+	\end{enumerate}
+\vfill\null
+
+\end{multicols}
+
+
+
+\begin{comment}
+	\item Global g,non-linear functionality added for: %  linear \& 
+		\begin{minipage}{\linewidth}
+		\begin{multicols}{2}
+				\begin{itemize}
+		\itemsep0em 
+				\footnotesize
+				\raggedright
+					\item g.k
+					\item g.vts
+				\end{itemize}
+		\end{multicols}
+		\end{minipage}
+
+
+\paragraph{Possible Future Tasks:} % Maybe good ideas?
+	\begin{enumerate}
+		\item Investigate Sandia integrator stability methods.	
+		See if the modified PST used by Sandia in 2015 paper exists for an example of how they implemented different integration routines / stability calculations.	
+	\end{enumerate}
+
+
+
+		\item PST modeling of faults: \\
+		Uses alternate Y matrices? \\
+		Creates fault bus?
+
+Things required for simulation....
+\begin{minipage}{\linewidth}
+\begin{multicols}{2}
+		\begin{itemize}
+\itemsep0em 
+		\footnotesize
+			\item system model
+			\item Load flow solver
+			\item Network solver
+			\item Machine models
+			\item Governor model
+			\item Exciter models
+			\item converter models
+			\item load modulation models
+			\item ...
+		\end{itemize}
+\end{multicols}
+\end{minipage}
+
+% Unused categories
+\paragraph{Future Tasks:} %(Little to No Progress since last time / Things coming down the pipe)
+	\begin{enumerate}
+		\item none		
+	\end{enumerate}
+	
+\paragraph{Future Work: (not by me)}
+	\begin{itemize}
+		\item none
+	\end{itemize}
+
+\paragraph{Requests:}
+	\begin{enumerate}
+			\item none
+	\end{enumerate}
+\end{comment}
+
+
+
+\end{document}

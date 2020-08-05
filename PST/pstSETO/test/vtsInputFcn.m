@@ -2,12 +2,13 @@ function [dxVec] = vtsInputFcn(t, y)
 %VTSINPUTFCN passed to ODE solver to perfrom required step operations
 % VTSINPUTFCN passed to ODE solver to perfrom required step operations
 %
-% Syntax: vtsInputFcn(k)
+% Syntax: [dxVec] = vtsInputFcn(t, y)
 %
 %   NOTES: Updates g.vts.dxVec, and returns values
 %
 %   Input:
 %   t - simulation time
+%   y - solution vector (initial conditions)
 %
 %   Output:
 %   dxVec - requried derivative vector for ODE solver
