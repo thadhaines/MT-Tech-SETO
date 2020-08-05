@@ -33,7 +33,7 @@ delete([PSTpath 'pwrmod_dyn.m']);
 copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
 delete([PSTpath 'DataFile.m']); 
-copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
+copyfile('d2m_pwrmod1VTS.m',[PSTpath 'DataFile.m']); %System data file
 
 % s_simu_Batch %Run PST
 % s_simu_BatchTestF %Run PST

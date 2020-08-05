@@ -4,7 +4,6 @@
 clear; close all
 printFigs = 0;
 
-
 % load varible data
 % load('AGCtestVTS.mat')
 load('pwrmodVTS.mat')

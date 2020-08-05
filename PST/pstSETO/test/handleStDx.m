@@ -122,6 +122,17 @@ if flag == 0
         fsdn = [fsdn; {'agc', {'sace','x'}, {'d_sace','dx'}, 0}];
     end
     
+    % PWRMOD
+    % each pwrmod has p, q state as well as
+    % a variable number of p and q 'signal states'
+    if g.pwr.n_pwrmod~=0
+        fsdn = [fsdn; {'pwr','pwrmod_p_st', 'dpwrmod_p_st', 0}];
+        fsdn = [fsdn; {'pwr','pwrmod_q_st', 'dpwrmod_q_st', 0}];
+        % the below values are in cells
+        fsdn = [fsdn; {'pwr','pwrmod_p_sigst', 'dpwrmod_p_sigst', 0}];
+        fsdn = [fsdn; {'pwr','pwrmod_q_sigst', 'dpwrmod_q_sigst', 0}];
+    end
+    
     %fsdn % debug output
     
     % Count number of allocated states, update fsdn
@@ -130,7 +141,7 @@ if flag == 0
         f1 = fsdn{ndx, 1};
         f2 = fsdn{ndx, 2};
         
-        if strcmp(f1, 'agc')
+        if strcmp(f1, 'agc') % agc handling
             agcStateVec = zeros(g.agc.n_agc,1); % each row will be number of states associated with each agc
             agcStateTot = 0;
             % for each agc
@@ -186,7 +197,15 @@ if flag == 1
                         startN = startN +1;
                     end
                 end
-            else
+                
+            elseif strcmp(f2, 'dpwrmod_p_sigst') || strcmp(f2, 'dpwrmod_q_sigst') % pwrmod handling of variable cell states
+                for n = 1:g.vts.fsdn{ndx,4}
+                    % place derivatives into dxVec using dynamic field names
+                    g.vts.dxVec(startN) = g.(f1).(f2){n}(k);
+                    startN = startN + 1; % increment starting dxVec index
+                end
+                
+            else% 'normal' operation
                 % place derivatives into dxVec using dynamic field names
                 g.vts.dxVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
                 startN = startN + g.vts.fsdn{ndx,4}; % increment starting dxVec index
@@ -227,6 +246,14 @@ if flag == 2
                         startN = startN +1;
                     end
                 end
+                
+            elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') % pwrmod handling of variable cell states
+                for n = 1:g.vts.fsdn{ndx,4}
+                    % write solution vector to states
+                    g.(f1).(f2){n}(k) = slnVec(startN);
+                    startN = startN + 1; % increment starting slnVec index
+                end
+                
             else
                 
                 for i=1:g.vts.fsdn{ndx, 4}
@@ -269,11 +296,18 @@ if flag == 3
                         startN = startN +1;
                     end
                 end
+                
+            elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') % pwrmod handling of variable cell states
+                for n = 1:g.vts.fsdn{ndx,4}
+                    % place states into stVec using dynamic field names
+                    g.vts.stVec(startN) = g.(f1).(f2){n}(k);
+                    startN = startN + 1; % increment starting stVec index
+                end
+                
             else
                 
                 % place state into stVec using dynamic field names
                 g.vts.stVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
-                
                 startN = startN + g.vts.fsdn{ndx,4}; % increment starting stVec index
             end
         else
@@ -309,15 +343,6 @@ end
 %% unique/unused state and derivatives not currently handled in function
 %{
 %% Copied from v2.3 - 06/01/20 - thad
-g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*g.pwr.dpwrmod_p_st(:,k);
-g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*g.pwr.dpwrmod_q_st(:,k);
-%% pwrmod
-if g.pwr.n_pwrmod~=0
-    for index=1:g.pwr.n_pwrmod
-        g.pwr.pwrmod_p_sigst{index}(:,j) = g.pwr.pwrmod_p_sigst{index}(:,k)+h_sol*g.pwr.dpwrmod_p_sigst{index}(:,k);
-        g.pwr.pwrmod_q_sigst{index}(:,j) = g.pwr.pwrmod_q_sigst{index}(:,k)+h_sol*g.pwr.dpwrmod_q_sigst{index}(:,k);
-    end
-end
 
 if n_ivm~=0
     for index=1:n_ivm
@@ -327,18 +352,6 @@ if n_ivm~=0
     end
 end
 
-%% agc corrector integration
-if g.agc.n_agc ~=0
-    for ndx = 1:g.agc.n_agc
-        g.agc.agc(ndx).sace(j) = g.agc.agc(ndx).sace(k) + h_sol*(g.agc.agc(ndx).d_sace(j)+g.agc.agc(ndx).d_sace(k))/2;
-        
-        % integrate lowpass filter outs...
-        for gndx=1:g.agc.agc(ndx).n_ctrlGen
-            g.agc.agc(ndx).ctrlGen(gndx).x(j) = g.agc.agc(ndx).ctrlGen(gndx).x(k)...
-                + h_sol *(g.agc.agc(ndx).ctrlGen(gndx).dx(j)+  g.agc.agc(ndx).ctrlGen(gndx).dx(k))/2  ;
-        end
-    end
-end
 
 if n_dpw ~= 0
     % only calculate if dpw filter is used

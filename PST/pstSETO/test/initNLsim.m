@@ -32,10 +32,6 @@ global ibus_con  netg_con  stab_con
 %%
 global g
 
-
-%% Initialize required VTS globals
-handleStDx(1, 0, 0) % init
-
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
 disp('constructing reduced y matrices')
@@ -361,5 +357,8 @@ if ~isempty(g.dc.dcsp_con)
     % initialize dc line
     dc_line(0,1,1,g.bus.bus,flag);
 end
+
+%% Initialize required VTS globals
+handleStDx(1, 0, 0) % init
 
 end%end initNLsim
