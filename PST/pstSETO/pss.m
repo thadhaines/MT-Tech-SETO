@@ -26,6 +26,7 @@ function pss(i,k,flag)
 %   07/xx/98    xx:xx   xxx             Version 2.2 - Added interface to deltaP/omega filter
 %   04/xx/11    xx:xx   JHC             Version 3.1 - Corrected washout filter calculation
 %   07/06/20    13:57   Thad Haines     Revised format of globals and internal function documentation
+%   07/09/20    08:55   Thad Haines     'Un-corrected' JCH washout filter calculation so pss is same as model from V2
 
 global g
 global dpw_out n_dpw % deals with delta omega filter...
@@ -89,16 +90,16 @@ if g.pss.n_pss~=0
       if i ~= 0 % scalar computation
          n = g.pss.pss_mb_idx(i); % machine number
          if g.pss.pss_con(i,1) == 1
-            var1 = g.mac.mac_spd(i,k)-g.pss.pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = g.mac.mac_spd(i,k)-g.pss.pss1(i,k)/g.pss.pss_con(i,4); % DO divide by pss_con(i,4) 
          else
             n = g.mac.mac_int(g.pss.pss_con(i,2)); % machine number 
-            var1 = g.mac.pelect(i,k)*g.sys.basmva/g.mac.mac_con(n,3)-g.pss.pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = g.mac.pelect(i,k)*g.sys.basmva/g.mac.mac_con(n,3)-g.pss.pss1(i,k)/g.pss.pss_con(i,4); % DO divide by pss_con(i,4)
          end
          if n_dpw~=0
             if n_dpw ~= 0
                i_dpw = find(dpw_pss_idx==i);
                if ~isempty(i_dpw)
-                  var1 = dpw_out(i_dpw,k)-g.pss.pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+                  var1 = (dpw_out(i_dpw,k)-g.pss.pss1(i,k))/g.pss.pss_con(i,4); % DO divide by pss_con(i,4)
                end
             end
          end  
@@ -120,14 +121,14 @@ if g.pss.n_pss~=0
             var3 = var1;
             if length(g.pss.pss_sp_idx)~=0
                n_sp = g.mac.mac_int(g.pss.pss_con(g.pss.pss_sp_idx,2));
-               var1(g.pss.pss_sp_idx) = g.mac.mac_spd(n_sp,k)-g.pss.pss1(g.pss.pss_sp_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+               var1(g.pss.pss_sp_idx) = g.mac.mac_spd(n_sp,k)-g.pss.pss1(g.pss.pss_sp_idx,k)./g.pss.pss_con(g.pss.pss_sp_idx,4); % DO divide by pss_con(pss_sp_idx,4) 
             end
             if ~isempty(g.pss.pss_p_idx)
                n_p = g.mac.mac_int(g.pss.pss_con(g.pss.pss_p_idx,2));
-               var1(g.pss.pss_p_idx) = g.mac.pelect(n_p,k)*g.sys.basmva./g.mac.mac_con(n_p,3)-g.pss.pss1(g.pss.pss_p_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+               var1(g.pss.pss_p_idx) = (g.mac.pelect(n_p,k)*g.sys.basmva./g.mac.mac_con(n_p,3)-g.pss.pss1(g.pss.pss_p_idx,k))./g.pss.pss_con(g.pss.pss_p_idx,4); % DO divide by pss_con(pss_p_idx,4) 
             end
             if n_dpw ~= 0
-               var1 = dpw_out(:,k)-g.pss.pss1(dpw_pss_idx,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+               var1 = (dpw_out(:,k)-g.pss.pss1(dpw_pss_idx,k))./g.pss.pss_con(i,4); % DO divide by pss_con(i,4)
             end
          end  
          
@@ -148,10 +149,10 @@ if g.pss.n_pss~=0
       if i ~= 0 % scalar computation
          n = g.pss.pss_mb_idx(i); % machine number
          if g.pss.pss_con(i,1) == 1
-            var1 = g.mac.mac_spd(i,k)-g.pss.pss1(i,k);  % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = (g.mac.mac_spd(i,k)-g.pss.pss1(i,k))/g.pss.pss_con(i,4);  % DO divide by pss_con(i,4) 
          else
             n = g.mac.mac_int(g.pss.pss_con(i,2)); % machine number 
-            var1 = g.mac.pelect(i,k)*g.sys.basmva./g.mac.mac_con(n,3)-g.pss.pss1(i,k); % do not divide by pss_con(i,4)  JHC April 17, 2011
+            var1 = (g.mac.pelect(i,k)*g.sys.basmva./g.mac.mac_con(n,3)-g.pss.pss1(i,k))/g.pss.pss_con(i,4); % DO divide by pss_con(i,4)
          end
          if n_dpw~=0
             if n_dpw ~= 0
@@ -162,7 +163,7 @@ if g.pss.n_pss~=0
             end
          end  
          
-         g.pss.dpss1(i,k) = var1/g.pss.pss_con(i,4);   % divide by pss_con(i,4)  JHC April 17, 2011
+         g.pss.dpss1(i,k) = var1;   % do NOT divide by pss_con(i,4) 
          
          var2 = g.pss.pss_pot(i,1)*g.pss.pss_con(i,3)*var1 + g.pss.pss2(i,k);
          g.pss.dpss2(i,k) = ((1-g.pss.pss_pot(i,1))*g.pss.pss_con(i,3)*var1 - g.pss.pss2(i,k))/g.pss.pss_con(i,6);
@@ -186,19 +187,19 @@ if g.pss.n_pss~=0
             var3 = var1;
             if ~isempty(g.pss.pss_sp_idx)
                n_sp = g.mac.mac_int(g.pss.pss_con(g.pss.pss_sp_idx,2));
-               var1(g.pss.pss_sp_idx) = g.mac.mac_spd(n_sp,k)-g.pss.pss1(g.pss.pss_sp_idx,k); % do not divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
+               var1(g.pss.pss_sp_idx) = (g.mac.mac_spd(n_sp,k)-g.pss.pss1(g.pss.pss_sp_idx,k))./g.pss.pss_con(g.pss.pss_sp_idx,4); % DO divide by pss_con(pss_sp_idx,4)  
             end
             if ~isempty(g.pss.pss_p_idx)
                n_p = g.mac.mac_int(g.pss.pss_con(g.pss.pss_p_idx,2));
-               var1(g.pss.pss_p_idx) = g.mac.pelect(n_p,k)*g.sys.basmva./g.mac.mac_con(n_p,3)...
-                  -g.pss.pss1(g.pss.pss_p_idx,k); % do not divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
+               var1(g.pss.pss_p_idx) = (g.mac.pelect(n_p,k)*g.sys.basmva./g.mac.mac_con(n_p,3)...
+                  -g.pss.pss1(g.pss.pss_p_idx,k))./g.pss.pss_con(g.pss.pss_sp_idx,4); % DO divide by pss_con(pss_sp_idx,4)  
             end
             if n_dpw ~= 0
                var1 = (dpw_out(:,k)-g.pss.pss1(dpw_pss_idx,k))./g.pss.pss_con(dpw_pss_idx,4);
             end
          end  
          
-         g.pss.dpss1(g.pss.pss_idx,k) = var1./g.pss.pss_con(g.pss.pss_sp_idx,4); % divide by pss_con(pss_sp_idx,4)  JHC April 17, 2011
+         g.pss.dpss1(g.pss.pss_idx,k) = var1;%./g.pss.pss_con(g.pss.pss_sp_idx,4); % DO NOT divide by pss_con(pss_sp_idx,4) 
          
          var2 = g.pss.pss_pot(g.pss.pss_idx,1).*(g.pss.pss_con(g.pss.pss_idx,3).*var1) + g.pss.pss2(g.pss.pss_idx,k);
          g.pss.dpss2(g.pss.pss_idx,k) = ((ones(g.pss.n_pss,1)-g.pss.pss_pot(g.pss.pss_idx,1))...

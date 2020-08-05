@@ -16,6 +16,7 @@ function dynamicSolution(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    11:31   Thad Haines     Version 1
+%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
 
 %% Remaining 'loose' globals
 % ivm variables - 5
@@ -115,8 +116,8 @@ global g
             Pst = cell(g.pwr.n_pwrmod,1);
             Qst = Pst;
             for index=1:g.pwr.n_pwrmod
-                Pst{index} = pwrmod_p_sigst{index}(:,k);
-                Qst{index} = pwrmod_q_sigst{index}(:,k);
+                Pst{index} = g.pwr.pwrmod_p_sigst{index}(:,k);
+                Qst{index} = g.pwr.pwrmod_q_sigst{index}(:,k);
             end
             [~,~,dp,dq,~,~] = pwrmod_dyn(Pst,Qst,g.bus.bus,g.sys.t,k,flag,g.pwr.n_pwrmod);
             if (~iscell(dp) || ~iscell(dq))
@@ -129,14 +130,14 @@ global g
                 if ((size(dp{index},2)~=1) || (size(dq{index},2)~=1))
                     error('Dimension error in pwrmod_dyn');
                 end
-                if size(dp{index},1)~=size(dpwrmod_p_sigst{index},1)
+                if size(dp{index},1)~=size(g.pwr.dpwrmod_p_sigst{index},1)
                     error('Dimension error in pwrmod_dyn');
                 end
-                if size(dq{index},1)~=size(dpwrmod_q_sigst{index},1)
+                if size(dq{index},1)~=size(g.pwr.dpwrmod_q_sigst{index},1)
                     error('Dimension error in pwrmod_dyn');
                 end
-                dpwrmod_p_sigst{index}(:,k) = dp{index};
-                dpwrmod_q_sigst{index}(:,k) = dq{index};
+                g.pwr.dpwrmod_p_sigst{index}(:,k) = dp{index};
+                g.pwr.dpwrmod_q_sigst{index}(:,k) = dq{index};
             end
             [P,Q,~,~] = pwrmod_dyn(Pst,Qst,g.bus.bus,g.sys.t,k,1,g.pwr.n_pwrmod); %update pwrmod_p_sig and pwrmod_q_sig
             if (length(P)~=g.pwr.n_pwrmod) || (length(Q)~=g.pwr.n_pwrmod)

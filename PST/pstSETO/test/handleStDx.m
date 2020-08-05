@@ -308,14 +308,14 @@ end
 
 %% unique/unused state and derivatives not currently handled in function
 %{
-% Copied from v2.3 - 06/01/20 - thad
-g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*(g.pwr.dpwrmod_p_st(:,j) + g.pwr.dpwrmod_p_st(:,k))/2;
-g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*(g.pwr.dpwrmod_q_st(:,j) + g.pwr.dpwrmod_q_st(:,k))/2;
+%% Copied from v2.3 - 06/01/20 - thad
+g.pwr.pwrmod_p_st(:,j) = g.pwr.pwrmod_p_st(:,k)+h_sol*g.pwr.dpwrmod_p_st(:,k);
+g.pwr.pwrmod_q_st(:,j) = g.pwr.pwrmod_q_st(:,k)+h_sol*g.pwr.dpwrmod_q_st(:,k);
+%% pwrmod
 if g.pwr.n_pwrmod~=0
     for index=1:g.pwr.n_pwrmod
-        % make global? -thad 07/06/20
-        pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*(dpwrmod_p_sigst{index}(:,j) + dpwrmod_p_sigst{index}(:,k))/2;
-        pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*(dpwrmod_q_sigst{index}(:,j) + dpwrmod_q_sigst{index}(:,k))/2;
+        g.pwr.pwrmod_p_sigst{index}(:,j) = g.pwr.pwrmod_p_sigst{index}(:,k)+h_sol*g.pwr.dpwrmod_p_sigst{index}(:,k);
+        g.pwr.pwrmod_q_sigst{index}(:,j) = g.pwr.pwrmod_q_sigst{index}(:,k)+h_sol*g.pwr.dpwrmod_q_sigst{index}(:,k);
     end
 end
 

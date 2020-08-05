@@ -17,6 +17,7 @@ function correctorIntegration(k, j, h_sol)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    13:10   Thad Haines     Version 1
+%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
 
 %% Remaining 'loose' globals
 % ivm variables - 5
@@ -112,8 +113,8 @@ global g
         if g.pwr.n_pwrmod~=0
             for index=1:g.pwr.n_pwrmod
                 % make global? -thad 07/06/20
-                pwrmod_p_sigst{index}(:,j) = pwrmod_p_sigst{index}(:,k)+h_sol*(dpwrmod_p_sigst{index}(:,j) + dpwrmod_p_sigst{index}(:,k))/2;
-                pwrmod_q_sigst{index}(:,j) = pwrmod_q_sigst{index}(:,k)+h_sol*(dpwrmod_q_sigst{index}(:,j) + dpwrmod_q_sigst{index}(:,k))/2;
+                g.pwr.pwrmod_p_sigst{index}(:,j) = g.pwr.pwrmod_p_sigst{index}(:,k)+h_sol*(g.pwr.dpwrmod_p_sigst{index}(:,j) + g.pwr.dpwrmod_p_sigst{index}(:,k))/2;
+                g.pwr.pwrmod_q_sigst{index}(:,j) = g.pwr.pwrmod_q_sigst{index}(:,k)+h_sol*(g.pwr.dpwrmod_q_sigst{index}(:,j) + g.pwr.dpwrmod_q_sigst{index}(:,k))/2;
             end
         end
         
