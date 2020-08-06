@@ -3,13 +3,15 @@
 
 clear; close all
 printFigs = 0;
-detailPlots = false;
+detailPlots = true;
 detailX = [54,64]; % detail 1
 detailX = [119,129]; % detail 2
 
 % load varible data
 % load('AGCtestVTS.mat')
-load('pmRampVTS.mat')
+load('pmRampVTS0.mat') % original tolerances Of 'RelTol',1e-4,'AbsTol',1e-7 -61 seconds
+load('pmRampVTS1.mat') % increased 'RelTol',1e-5,'AbsTol',1e-7, - 106 sec
+% load('pmRampVTS2.mat') % altered time blocks
 gv = g;
 
 % load seto data
@@ -25,7 +27,7 @@ load pmRamp3.mat bus_v mac_spd Efd pss_out t pmech pm_sig pelect
 % pss, efd
 
 figure
-%% bus voltage
+% bus voltage
 subplot(3,2,1)
 busV = 4;
 
@@ -43,8 +45,8 @@ grid on
 if detailPlots
     xlim(detailX)
 end
-%% bus angle
-%% locate slack bus angle
+% bus angle
+% locate slack bus angle
 sbAng = g.bus.bus( g.bus.bus(:,10) == 1);
 
 subplot(3,2,2)

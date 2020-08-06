@@ -58,7 +58,7 @@ end
 clear varNames vName zeroTest
 
 %% Save cleaned output data
-save('pmRampVTS.mat'); %Save simulation outputs
+save('pmRampVTS2.mat'); %Save simulation outputs
 
 %% Clean up modulation file alterations.
 % turbine governor pref mod

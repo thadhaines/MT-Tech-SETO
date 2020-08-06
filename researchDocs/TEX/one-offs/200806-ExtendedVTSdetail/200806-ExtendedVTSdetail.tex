@@ -1,0 +1,152 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Further Study of VTS operation \\ `Extended' Term Simulation  }
+\lhead{Research \\ 08/06/20}
+
+\usepackage[hidelinks]{hyperref} % allow links in pdf
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage{minted}
+
+\begin{document}
+\onehalfspacing
+\paragraph{Scenario} \begin{center}
+\begin{minipage}{.47\linewidth}
+\centering
+\includegraphics[width=\linewidth]{../200806-ExtendedVersionComp/sysOneLineAreas}
+\includegraphics[width=.8\linewidth]{../200806-ExtendedVersionComp/verPmSig}
+\end{minipage} %
+\begin{minipage}{.47\linewidth}
+\begin{itemize}
+\footnotesize
+\itemsep 0em
+\item Kundur  4 machine system packaged with PST
+\item Constant Z load model
+\item System has governors, exciters, and PSS.
+\item Governor of generator being perturbed by pm\_sig removed
+\item Perturbance was meant to mimic a solar ramp with various situations of cloud cover:\\
+(larger plot of pm\_sig on Page 6)
+\begin{Verbatim}[fontsize=\scriptsize]
+% time [seconds]
+% 0-30      - no action
+% 30-90     - ramp up 0.5 PU (50 MW)
+% 90-150    - hold peak
+% 150-210   - ramp down 0.5 PU (50 MW)
+% 210-240   - no action
+
+% cloud cover events
+% 45-55 - 20% max gen (generation of 0.1 PU)
+% 120-140 - 30% cover (generation reduction to 70%)
+% 180-190 - 15% cover (generation reduction to 85%)
+\end{Verbatim}
+\end{itemize}
+\end{minipage}
+
+\end{center}
+
+\paragraph{Summary} 
+\begin{enumerate}
+\item Delay in executing pm\_sig caused by VTS created a noticeable delay in VTS dynamics.
+\item Increasing ODE solver tolerances did not resolve the issue.
+\item Creating a new time block near the event in question did resolve the issue.
+\end{enumerate}
+As shown below, VTS may result with event start times ending up between computed time steps without additional user action/foresight.\\
+\begin{center}
+\centering
+\begin{minipage}{.3\linewidth}
+\includegraphics[width=\linewidth]{pmSig_0}
+\centering
+Original Simulation
+\end{minipage} %
+\begin{minipage}{.3\linewidth}
+\includegraphics[width=\linewidth]{pmSig_1}
+\centering
+Increased Tolerance
+\end{minipage} %
+\begin{minipage}{.3\linewidth}
+\includegraphics[width=\linewidth]{pmSig_2}
+\centering
+Additional `time block'
+\end{minipage}
+\end{center}
+\pagebreak
+\paragraph{sw\_con Changes} \ \\
+The original switching array is shown below.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+ts = 0.004;
+sw_con = [...
+.1      0  	0  	0    0    0    ts;   % sets intitial time step
+0.2     101	3  	0    0    6    ts;   % Do Nothing
+30.0    0  	0 	 0    0    0    ts;   % Do Nothing
+240.0   0  	0	  0    0    0    0];   % end simulation
+\end{minted}
+The altered switching array adds a null event at t = 120 to ensure the pm\_sig step is processed at the designed starting time.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+ts = 0.004;
+sw_con = [...
+.1      0  	0  	0    0    0    ts;   % sets intitial time step
+0.2     101	3  	0    0    6    ts;   % Do Nothing
+30.0    0  	0 	 0    0    0    ts;   % Do Nothing
+120.0   0  	0 	 0    0    0    ts;   % Do Nothing
+240.0   0  	0	  0    0    0    0];   % end simulation
+\end{minted}
+
+\paragraph{Performance Effects} \ \\ 
+The increased tolerance case (VTS 1) took more time to simulate as it took many more steps.\\
+VTS 2, with altered sw\_con, performed slightly slower than the original (VTS 0) case. 
+\begin{table}[!ht]
+\resizebox{\linewidth}{!}{
+
+	\begin{tabular}{@{} L{1.75cm} 
+	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{0.75cm} R{1.5cm} R{2cm} R{2cm}@{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+
+	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{Solutions Per Step}			&		&		&		\\	
+Version	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. Time	&	Speed Up	\\ \midrule	
+VTS 0	&	2.32E+01	&	2.68E-04	&	2.58E-02	&	9,315	&	2	&	97	&	17,006	&	61.73	&	1.00	\\	
+VTS 1	&	2.32E+01	&	1.36E-04	&	1.38E-02	&	17,353	&	2	&	96	&	27,243	&	106.09	&	0.58	\\	
+VTS 2	&	2.00E+01	&	2.19E-05	&	2.58E-02	&	9,504	&	2	&	100	&	17,927	&	66.59	&	0.93	\\	
+																				\bottomrule
+	\end{tabular}
+	}%end resize box
+\end{table}
+
+\pagebreak
+\paragraph{Original Results (VTS 0)} \ \\
+
+\includegraphics[width=\linewidth]{verCompDetail2}
+
+\pagebreak
+\paragraph{Altered sw\_con Results (VTS 2)} \ \\
+
+\includegraphics[width=\linewidth]{verCompDetail2ALT}
+
+
+
+\end{document}
