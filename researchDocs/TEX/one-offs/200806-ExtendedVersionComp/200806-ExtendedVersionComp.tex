@@ -7,7 +7,7 @@
 
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
-\chead{Comparison of PST Versions \\ Extended Term Simulation  }
+\chead{Comparison of PST Versions \\ `Extended' Term Simulation  }
 \lhead{Research \\ 08/06/20}
 
 \usepackage[hidelinks]{hyperref} % allow links in pdf
@@ -41,8 +41,8 @@
 
 % cloud cover events
 % 45-55 - 20% max gen (generation of 0.1 PU)
-% 120-140 - 30% cover (generation reduction by 70%)
-% 180-190 - 15% cover (generation reduction by 85%)
+% 120-140 - 30% cover (generation reduction to 70%)
+% 180-190 - 15% cover (generation reduction to 85%)
 \end{Verbatim}
 \end{itemize}
 \end{minipage}
@@ -51,10 +51,10 @@
 
 \paragraph{Summary} 
 \begin{enumerate}
-\item The SETO version is 3.65 times faster than PST 3.1.1
+\item The SETO version is 3.65 times faster than PST 3.1.1.
 \item Using variable time steps allows for a speed up of 14.84 over PST 3.1.1.
 \item Results from all simulations are very similar.
-\item Without creating an explicit time block at the begining of an event, VTS events may not occur at the exact time they are programmed.
+\item Without creating an explicit time block at the beginning of an event, VTS events may not occur at the exact time they are programmed.
 \item VTS reduces logged data size by $\approx$4 times compared to the SETO version.
 \end{enumerate}
 
@@ -109,17 +109,18 @@ NOTE: Initial time steps before t=30 are much larger than the other time steps (
 
 \includegraphics[width=\linewidth]{verComp}
 
-NOTE: 3.1.1 does not calculate Average system Frequency
+NOTE: 3.1.1 does not calculate average system frequency.
 
 \includegraphics[width=\linewidth]{verCompDetail1}
 
-NOTE: 3.1.1 does not calculate Average system Frequency
+NOTE: 3.1.1 does not calculate average system frequency.
 
 \includegraphics[width=\linewidth]{verCompDetail2}
 
-NOTE: 3.1.1 does not calculate Average system Frequency
+NOTE: 3.1.1 does not calculate average system frequency.
 
 VTS events may not occur at exact specified time due to the nature of variable time steps.
+
 Breaks in the \verb|sw_con| can be created to account for this, however, the variance in time is often relatively small.
 
 
@@ -130,7 +131,7 @@ Breaks in the \verb|sw_con| can be created to account for this, however, the var
 
 \includegraphics[width=\linewidth]{verPelect}
 
-Detail of Generators 1, 2, and 5 from t= 140 to 150:
+Detail of generators 1, 2, and 5 from t= 140 to 150:
 
 \includegraphics[width=\linewidth]{verPelectDetail}
 
