@@ -31,8 +31,7 @@
 \item Constant Z load model
 \item System has governors, exciters, and PSS.
 \item Governor of generator being perturbed by pm\_sig removed
-\item Perturbance was meant to mimic a solar ramp with various situations of cloud cover:\\
-(larger plot of pm\_sig on Page 6)
+\item Perturbance was meant to mimic a solar ramp with various situations of cloud cover:
 \begin{Verbatim}[fontsize=\scriptsize]
 % time [seconds]
 % 0-30      - no action
@@ -42,7 +41,7 @@
 % 210-240   - no action
 
 % cloud cover events
-% 45-55 - 20% max gen (generation of 0.1 PU)
+% 45-55   - 20% max gen (generation of 0.1 PU)
 % 120-140 - 30% cover (generation reduction to 70%)
 % 180-190 - 15% cover (generation reduction to 85%)
 \end{Verbatim}
@@ -54,25 +53,28 @@
 \paragraph{Summary} 
 \begin{enumerate}
 \item Delay in executing pm\_sig caused by VTS created a noticeable delay in VTS dynamics.
-\item Increasing ODE solver tolerances did not resolve the issue.
+\item Decreasing ODE solver tolerances did not resolve the issue.
 \item Creating a new time block near the event in question did resolve the issue.
 \end{enumerate}
 As shown below, VTS may result with event start times ending up between computed time steps without additional user action/foresight.\\
 \begin{center}
 \centering
 \begin{minipage}{.3\linewidth}
-\includegraphics[width=\linewidth]{pmSig_0}
 \centering
+VTS 0
+\includegraphics[width=\linewidth]{pmSig_0}
 Original Simulation
 \end{minipage} %
 \begin{minipage}{.3\linewidth}
-\includegraphics[width=\linewidth]{pmSig_1}
 \centering
-Increased Tolerance
+VTS 1
+\includegraphics[width=\linewidth]{pmSig_1}
+Decreased Tolerance 
 \end{minipage} %
 \begin{minipage}{.3\linewidth}
-\includegraphics[width=\linewidth]{pmSig_2}
 \centering
+VTS 2
+\includegraphics[width=\linewidth]{pmSig_2}
 Additional `time block'
 \end{minipage}
 \end{center}
@@ -111,13 +113,17 @@ sw_con = [...
 .1      0  	0  	0    0    0    ts;   % sets intitial time step
 0.2     101	3  	0    0    6    ts;   % Do Nothing
 30.0    0  	0 	 0    0    0    ts;   % Do Nothing
-120.0   0  	0 	 0    0    0    ts;   % Do Nothing
+120.0   0  	0 	 0    0    0    ts;   % Do Nothing <- Added row
 240.0   0  	0	  0    0    0    0];   % end simulation
 \end{minted}
 
+
+NOTE: The start time of 0.1 was an oversight during case creation.
+
+
 \paragraph{Performance Effects} \ \\ 
-The increased tolerance case (VTS 1) took more time to simulate as it took many more steps.\\
-VTS 2, with altered sw\_con, performed slightly slower than the original (VTS 0) case. 
+The decreased tolerance case (VTS 1 - with Relative Tolerance of 1e-5 instead of 1e-4) took more time to simulate as it took many more steps.
+VTS 2, with the altered sw\_con, performed slightly slower than the original (VTS 0).
 \begin{table}[!ht]
 \resizebox{\linewidth}{!}{
 
@@ -143,10 +149,17 @@ VTS 2	&	2.00E+01	&	2.19E-05	&	2.58E-02	&	9,504	&	2	&	100	&	17,927	&	66.59	&	0.93
 \includegraphics[width=\linewidth]{verCompDetail2}
 
 \pagebreak
+\paragraph{Decreased Tolerance Results (VTS 1)} \ \\
+
+\includegraphics[width=\linewidth]{verCompDetail2ALT1}
+
+Results actually appear worse than VTS 0 as there is more variance between expected and actual start time of the modulation signal.
+
+\pagebreak
 \paragraph{Altered sw\_con Results (VTS 2)} \ \\
 
-\includegraphics[width=\linewidth]{verCompDetail2ALT}
+\includegraphics[width=\linewidth]{verCompDetail2ALT2}
 
-
+The additional row in the switching control array seemed to resolve delayed dynamic issue.
 
 \end{document}
