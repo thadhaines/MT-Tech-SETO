@@ -72,6 +72,8 @@ elseif Flag==1
             Q(k) = bus(n,5)/abs(bus(n,2)); %Reac-power current
         end
     end
+    
+    % modulation of power
     if Time(kSim)>=1 && Time(kSim)<1.5; 
         P(1) = P(1)-0.0001;
     end

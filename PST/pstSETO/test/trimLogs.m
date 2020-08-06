@@ -4,7 +4,7 @@ function trimLogs(k)
 %
 % Syntax: trimLogs(k)
 %
-%   NOTES:
+%   NOTES: nCell not made via logicals - may lead to errors if fields not initialized (i.e. model not used)
 %
 %   Input:
 %   k - data index
@@ -15,7 +15,8 @@ function trimLogs(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/28/20    11:47   Thad Haines     Version 1
-%   08/03/20    15:30   Thad Haines     V 1.0.1 - addition of AGC, area values, and tg_sig
+%   08/03/20    15:30   Thad Haines     Version 1.0.1 - addition of AGC, area values, and tg_sig
+%   08/05/20    13:15   Thad Haines     Version 1.0.2 - added pwrmod signals to global
 
 global g
 %%
@@ -88,6 +89,17 @@ for f=1:size(nCell,1)
             % for each sub-field
             g.(nCell{f,1}).(nCell{f,2}{sf}) = g.(nCell{f,1}).(nCell{f,2}{sf})(:, 1: k);
         end
+        
+        % handle logged cell values from pwrmod
+        if strcmp(nCell{f,1}, 'pwr')
+            for n=1:g.pwr.n_pwrmod
+                g.pwr.pwrmod_p_sigst{n}= g.pwr.pwrmod_p_sigst{n}(:, 1:k);
+                g.pwr.pwrmod_q_sigst{n}= g.pwr.pwrmod_q_sigst{n}(:, 1:k);
+                g.pwr.dpwrmod_p_sigst{n}= g.pwr.dpwrmod_p_sigst{n}(:, 1:k);
+                g.pwr.dpwrmod_q_sigst{n}= g.pwr.dpwrmod_q_sigst{n}(:, 1:k);
+            end
+        end
+        
     end
 end
 

@@ -15,6 +15,7 @@ function initNLsim()
 %   History:
 %   Date        Time    Engineer        Description
 %   07/30/20    10:54   Thad Haines     Version 1
+%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
 
 %% Remaining 'loose' globals
 % ivm variables - 5
@@ -30,10 +31,6 @@ global ibus_con  netg_con  stab_con
 
 %%
 global g
-
-
-%% Initialize required VTS globals
-handleStDx(1, 0, 0) % init
 
 %% step 1: construct reduced Y matrices
 warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
@@ -292,25 +289,33 @@ if g.pwr.n_pwrmod~=0
     disp('power modulation')
     pwrmod_p(0,1,g.bus.bus,flag);
     pwrmod_q(0,1,g.bus.bus,flag);
+    
     [~,~,~,~,Pini,Qini] = pwrmod_dyn([],[],g.bus.bus,g.sys.t,0,0,g.pwr.n_pwrmod);
+    
     if (~iscell(Pini) || ~iscell(Qini))
         error('Error in pwrmod_dyn, P_statesIni and P_statesIni must be cells');
     end
     if (any(size(Pini)-[g.pwr.n_pwrmod 1]) || any(size(Qini)-[g.pwr.n_pwrmod 1]))
         error('Dimension error in pwrmod_dyn');
     end
-    pwrmod_p_sigst = cell(g.pwr.n_pwrmod,1);
-    pwrmod_q_sigst = pwrmod_p_sigst;
-    dpwrmod_p_sigst = pwrmod_p_sigst;
-    dpwrmod_q_sigst = pwrmod_p_sigst;
+    
+    % converted to globals - thad 08/05/20
+    g.pwr.pwrmod_p_sigst = cell(g.pwr.n_pwrmod,1);
+    g.pwr.pwrmod_q_sigst = g.pwr.pwrmod_p_sigst;
+    g.pwr.dpwrmod_p_sigst = g.pwr.pwrmod_p_sigst;
+    g.pwr.dpwrmod_q_sigst = g.pwr.pwrmod_p_sigst;
+    
+    k = size(g.sys.t,2); % length of logged values
+    
     for index=1:g.pwr.n_pwrmod
         if ((size(Pini{index},2)~=1) || (size(Qini{index},2)~=1))
             error('Dimension error in pwrmod_dyn');
         end
-        dpwrmod_p_sigst{index} = zeros(size(Pini{index},1),k);
-        pwrmod_p_sigst{index} = Pini{index}*ones(1,k);
-        dpwrmod_q_sigst{index} = zeros(size(Qini{index},1),k);
-        pwrmod_q_sigst{index} = Qini{index}*ones(1,k);
+        % converted to globals - thad 08/05/20
+        g.pwr.dpwrmod_p_sigst{index} = zeros(size(Pini{index},1),k);
+        g.pwr.pwrmod_p_sigst{index} = Pini{index}*ones(1,k);
+        g.pwr.dpwrmod_q_sigst{index} = zeros(size(Qini{index},1),k);
+        g.pwr.pwrmod_q_sigst{index} = Qini{index}*ones(1,k);
     end
     clear index dp dq Pini Qini
 end
@@ -352,5 +357,8 @@ if ~isempty(g.dc.dcsp_con)
     % initialize dc line
     dc_line(0,1,1,g.bus.bus,flag);
 end
+
+%% Initialize required VTS globals
+handleStDx(1, 0, 0) % init
 
 end%end initNLsim
