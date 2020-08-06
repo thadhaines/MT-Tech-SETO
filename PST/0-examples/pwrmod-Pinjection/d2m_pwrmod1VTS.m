@@ -98,10 +98,10 @@ pwrmod_con=[...
 %     col7  time step (s)
 sw_con = [...
 0        0    0    0    0    0    1/120;%sets intitial time step
-5.0      6    1    0    0    5    1/120; %no fault
-5+1/60   0    0    0    0    0    1/120; %clear near end of fault
-5+2/60   0    0    0    0    0    1/120; %clear far end of fault
-5.1      0    0    0    0    0    1/120; % increase time step
+0.1      6    1    0    0    5    1/120; %no fault
+0.2   0    0    0    0    0    1/120; %clear near end of fault
+1.0   0    0    0    0    0    1/120; %clear far end of fault
+4.0      0    0    0    0    0    1/120; % increase time step
 10       0    0    0    0    0    1/120]; % end simulation
 
 %% solver_con format
@@ -119,8 +119,8 @@ sw_con = [...
 
 solver_con ={ ...
     'huens'; % pre fault - fault
-    'ode113'; % fault - post fault 1
-    'ode113'; % post fault 1 - post fault 2
-    'ode113'; % post fault 2 - row 5
-    'ode113'; % row 5 - end
+    'huens'; % fault - post fault 1
+    'huens'; % post fault 1 - post fault 2
+    'ode23t'; % post fault 2 - row end
+    'ode23t'; % post fault 2 - row end
     };

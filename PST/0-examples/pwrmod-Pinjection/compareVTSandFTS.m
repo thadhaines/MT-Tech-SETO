@@ -193,9 +193,9 @@ disp('')
 
 %% pwrmod states
 figure
-plot(g.sys.t, g.pwr.pwrmod_p_st)
+plot(g.sys.t, g.pwr.pwrmod_p_st- g.pwr.pwrmod_p_st(:,1)*ones(1,size(g.pwr.pwrmod_p_st,2)))
 hold on
-plot(gv.sys.t, gv.pwr.pwrmod_p_st,'--')
+plot(gv.sys.t, gv.pwr.pwrmod_p_st- gv.pwr.pwrmod_p_st(:,1)*ones(1,size(gv.pwr.pwrmod_p_st,2)),'--')
 
 grid on
 ylabel('MW [PU]')

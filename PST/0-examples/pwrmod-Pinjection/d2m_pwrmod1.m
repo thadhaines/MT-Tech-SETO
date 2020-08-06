@@ -98,7 +98,7 @@ pwrmod_con=[...
 %     col7  time step (s)
 sw_con = [...
 0        0    0    0    0    0    1/120;%sets intitial time step
-5.0      6    1    0    0    5    1/120; %no fault
+5.0      6    1    0    0    6    1/120; %no fault
 5+1/60   0    0    0    0    0    1/120; %clear near end of fault
 5+2/60   0    0    0    0    0    1/120; %clear far end of fault
 5.1      0    0    0    0    0    1/120; % increase time step
