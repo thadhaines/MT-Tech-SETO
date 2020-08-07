@@ -39,7 +39,7 @@ nCell = { ...
     'vts', {'slns'};
     'area', {'totH', 'aveF', 'totGen', 'totLoad', 'icA', 'icS'}; % add optionally?
     'lmon', {'iFrom', 'iTo', 'sFrom', 'sTo'}; % add optionally?
-    'agc', {'Handled Differencly'} ; % add optionally?
+    'agc', {'Handled Differently'} ; % add optionally?
     %'', {};
     };
 

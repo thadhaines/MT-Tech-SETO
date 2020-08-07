@@ -1,18 +1,17 @@
 function handleNetworkSln(k, flag)
-%HANDLENETWORKSLN  save and restore initial network solution
-% HANDLENETWORKSLN saves the first network solution and then restores the 
-% values after variable step integration is complete.
+%HANDLENETWORKSLN  save and restore network solution data
+% HANDLENETWORKSLN saves or restores the network solution at data index k
 %
 % Syntax: handleNetworkSln(k, flag)
 %
-%   NOTES: Used to reset the newtork values to the initial solution.
+%   NOTES: Used to reset the newtork values to the initial solution in VTS.
 %
 %   Input:
 %   k - data index to log from and restore to
 %   flag - choose funtion operation
-%       0 - initialize globals used to storing data
-%       1 - collect solution values
-%       2 - write stored solution to data index k
+%       0 - initialize globals used to store data
+%       1 - collect newtork solution values from index k into a global vector
+%       2 - write stored solution vector to network globals data index k
 %
 %   Output:
 %   VOID

@@ -4,7 +4,7 @@ function dynamicSolution(k)
 %
 % Syntax: dynamicSolution(k)
 %
-%   NOTES:  Non-global PWR and IVM variables will NOT work until added the
+%   NOTES:  Non-global IVM variables will NOT work until added the
 %           global g.
 %
 %   Input:

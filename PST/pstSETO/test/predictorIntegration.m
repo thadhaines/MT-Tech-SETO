@@ -1,6 +1,6 @@
 function predictorIntegration(k, j, h_sol)
-%PREDICTORINTEGRATION Performs x(j) = x(k) + h*dx(k)
-% PREDICTORINTEGRATION Performs  x(j) = x(k) + h*dx(k)
+%PREDICTORINTEGRATION Performs x(j) = x(k) + h_sol*dx(k)
+% PREDICTORINTEGRATION Performs  x(j) = x(k) + h_sol*dx(k)
 %
 % Syntax: predictorIntegration(k, j, h_sol)
 %

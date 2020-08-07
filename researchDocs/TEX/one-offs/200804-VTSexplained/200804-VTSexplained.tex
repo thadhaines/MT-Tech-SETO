@@ -7,7 +7,7 @@
 
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
-\chead{PST and VTS \\ - DRAFT -}
+\chead{PST and VTS \\ - DRAFT 2 -}
 \lhead{Research \\ 08/04/20}
 \usepackage{minted}
 \usepackage{setspace}
@@ -302,24 +302,44 @@ end% end simulation loop
 \end{minted}
 
 \pagebreak
+\paragraph{Functions that Enable Variable Time Step Integration} \ \\
+A number of new functions were created to allow for VTS to be integrated into PST and collected in the \verb|test| folder of the main SETO version directory.
+Some functions were simply collected portions of code previously located in \verb|s_simu| and placed into a function for ease of use and clarity of code flow, while others were created to handle data or perform other tasks specifically related to VTS.
+The following sub paragraphs provide some information about these functions 
 
-Place holders for function explanations / real basic explanations of \emph{some} VTS functions.
+\subparagraph{correctorIntegration} \ \\
+As shown in the code except below, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next value of integrated states.
+The executed code was taken directly from \verb|s_simu|.
+The inputs to the function are the same variables used in  \verb|s_simu|.
 
-\paragraph{initTblocks} \ \\
-Analyzes \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in simulation.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function correctorIntegration(k, j, h_sol)
+% CORRECTORINTEGRATION Performs x(j) = x(k) + h_sol*(dx(j) + dx(k))/2
+%
+%   Input:
+%   k - data index for 'n'
+%   j - data index for 'n+1'
+%   h_sol - time between k and j
+\end{minted}
 
-\paragraph{handleStDx} \ \\
-Function to handle the collecting, indexing, and updating ALL states and derivatives.
-It uses dynamic field names and seems like a pretty slick solution to a very annoying problem.
+%==========================================================
+\subparagraph{dcSolution} \ \\
+The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step were moved into the \verb|dcSolution| function.
+This has not been tested with VTS, but was functionalized to enable future developement.
+It \emph{should} work as normal when using Huen's method, but is untested as of this writing.
 
-\paragraph{handleNetworkSln} \ \\
-Saves the initial network solution and ensures it is restored after a variable step solution where \textbf{many} network solutions may overwrite the first (and correct) solution.
-
-\paragraph{networkSolutionVTS} \ \\
-A function that solves the system network at the passed in data index.
-Essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on passed in simulation time.
-
-\begin{comment}
+%==========================================================
+\subparagraph{dynamicSolution} \ \\
+As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at data index \verb|k| by calling each required model with the input flag set to 2.
+This functionalized code is again taken directly from \verb|s_simu|.
 
 
 \begin{minted}[
@@ -331,9 +351,237 @@ Essentially the same as the \verb|networkSolution| function, except instead of r
 	%	linenos,
 		breaklines
 				]{MATLAB}
-XxXxX
-
+function dynamicSolution(k)
+% DYNAMICSOLUTION Performs the dynamic solution for index k
 \end{minted}
+
+%==========================================================
+\subparagraph{handleNetworkSln} \ \\
+The \verb|handleNetworkSln| function was created to store and restore the calculated values that are then set to globals during a network solution.
+The purpose of this function was to allow for the first network solution performed each step to be carried forward after multiple other network solutions may over-write the calculated values at the same data index.
+This over-writing may occur during the MATLAB ODE solvers repeated call to the input function.
+This function takes a data index \verb|k| and an operation \verb|flag| as inputs.
+The operation of the function is described in the code excerpt below.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function handleNetworkSln(k, flag)
+% HANDLENETWORKSLN saves or restores the network solution at data index k
+%
+%   NOTES: Used to reset the newtork values to the initial solution in VTS.
+%
+%   Input:
+%   k - data index to log from and restore to
+%   flag - choose funtion operation
+%       0 - initialize globals used to store data
+%       1 - collect newtork solution values from index k into a global vector
+%       2 - write stored solution vector to network globals data index k
+\end{minted}
+
+%==========================================================
+\subparagraph{handleStDx} \ \\
+The \verb|handleStDx| function was created to perform the required state and derivative handling to enable the use internal MATLAB ODE solvers.
+The general function operation is probably best described via the internal function documentation provided below.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function handleStDx(k, slnVec, flag)
+% HANDLESTDX Performs required state and derivative handling for ODE solvers
+%
+%   NOTES:  Requires state and derivative values are in the same g.(x) field.
+%           Not all flags require same input.
+%
+%   Input:
+%   k - data index
+%   flag - choose between operations
+%           0 - initialize state and derivative cell array, count states
+%           1 - update g.vts.dxVec with col k of derivative fields
+%           2 - write slnVec vector of values to associated states at index k
+%           3 - update g.vts.stVec with col k of state fields
+%   snlVec - Input used to populated states with new values
+\end{minted}
+
+The new global structure created in the SETO version of PST enables this function to complete the stated operations by relying heavily on dynamic field names. 
+Essentially, all required field names, sub-field names, and states are collected into a cell (flag operation 0) that is then iterated through to collect data from, or write data to the appropriate location (all other flag operations).\\
+
+The usefulness of \verb|handleStDx| is that the standard MATLAB ODE solvers require a single derivative vector as a returned value from some passed in `input function', and each PST model calculates derivatives and places them into various globals. 
+Thus, a derivative collection algorithm was needed (flag operation 1).
+
+Once the ODE solver finishes a step, the returned solution vector (of integrated states) must then be parsed into the global state variables associated with the supplied derivatives (flag operation 2).\\
+
+While these operations were predicted during conceptual modeling of the function, a third operation that collects states into vector to use as initial conditions was somehow over looked.
+However, as all these operations have a similar form, the operation flag 3 was added to perform the state collection task without much fuss.\\
+
+As most original PST globals follow the same structure, new models (such as AGC and pwrmod/ivmmmod) use a slightly different structure and must be handled in a slightly different way.
+As of this writing AGC and pwrmod has been added and it seems that adding new functionality to \verb|handleStDx| is very possible and fairly straight forward.
+
+%==========================================================
+\subparagraph{initNLsim} \ \\
+The \verb|initNLsim| function is a collection of code from \verb|s_simu| that performs initialization operations before a non-linear simulation.
+This is essentially the creation of the various Y-matricies used for fault simulation and the calling of the dynamic models with the input flag set to 0.
+
+
+%==========================================================
+\subparagraph{initStep} \ \\
+Code from \verb|s_simu| that was performed at the begining of each solution step was collected into \verb|initStep|.
+It seems mostly related to setting values for the next step equal to current values for mechanical powers and DC currents as well as handling machine trip flags.
+
+%==========================================================
+\subparagraph{initTblocks} \ \\
+The \verb|initiTblocks| function analyzes the global \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in VTS simulation.
+Any fixed time vectors associated with time blocks that use Huen's method are also created.
+Care was taken to ensure a unique time vector (no duplicate time points).
+With the option to switch between fixed step and variable step  methods, this method may have to be modified slightly.
+
+%==========================================================
+\subparagraph{initZeros} \ \\
+A large amount of code ($\approx$400 lines) in \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
+This code has been collected into the \verb|initZeros| function with inputs defining the desired length of vectors for normally logged data and DC data.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function initZeros(k, kdc)
+% INITZEROS Creates zero arrays for logged values based on passed in input
+%
+%   Input:
+%   k - total number of time steps in the simulation
+%   kdc - total number of DC time steps in the simulation
+\end{minted}
+%==========================================================
+\subparagraph{monitorSolution} \ \\
+The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average system/area frequencies, and values for any defined areas.
+It should be noted that these caluculations are mostly based on complex voltages that are calculated during the network solution.
+
+%==========================================================
+\subparagraph{networkSolution} \ \\
+The \verb|networkSolution| function is a collection of code from \verb|s_simu| dealing with calls to dynamic models with the flag set to 1 and Y-matrix switching.
+The call to \verb|i_simu| is located in this function.
+The input to this function is the data index on which to operate.
+
+%==========================================================
+\paragraph{networkSolutionVTS} \ \\
+The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on passed in simulation time.
+This was a required change when using VTS as the previous method relied on a known number of steps between events and that is no longer a reality.
+
+%==========================================================
+\subparagraph{predictorIntegration} \ \\
+The \verb|predictorIntegration| function is very similar to the \verb|correctorIntegration| function, but performs the first step in Huen's method (instead of the 2nd step).
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function predictorIntegration(k, j, h_sol)
+% PREDICTORINTEGRATION Performs  x(j) = x(k) + h_sol*dx(k)
+%
+%   Input:
+%   k - data index for 'n'
+%   j - data index for 'n+1'
+%   h_sol - time between k and j
+\end{minted}
+
+It should be noted that the two `Integration' functions write to the same \verb|j| state value index.
+Additionally, the \verb|h_sol| value is generated in \verb|i_simu| from the index of \verb|ks| referencing a \verb|h| array containing time step lengths.
+While this process seemed unnecessarily confusing and sort of  round-about, it has not been changed as of this writing.
+
+%==========================================================
+\subparagraph{s\_simu\_BatchTestF} \ \\
+This script is a modified version of \verb|s_simu_Batch| that was used to test the new functions used in non-linear simulation outside of the variable time step process.
+As the VTS method seems to work, this script will probably go away as it's usefulness seems minor.
+
+%==========================================================
+\subparagraph{s\_simu\_BatchVTS} \ \\
+This script is a functionalized \verb|s_simu_Batch| with elements from \verb|s_simu| that prompt user input re-introduced.
+To enter \emph{stand alone mode} (where the user is prompted for input), simply run this script after issuing the \verb|clear all; close all| commands.
+This script performs optional VTS simulation and is slated to replace \verb|s_simu| once PST SETO becomes PST 4.0.
+
+%==========================================================
+\subparagraph{standAlonePlot} \ \\
+The \verb|standAlonePlot| function is the cleaned up plotting routine based on user input from the end \verb|s_simu|.
+It is called from \verb|s_simu_BatchVTS| if stand alone mode is detected.
+
+%==========================================================
+\subparagraph{trimLogs} \ \\
+As there is no way to accurately predict the amount of (length of) data to be logged during a variable time step simulation, more space is allocated (20x the amount from a fixed step simulation) and then all logged values are trimmed to the proper length post simulation.
+It should be noted that this 20x size allocation was arbitrary and will probably be altered in the future as actual extended term simulation using VTS typically requires fewer steps than a fixed step method.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function trimLogs(k)
+% TRIMLOGS trims logged data to input index k.
+%
+%   NOTES: nCell not made via logicals - may lead to errors if fields not initialized (i.e. model not used)
+%
+%   Input:
+%   k - data index
+\end{minted} 
+
+%==========================================================
+\subparagraph{vtsInputFcn and vtsOutputFcn} \ \\
+These functions were described earlier.
+
+
+\begin{comment}
+Document Section 'templates'
+%==========================================================
+\subparagraph{FcnName} \ \\
+FcnDescription
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+PasteNewCodeHere
+\end{minted}
+
+%==========================================================
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+PasteNewCodeHere
+\end{minted}
+%==========================================================
 
 \end{comment}
 

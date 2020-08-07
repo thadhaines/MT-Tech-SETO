@@ -7,7 +7,7 @@ function handleStDx(k, slnVec, flag)
 % Syntax: handleStDx(k, slnVec, flag)
 %
 %   NOTES:  Requires state and derivative values are in the same g.(x) field.
-%           Not all flags require same input/output
+%           Not all flags require same input.
 %
 %   Input:
 %   k - data index
@@ -15,10 +15,9 @@ function handleStDx(k, slnVec, flag)
 %           0 - initialize state and derivative cell array, count states
 %           1 - update g.vts.dxVec with col k of derivative fields
 %           2 - write slnVec vector of values to associated states at index k
-%           3 - update g.vts.stVec with col k of derivative fields
+%           3 - update g.vts.stVec with col k of state fields
 %           4 - DEBUG verify write (kind of untested/unused)
-%-
-%   snlVec - used to populated states with new values
+%   snlVec - Input used to populated states with new values
 %
 %   Output:
 %   VOID
@@ -28,6 +27,8 @@ function handleStDx(k, slnVec, flag)
 %   07/24/20    10:45   Thad Haines     Version 1
 %   07/27/20    09:57   Thad Haines     Version 1.0.1 - integrated into VTS sim
 %   08/03/20    15:31   Thad Haines     Version 1.0.2 - added AGC
+%   08/05/20    13:15   Thad Haines     Version 1.0.3 - added pwrmod
+
 
 %% Remaining 'loose' globals - Not required for now -thad 07/24/20
 % % ivm variables - 5

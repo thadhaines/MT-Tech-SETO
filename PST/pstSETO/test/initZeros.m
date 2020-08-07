@@ -1,8 +1,8 @@
 function initZeros(k, kdc)
 %INITZEROS Creates zero arrays for logged values
-% NETWORKSOLUTION Performs the network solution for index k
+% INITZEROS Creates zero arrays for logged values based on passed in input
 %
-% Syntax: networkSolution(k)
+% Syntax: initZeros(k, kdc)
 %
 %   NOTES:
 %

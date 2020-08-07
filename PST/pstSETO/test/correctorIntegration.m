@@ -1,6 +1,6 @@
 function correctorIntegration(k, j, h_sol)
-%CORRECTORINTEGRATION Performs x(j) = x(k) + h(dx(j) + dx(k))/2
-% CORRECTORINTEGRATION Performs x(j) = x(k) + h(dx(j) + dx(k))/2
+%CORRECTORINTEGRATION Performs x(j) = x(k) + h_sol(dx(j) + dx(k))/2
+% CORRECTORINTEGRATION Performs x(j) = x(k) + h_sol(dx(j) + dx(k))/2
 %
 % Syntax: correctorIntegration(k, j, h)
 %
