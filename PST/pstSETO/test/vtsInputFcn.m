@@ -39,15 +39,13 @@ dynamicSolution(g.vts.dataN )
 %% Start of DC solution ===================================================
 dcSolution(g.vts.dataN )
 
-%% call handleStDx with flag==1 to update global dxVec
-handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec (solution vector not needed)
-
-dxVec = g.vts.dxVec; % return for ODE fcn requirements
-
+% save initial network solution
 if g.vts.iter == 0
-    % save initial network solution
     handleNetworkSln(g.vts.dataN ,1)
 end
 
-g.vts.iter = g.vts.iter + 1; % increment iteration number
+g.vts.iter = g.vts.iter + 1; % increment solution iteration number
+
+handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec
+dxVec = g.vts.dxVec; % return updated derivative vector
 end % end vtsInputFcn

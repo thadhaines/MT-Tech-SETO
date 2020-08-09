@@ -7,7 +7,7 @@
 
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
-\chead{PST and VTS \\ - DRAFT 2 -}
+\chead{PST and VTS \\ - DRAFT 3 -}
 \lhead{Research \\ 08/04/20}
 \usepackage{minted}
 \usepackage{setspace}
@@ -17,10 +17,13 @@
 This document is meant to explain PST additions and alterations created to accommodate VTS (variable time stepping).
 While the current method works, it may change in the future.
 
-\paragraph{Solution Control Array} \ \\
-Between each \verb|sw_con| entry, a \emph{time block} is created that is then solved using a user defined solution method.
+\paragraph{Solver Control Array} \ \\
+Theoretically, a user will only have to add a \verb|solver_con| to a valid data file to use variable time step methods.
+If a \verb|solver_con| is not specified, Huen's method is used for all time blocks (i.e. default PST behavior).
+
+Between each \verb|sw_con| entry, a \emph{time block} is created that is then solved using a the defined solution method in the \verb|solver_con|.
 As such, the \verb|solver_con| array has 1 less row than the \verb|sw_con| array.
-An example \verb|solver_con| array is shown below.
+An example \verb|solver_con| array (with code comments) is shown below.
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -56,9 +59,6 @@ solver_con ={ ...
 As of this writing, the pstSETO version uses the \verb|s_simu_BatchVTS| script to perform variable time stepping methods.
 This script will likely replace the \verb|s_simu| script in the main PST4 folder after versioning is complete.\\
 
-Theoretically, a user would only have to add a \verb|solver_con| to a data file to use variable time step methods.
-If one is not specified, Huen's method is used for all time blocks (i.e. default PST behavior).
-
 
 \pagebreak
 \paragraph{MATLAB ODE solver} \ \\
@@ -83,7 +83,7 @@ The current options used for VTS are shown below and deal with error tolerance l
 				]{MATLAB}
 % Configure ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
-options = odeset('RelTol',1e-3,'AbsTol',1e-6, ...
+options = odeset('RelTol',1e-3,'AbsTol',1e-7, ...
     'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
@@ -91,7 +91,7 @@ options = odeset('RelTol',1e-3,'AbsTol',1e-6, ...
 
 \pagebreak
 \paragraph{vtsInputFcn} \ \\
-The slightly abbreviated input function is shown below.
+The slightly abbreviated (mostly complete) input function is shown below.
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -112,7 +112,6 @@ function [dxVec] = vtsInputFcn(t, y)
 %
 %   Output:
 %   dxVec - requried derivative vector for ODE solver
-
 global g
 
 %% call handleStDx with flag==2 to update global states with newest passed in soln.
@@ -132,17 +131,15 @@ dynamicSolution(g.vts.dataN )
 %% Start of DC solution ===================================================
 dcSolution(g.vts.dataN )
 
-%% call handleStDx with flag==1 to update global dxVec
-handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec (solution vector not needed)
-
-dxVec = g.vts.dxVec; % return for ODE fcn requirements
-
+%% save initial network solution
 if g.vts.iter == 0
-    % save initial network solution
     handleNetworkSln(g.vts.dataN ,1)
 end
 
-g.vts.iter = g.vts.iter + 1; % increment iteration number
+g.vts.iter = g.vts.iter + 1; % increment solution iteration number
+
+handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec
+dxVec = g.vts.dxVec; % return updated derivative vector
 end % end vtsInputFcn
 \end{minted}
 
@@ -236,15 +233,14 @@ for simTblock = 1:size(g.vts.t_block)
     if strcmp( odeName, 'huens')
         % use standard PST huens method
         fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            g.vts.t_blockN, ...
-            g.vts.fts{g.vts.t_blockN}(1), g.vts.fts{g.vts.t_blockN}(end))
+            simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
         
         % add fixed time vector to system time vector
-        nSteps = length(g.vts.fts{g.vts.t_blockN});
-        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{g.vts.t_blockN};
+        nSteps = length(g.vts.fts{simTblock});
+        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
         
         % account for pretictor last step time check
-        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(g.vts.t_blockN,7);
+        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(simTblock,7);
         
         for fStep = 1:nSteps
             k = g.vts.dataN;
@@ -259,14 +255,14 @@ for simTblock = 1:size(g.vts.t_block)
             initStep(k)
             
             %% Predictor Solution =========================================
-            networkSolutionVTS(k, g.sys.t(g.vts.dataN))
+            networkSolutionVTS(k, g.sys.t(k))
             monitorSolution(k);
             dynamicSolution(k)
             dcSolution(k)
-            predictorIntegration(k, j, g.k.h_sol)
+            predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated i_simu
             
             %% Corrector Solution =========================================
-            networkSolutionVTS(j, g.sys.t(g.vts.dataN+1))
+            networkSolutionVTS(j, g.sys.t(j))
             dynamicSolution(j)
             dcSolution(j)
             correctorIntegration(k, j, g.k.h_sol)
@@ -278,39 +274,149 @@ for simTblock = 1:size(g.vts.t_block)
                 livePlot(k)
             end
             
-            % index handling
-            g.vts.dataN = g.vts.dataN + 1;
-            g.vts.tot_iter = g.vts.tot_iter  + 2;
-            g.vts.slns(g.vts.dataN) = 2;
+            g.vts.dataN = j;                        % increment data counter
+            g.vts.tot_iter = g.vts.tot_iter  + 2;   % increment total solution counter
+            g.vts.slns(g.vts.dataN) = 2;            % track step solution
         end
+        % Account for next time block using VTS
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
         handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives 
-        handleNetworkSln(k, 1) % update saved network solution
-
+        
     else % use given variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            odeName, g.vts.t_blockN, ...
-            g.vts.t_block(g.vts.t_blockN, 1), g.vts.t_block(g.vts.t_blockN, 2))
+            odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
+        
+        % feval used for ODE call - could be replaced with if statements.
         feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
         
         % Alternative example of using actual function name:
-        %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
-        % feval used for now, could be replaced with if statements.
+        %ode113(inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
     end
     
 end% end simulation loop
 \end{minted}
 
 \pagebreak
-\paragraph{Functions that Enable Variable Time Step Integration} \ \\
+\paragraph{Functions for Variable Time Step Integration} \ \\
 A number of new functions were created to allow for VTS to be integrated into PST and collected in the \verb|test| folder of the main SETO version directory.
-Some functions were simply collected portions of code previously located in \verb|s_simu| and placed into a function for ease of use and clarity of code flow, while others were created to handle data or perform other tasks specifically related to VTS.
-The following sub paragraphs provide some information about these functions 
+Some functions were simply portions of code previously located in \verb|s_simu| and placed into a function for ease of use and clarity of code flow, while others were created to handle data or perform other tasks specifically related to VTS.
+The following sub paragraphs provide some information about such functions that have not been previously introduced.
 
+%+=================================================+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++=================================================================
+
+
+%==========================================================
+\subparagraph{s\_simu\_BatchTestF} \ \\
+The \verb|s_simu_BatchTest| script is a modified version of \verb|s_simu_Batch| that was used to test the new functions used in non-linear simulation outside of the variable time step process.
+As the VTS method appears to work, this script will most likely go away as it has served its purpose.
+
+%==========================================================
+\subparagraph{s\_simu\_BatchVTS} \ \\
+The \verb|s_simu_BatchVTS| script is a functionalized \verb|s_simu_Batch| with elements from \verb|s_simu| that prompt user input re-introduced.
+To enter \emph{stand alone mode} (where the user is prompted for input), simply run this script after issuing the \verb|clear all; close all| commands.
+While being able to operate in stand alone mode, it is also able to run in \emph{batch mode} where it assumes the data file to run is the \verb|DataFile.m| in the root PST directory.
+This script performs optional VTS simulation and is slated to replace \verb|s_simu| once PST SETO becomes PST 4.0.
+
+
+%==========================================================
+\subparagraph{initZeros} \ \\
+A large amount of code ($\approx$400 lines) in \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
+This code has been collected into the \verb|initZeros| function with inputs defining the desired length of vectors for normally logged data and DC data.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function initZeros(k, kdc)
+% INITZEROS Creates zero arrays for logged values based on passed in input
+%
+%   Input:
+%   k - total number of time steps in the simulation
+%   kdc - total number of DC time steps in the simulation
+\end{minted}
+
+%==========================================================
+\subparagraph{initNLsim} \ \\
+The \verb|initNLsim| function is a collection of code from \verb|s_simu| that performs initialization operations before a non-linear simulation.
+This is essentially the creation of the various Y-matrices used for fault simulation and the calling of the dynamic models with the input flag set to 0.
+
+\pagebreak
+%==========================================================
+\subparagraph{initTblocks} \ \\
+The \verb|initiTblocks| function analyzes the global \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in VTS simulation.
+Any fixed time vectors associated with time blocks that use Huen's method are also created.
+Care was taken to ensure a unique time vector (no duplicate time points).
+With the option to switch between fixed step and variable step  methods, this method may require slight modifications/refinements.
+
+%==========================================================
+\subparagraph{initStep} \ \\
+Code from \verb|s_simu| that was performed at the begining of each solution step was collected into \verb|initStep|.
+Operations are related to setting values for the next step equal to current values for mechanical powers and DC currents, as well as handling machine trip flags.
+
+
+%==========================================================
+\subparagraph{networkSolution} \ \\
+The \verb|networkSolution| function is a collection of code from \verb|s_simu| dealing with calls to dynamic models with the flag set to 1 and Y-matrix switching.
+The call to \verb|i_simu| (which updates \verb|g.k.h_sol|) is located in this function.
+The input to this function is the data index on which to operate.
+
+%==========================================================
+\paragraph{networkSolutionVTS} \ \\
+The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on passed in simulation time.
+This was a required change when using VTS as the previous method relied on a known number of steps between switching events, and that is no longer a reality.
+
+
+%==========================================================
+\subparagraph{dynamicSolution} \ \\
+As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at data index \verb|k| by calling each required model with the input flag set to 2.
+This functionalized code is again taken directly from \verb|s_simu|.
+
+
+%==========================================================
+\subparagraph{dcSolution} \ \\
+The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step were moved into the \verb|dcSolution| function.
+This has not been tested with VTS, but was functionalized to enable future developement.
+It \emph{should} work as normal when using Huen's method, but is untested as of this writing.
+
+\pagebreak
+%==========================================================
+\subparagraph{monitorSolution} \ \\
+The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average system/area frequencies, and values for any defined areas.
+It should be noted that these calculations are mostly based on complex voltages that are calculated during the network solution.
+
+%==========================================================
+\subparagraph{predictorIntegration} \ \\
+The \verb|predictorIntegration| function performs the predictor (forward Euler) integration step of the simulation loop.
+The code was taken directly from \verb|s_simu| and the same variable names.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+	%	linenos,
+		breaklines
+				]{MATLAB}
+function predictorIntegration(k, j, h_sol)
+% PREDICTORINTEGRATION Performs  x(j) = x(k) + h_sol*dx(k)
+%
+%   Input:
+%   k - data index for 'n'
+%   j - data index for 'n+1'
+%   h_sol - time between k and j
+\end{minted}
+
+
+%==========================================================
 \subparagraph{correctorIntegration} \ \\
-As shown in the code except below, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next value of integrated states.
+As shown in the code except below, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next accepted value of integrated states.
 The executed code was taken directly from \verb|s_simu|.
-The inputs to the function are the same variables used in  \verb|s_simu|.
 
 \begin{minted}[
 		frame=lines,
@@ -330,60 +436,11 @@ function correctorIntegration(k, j, h_sol)
 %   h_sol - time between k and j
 \end{minted}
 
-%==========================================================
-\subparagraph{dcSolution} \ \\
-The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step were moved into the \verb|dcSolution| function.
-This has not been tested with VTS, but was functionalized to enable future developement.
-It \emph{should} work as normal when using Huen's method, but is untested as of this writing.
+It should be noted that the two `Integration' functions write new states to the same \verb|j| data index.
+Additionally, the \verb|h_sol| value is updated in \verb|i_simu| (called during the network solution) from the index of \verb|ks| referencing an \verb|h| array containing time step lengths$\ldots$\ 
+While this process seemed unnecessarily confusing and sort of  round-about, it has not been changed as of this writing.
 
-%==========================================================
-\subparagraph{dynamicSolution} \ \\
-As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at data index \verb|k| by calling each required model with the input flag set to 2.
-This functionalized code is again taken directly from \verb|s_simu|.
-
-
-\begin{minted}[
-		frame=lines,
-		framesep=2mm,
-		baselinestretch=1.2,
-		bgcolor=gray!13,
-		fontsize=\footnotesize,
-	%	linenos,
-		breaklines
-				]{MATLAB}
-function dynamicSolution(k)
-% DYNAMICSOLUTION Performs the dynamic solution for index k
-\end{minted}
-
-%==========================================================
-\subparagraph{handleNetworkSln} \ \\
-The \verb|handleNetworkSln| function was created to store and restore the calculated values that are then set to globals during a network solution.
-The purpose of this function was to allow for the first network solution performed each step to be carried forward after multiple other network solutions may over-write the calculated values at the same data index.
-This over-writing may occur during the MATLAB ODE solvers repeated call to the input function.
-This function takes a data index \verb|k| and an operation \verb|flag| as inputs.
-The operation of the function is described in the code excerpt below.
-\begin{minted}[
-		frame=lines,
-		framesep=2mm,
-		baselinestretch=1.2,
-		bgcolor=gray!13,
-		fontsize=\footnotesize,
-	%	linenos,
-		breaklines
-				]{MATLAB}
-function handleNetworkSln(k, flag)
-% HANDLENETWORKSLN saves or restores the network solution at data index k
-%
-%   NOTES: Used to reset the newtork values to the initial solution in VTS.
-%
-%   Input:
-%   k - data index to log from and restore to
-%   flag - choose funtion operation
-%       0 - initialize globals used to store data
-%       1 - collect newtork solution values from index k into a global vector
-%       2 - write stored solution vector to network globals data index k
-\end{minted}
-
+\pagebreak
 %==========================================================
 \subparagraph{handleStDx} \ \\
 The \verb|handleStDx| function was created to perform the required state and derivative handling to enable the use internal MATLAB ODE solvers.
@@ -411,7 +468,7 @@ function handleStDx(k, slnVec, flag)
 %           1 - update g.vts.dxVec with col k of derivative fields
 %           2 - write slnVec vector of values to associated states at index k
 %           3 - update g.vts.stVec with col k of state fields
-%   snlVec - Input used to populated states with new values
+%   snlVec - Input used to populate states with new values
 \end{minted}
 
 The new global structure created in the SETO version of PST enables this function to complete the stated operations by relying heavily on dynamic field names. 
@@ -419,38 +476,22 @@ Essentially, all required field names, sub-field names, and states are collected
 
 The usefulness of \verb|handleStDx| is that the standard MATLAB ODE solvers require a single derivative vector as a returned value from some passed in `input function', and each PST model calculates derivatives and places them into various globals. 
 Thus, a derivative collection algorithm was needed (flag operation 1).
+Once the ODE solver finishes a step, the returned solution vector (of integrated states) must then be parsed into the global state variables associated with the supplied derivatives (flag operation 2).
+At the beginning of time blocks that use the MATLAB ODE solvers, an initial conditions vector of all the states related to the derivative vector is required (flag operation 3).\\
 
-Once the ODE solver finishes a step, the returned solution vector (of integrated states) must then be parsed into the global state variables associated with the supplied derivatives (flag operation 2).\\
+To avoid handling function output, global vectors \verb|g.vts.dxVec| and \verb|g.vts.stVec| are used to hold updated derivative and state vector information.
 
-While these operations were predicted during conceptual modeling of the function, a third operation that collects states into vector to use as initial conditions was somehow over looked.
-However, as all these operations have a similar form, the operation flag 3 was added to perform the state collection task without much fuss.\\
+It should be noted that original PST globals follow the same data structure.
+However, new models (such as AGC and pwrmod/ivmmmod) use a slightly different data structure and must be handled in a slightly different way.
+As of this writing AGC and pwrmod functionality has been added to \verb|handleStDx| and it seems very possible to add more models that require integration as they arise.
 
-As most original PST globals follow the same structure, new models (such as AGC and pwrmod/ivmmmod) use a slightly different structure and must be handled in a slightly different way.
-As of this writing AGC and pwrmod has been added and it seems that adding new functionality to \verb|handleStDx| is very possible and fairly straight forward.
-
+\pagebreak
 %==========================================================
-\subparagraph{initNLsim} \ \\
-The \verb|initNLsim| function is a collection of code from \verb|s_simu| that performs initialization operations before a non-linear simulation.
-This is essentially the creation of the various Y-matricies used for fault simulation and the calling of the dynamic models with the input flag set to 0.
-
-
-%==========================================================
-\subparagraph{initStep} \ \\
-Code from \verb|s_simu| that was performed at the begining of each solution step was collected into \verb|initStep|.
-It seems mostly related to setting values for the next step equal to current values for mechanical powers and DC currents as well as handling machine trip flags.
-
-%==========================================================
-\subparagraph{initTblocks} \ \\
-The \verb|initiTblocks| function analyzes the global \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in VTS simulation.
-Any fixed time vectors associated with time blocks that use Huen's method are also created.
-Care was taken to ensure a unique time vector (no duplicate time points).
-With the option to switch between fixed step and variable step  methods, this method may have to be modified slightly.
-
-%==========================================================
-\subparagraph{initZeros} \ \\
-A large amount of code ($\approx$400 lines) in \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
-This code has been collected into the \verb|initZeros| function with inputs defining the desired length of vectors for normally logged data and DC data.
-
+\subparagraph{handleNetworkSln} \ \\
+The \verb|handleNetworkSln| function was created to store, and restore, calculated values set to globals during a network solution.
+The purpose of this function was to allow for the first network solution performed each step to be carried forward after multiple other network solutions may over-write the calculated values at the same data index.
+This over-writing may occur during the MATLAB ODE solvers repeated call to the input function.
+As shown below, \verb|handlNetworkSln| takes a data index \verb|k| and an operation \verb|flag| as inputs.
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -460,69 +501,18 @@ This code has been collected into the \verb|initZeros| function with inputs defi
 	%	linenos,
 		breaklines
 				]{MATLAB}
-function initZeros(k, kdc)
-% INITZEROS Creates zero arrays for logged values based on passed in input
+function handleNetworkSln(k, flag)
+% HANDLENETWORKSLN saves or restores the network solution at data index k
+%
+%   NOTES: Used to reset the newtork values to the initial solution in VTS.
 %
 %   Input:
-%   k - total number of time steps in the simulation
-%   kdc - total number of DC time steps in the simulation
+%   k - data index to log from and restore to
+%   flag - choose funtion operation
+%       0 - initialize globals used to store data
+%       1 - collect newtork solution values from index k into a global vector
+%       2 - write stored solution vector to network globals data index k
 \end{minted}
-%==========================================================
-\subparagraph{monitorSolution} \ \\
-The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average system/area frequencies, and values for any defined areas.
-It should be noted that these caluculations are mostly based on complex voltages that are calculated during the network solution.
-
-%==========================================================
-\subparagraph{networkSolution} \ \\
-The \verb|networkSolution| function is a collection of code from \verb|s_simu| dealing with calls to dynamic models with the flag set to 1 and Y-matrix switching.
-The call to \verb|i_simu| is located in this function.
-The input to this function is the data index on which to operate.
-
-%==========================================================
-\paragraph{networkSolutionVTS} \ \\
-The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on passed in simulation time.
-This was a required change when using VTS as the previous method relied on a known number of steps between events and that is no longer a reality.
-
-%==========================================================
-\subparagraph{predictorIntegration} \ \\
-The \verb|predictorIntegration| function is very similar to the \verb|correctorIntegration| function, but performs the first step in Huen's method (instead of the 2nd step).
-\begin{minted}[
-		frame=lines,
-		framesep=2mm,
-		baselinestretch=1.2,
-		bgcolor=gray!13,
-		fontsize=\footnotesize,
-	%	linenos,
-		breaklines
-				]{MATLAB}
-function predictorIntegration(k, j, h_sol)
-% PREDICTORINTEGRATION Performs  x(j) = x(k) + h_sol*dx(k)
-%
-%   Input:
-%   k - data index for 'n'
-%   j - data index for 'n+1'
-%   h_sol - time between k and j
-\end{minted}
-
-It should be noted that the two `Integration' functions write to the same \verb|j| state value index.
-Additionally, the \verb|h_sol| value is generated in \verb|i_simu| from the index of \verb|ks| referencing a \verb|h| array containing time step lengths.
-While this process seemed unnecessarily confusing and sort of  round-about, it has not been changed as of this writing.
-
-%==========================================================
-\subparagraph{s\_simu\_BatchTestF} \ \\
-This script is a modified version of \verb|s_simu_Batch| that was used to test the new functions used in non-linear simulation outside of the variable time step process.
-As the VTS method seems to work, this script will probably go away as it's usefulness seems minor.
-
-%==========================================================
-\subparagraph{s\_simu\_BatchVTS} \ \\
-This script is a functionalized \verb|s_simu_Batch| with elements from \verb|s_simu| that prompt user input re-introduced.
-To enter \emph{stand alone mode} (where the user is prompted for input), simply run this script after issuing the \verb|clear all; close all| commands.
-This script performs optional VTS simulation and is slated to replace \verb|s_simu| once PST SETO becomes PST 4.0.
-
-%==========================================================
-\subparagraph{standAlonePlot} \ \\
-The \verb|standAlonePlot| function is the cleaned up plotting routine based on user input from the end \verb|s_simu|.
-It is called from \verb|s_simu_BatchVTS| if stand alone mode is detected.
 
 %==========================================================
 \subparagraph{trimLogs} \ \\
@@ -548,8 +538,14 @@ function trimLogs(k)
 \end{minted} 
 
 %==========================================================
-\subparagraph{vtsInputFcn and vtsOutputFcn} \ \\
-These functions were described earlier.
+\subparagraph{standAlonePlot} \ \\
+The \verb|standAlonePlot| function is the cleaned up plotting routine based on user input from the end \verb|s_simu|.
+It is called from \verb|s_simu_BatchVTS| if stand alone mode is detected.
+
+
+%==========================================================
+%\subparagraph{vtsInputFcn and vtsOutputFcn} \ \\
+%These functions were described earlier.
 
 
 \begin{comment}

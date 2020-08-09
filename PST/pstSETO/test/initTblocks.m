@@ -16,7 +16,7 @@ function initTblocks
 %   Date        Time    Engineer        Description
 %   07/27/20    11:06   Thad Haines     Version 1
 %   07/28/20    08:55   Thad Haines     Version 1.0.1 - Allowed time block overlap
-
+%%
 global g
 
 g.vts.t_block = zeros(size(g.sys.sw_con,1)-1, 2);

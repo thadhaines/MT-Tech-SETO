@@ -51,7 +51,7 @@
 %   07/15/20    14:27   Thad Haines     Version 2.0 - Revised format of globals and internal function documentation
 %   07/16/20    11:19   Thad Haines     V 2.0.1 - Added cleanZeros to end of script to clean global g
 %   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
-%   07/21/20    16:20   Thad haines     V 2.0.3 - Added AGC
+%   07/21/20    16:20   Thad Haines     V 2.0.3 - Added AGC
 %   07/23/20    11:24   Thad Haines     Begining work on functionalization of solution.
 %   07/27/20    09:54   Thad Haines     Begining work on Variable Time step simulation
 %   07/28/20    16:20   Thad Haines     Initial working VTS simulation
@@ -93,6 +93,9 @@ if all( size(whos('global')) == size(whos()) )
     fprintf('*** Collecting system information from user...\n')
     % input data file
     [fname, pathname]=uigetfile('*.m','Select Data File to load');
+    if ~ischar(fname) || ~ischar(pathname)
+        error('Data File Not selected - Stopping simulation')
+    end
     % replace data file in current directory with selected file.
     copyfile([pathname, fname],'DataFile.m'); % copy system data file to batch run location
     % ask for Fbase
@@ -158,6 +161,7 @@ elseif isnumeric(Fbase)
     g.sys.sys_freq = Fbase;
     g.sys.Fbase = Fbase;
 end
+g.sys.basrad = 2*pi*g.sys.sys_freq;
 
 % Handle variable input base MVA
 % assumes Sbase defined in DataFile or earlier, basmva is defined as global in pst_var.
@@ -169,9 +173,10 @@ elseif isnumeric(Sbase)
     g.sys.basmva = Sbase;
 end
 
+clear Fbase Sbase
+
 %% other init operations
 tic % start timer
-g.sys.basrad = 2*pi*g.sys.sys_freq;
 g.sys.syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = []; % ignore infinite buses in transient simulation
 
@@ -199,7 +204,7 @@ if isempty(g.dc.dcsp_con)
     [bus_sol,line,~] = loadflow(g.bus.busOG,g.line.lineOG,tol,iter_max,acc,'n',2);
     g.bus.bus = bus_sol;  % solved loadflow solution needed for initialization
     g.line.line = line;
-    clear bus_sol line
+    clear bus_sol line tol iter_max acc
 else
     % Has HVDC, use DC load flow
     [bus_sol,line,~,rec_par, inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
@@ -263,20 +268,28 @@ for sw_count = 1:n_switch-1
         g.k.h(sw_count) = 0.01;
     end % default time step
     
+    % number of steps in 'time block'
     g.k.k_inc(sw_count) = fix((g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/g.k.h(sw_count));%nearest lower integer
     
     if g.k.k_inc(sw_count)==0
         g.k.k_inc(sw_count)=1;
     end% minimum 1
     
+    % adjust time step so integer number of steps in block
     g.k.h(sw_count) = (g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/g.k.k_inc(sw_count);%step length
-    g.k.h_dc(sw_count) = g.k.h(sw_count)/10;
+    g.k.h_dc(sw_count) = g.k.h(sw_count)/10; % h_dc 10 times faster
     g.k.k_incdc(sw_count) = 10*g.k.k_inc(sw_count);
+    
     t_switch(sw_count+1) = t_switch(sw_count) +  g.k.k_inc(sw_count)*g.k.h(sw_count);
+    
+    % create time vector block from start time to end time - 1 timestep
     t(k:k-1+g.k.k_inc(sw_count)) = t_switch(sw_count):g.k.h(sw_count):t_switch(sw_count+1)-g.k.h(sw_count);
+    
     if ~isempty(g.dc.dcl_con)
         g.dc.t_dc(kdc:kdc-1+g.k.k_incdc(sw_count)) = t_switch(sw_count):g.k.h_dc(sw_count):t_switch(sw_count+1)-g.k.h_dc(sw_count);
     end
+    
+    % keep track of indicies
     k = k + g.k.k_inc(sw_count);
     kdc = kdc + g.k.k_incdc(sw_count);
 end
@@ -289,9 +302,9 @@ if ~isempty(g.dc.dcsp_con)
         g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
     end
 end
-k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation
+k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation (+1 for final predictor step)
 
-t(k) = g.sys.sw_con(n_switch,1);
+t(k) = g.sys.sw_con(n_switch,1); % final time into time vector
 
 % add time array t to global g - thad
 g.sys.t = t;
@@ -306,12 +319,12 @@ initNLsim()
 
 %% step 3: Beginning of Huen's  (predictor-corrector) method
 % Create indicies for simulation
-kt = 0;
 g.k.ks = 1;
+%k_tot = sum(g.k.k_inc); % these statements may no longer be required. - thad 08/10/20
+%lswitch = length(g.k.k_inc); % these statements may no longer be required. - thad 08/10/20
+%ktmax = k_tot-g.k.k_inc(lswitch); % these statements may no longer be required. - thad 08/10/20
+%kt = 0;
 
-k_tot = sum(g.k.k_inc);
-lswitch = length(g.k.k_inc);
-ktmax = k_tot-g.k.k_inc(lswitch);
 g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
@@ -326,7 +339,7 @@ g.sys.sw_con(:,7) = g.sys.sw_con(:,7).*20;
 g.k.h = g.k.h .*20;
 g.k.h_dc = g.k.h_dc.*20;
 
-% creation of time blocks
+% creation of VTS time blocks
 initTblocks()
 
 % initialize global st/dx vectors
@@ -375,15 +388,14 @@ for simTblock = 1:size(g.vts.t_block)
     if strcmp( odeName, 'huens')
         % use standard PST huens method
         fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            g.vts.t_blockN, ...
-            g.vts.fts{g.vts.t_blockN}(1), g.vts.fts{g.vts.t_blockN}(end))
+            simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
         
         % add fixed time vector to system time vector
-        nSteps = length(g.vts.fts{g.vts.t_blockN});
-        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{g.vts.t_blockN};
+        nSteps = length(g.vts.fts{simTblock});
+        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
         
         % account for pretictor last step time check
-        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(g.vts.t_blockN,7);
+        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(simTblock,7);
         
         for fStep = 1:nSteps
             k = g.vts.dataN;
@@ -398,14 +410,14 @@ for simTblock = 1:size(g.vts.t_block)
             initStep(k)
             
             %% Predictor Solution =========================================
-            networkSolutionVTS(k, g.sys.t(g.vts.dataN))
+            networkSolutionVTS(k, g.sys.t(k))
             monitorSolution(k);
             dynamicSolution(k)
             dcSolution(k)
-            predictorIntegration(k, j, g.k.h_sol)
+            predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated in network solution i_simu call
             
             %% Corrector Solution =========================================
-            networkSolutionVTS(j, g.sys.t(g.vts.dataN+1))
+            networkSolutionVTS(j, g.sys.t(j))
             dynamicSolution(j)
             dcSolution(j)
             correctorIntegration(k, j, g.k.h_sol)
@@ -417,24 +429,23 @@ for simTblock = 1:size(g.vts.t_block)
                 livePlot(k)
             end
             
-            % index handling
-            g.vts.dataN = g.vts.dataN + 1;
-            g.vts.tot_iter = g.vts.tot_iter  + 2;
-            g.vts.slns(g.vts.dataN) = 2;
+            g.vts.dataN = j;                        % increment data counter
+            g.vts.tot_iter = g.vts.tot_iter  + 2;   % increment total solution counter
+            g.vts.slns(g.vts.dataN) = 2;            % track step solution
         end
+        % Account for next time block using VTS
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
         handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives 
-        handleNetworkSln(k, 1) % update saved network solution
-
+        
     else % use given variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            odeName, g.vts.t_blockN, ...
-            g.vts.t_block(g.vts.t_blockN, 1), g.vts.t_block(g.vts.t_blockN, 2))
+            odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
+        
+        % feval used for ODE call - could be replaced with if statements.
         feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
         
         % Alternative example of using actual function name:
-        %ode113(inputFcn, g.vts.t_block(g.vts.t_blockN,:), g.vts.stVec , options);
-        % feval used for now, could be replaced with if statements.
+        %ode113(inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
     end
     
 end% end simulation loop
@@ -453,24 +464,17 @@ else
     monitorSolution(g.vts.dataN);
 end
 
-% Trim logged values to length of g.vts.dataN
-trimLogs(g.vts.dataN)
-
-%% Final 'live' plot call
-if g.sys.livePlotFlag
-    livePlot('end')
-end
-
-%% full sim timing
+%% Display final simulation timing
 disp('*** End simulation.')
 et = toc;
 ets = num2str(et);
 g.sys.ElapsedNonLinearTime = ets;
 disp(['*** Elapsed Simulation Time = ' ets 's'])
 
-%% VTS specific output
-disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
-disp(['*** Total data points = ' int2str(g.vts.dataN)])
+%whos('g') % to see if trimming zeros matters. 1/2
+
+%% Trim logged values to length of g.vts.dataN
+trimLogs(g.vts.dataN)
 
 %% Clean up logged DC variables to length of DC simulated time.
 if ~isempty(g.dc.dcsp_con)
@@ -496,11 +500,25 @@ if ~isempty(g.dc.dcsp_con)
     g.dc.di_dcr = g.dc.di_dcr(:,1:length(g.dc.t_dc));
 end
 
+%% Final 'live' plot call
+if g.sys.livePlotFlag
+    livePlot('end')
+end
+
+%% VTS specific output
+disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
+disp(['*** Total data points = ' int2str(g.vts.dataN)])
+
 %% Clean up various temporary and function input values
 clear V1 V2 R X B jj phi % used in calls to line_cur, line_pq
 clear Y1 Y2 Y3 Y4 Vr1 Vr2 bo % used in calls to i_simu, red_ybus
 clear et ets % used to store/display elapsed time
-clear nSteps odeName simTblock inputFcn OutputFcn options% used in VTS
+clear nSteps fStep odeName simTblock inputFcn outputFcn options% used in VTS
+
+clear k kdc j % simulation counters
+clear t t_switch sw_count lswitch n_switch %used in legacy time vector creation...
+clear Sbase Fbase % used in system init
+clear tol iter_max acc % used in load flow solution
 
 %% Remove all zero only data
 varNames = who()'; % all variable names in workspace
@@ -526,6 +544,8 @@ for vName = varNames
 end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
 clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
+
+%whos('g') % see if trimming zeros matters. 2/2
 
 %% execute original s_simu plotting (if run as a standalone script)
 standAlonePlot(scriptRunFlag)

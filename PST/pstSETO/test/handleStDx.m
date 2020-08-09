@@ -17,7 +17,7 @@ function handleStDx(k, slnVec, flag)
 %           2 - write slnVec vector of values to associated states at index k
 %           3 - update g.vts.stVec with col k of state fields
 %           4 - DEBUG verify write (kind of untested/unused)
-%   snlVec - Input used to populated states with new values
+%   snlVec - Input used to populate states with new values
 %
 %   Output:
 %   VOID
