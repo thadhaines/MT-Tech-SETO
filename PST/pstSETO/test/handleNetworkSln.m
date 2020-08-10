@@ -11,7 +11,7 @@ function handleNetworkSln(k, flag)
 %   flag - choose funtion operation
 %       0 - initialize globals used to store data
 %       1 - collect newtork solution values from index k into a global vector
-%       2 - write stored solution vector to network globals data index k
+%       2 - write stored network solution vector to network globals at data index k
 %
 %   Output:
 %   VOID

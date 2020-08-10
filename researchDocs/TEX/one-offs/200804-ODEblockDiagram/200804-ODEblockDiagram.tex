@@ -93,16 +93,19 @@
 	
 	% diagram blocks
 	\node (start) [terminal] {Start MATLAB ODE Solution};
+	\node (inputNote) [note, left=of start] {\shortstack{Required Input: \\Input Function, \\Time Vector, \\Initial Conditions}};
+	\draw [dotted] (inputNote) -> (start);
 	
 	\node (initFlag) [process, below of=start, text width=5cm] {\shortstack{Execute Output Function\\ flag = `init'}};
 	
 	\node (inputFcn) [process, below of=initFlag] {Execute \\Input Function}; % returns dx
+	%\node (inFcnNote) [note, below right=1cm of inputFcn] {\shortstack{Returned Output: \\Deriviateve Vector}};
 	
 	\node (odeSln) [subprocess, below of=inputFcn] {Execute ODE Internal Solution}; % black box...
 	
 	\node (checkSln) [decision, text width=2 cm, yshift=-.5cm, below of=odeSln] {\shortstack{Solution\\Acceptable?}};
 	
-	\node (recondition) [subprocess, right of=checkSln, xshift=3.5cm] {Mystery Reconditioning}; % black box...
+	\node (recondition) [subprocess, right of=checkSln, xshift=3.5cm] {Proprietary Reconditioning}; % black box...
 	
 	\node (emptyFlag) [process, below of=checkSln, text width=5cm, yshift=-.5cm] {\shortstack{Execute Output Function\\ isempty(flag) = 1 }};
 	

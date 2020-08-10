@@ -7,7 +7,7 @@
 
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
-\chead{PST and VTS \\ - DRAFT 3 -}
+\chead{PST and VTS \\ - DRAFT 4 -}
 \lhead{Research \\ 08/04/20}
 \usepackage{minted}
 \usepackage{setspace}
@@ -41,7 +41,7 @@ An example \verb|solver_con| array (with code comments) is shown below.
 % huens - Fixed time step default to PST
 % ode113 - works well during transients, consistent # of slns, time step stays relatively small
 % ode15s - large number of slns during init, time step increases to reasonable size
-% ode23 - realtively consisten # of required slns, timstep doesn't get very large
+% ode23 - realtively consistent # of required slns, timstep doesn't get very large
 % ode23s - many iterations per step - not efficient...
 % ode23t - occasionally hundereds of iterations, sometimes not... decent
 % ode23tb - similar to 23t, sometimes more large solution counts
@@ -82,8 +82,8 @@ The current options used for VTS are shown below and deal with error tolerance l
 		breaklines
 				]{MATLAB}
 % Configure ODE settings
-%options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
-options = odeset('RelTol',1e-3,'AbsTol',1e-7, ...
+%options = odeset('RelTol',1e-3,'AbsTol',1e-6); % MATLAB default settings
+options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
     'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
@@ -104,7 +104,7 @@ The slightly abbreviated (mostly complete) input function is shown below.
 function [dxVec] = vtsInputFcn(t, y)
 % VTSINPUTFCN passed to ODE solver to perfrom required step operations
 %
-%   NOTES: Updates g.vts.dxVec, and returns values
+%   NOTES: Updates and returns g.vts.dxVec
 %
 %   Input:
 %   t - simulation time
@@ -131,7 +131,7 @@ dynamicSolution(g.vts.dataN )
 %% Start of DC solution ===================================================
 dcSolution(g.vts.dataN )
 
-%% save initial network solution
+%% save first network solution
 if g.vts.iter == 0
     handleNetworkSln(g.vts.dataN ,1)
 end
@@ -194,7 +194,7 @@ if isempty(flag) % normal step completion
 elseif flag(1) == 'i' 
     % init solver for new time block
     g.sys.t(g.vts.dataN) = t(1);    % log step time
-    handleStDx(g.vts.dataN, y, 2)   % log initial conditions
+    handleStDx(g.vts.dataN, y, 2)   % set initial conditions
   
 elseif flag(1) == 'd'
     % only debug screen output at the moment
@@ -242,12 +242,12 @@ for simTblock = 1:size(g.vts.t_block)
         % account for pretictor last step time check
         g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(simTblock,7);
         
-        for fStep = 1:nSteps
+        for cur_Step = 1:nSteps
             k = g.vts.dataN;
             j = k+1;
             
             % display k and t at every first, last, and 50th step
-            if ( mod(k,50)==0 ) || fStep == 1 || fStep == nSteps
+            if ( mod(k,50)==0 ) || cur_Step == 1 || cur_Step == nSteps
                 fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
             end
             
@@ -307,7 +307,7 @@ The following sub paragraphs provide some information about such functions that 
 
 %==========================================================
 \subparagraph{s\_simu\_BatchTestF} \ \\
-The \verb|s_simu_BatchTest| script is a modified version of \verb|s_simu_Batch| that was used to test the new functions used in non-linear simulation outside of the variable time step process.
+The \verb|s_simu_BatchTestF| script is a modified version of \verb|s_simu_Batch| that was used to test the new functions used in non-linear simulation outside of the variable time step process.
 As the VTS method appears to work, this script will most likely go away as it has served its purpose.
 
 %==========================================================
@@ -343,7 +343,7 @@ function initZeros(k, kdc)
 %==========================================================
 \subparagraph{initNLsim} \ \\
 The \verb|initNLsim| function is a collection of code from \verb|s_simu| that performs initialization operations before a non-linear simulation.
-This is essentially the creation of the various Y-matrices used for fault simulation and the calling of the dynamic models with the input flag set to 0.
+This is essentially the creation of the various Y-matrices used for fault conditions and the calling of the dynamic models with the input flag set to 0.
 
 \pagebreak
 %==========================================================
@@ -379,7 +379,7 @@ This functionalized code is again taken directly from \verb|s_simu|.
 
 %==========================================================
 \subparagraph{dcSolution} \ \\
-The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step were moved into the \verb|dcSolution| function.
+The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step was moved into the \verb|dcSolution| function.
 This has not been tested with VTS, but was functionalized to enable future developement.
 It \emph{should} work as normal when using Huen's method, but is untested as of this writing.
 
@@ -392,7 +392,7 @@ It should be noted that these calculations are mostly based on complex voltages 
 %==========================================================
 \subparagraph{predictorIntegration} \ \\
 The \verb|predictorIntegration| function performs the predictor (forward Euler) integration step of the simulation loop.
-The code was taken directly from \verb|s_simu| and the same variable names.
+The code was taken directly from \verb|s_simu| and uses the same variable names.
 
 \begin{minted}[
 		frame=lines,
@@ -444,7 +444,7 @@ While this process seemed unnecessarily confusing and sort of  round-about, it h
 %==========================================================
 \subparagraph{handleStDx} \ \\
 The \verb|handleStDx| function was created to perform the required state and derivative handling to enable the use internal MATLAB ODE solvers.
-The general function operation is probably best described via the internal function documentation provided below.
+Its general operation is probably best described via the internal function documentation provided below.
 
 \begin{minted}[
 		frame=lines,
@@ -481,8 +481,8 @@ At the beginning of time blocks that use the MATLAB ODE solvers, an initial cond
 
 To avoid handling function output, global vectors \verb|g.vts.dxVec| and \verb|g.vts.stVec| are used to hold updated derivative and state vector information.
 
-It should be noted that original PST globals follow the same data structure.
-However, new models (such as AGC and pwrmod/ivmmmod) use a slightly different data structure and must be handled in a slightly different way.
+It should be noted that original PST globals follow the same data structure,
+however, new models (such as AGC and pwrmod/ivmmmod) use a slightly different data structure and must be handled in a slightly different way.
 As of this writing AGC and pwrmod functionality has been added to \verb|handleStDx| and it seems very possible to add more models that require integration as they arise.
 
 \pagebreak
@@ -511,13 +511,14 @@ function handleNetworkSln(k, flag)
 %   flag - choose funtion operation
 %       0 - initialize globals used to store data
 %       1 - collect newtork solution values from index k into a global vector
-%       2 - write stored solution vector to network globals data index k
+%       2 - write stored network solution vector to network globals data at index k
 \end{minted}
 
 %==========================================================
 \subparagraph{trimLogs} \ \\
 As there is no way to accurately predict the amount of (length of) data to be logged during a variable time step simulation, more space is allocated (20x the amount from a fixed step simulation) and then all logged values are trimmed to the proper length post simulation.
 It should be noted that this 20x size allocation was arbitrary and will probably be altered in the future as actual extended term simulation using VTS typically requires fewer steps than a fixed step method.
+However, if not enough space is allocated the simulation will crash.
 
 \begin{minted}[
 		frame=lines,
@@ -531,7 +532,7 @@ It should be noted that this 20x size allocation was arbitrary and will probably
 function trimLogs(k)
 % TRIMLOGS trims logged data to input index k.
 %
-%   NOTES: nCell not made via logicals - may lead to errors if fields not initialized (i.e. model not used)
+%   NOTES: nCell not made via logicals - may lead to errors if fields not initialized (i.e. model not used). Issue not encountered yet, but seems possible
 %
 %   Input:
 %   k - data index
@@ -539,8 +540,8 @@ function trimLogs(k)
 
 %==========================================================
 \subparagraph{standAlonePlot} \ \\
-The \verb|standAlonePlot| function is the cleaned up plotting routine based on user input from the end \verb|s_simu|.
-It is called from \verb|s_simu_BatchVTS| if stand alone mode is detected.
+The \verb|standAlonePlot| function is the updated plotting routine based on user input previously found at the end \verb|s_simu|.
+After a completed simulation, it is called from \verb|s_simu_BatchVTS| if stand alone mode is detected.
 
 
 %==========================================================

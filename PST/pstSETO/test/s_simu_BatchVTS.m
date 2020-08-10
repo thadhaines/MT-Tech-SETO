@@ -354,7 +354,7 @@ inputFcn = str2func('vtsInputFcn');
 outputFcn = str2func('vtsOutputFcn');
 
 % Configure ODE settings
-%options = odeset('RelTol',1e-3,'AbsTol',1e-6); % default settings
+%options = odeset('RelTol',1e-3,'AbsTol',1e-6); % MATLAB default settings
 options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
     'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
@@ -397,12 +397,12 @@ for simTblock = 1:size(g.vts.t_block)
         % account for pretictor last step time check
         g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(simTblock,7);
         
-        for fStep = 1:nSteps
+        for cur_Step = 1:nSteps
             k = g.vts.dataN;
             j = k+1;
             
             % display k and t at every first, last, and 50th step
-            if ( mod(k,50)==0 ) || fStep == 1 || fStep == nSteps
+            if ( mod(k,50)==0 ) || cur_Step == 1 || cur_Step == nSteps
                 fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
             end
             

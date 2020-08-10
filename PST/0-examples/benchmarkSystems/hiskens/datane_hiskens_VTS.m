@@ -335,7 +335,7 @@ sw_con = [
 % huens - Fixed time step default to PST
 % ode113 - works well during transients, consistent # of slns, time step stays relatively small
 % ode15s - large number of slns during init, time step increases to reasonable size
-% ode23 - realtively consisten # of required slns, timstep doesn't get very large
+% ode23 - realtively consistent # of required slns, timstep doesn't get very large
 % ode23s - many iterations per step - not efficient...
 % ode23t - occasionally hundereds of iterations, sometimes not... decent
 % ode23tb - similar to 23t, sometimes more large sln counts

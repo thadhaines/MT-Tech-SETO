@@ -4,7 +4,7 @@ function [dxVec] = vtsInputFcn(t, y)
 %
 % Syntax: [dxVec] = vtsInputFcn(t, y)
 %
-%   NOTES: Updates g.vts.dxVec, and returns values
+%   NOTES: Updates and returns g.vts.dxVec
 %
 %   Input:
 %   t - simulation time
@@ -39,7 +39,7 @@ dynamicSolution(g.vts.dataN )
 %% Start of DC solution ===================================================
 dcSolution(g.vts.dataN )
 
-% save initial network solution
+% save first network solution
 if g.vts.iter == 0
     handleNetworkSln(g.vts.dataN ,1)
 end

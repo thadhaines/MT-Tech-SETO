@@ -73,7 +73,7 @@ tspan and y0 are the input arguments to the ODE solver.
 elseif flag(1) == 'i' % init solver for new time block
     
     g.sys.t(g.vts.dataN) = t(1);    % log step time
-    handleStDx(g.vts.dataN, y, 2)   % log initial conditions
+    handleStDx(g.vts.dataN, y, 2)   % set initial conditions
     
     % debug display
     disp('*** ')
