@@ -18,11 +18,9 @@ function predictorIntegration(k, j, h_sol)
 %   Date        Time    Engineer        Description
 %   07/23/20    13:10   Thad Haines     Version 1
 %   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
+%   08/11/20    11:36   Thad Haines     Version 1.0.2 - added ivm to global
 
 %% Remaining 'loose' globals
-% ivm variables - 5
-global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-
 % DeltaP/omega filter variables - 21
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
@@ -115,10 +113,10 @@ if g.pwr.n_pwrmod~=0
 end
 
 %% ivmmod
-if n_ivm~=0
-    for index=1:n_ivm
-        ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*divmmod_d_sigst{index}(:,k);
-        ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*divmmod_e_sigst{index}(:,k);
+if g.ivm.n_ivm~=0
+    for index=1:g.ivm.n_ivm
+        g.ivm.ivmmod_d_sigst{index}(:,j) = g.ivm.ivmmod_d_sigst{index}(:,k)+h_sol*g.ivm.divmmod_d_sigst{index}(:,k);
+        g.ivm.ivmmod_e_sigst{index}(:,j) = g.ivm.ivmmod_e_sigst{index}(:,k)+h_sol*g.ivm.divmmod_e_sigst{index}(:,k);
     end
 end
 

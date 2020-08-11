@@ -5,6 +5,8 @@ function mac_indx()
 %
 % Syntax: mac_indx()
 %
+%   NOTES: Infinite bus not included in global g
+%
 %   Input:
 %   VOID
 %
@@ -16,9 +18,8 @@ function mac_indx()
 %   12/16/97    09:38   -               Version 1
 %   06/19/20    09:56   Thad Haines     Revised format of globals and internal function documentation
 %   07/13/20    10:34   Thad Haines     Induction generator g.igen alterations
+%   08/11/20    10:38   Thad Haines     Additon of IVM to global g
   
-global n_ivm mac_ivm_idx
-
 global g
 
 % insert the default values of the %percentage p and q
@@ -94,11 +95,11 @@ else
     g.mac.n_sub = 0;
 end
 %IVM generators
-mac_ivm_idx = find(g.mac.mac_con(:,16)==0);
-if ~isempty(mac_ivm_idx)
-    n_ivm = length(mac_ivm_idx);
+g.ivm.mac_ivm_idx = find(g.mac.mac_con(:,16)==0);
+if ~isempty(g.ivm.mac_ivm_idx)
+    g.ivm.n_ivm = length(g.ivm.mac_ivm_idx);
 else
-    n_ivm = 0;
+    g.ivm.n_ivm = 0;
 end
 if g.mac.n_ib~=0
     ib_em = find(g.mac.mac_con(g.mac.mac_ib_idx,6)==0);

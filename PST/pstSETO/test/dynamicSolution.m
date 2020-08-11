@@ -17,11 +17,9 @@ function dynamicSolution(k)
 %   Date        Time    Engineer        Description
 %   07/23/20    11:31   Thad Haines     Version 1
 %   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
+%   08/11/20    11:18   Thad Haines     Version 1.0.2 - added ivmmod
 
 %% Remaining 'loose' globals
-% ivm variables - 5
-global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-
 % DeltaP/omega filter variables - 21
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
@@ -151,39 +149,39 @@ if g.pwr.n_pwrmod~=0
 end
 
 %% ivm modulation - copied from v2.3 - 06/01/20 -thad
-if n_ivm>0
-    dst = cell(n_ivm,1);
+if g.ivm.n_ivm>0
+    dst = cell(g.ivm.n_ivm,1);
     est = dst;
-    for index=1:n_ivm
-        dst{index} = ivmmod_d_sigst{index}(:,k);
-        est{index} = ivmmod_e_sigst{index}(:,k);
+    for index=1:g.ivm.n_ivm
+        dst{index} = g.ivm.ivmmod_d_sigst{index}(:,k);
+        est{index} = g.ivm.ivmmod_e_sigst{index}(:,k);
     end
     [d,e,~,~,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,k,1); %get internal voltage signals
-    if (length(d)~=n_ivm) || (length(e)~=n_ivm)
+    if (length(d)~=g.ivm.n_ivm) || (length(e)~=g.ivm.n_ivm)
         error('Dimension error in ivmmod_dyn');
     end
-    ivmmod_d_sig(:,k) = d;
-    ivmmod_e_sig(:,k) = e;
+    g.ivm.ivmmod_d_sig(:,k) = d;
+    g.ivm.ivmmod_e_sig(:,k) = e;
     mac_ivm(0,k,g.bus.bus_sim,flag);
     [~,~,dd,de,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,k,flag);
     if (~iscell(dd) || ~iscell(de))
         error('Error in ivmmod_dyn, dd and de must be cells');
     end
-    if (any(size(dd)-[n_ivm 1]) || any(size(de)-[n_ivm 1]))
+    if (any(size(dd)-[g.ivm.n_ivm 1]) || any(size(de)-[g.ivm.n_ivm 1]))
         error('Dimension error in ivmmod_dyn');
     end
-    for index=1:n_ivm
+    for index=1:g.ivm.n_ivm
         if ((size(dd{index},2)~=1) || (size(de{index},2)~=1))
             error('Dimension error in ivmmod_dyn');
         end
-        if size(dd{index},1)~=size(divmmod_d_sigst{index},1)
+        if size(dd{index},1)~=size(g.ivm.divmmod_d_sigst{index},1)
             error('Dimension error in ivmmod_dyn');
         end
-        if size(de{index},1)~=size(divmmod_e_sigst{index},1)
+        if size(de{index},1)~=size(g.ivm.divmmod_e_sigst{index},1)
             error('Dimension error in ivmmod_dyn');
         end
-        divmmod_d_sigst{index}(:,k) = dd{index};
-        divmmod_e_sigst{index}(:,k) = de{index};
+        g.ivm.divmmod_d_sigst{index}(:,k) = dd{index};
+        g.ivm.divmmod_e_sigst{index}(:,k) = de{index};
     end
     clear d e dd de dst est
 end

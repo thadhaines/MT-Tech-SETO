@@ -17,6 +17,7 @@ function trimLogs(k)
 %   07/28/20    11:47   Thad Haines     Version 1
 %   08/03/20    15:30   Thad Haines     Version 1.0.1 - addition of AGC, area values, and tg_sig
 %   08/05/20    13:15   Thad Haines     Version 1.0.2 - added pwrmod signals to global
+%   08/11/20    11:42   Thad Haines     Version 1.0.3 - added ivm
 
 global g
 %%
@@ -40,6 +41,7 @@ nCell = { ...
     'area', {'totH', 'aveF', 'totGen', 'totLoad', 'icA', 'icS'}; % add optionally?
     'lmon', {'iFrom', 'iTo', 'sFrom', 'sTo'}; % add optionally?
     'agc', {'Handled Differently'} ; % add optionally?
+    'ivm', {'ivmmod_d_sig', 'ivmmod_e_sig'};
     %'', {};
     };
 
@@ -97,6 +99,15 @@ for f=1:size(nCell,1)
                 g.pwr.pwrmod_q_sigst{n}= g.pwr.pwrmod_q_sigst{n}(:, 1:k);
                 g.pwr.dpwrmod_p_sigst{n}= g.pwr.dpwrmod_p_sigst{n}(:, 1:k);
                 g.pwr.dpwrmod_q_sigst{n}= g.pwr.dpwrmod_q_sigst{n}(:, 1:k);
+            end
+        end
+        % handle logged cell values from ivm
+        if strcmp(nCell{f,1}, 'ivm')
+            for n=1:g.ivm.n_ivm
+                g.ivm.ivmmod_d_sigst{n}= g.ivm.ivmmod_d_sigst{n}(:, 1:k);
+                g.ivm.ivmmod_e_sigst{n}= g.ivm.ivmmod_e_sigst{n}(:, 1:k);
+                g.ivm.divmmod_d_sigst{n}= g.ivm.divmmod_d_sigst{n}(:, 1:k);
+                g.ivm.divmmod_e_sigst{n}= g.ivm.divmmod_e_sigst{n}(:, 1:k);
             end
         end
         

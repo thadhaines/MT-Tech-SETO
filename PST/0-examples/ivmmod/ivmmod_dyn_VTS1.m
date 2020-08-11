@@ -1,6 +1,6 @@
 function [dc,Ec,ddelta_states,dE_states,delta_statesIni,E_statesIni] = ivmmod_dyn(delta_states,E_states,bus,Time,kSim,Flag)
 % Implement state or output variables to model power injection
-% 
+%
 % Inputs:
 %   Time = vector of simulation time
 %   kSim = current simulation index.  Current time = Time(kSim).
@@ -13,7 +13,7 @@ function [dc,Ec,ddelta_states,dE_states,delta_statesIni,E_statesIni] = ivmmod_dy
 %       mac_con.
 %   E_state = cell array of E injection states.  Same format as d_states.
 %   bus = initial bus matrix from the solved power flow.
-%   
+%
 % Outputs:
 %   d_statesIni = = cell array of initial of d_states
 %   E_statesIni = = cell array of initial of E_states
@@ -30,10 +30,11 @@ function [dc,Ec,ddelta_states,dE_states,delta_statesIni,E_statesIni] = ivmmod_dy
 %   ivmmod_data = general variable for storing data when necessary.
 %
 % D. Trudnowski, 2020
-% Thad Haines - 2020 - modifed globals
+
+% global ivmmod_data
+% global n_ivm mac_ivm_idx
 
 global g
-
 %% Parameters
 busnum = g.bus.bus_int(g.mac.mac_con(g.ivm.mac_ivm_idx,2)); % bus numbers where ivm's are connected
 
@@ -53,23 +54,40 @@ if Flag==0
         delta_statesIni{k}(1,1) = 0;
         E_statesIni{k}(1,1) = 0;
     end
-
-
-%% Calculate dc and Ec
+    
+    
+    %% Calculate dc and Ec
 elseif Flag==1
     for k=1:g.ivm.n_ivm
-        Ec(k) = g.mac.edprime(g.ivm.mac_ivm_idx(k),1); %edprime(*,1) is initial internal voltage E
-        dc(k) = g.mac.mac_ang(g.ivm.mac_ivm_idx(k),1); %mac_ang(*,1) is initial internal voltage d
+        if Time(kSim) >=1 && Time(kSim) <2
+            dE = 0.1 *sin( (Time(kSim)-1) * 2*pi/4); % amount to step voltage (pu)
+        elseif Time(kSim) >= 2
+            dE = 0.1;
+        else
+            dE = 0;
+        end
+        Ec(k) = g.mac.edprime(g.ivm.mac_ivm_idx(k),1) + dE; %edprime(*,1) is initial internal voltage E
+        if Time(kSim) >= 10
+            % sine ramp signal up over 5 seconds.
+            if Time(kSim) >=10 && Time(kSim) <15
+                da = 0.5 *sin( (Time(kSim)-10) * 2*pi/20); % signal to step angle by (radians)
+            else
+                da = 0.5;
+            end
+        else
+            da = 0;
+        end
+        dc(k) = g.mac.mac_ang(g.ivm.mac_ivm_idx(k),1) + da; %mac_ang(*,1) is initial internal voltage d
     end
-
-%% Calculate derivatives
+    
+    %% Calculate derivatives
 elseif Flag==2
     %No differential equations for this example.  set derivatives to zero.
     for k=1:g.ivm.n_ivm
         ddelta_states{k}(1,1) = 0;
         dE_states{k}(1,1) = 0;
     end
-
+    
 end
 
 end

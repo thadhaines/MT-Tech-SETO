@@ -28,6 +28,7 @@ function mac_em(i,k,bus,flag)
 %   06/19/20    09:52   Thad Haines     Revised format of globals and internal function documentation
 %   07/07/20    14:32   Thad Haines     Completion of global g alteration
 %   07/29/20    15:20   Thad Haines     jay -> 1j
+%   08/11/20    11:48   Thad Haines     added ivm to global
 
 global g
 

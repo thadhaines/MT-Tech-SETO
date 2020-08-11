@@ -30,28 +30,26 @@ function [dc,Ec,ddelta_states,dE_states,delta_statesIni,E_statesIni] = ivmmod_dy
 %   ivmmod_data = general variable for storing data when necessary.
 %
 % D. Trudnowski, 2020
-
-global ivmmod_data
-global n_ivm mac_ivm_idx
+% Thad Haines - 2020 - modifed globals
 
 global g
 
 %% Parameters
-busnum = g.bus.bus_int(g.mac.mac_con(mac_ivm_idx,2)); % bus numbers where ivm's are connected
+busnum = g.bus.bus_int(g.mac.mac_con(g.ivm.mac_ivm_idx,2)); % bus numbers where ivm's are connected
 
 %% Initialize output variables
-dc = zeros(n_ivm,1);
-Ec = zeros(n_ivm,1);
-ddelta_states = cell(n_ivm,1);
-dE_states = cell(n_ivm,1);
-delta_statesIni = cell(n_ivm,1);
-E_statesIni = cell(n_ivm,1);
+dc = zeros(g.ivm.n_ivm,1);
+Ec = zeros(g.ivm.n_ivm,1);
+ddelta_states = cell(g.ivm.n_ivm,1);
+dE_states = cell(g.ivm.n_ivm,1);
+delta_statesIni = cell(g.ivm.n_ivm,1);
+E_statesIni = cell(g.ivm.n_ivm,1);
 
 %% Define and initialize state derivatives at t = 0.
 if Flag==0
     %Note, there are no differential equations.  Just make the DFE zero.
-    ivmmod_data = nan; %not used
-    for k=1:n_ivm
+    g.ivm.ivmmod_data = nan; %not used
+    for k=1:g.ivm.n_ivm
         delta_statesIni{k}(1,1) = 0;
         E_statesIni{k}(1,1) = 0;
     end
@@ -59,15 +57,15 @@ if Flag==0
 
 %% Calculate dc and Ec
 elseif Flag==1
-    for k=1:n_ivm
-        Ec(k) = g.mac.edprime(mac_ivm_idx(k),1); %edprime(*,1) is initial internal voltage E
-        dc(k) = g.mac.mac_ang(mac_ivm_idx(k),1); %mac_ang(*,1) is initial internal voltage d
+    for k=1:g.ivm.n_ivm
+        Ec(k) = g.mac.edprime(g.ivm.mac_ivm_idx(k),1); %edprime(*,1) is initial internal voltage E
+        dc(k) = g.mac.mac_ang(g.ivm.mac_ivm_idx(k),1); %mac_ang(*,1) is initial internal voltage d
     end
 
 %% Calculate derivatives
 elseif Flag==2
     %No differential equations for this example.  set derivatives to zero.
-    for k=1:n_ivm
+    for k=1:g.ivm.n_ivm
         ddelta_states{k}(1,1) = 0;
         dE_states{k}(1,1) = 0;
     end

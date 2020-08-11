@@ -1,0 +1,110 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Documentation of IVM using global g\\ }
+\lhead{Research \\ 8/11/20}
+
+
+\begin{document}
+The purpose of this document is to record what was done to enable IVM in PST to use the structured global variable \verb|g| and other `clean up' actions taken. \\
+Each paragraph describes the required changes to the PST file.
+
+Initial globals:
+\begin{verbatim}
+%% Original globals block condensed into g...
+%% ivm variables - 5
+global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
+% added
+global ivmmod_d_sigst ivmmod_e_sigst
+global divmmod_d_sigst divmmod_e_sigst
+\end{verbatim}
+
+%
+%   08/11/20    11:36   Thad Haines     Version 1.0.2 - added ivm to global
+
+Modified globals:
+\begin{verbatim}
+global g
+\end{verbatim}
+\paragraph{Non-Linear files}\line(1,0){300}
+%===============================================================================
+\paragraph{corrctorIntegration}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+%===============================================================================
+\paragraph{dynamicSolution}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+%===============================================================================
+\paragraph{handleStDx}
+	\begin{itemize}
+		\item Addition of IVM to function
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+%===============================================================================
+\paragraph{initNLsim}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+%===============================================================================
+\paragraph{initZeros}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+
+%===============================================================================
+\paragraph{predictorIntegration}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{s\_simu\_BatchTestF}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{s\_simu\_BatchVTS}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+	
+%===============================================================================
+\paragraph{trimLogs}
+	\begin{itemize}
+		\item Added ivm references to \verb|g.ivm|
+	\end{itemize}
+
+%===============================================================================
+\paragraph{ivmmod\_dyn\_ORIG}
+	\begin{itemize}
+		\item Added ivm references to \verb|g.ivm|
+	\end{itemize}	
+%===============================================================================
+\paragraph{mac\_indx}
+	\begin{itemize}
+		\item Added ivm references to \verb|g.ivm|
+	\end{itemize}	
+%===============================================================================
+\paragraph{mac\_ivm}
+	\begin{itemize}
+		\item Added ivm references to \verb|g.ivm|
+		\item updated internal function documentation
+	\end{itemize}	
+	
+%===============================================================================
+\paragraph{s\_simu\_Batch}
+	\begin{itemize}
+		\item Correction of ivm references to \verb|g.ivm|
+	\end{itemize}
+		
+\end{document}
