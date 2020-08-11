@@ -1,0 +1,56 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{IVM using VTS \\   }
+\lhead{Research \\ 08/11/20}
+
+\usepackage[hidelinks]{hyperref} % allow links in pdf
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage{minted}
+
+\begin{document}
+\onehalfspacing
+\paragraph{Example IVM Modulation Results using FTS and VTS}
+\begin{center}
+\includegraphics[width=.9\linewidth]{IVM-simoutput}\\
+\includegraphics[width=.9\linewidth]{IVM-angleComp}
+\end{center}
+Modulating IVM angle `moves' entire system.
+
+\pagebreak
+
+
+\includegraphics[width=\linewidth]{IVM-VTScomp}\\
+
+IVM appears to be handled well in VTS mode.
+
+\includegraphics[width=\linewidth]{IVM-VTSsteps}
+
+\begin{table}[!ht]
+\resizebox{\linewidth}{!}{
+
+	\begin{tabular}{@{} L{1.75cm} 
+	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{0.75cm} R{1.5cm} R{2cm} R{2cm}@{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+
+	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{Solutions Per Step}			&		&		&		\\	
+Version	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. Time	&	Speed Up	\\ \midrule	
+FTS &	0.0083	&	0.00830	&	0.0083	&	4,801	&	2	&	2	&	9,602	&	17.13	&	1.00	\\	
+VTS	&	0.5290	&	0.00417	&	0.0570	&	703	&	2	&	60	&	1,564	&	5.49	&	3.12	\\	
+																				\bottomrule
+	\end{tabular}
+	}%end resize box
+\end{table}
+
+VTS performed the simulation 3.12 times faster than FTS.
+
+\end{document}

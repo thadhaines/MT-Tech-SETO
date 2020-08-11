@@ -34,10 +34,10 @@ delete([PSTpath 'ivmmod_dyn.m']);
 copyfile('ivmmod_dyn_VTS1.m',[PSTpath 'ivmmod_dyn.m']); %Modulation file
 
 % s_simu_Batch %Run PST
-% s_simu_BatchTestF %Run PST
-s_simu_BatchVTS %Run PST
+s_simu_BatchTestF %Run PST
+% s_simu_BatchVTS %Run PST
 
-save('ivmVTS'); %Save
+save('ivmF'); %Save
 
 %% restore default models
 load PSTpath.mat
@@ -54,23 +54,26 @@ subplot(411)
 nb = 2; %Bus to plot
 ng = 3; %Generator to plot (IVM generator at bus nb)
 ni = 1; %IVM device (corresponds to generator ng and bus nb)
-plot(g.sys.t,abs(g.bus.bus_v(nb,:)),'k');
+
+plot(g.sys.t,abs(g.bus.bus_v(nb,:)),'g');
 hold on
-plot(g.sys.t,g.ivm.ivmmod_e_sig(ni,:),'r','LineWidth',1.5);
-plot(g.sys.t,g.mac.edprime(ng,:),'b--','LineWidth',1);
+plot(g.sys.t,g.ivm.ivmmod_e_sig(ni,:),'m','LineWidth',1.5);
+plot(g.sys.t,g.mac.edprime(ng,:),'k--','LineWidth',1);
 %ylim([1.1 1.25])
+title('IVM Voltage')
 legend(['bus ' num2str(nb)],'E_c','E','Location','SouthEast')
 grid on
 xlabel('Time [sec]')
 ylabel('Voltage (pu)')
 
 subplot(412)
-plot(g.sys.t,g.ivm.ivmmod_d_sig(ni,:),'r','LineWidth',1.5);
+plot(g.sys.t,g.ivm.ivmmod_d_sig(ni,:),'m','LineWidth',1.5);
 hold on
-plot(g.sys.t,g.mac.mac_ang(ng,:),'b--','LineWidth',1);
+plot(g.sys.t,g.mac.mac_ang(ng,:),'k--','LineWidth',1);
 legend('{\delta}_c','{\delta}','Location','SouthEast')
 grid on
 xlabel('Time [sec]')
+title('IVM Angle')
 %ylim([0.1 0.35])
 ylabel('IVM angle (rad)')
 
@@ -78,13 +81,15 @@ subplot(413)
 plot(g.sys.t,g.mac.pelect(ng,:),'k','LineWidth',1.5)
 grid on
 xlabel('Time [sec]')
-ylabel('IVM P [MW PU]')
+ylabel('P [MW PU]')
+title('IVM Generated Real Power')
 
 subplot(414)
 plot(g.sys.t,g.mac.qelect(ng,:),'k','LineWidth',1.5)
 grid on
 xlabel('Time [sec]')
-ylabel('IVM Q [MVAR PU]')
+ylabel('Q [MVAR PU]')
+title('IVM Generated Reactive Power')
 
 %set(gcf,'Position',[520   0.5*378   560   1.5*420])
 
