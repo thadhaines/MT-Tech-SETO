@@ -58,21 +58,12 @@
 %   07/29/20    15:20   Thad Haines     jay -> 1j
 %   07/30/20    08:04   Thad Haines     Re-integrated interactive script running/plotting
 %   07/30/20    20:34   Thad Haines     Added selectable solution methods
+%   08/11/20    11:36   Thad Haines     added ivm to global
 
 format compact;
 disp('*** s_simu_BatchVTS Start')
 disp('*** Declare Global Variables')
-
-%% Contents of pst_var copied into this section so that globals highlight
-% globals converted to the global g have been removed
-% old method for declaring globals.
-%pst_var % set up global variables (very many)
-
 %% Remaining 'loose' globals
-
-%% ivm variables - 5
-global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-
 %% DeltaP/omega filter variables - 21
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
@@ -238,7 +229,7 @@ g.mac.n_pm = g.mac.n_mac; % used for pm modulation -- put into mac or tg indx?
 if ~isempty(g.pwr.n_pwrmod)
     for kk=1:g.pwr.n_pwrmod
         n = find(g.pwr.pwrmod_con(kk,1)==g.bus.bus(:,1));
-        g.bus.bus(n,11:12) = g.pwr.pwrmod_con(kk,6:7);
+        g.bus.bus(n, 11:12) = g.pwr.pwrmod_con(kk,6:7);
     end
     clear kk n
 end
@@ -320,11 +311,6 @@ initNLsim()
 %% step 3: Beginning of Huen's  (predictor-corrector) method
 % Create indicies for simulation
 g.k.ks = 1;
-%k_tot = sum(g.k.k_inc); % these statements may no longer be required. - thad 08/10/20
-%lswitch = length(g.k.k_inc); % these statements may no longer be required. - thad 08/10/20
-%ktmax = k_tot-g.k.k_inc(lswitch); % these statements may no longer be required. - thad 08/10/20
-%kt = 0;
-
 g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
@@ -545,7 +531,7 @@ end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
 clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
 
-%whos('g') % see if trimming zeros matters. 2/2
+%whos('g') % see if trimming zeros matters. 2/2 (it does)
 
 %% execute original s_simu plotting (if run as a standalone script)
 standAlonePlot(scriptRunFlag)

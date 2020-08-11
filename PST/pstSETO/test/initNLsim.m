@@ -16,11 +16,9 @@ function initNLsim()
 %   Date        Time    Engineer        Description
 %   07/30/20    10:54   Thad Haines     Version 1
 %   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
+%   08/11/20    11:25   Thad Haines     Version 1.0.2 - added ivmmod
 
 %% Remaining 'loose' globals
-% ivm variables - 5
-global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-
 % DeltaP/omega filter variables - 21
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
@@ -171,30 +169,32 @@ tg_hydro(0,1,g.bus.bus,flag);
 
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
 % Seems like this should be put in a seperate script - thad 06/08/20
-if n_ivm~=0
+if g.ivm.n_ivm~=0
     disp('ivm modulation')
     [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],g.bus.bus,g.sys.t,1,flag);
     
     if (~iscell(Dini) || ~iscell(Eini))
         error('Error in ivmmod_dyn, initial states must be cells');
     end
-    if (any(size(Dini)-[n_ivm 1]) || any(size(Eini)-[n_ivm 1]))
+    if (any(size(Dini)-[g.ivm.n_ivm 1]) || any(size(Eini)-[g.ivm.n_ivm 1]))
         error('Dimension error in ivmmod_dyn');
     end
     
-    ivmmod_d_sigst = cell(n_ivm,1);
-    ivmmod_e_sigst = ivmmod_d_sigst;
-    divmmod_d_sigst = ivmmod_d_sigst;
-    divmmod_e_sigst = ivmmod_d_sigst;
+    g.ivm.ivmmod_d_sigst = cell(g.ivm.n_ivm,1);
+    g.ivm.ivmmod_e_sigst = g.ivm.ivmmod_d_sigst;
+    g.ivm.divmmod_d_sigst = g.ivm.ivmmod_d_sigst;
+    g.ivm.divmmod_e_sigst = g.ivm.ivmmod_d_sigst;
     
-    for index=1:n_ivm
+    k = size(g.sys.t,2); % length of logged values
+    
+    for index=1:g.ivm.n_ivm
         if ((size(Dini{index},2)~=1) || (size(Eini{index},2)~=1))
             error('Dimension error in ivmmod_dyn');
         end
-        divmmod_d_sigst{index} = zeros(size(Dini{index},1),k);
-        ivmmod_d_sigst{index} = Dini{index}*ones(1,k);
-        divmmod_e_sigst{index} = zeros(size(Eini{index},1),k);
-        ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
+        g.ivm.divmmod_d_sigst{index} = zeros(size(Dini{index},1),k);
+        g.ivm.ivmmod_d_sigst{index} = Dini{index}*ones(1,k);
+        g.ivm.divmmod_e_sigst{index} = zeros(size(Eini{index},1),k);
+        g.ivm.ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
     end
     clear index Dini Eini
 end

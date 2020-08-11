@@ -54,6 +54,7 @@
 %   07/21/20    16:20   Thad haines     V 2.0.3 - Added AGC
 %   07/23/20    11:24   Thad Haines     Begining work on functionalization of solution.
 %   07/29/20    15:20   Thad Haines     jay -> 1j
+%   08/11/20    11:36   Thad Haines     Added ivm to global
 
 %%
 %clear all
@@ -75,9 +76,6 @@ disp('*** Declare Global Variables')
 %pst_var % set up global variables (very many)
 
 %% Remaining 'loose' globals
-
-%% ivm variables - 5
-global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
 
 %% DeltaP/omega filter variables - 21
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx

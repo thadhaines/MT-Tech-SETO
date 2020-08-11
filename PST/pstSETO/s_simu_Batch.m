@@ -53,6 +53,7 @@
 %   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
 %   07/21/20    16:20   Thad haines     V 2.0.3 - Added AGC
 %   07/29/20    15:20   Thad Haines     jay -> 1j
+%   08/11/20    10:48   Thad Haines     Added IVM to global g
 
 %%
 %clear all
@@ -73,9 +74,6 @@ disp('*** Declare Global Variables')
 %pst_var % set up global variables (very many)
 
 %% Remaining 'loose' globals
-
-%% ivm variables - 5
-global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
 
 %% DeltaP/omega filter variables - 21
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
@@ -667,12 +665,12 @@ else
 end
 
 %% Initialize ivmmod sigs
-if n_ivm ~= 0
-    ivmmod_d_sig = zeros(n_ivm,k);
-    ivmmod_e_sig = zeros(n_ivm,k);
+if g.ivm.n_ivm ~= 0
+    g.ivm.ivmmod_d_sig = zeros(g.ivm.n_ivm,k);
+    g.ivm.ivmmod_e_sig = zeros(g.ivm.n_ivm,k);
 else
-    ivmmod_d_sig = zeros(1,k);
-    ivmmod_e_sig = zeros(1,k);
+    g.ivm.ivmmod_d_sig = zeros(1,k);
+    g.ivm.ivmmod_e_sig = zeros(1,k);
 end
 
 g.sys.sys_freq = ones(1,k); % replaces variable for base frequency input... 5/21/20
@@ -867,30 +865,30 @@ tg_hydro(0,1,g.bus.bus,flag);
 
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
 % Seems like this should be put in a seperate script - thad 06/08/20
-if n_ivm~=0
+if g.ivm.n_ivm~=0
     disp('ivm modulation')
     [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],g.bus.bus,g.sys.t,1,flag);
     
     if (~iscell(Dini) || ~iscell(Eini))
         error('Error in ivmmod_dyn, initial states must be cells');
     end
-    if (any(size(Dini)-[n_ivm 1]) || any(size(Eini)-[n_ivm 1]))
+    if (any(size(Dini)-[g.ivm.n_ivm 1]) || any(size(Eini)-[g.ivm.n_ivm 1]))
         error('Dimension error in ivmmod_dyn');
     end
     
-    ivmmod_d_sigst = cell(n_ivm,1);
-    ivmmod_e_sigst = ivmmod_d_sigst;
-    divmmod_d_sigst = ivmmod_d_sigst;
-    divmmod_e_sigst = ivmmod_d_sigst;
+    g.ivm.ivmmod_d_sigst = cell(g.ivm.n_ivm,1);
+    g.ivm.ivmmod_e_sigst = g.ivm.ivmmod_d_sigst;
+    g.ivm.divmmod_d_sigst = g.ivm.ivmmod_d_sigst;
+    g.ivm.divmmod_e_sigst = g.ivm.ivmmod_d_sigst;
     
-    for index=1:n_ivm
+    for index=1:g.ivm.n_ivm
         if ((size(Dini{index},2)~=1) || (size(Eini{index},2)~=1))
             error('Dimension error in ivmmod_dyn');
         end
-        divmmod_d_sigst{index} = zeros(size(Dini{index},1),k);
-        ivmmod_d_sigst{index} = Dini{index}*ones(1,k);
-        divmmod_e_sigst{index} = zeros(size(Eini{index},1),k);
-        ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
+        g.ivm.divmmod_d_sigst{index} = zeros(size(Dini{index},1),k);
+        g.ivm.ivmmod_d_sigst{index} = Dini{index}*ones(1,k);
+        g.ivm.divmmod_e_sigst{index} = zeros(size(Eini{index},1),k);
+        g.ivm.ivmmod_e_sigst{index} = Eini{index}*ones(1,k);
     end
     clear index Dini Eini
 end
@@ -1417,39 +1415,39 @@ while (kt<=ktmax)
         end
         
         %% ivm modulation - copied from v2.3 - 06/01/20 -thad
-        if n_ivm>0
-            dst = cell(n_ivm,1);
+        if g.ivm.n_ivm>0
+            dst = cell(g.ivm.n_ivm,1);
             est = dst;
-            for index=1:n_ivm
-                dst{index} = ivmmod_d_sigst{index}(:,k);
-                est{index} = ivmmod_e_sigst{index}(:,k);
+            for index=1:g.ivm.n_ivm
+                dst{index} = g.ivm.ivmmod_d_sigst{index}(:,k);
+                est{index} = g.ivm.ivmmod_e_sigst{index}(:,k);
             end
             [d,e,~,~,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,k,1); %get internal voltage signals
-            if (length(d)~=n_ivm) || (length(e)~=n_ivm)
+            if (length(d)~=g.ivm.n_ivm) || (length(e)~=g.ivm.n_ivm)
                 error('Dimension error in ivmmod_dyn');
             end
-            ivmmod_d_sig(:,k) = d;
-            ivmmod_e_sig(:,k) = e;
+            g.ivm.ivmmod_d_sig(:,k) = d;
+            g.ivm.ivmmod_e_sig(:,k) = e;
             mac_ivm(0,k,g.bus.bus_sim,flag);
             [~,~,dd,de,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,k,flag);
             if (~iscell(dd) || ~iscell(de))
                 error('Error in ivmmod_dyn, dd and de must be cells');
             end
-            if (any(size(dd)-[n_ivm 1]) || any(size(de)-[n_ivm 1]))
+            if (any(size(dd)-[g.ivm.n_ivm 1]) || any(size(de)-[g.ivm.n_ivm 1]))
                 error('Dimension error in ivmmod_dyn');
             end
-            for index=1:n_ivm
+            for index=1:g.ivm.n_ivm
                 if ((size(dd{index},2)~=1) || (size(de{index},2)~=1))
                     error('Dimension error in ivmmod_dyn');
                 end
-                if size(dd{index},1)~=size(divmmod_d_sigst{index},1)
+                if size(dd{index},1)~=size(g.ivm.divmmod_d_sigst{index},1)
                     error('Dimension error in ivmmod_dyn');
                 end
-                if size(de{index},1)~=size(divmmod_e_sigst{index},1)
+                if size(de{index},1)~=size(g.ivm.divmmod_e_sigst{index},1)
                     error('Dimension error in ivmmod_dyn');
                 end
-                divmmod_d_sigst{index}(:,k) = dd{index};
-                divmmod_e_sigst{index}(:,k) = de{index};
+                g.ivm.divmmod_d_sigst{index}(:,k) = dd{index};
+                g.ivm.divmmod_e_sigst{index}(:,k) = de{index};
             end
             clear d e dd de dst est
         end
@@ -1556,10 +1554,10 @@ while (kt<=ktmax)
             end
         end
         %% ivmmod
-        if n_ivm~=0
-            for index=1:n_ivm
-                ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+g.k.h_sol*divmmod_d_sigst{index}(:,k);
-                ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+g.k.h_sol*divmmod_e_sigst{index}(:,k);
+        if g.ivm.n_ivm~=0
+            for index=1:g.ivm.n_ivm
+                g.ivm.ivmmod_d_sigst{index}(:,j) = g.ivm.ivmmod_d_sigst{index}(:,k)+g.k.h_sol*g.ivm.divmmod_d_sigst{index}(:,k);
+                g.ivm.ivmmod_e_sigst{index}(:,j) = g.ivm.ivmmod_e_sigst{index}(:,k)+g.k.h_sol*g.ivm.divmmod_e_sigst{index}(:,k);
             end
         end
         
@@ -1902,39 +1900,39 @@ while (kt<=ktmax)
             clear P Q Pst Qst dp dq index
         end
         
-        if n_ivm>0
-            dst = cell(n_ivm,1);
+        if g.ivm.n_ivm>0
+            dst = cell(g.ivm.n_ivm,1);
             est = dst;
-            for index=1:n_ivm
-                dst{index} = ivmmod_d_sigst{index}(:,j);
-                est{index} = ivmmod_e_sigst{index}(:,j);
+            for index=1:g.ivm.n_ivm
+                dst{index} = g.ivm.ivmmod_d_sigst{index}(:,j);
+                est{index} = g.ivm.ivmmod_e_sigst{index}(:,j);
             end
             [d,e,~,~,~,~] = ivmmod_dyn(dst,est,g.bus.bus,g.sys.t,j,1); % should this be g.bus.bus_sim? - thad 07/17/20
-            if (length(d)~=n_ivm) || (length(e)~=n_ivm)
+            if (length(d)~=g.ivm.n_ivm) || (length(e)~=g.ivm.n_ivm)
                 error('Dimension error in ivmmod_dyn');
             end
-            ivmmod_d_sig(:,j) = d;
-            ivmmod_e_sig(:,j) = e;
+            g.ivm.ivmmod_d_sig(:,j) = d;
+            g.ivm.ivmmod_e_sig(:,j) = e;
             mac_ivm(0,j,g.bus.bus_sim,flag);
             [~,~,dd,de,~,~] = ivmmod_dyn(dst, est, g.bus.bus, g.sys.t, j, flag);
             if (~iscell(dd) || ~iscell(de))
                 error('Error in ivmmod_dyn, dd and de must be cells');
             end
-            if (any(size(dd)-[n_ivm 1]) || any(size(de)-[n_ivm 1]))
+            if (any(size(dd)-[g.ivm.n_ivm 1]) || any(size(de)-[g.ivm.n_ivm 1]))
                 error('Dimension error in ivmmod_dyn');
             end
-            for index=1:n_ivm
+            for index=1:g.ivm.n_ivm
                 if ((size(dd{index},2)~=1) || (size(de{index},2)~=1))
                     error('Dimension error in ivmmod_dyn');
                 end
-                if size(dd{index},1)~=size(divmmod_d_sigst{index},1)
+                if size(dd{index},1)~=size(g.ivm.divmmod_d_sigst{index},1)
                     error('Dimension error in ivmmod_dyn');
                 end
-                if size(de{index},1)~=size(divmmod_e_sigst{index},1)
+                if size(de{index},1)~=size(g.ivm.divmmod_e_sigst{index},1)
                     error('Dimension error in ivmmod_dyn');
                 end
-                divmmod_d_sigst{index}(:,j) = dd{index};
-                divmmod_e_sigst{index}(:,j) = de{index};
+                g.ivm.divmmod_d_sigst{index}(:,j) = dd{index};
+                g.ivm.divmmod_e_sigst{index}(:,j) = de{index};
             end
             clear d e dd de dst est
         end
@@ -2041,11 +2039,11 @@ while (kt<=ktmax)
             end
         end
         
-        if n_ivm~=0
-            for index=1:n_ivm
+        if g.ivm.n_ivm~=0
+            for index=1:g.ivm.n_ivm
                 % make global? -thad 07/06/20
-                ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+g.k.h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
-                ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+g.k.h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
+                g.ivm.ivmmod_d_sigst{index}(:,j) = g.ivm.ivmmod_d_sigst{index}(:,k)+g.k.h_sol*(g.ivm.divmmod_d_sigst{index}(:,j) + g.ivm.divmmod_d_sigst{index}(:,k))/2;
+                g.ivm.ivmmod_e_sigst{index}(:,j) = g.ivm.ivmmod_e_sigst{index}(:,k)+g.k.h_sol*(g.ivm.divmmod_e_sigst{index}(:,j) + g.ivm.divmmod_e_sigst{index}(:,k))/2;
             end
         end
         

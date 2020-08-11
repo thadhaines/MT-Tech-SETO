@@ -28,12 +28,11 @@ function handleStDx(k, slnVec, flag)
 %   07/27/20    09:57   Thad Haines     Version 1.0.1 - integrated into VTS sim
 %   08/03/20    15:31   Thad Haines     Version 1.0.2 - added AGC
 %   08/05/20    13:15   Thad Haines     Version 1.0.3 - added pwrmod
+%   08/11/20    11:18   Thad Haines     Version 1.0.4 - added ivmmod
 
 
 %% Remaining 'loose' globals - Not required for now -thad 07/24/20
-% % ivm variables - 5
-% global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
-%
+
 % % DeltaP/omega filter variables - 21
 % global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 % global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
@@ -134,6 +133,13 @@ if flag == 0
         fsdn = [fsdn; {'pwr','pwrmod_q_sigst', 'dpwrmod_q_sigst', 0}];
     end
     
+    % IVMMOD
+    % each pwrmod has d and e signal states in a cell
+    if g.ivm.n_ivm ~= 0
+        fsdn = [fsdn; {'ivm','ivmmod_d_sigst', 'divmmod_d_sigst', 0}];
+        fsdn = [fsdn; {'ivm','ivmmod_e_sigst', 'divmmod_e_sigst', 0}];
+    end
+    
     %fsdn % debug output
     
     % Count number of allocated states, update fsdn
@@ -199,7 +205,8 @@ if flag == 1
                     end
                 end
                 
-            elseif strcmp(f2, 'dpwrmod_p_sigst') || strcmp(f2, 'dpwrmod_q_sigst') % pwrmod handling of variable cell states
+            elseif strcmp(f2, 'dpwrmod_p_sigst') || strcmp(f2, 'dpwrmod_q_sigst')  || ...  % pwrmod handling of variable cell states
+                   strcmp(f2, 'divmmod_d_sigst') || strcmp(f2, 'divmmod_e_sigst') % ivmmod handling of variable cell states
                 for n = 1:g.vts.fsdn{ndx,4}
                     % place derivatives into dxVec using dynamic field names
                     g.vts.dxVec(startN) = g.(f1).(f2){n}(k);
@@ -248,7 +255,8 @@ if flag == 2
                     end
                 end
                 
-            elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') % pwrmod handling of variable cell states
+            elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') || ... % pwrmod handling of variable cell states
+                   strcmp(f2, 'ivmmod_d_sigst') || strcmp(f2, 'ivmmod_e_sigst') % ivmmod handling of variable cell states
                 for n = 1:g.vts.fsdn{ndx,4}
                     % write solution vector to states
                     g.(f1).(f2){n}(k) = slnVec(startN);
@@ -298,7 +306,8 @@ if flag == 3
                     end
                 end
                 
-            elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') % pwrmod handling of variable cell states
+            elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') || ... % pwrmod handling of variable cell states
+                   strcmp(f2, 'ivmmod_d_sigst') || strcmp(f2, 'ivmmod_e_sigst') % ivmmod handling of variable cell states
                 for n = 1:g.vts.fsdn{ndx,4}
                     % place states into stVec using dynamic field names
                     g.vts.stVec(startN) = g.(f1).(f2){n}(k);
@@ -343,16 +352,6 @@ end
 
 %% unique/unused state and derivatives not currently handled in function
 %{
-%% Copied from v2.3 - 06/01/20 - thad
-
-if n_ivm~=0
-    for index=1:n_ivm
-        % make global? -thad 07/06/20
-        ivmmod_d_sigst{index}(:,j) = ivmmod_d_sigst{index}(:,k)+h_sol*(divmmod_d_sigst{index}(:,j) + divmmod_d_sigst{index}(:,k))/2;
-        ivmmod_e_sigst{index}(:,j) = ivmmod_e_sigst{index}(:,k)+h_sol*(divmmod_e_sigst{index}(:,j) + divmmod_e_sigst{index}(:,k))/2;
-    end
-end
-
 
 if n_dpw ~= 0
     % only calculate if dpw filter is used

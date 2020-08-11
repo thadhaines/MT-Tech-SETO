@@ -15,7 +15,7 @@ function initTblocks
 %   History:
 %   Date        Time    Engineer        Description
 %   07/27/20    11:06   Thad Haines     Version 1
-%   07/28/20    08:55   Thad Haines     Version 1.0.1 - Allowed time block overlap
+%   07/28/20    08:55   Thad Haines     Version 1.0.1 - fixed time block overlap
 %%
 global g
 
@@ -30,16 +30,7 @@ for n = 1:size(g.sys.sw_con,1)-1
     if ~isempty(g.vts.solver_con)
         if strcmp(g.vts.solver_con{n}, 'huens')
             % remove last time step between blocks for huens to huens
-            g.vts.fts{n} = g.vts.t_block(n,1):g.sys.sw_con(n,7):g.vts.t_block(n,2)-g.sys.sw_con(n,7);
-            
-%             % if another time block exists past the current time blcok
-%             if n+1 <= size(g.sys.sw_con,1)-1
-%                 % if next time block NOT huens, do not remove last time step
-%                 if ~strcmp(g.vts.solver_con{n+1}, 'huens')
-%                     g.vts.fts{n} = g.vts.t_block(n,1):g.sys.sw_con(n,7):g.vts.t_block(n,2);
-%                 end
-%             end
-            
+            g.vts.fts{n} = g.vts.t_block(n,1):g.sys.sw_con(n,7):g.vts.t_block(n,2)-g.sys.sw_con(n,7);    
         else
             g.vts.fts{n} = 0;
         end
