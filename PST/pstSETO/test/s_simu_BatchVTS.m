@@ -18,6 +18,7 @@
 %   loadflow        - solve AC load flow
 %   lfdcs           - solve load flow with DC lines
 %   y_switch        - creates reduced Y matracies for fault scenarios
+%   ...
 %
 %   Create indicies in global g by calling:
 %   mac_indx, exc_indx, tg_indx, dpwf_indx, pss_indx, svc_indx, tcsc_indx,
@@ -30,7 +31,7 @@
 %   N/A
 %
 %   Output:
-%   Under revision...
+%   g - global structured variable containing trimmed and cleaned data from simulation.
 %
 %   History:
 %   Date        Time    Engineer        Description
@@ -75,6 +76,17 @@ global ibus_con  netg_con  stab_con
 %% global structured array
 global g
 
+%% Check for Octave, automatically load compatibility script
+% Assumes license of Octave will be 'GNU ...'
+dataCheck = license;
+if all(dataCheck(1:3)=='GNU')
+    fprintf('*** Octave detected, loading compatiblity commands and packages...\n')
+    octaveComp
+else
+    fprintf('*** MATLAB detected.\n')
+end
+clear dataCheck
+
 %% IF run as a standalone script: querry user
 % Assumes all variables up to this point are global.
 % A 'clear all'  and 'close all' command is the best way to ensure this will run properly
@@ -104,17 +116,6 @@ if all( size(whos('global')) == size(whos()) )
 else
     scriptRunFlag = 'No thanks - I like using batch scripts...';
 end
-
-%% Check for Octave, automatically load compatibility script
-% Assumes license of Octave will be 'GNU ...'
-dataCheck = license;
-if all(dataCheck(1:3)=='GNU')
-    fprintf('*** Octave detected, loading compatiblity commands and packages...\n')
-    octaveComp
-else
-    fprintf('*** MATLAB detected.\n')
-end
-clear dataCheck
 
 %% account for non-existant DataFile
 try
@@ -174,10 +175,8 @@ g.mac.ibus_con = []; % ignore infinite buses in transient simulation
 %% unused/unimplemented damping controls -thad 07/15/20
 % intentionally removed/ignored?
 g.svc.svc_dc=[];
-
 g.tcsc.tcsc_dc=[];
 g.tcsc.n_tcscud = 0;
-
 g.dc.dcr_dc=[];
 g.dc.dci_dc=[];
 
@@ -339,7 +338,7 @@ handleNetworkSln([],0)
 inputFcn = str2func('vtsInputFcn');
 outputFcn = str2func('vtsOutputFcn');
 
-% Configure ODE settings
+% define ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % MATLAB default settings
 options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
     'InitialStep', 1/60/4, ...
@@ -354,9 +353,8 @@ g.vts.iter = 0; % for keeping track of solution iterations
 g.vts.tot_iter = 0;
 g.vts.slns = zeros(1, size(g.sys.t,2)); % number of networks solutions used per step
 
-% machine ref that's always set to zero....
+% machine ref... always set to zero....?
 g.sys.mach_ref = zeros(1, size(g.sys.t,2));
-
 
 %% Simulation loop start
 warning('*** Simulation Loop Start')
@@ -421,7 +419,7 @@ for simTblock = 1:size(g.vts.t_block)
         end
         % Account for next time block using VTS
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
-        handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives 
+        handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives
         
     else % use given variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
@@ -457,6 +455,10 @@ ets = num2str(et);
 g.sys.ElapsedNonLinearTime = ets;
 disp(['*** Elapsed Simulation Time = ' ets 's'])
 
+%% VTS specific output
+disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
+disp(['*** Total data points = ' int2str(g.vts.dataN)])
+
 %whos('g') % to see if trimming zeros matters. 1/2
 
 %% Trim logged values to length of g.vts.dataN
@@ -486,29 +488,25 @@ if ~isempty(g.dc.dcsp_con)
     g.dc.di_dcr = g.dc.di_dcr(:,1:length(g.dc.t_dc));
 end
 
-%% Final 'live' plot call
+%% Final 'live' plot call - occurs AFTER data trimming
 if g.sys.livePlotFlag
     livePlot('end')
 end
 
-%% VTS specific output
-disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
-disp(['*** Total data points = ' int2str(g.vts.dataN)])
-
 %% Clean up various temporary and function input values
-clear V1 V2 R X B jj phi % used in calls to line_cur, line_pq
-clear Y1 Y2 Y3 Y4 Vr1 Vr2 bo % used in calls to i_simu, red_ybus
-clear et ets % used to store/display elapsed time
+clear V1 V2 R X B jj phi            % used in calls to line_cur, line_pq
+clear Y1 Y2 Y3 Y4 Vr1 Vr2 bo        % used in calls to i_simu, red_ybus
+clear et ets                        % used to store/display elapsed time
 clear nSteps fStep odeName simTblock inputFcn outputFcn options% used in VTS
 
-clear k kdc j % simulation counters
-clear t t_switch sw_count lswitch n_switch %used in legacy time vector creation...
-clear Sbase Fbase % used in system init
-clear tol iter_max acc % used in load flow solution
+clear k kdc j                       % simulation counters
+clear t t_switch sw_count lswitch n_switch %used in legacy time vector creation
+clear Sbase Fbase                   % used in system init
+clear tol iter_max acc              % used in load flow solution
 
-%% Remove all zero only data
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
+%% Remove all 'zero only' data
+varNames = who()';      % all variable names in workspace
+clearedVars = {};       % cell to hold names of deleted 'all zero' variables
 
 for vName = varNames
     try
@@ -533,10 +531,9 @@ clear varNames vName zeroTest clearedVars % variables associated with clearing z
 
 %whos('g') % see if trimming zeros matters. 2/2 (it does)
 
-%% execute original s_simu plotting (if run as a standalone script)
+%% Execute original s_simu plotting (if run as a standalone script)
 standAlonePlot(scriptRunFlag)
 clear scriptRunFlag
 
-%%
 disp('*** s_simu_BatchVTS End')
 disp(' ')
