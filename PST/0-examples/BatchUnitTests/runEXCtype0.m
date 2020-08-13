@@ -18,7 +18,7 @@ copyfile('d_EXC_type0.m',[PSTpath 'DataFile.m']); % copy system data file to bat
 delete([PSTpath 'mexc_sig.m']); % ensure ml_sig file is empty
 copyfile('exciterModSigG.m',[PSTpath 'mexc_sig.m']); % copy simulation specific data file to batch run location
 
-s_simu_Batch %Run PST non-linear sim
+s_simu %Run PST non-linear sim
 
 %% Simulation variable cleanup
 % Clear any varables that contain only zeros

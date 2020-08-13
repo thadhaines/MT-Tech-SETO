@@ -5,7 +5,7 @@ caseName = 'datane_hiskens_VTS';
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 3; % depth of current directory from main PST directory
-pstVer =   'pstSETO';%  'pstV3p1'; % 'pstV2P3'; %  
+pstVer =   'PSTv4'; % 'pstSETO';%  'pstV3p1'; % 'pstV2P3'; %  
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -23,8 +23,6 @@ clear folderDepth pathParts pNdx PSTpath
 clear all; close all; clc
 load PSTpath.mat
 
-
-
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile([caseName, '.m'],[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
@@ -33,9 +31,11 @@ copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % specify machine mo
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
 livePlotFlag = 1;
 
+s_simu 
+
 % s_simu_Batch %Run PST with original format
 % s_simu_BatchTestF %Run PST functionalized test
-s_simu_BatchVTS %Run PST with variable timestep
+% s_simu_BatchVTS %Run PST with variable timestep
 
 copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % reset pss
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % reset mac_sub
