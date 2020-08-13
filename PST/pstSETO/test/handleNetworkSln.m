@@ -19,6 +19,7 @@ function handleNetworkSln(k, flag)
 %   History:
 %   Date        Time    Engineer        Description
 %   08/03/20    09:03   Thad Haines     Version 1
+%   08/12/20    20:55   Thad Haines     Version 1.0.1 - begun adding values changed in model call with flag == 1
 
 %%
 global g
@@ -31,6 +32,15 @@ if flag == 0
         'bus', 'theta', 0;
         'mac', 'cur_re', 0;
         'mac', 'cur_im', 0;
+        % added 08/12/20-thad
+        'mac', 'mac_ang', 0;
+        'mac', 'psi_re', 0;
+        'mac', 'psi_im', 0;
+        %'mac', 'psidpp', 0; %single non time series data...
+        %'mac', 'psiqpp', 0;
+        'mac', 'vex', 0;
+        'exc', 'V_A', 0;
+        'exc', 'V_B', 0;        
         };
     % induction motor
     if g.ind.n_mot ~= 0
@@ -39,6 +49,9 @@ if flag == 0
         netSlnCell = [netSlnCell; {'ind', 's_mot',0}];
         netSlnCell = [netSlnCell; {'ind', 'p_mot',0}];
         netSlnCell = [netSlnCell; {'ind', 'q_mot',0}];
+        % added 08/12/20-thad
+        netSlnCell = [netSlnCell; {'ind', 'vdmot',0}];
+        netSlnCell = [netSlnCell; {'ind', 'vqmot',0}];
     end
     
     % induction generator
@@ -53,6 +66,22 @@ if flag == 0
     if g.dc.n_conv ~=0
         netSlnCell = [netSlnCell; {'dc', 'Vdc',0}];
         netSlnCell = [netSlnCell; {'dc', 'i_dc',0}];
+        % added 08/12/20-thad
+        netSlnCell = [netSlnCell; {'dc', 'alpha',0}];
+        netSlnCell = [netSlnCell; {'dc', 'gamma',0}];
+    end
+    
+    % added 08/12/20-thad
+    if g.dc.ndcr_ud~=0
+        netSlnCell = [netSlnCell; {'dc', 'angdcr',0}];
+        netSlnCell = [netSlnCell; {'dc', 'dcrd_sig',0}];
+        netSlnCell = [netSlnCell; {'dc', 'dcr_dsig',0}];
+    end
+    % added 08/12/20-thad
+    if g.dc.ndci_ud~=0
+        netSlnCell = [netSlnCell; {'dc', 'angdci',0}];
+        netSlnCell = [netSlnCell; {'dc', 'dcid_sig',0}];
+        netSlnCell = [netSlnCell; {'dc', 'dci_dsig',0}];
     end
     
     % count number of values to track
@@ -81,7 +110,7 @@ elseif flag == 1
             % collect solution loction
             f1 = g.vts.netSlnCell{ndx, 1};
             f2 = g.vts.netSlnCell{ndx, 2};
-            
+            %fprintf('collecting... %s.%s \n',f1, f2) % DEBUG output
             % place solution into netSlnVec using dynamic field names
             g.vts.netSlnVec(startN:startN+g.vts.netSlnCell{ndx,3}-1) = g.(f1).(f2)(1:g.vts.netSlnCell{ndx,3}, k);
             

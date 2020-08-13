@@ -39,6 +39,7 @@ if isempty(flag) % normal step completion
     
     % restore network to initial solution
     handleNetworkSln(g.vts.dataN ,2) % may cause issues with DC.
+    % Save and restore first prediction of dx in a similar fashion as newtork soln?
     
     %% Line Monitoring and Area Calculations ==============================
     monitorSolution(g.vts.dataN);
@@ -73,8 +74,9 @@ tspan and y0 are the input arguments to the ODE solver.
 elseif flag(1) == 'i' % init solver for new time block
     
     g.sys.t(g.vts.dataN) = t(1);    % log step time
-    handleStDx(g.vts.dataN, y, 2)   % set initial conditions
-    
+    handleStDx(g.vts.dataN, y, 2)   % set initial state conditions
+    % set initial dx conditions? - Shouldn't matter as input function calculates new derivatives for dataN...
+        
     % debug display
     disp('*** ')
     disp('Flag == init')

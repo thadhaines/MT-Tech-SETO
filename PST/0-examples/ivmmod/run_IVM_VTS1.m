@@ -34,10 +34,10 @@ delete([PSTpath 'ivmmod_dyn.m']);
 copyfile('ivmmod_dyn_VTS1.m',[PSTpath 'ivmmod_dyn.m']); %Modulation file
 
 % s_simu_Batch %Run PST
-s_simu_BatchTestF %Run PST
-% s_simu_BatchVTS %Run PST
+% s_simu_BatchTestF %Run PST
+s_simu_BatchVTS %Run PST
 
-save('ivmF'); %Save
+save('ivmVTS'); %Save
 
 %% restore default models
 load PSTpath.mat

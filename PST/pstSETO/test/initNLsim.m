@@ -358,7 +358,4 @@ if ~isempty(g.dc.dcsp_con)
     dc_line(0,1,1,g.bus.bus,flag);
 end
 
-%% Initialize required VTS globals
-handleStDx(1, 0, 0) % init
-
 end%end initNLsim

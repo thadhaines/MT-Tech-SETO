@@ -10,6 +10,7 @@
 
 gov_flag = true;    % (true=turbine governor models, false=no governors)
 pssV3 = true;       % (true=Accout for pss v3 washout correction, false=assume v2 pss model)
+VTSflag = true;    % (true=use defined solver_con)
 
 %-------------------------------------------------------------------------------------------------------------%
 % power flow data
@@ -323,8 +324,8 @@ sw_con = [
   0.64   0    0    0        0       0    ne_tstep;  % clear fault at bus 16
   0.7    0    0    0        0       0    ne_tstep;  % clear remote end (may do nothing)
   3.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
-  7.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
-  9.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
+%  7.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
+%  9.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
  20.00   0    0    0        0       0    ne_tstep]; % end simulation
 
 %% solver_con format
@@ -339,15 +340,16 @@ sw_con = [
 % ode23s - many iterations per step - not efficient...
 % ode23t - occasionally hundereds of iterations, sometimes not... decent
 % ode23tb - similar to 23t, sometimes more large sln counts
-
+if VTSflag
 solver_con ={ ...
-    'huens'; % pre fault - fault
-    'huens'; % fault - post fault 1
-    'huens'; % post fault 1 - post fault 2
-    'ode113'; % post fault 2 - 3
-    'huens'; % 3 - 7
-    'ode23tb'; % 7 - 9
-    'ode23t'; % 9 - end
+    'ode23'; % pre fault - fault
+    'ode23'; % fault - post fault 1
+    'ode23'; % post fault 1 - post fault 2
+    'ode23'; % post fault 2 - 3
+    'ode23t'; % 3 - 7
+    %'ode23t'; % 7 - 9
+  %  'ode23t'; % 9 - end
     };
+end
 
 % eof

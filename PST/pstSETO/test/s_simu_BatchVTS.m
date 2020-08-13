@@ -296,8 +296,10 @@ k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation (+
 
 t(k) = g.sys.sw_con(n_switch,1); % final time into time vector
 
+% NOTE: the time vector created above is NOT used
+
 % add time array t to global g - thad
-g.sys.t = t;
+g.sys.t = zeros(1,size(t,2));
 
 %% =====================================================================================================
 %% Start of Initializing Zeros ============================================
@@ -305,7 +307,7 @@ initZeros(k, kdc)
 
 %% =====================================================================================================
 %% Start Initialization ===================================================
-initNLsim()
+initNLsim() % calls handleStDx at end.
 
 %% step 3: Beginning of Huen's  (predictor-corrector) method
 % Create indicies for simulation
@@ -328,11 +330,13 @@ g.k.h_dc = g.k.h_dc.*20;
 initTblocks()
 
 % initialize global st/dx vectors
+handleStDx(1, 0, 0) % init vectors name cells
 handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
 handleStDx(1, [], 1) % update g.vts.dxVec to initial conditions of derivatives
 
 % initlaize network solution handling
 handleNetworkSln([],0)
+handleNetworkSln(1, 1) % update g.vts.netSlnVec to initial network solution
 
 % defining ODE input and output functions
 inputFcn = str2func('vtsInputFcn');
@@ -361,10 +365,10 @@ warning('*** Simulation Loop Start')
 for simTblock = 1:size(g.vts.t_block)
     
     g.vts.t_blockN = simTblock;
-    g.k.ks = simTblock; % required for huen's solution method.
+    g.k.ks = simTblock; % required for huen's solution method h_sol selection
     
     if ~isempty(g.vts.solver_con)
-        odeName = g.vts.solver_con{g.vts.t_blockN};
+        odeName = g.vts.solver_con{g.vts.t_blockN}; % select user defined soln method
     else
         odeName = 'huens'; % default PST solver
     end
@@ -374,7 +378,7 @@ for simTblock = 1:size(g.vts.t_block)
         fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
             simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
         
-        % add fixed time vector to system time vector
+        % incorporate fixed time vector int system time vector
         nSteps = length(g.vts.fts{simTblock});
         g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
         
@@ -395,7 +399,6 @@ for simTblock = 1:size(g.vts.t_block)
             
             %% Predictor Solution =========================================
             networkSolutionVTS(k, g.sys.t(k))
-            monitorSolution(k);
             dynamicSolution(k)
             dcSolution(k)
             predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated in network solution i_simu call

@@ -47,9 +47,9 @@ dc_cont(0,k,10*(k-1)+1,g.bus.bus_sim,flag); % Models the action of HVDC link pol
 
 %% Swtich System based on sw_con trip settings... ======================
 % ======================================================================
-
+% NOTE: sw_con must contain 4 entries (start, fault, post fault1, post fault 2)
 % Calculate current injections and bus voltages and angles
-if vts_t >= g.vts.t_block(4,1)% > 3 %k >= sum(g.k.k_inc(1:3))+1
+if vts_t >= g.sys.sw_con(4,1)% > 3 %k >= sum(g.k.k_inc(1:3))+1
     %% fault cleared - post fault 2
     g.line.line_sim = g.line.line_pf2;
     g.bus.bus_sim = g.bus.bus_pf2;
@@ -63,7 +63,7 @@ if vts_t >= g.vts.t_block(4,1)% > 3 %k >= sum(g.k.k_inc(1:3))+1
     Vr2 = g.int.V_rncpf2;
     bo = g.int.bopf2;
     
-elseif vts_t >= g.vts.t_block(3,1) && vts_t <= g.vts.t_block(3,2) %vts_t >= g.vts.t_block(g.vts.t_blockN,1) %g.vts.t_blockN == 3 %k >=sum(g.k.k_inc(1:2))+1
+elseif vts_t >= g.sys.sw_con(3,1) && vts_t < g.sys.sw_con(4,1) %vts_t >= g.vts.t_block(g.vts.t_blockN,1) %g.vts.t_blockN == 3 %k >=sum(g.k.k_inc(1:2))+1
     %% near bus cleared - post fault 1
     g.line.line_sim = g.line.line_pf1;
     
@@ -78,7 +78,7 @@ elseif vts_t >= g.vts.t_block(3,1) && vts_t <= g.vts.t_block(3,2) %vts_t >= g.vt
     Vr2 = g.int.V_rncpf1;
     bo = g.int.bopf1;
     
-elseif vts_t >= g.vts.t_block(2,1) && vts_t <= g.vts.t_block(2,2) %g.vts.t_blockN == 2 %k>=g.k.k_inc(1)+1
+elseif vts_t >= g.sys.sw_con(2,1) && vts_t < g.sys.sw_con(3,1) %g.vts.t_blockN == 2 %k>=g.k.k_inc(1)+1
     %% fault applied - fault
     g.line.line_sim = g.line.line_f;
     g.bus.bus_sim = g.bus.bus_f;
@@ -93,7 +93,7 @@ elseif vts_t >= g.vts.t_block(2,1) && vts_t <= g.vts.t_block(2,2) %g.vts.t_block
     Vr2 = g.int.V_rncf;
     bo = g.int.bof;
     
-elseif vts_t < g.vts.t_block(2,1) %g.vts.t_blockN == 1 %k<g.k.k_inc(1)+1
+elseif vts_t < g.sys.sw_con(2,1) %g.vts.t_blockN == 1 %k<g.k.k_inc(1)+1
     %% pre fault
     g.line.line_sim = g.line.line;
     g.bus.bus_sim = g.bus.bus;
@@ -123,6 +123,8 @@ end
 
 %% Solve Network solution
 g.k.h_sol = i_simu(k, g.k.ks, g.k.k_inc, g.k.h, g.bus.bus_sim, Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
+
+%% previous added to handleNetworkSln....
 
 % Executed in step 2, added here for consistancy... -thad 07/23/20
 g.mac.vex(:,k+1) = g.mac.vex(:,k);

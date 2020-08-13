@@ -23,10 +23,7 @@ global g
 % write slnVec vector of values to associated states at index k
 % i.e. update states at g.vts.dataN with newest solution
 handleStDx(g.vts.dataN, y, 2)
-
-% %% Line Monitoring and Area Calculations ==================================
-% monitorSolution(g.vts.dataN); % moved to output function
-
+    
 %% Start initStep action ==================================================
 initStep(g.vts.dataN)
 
