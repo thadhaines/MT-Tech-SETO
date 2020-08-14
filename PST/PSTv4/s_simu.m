@@ -85,7 +85,8 @@
 %
 
 format compact;
-disp('*** s_simu_BatchVTS Start')
+disp('*** Using: PST v4.0.0a2 ***')
+disp('*** s_simu Start')
 disp('*** Declare Global Variables')
 %% Remaining 'loose' globals
 %% DeltaP/omega filter variables - 21
@@ -321,7 +322,7 @@ t(k) = g.sys.sw_con(n_switch,1); % final time into time vector
 
 % NOTE: the time vector created above is NOT used
 
-% add time array t to global g - thad
+% add blank time array to global g - thad
 g.sys.t = zeros(1,size(t,2));
 
 %% =====================================================================================================

@@ -832,7 +832,7 @@ sw_con = [...
  1.0+3/60   0    0    0    0    0   deltaT; %clear near end of fault
  1.0+4/60   0    0    0    0    0   deltaT; %clear far end of fault
  3      0    0    0    0    0   deltaT; %increase time step
- 5       0    0    0    0    0    0]; %end simulation
+ 10       0    0    0    0    0    0]; %end simulation
 
 %% solver_con format
 % A cell with a solver method in each row corresponding to the specified
@@ -849,12 +849,10 @@ sw_con = [...
 
 if useVTS
     solver_con ={ ...
-        'huens'; % pre fault - fault
+        'ode23'; % pre fault - fault
         'ode113'; % fault - post fault 1
         'ode113'; % post fault 1 - post fault 2
         'ode113'; % post fault 2 - row 5
         'ode113'; % row 5 - row 6 (end)
         };
-else
-    solver_con = [];
 end

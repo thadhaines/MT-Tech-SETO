@@ -7,6 +7,7 @@
 %   Date        Time    Engineer        Description
 %   07/07/20    15:09   Thad Haines     Init
 %   07/17/20    13:31   Thad Haines     Added live plotting
+%   08/14/20    11:19   Thad Haines     Added machine trip logic
 
 %% Model Dynamic Configuration
 % IVM MOD
@@ -21,6 +22,9 @@ copyfile('mac_sub_ORIG.m','mac_sub.m');
 
 % PSS
 copyfile('pss2.m','pss.m');
+
+%% generator trip logic
+copyfile('mac_trip_logic_ORIG.m', 'mac_trip_logic.m');
 
 %% Moduation Files
 % MEXC_SIG - Exciter Signal

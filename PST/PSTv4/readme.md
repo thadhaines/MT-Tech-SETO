@@ -21,3 +21,4 @@ A number of bug fixes are imagined to be required while new code base is tested.
 %   History:
 %   Date        Time    Engineer        Description
 %   08/13/20    12:09   Thad Haines     4.0.0a1 - initial ALPHA collection of version 4 code base
+% 	08/14/20 	11:49 	Thad Haines 	4.0.0a2 - alteration to initTblock, addition to resetORIG of mac_trip_logic, default fix of mexc_sig
