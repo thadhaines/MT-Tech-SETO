@@ -46,8 +46,18 @@ for n = 1:size(g.sys.sw_con,1)-1
             g.k.h(n) = (g.vts.t_block(n,2)-g.vts.t_block(n,1))/nSteps; % adjust timestep
             g.k.h_dc(n) = g.k.h(n)/10; % h_dc 10 times faster
             
-            % remove last time step between blocks for huens to huens
-            g.vts.fts{n} = g.vts.t_block(n,1):g.k.h(n):g.vts.t_block(n,2)-g.k.h(n);
+            if n+1 <= size(g.vts.solver_con,1)              % if another time block exists,
+                if strcmp(g.vts.solver_con{n+1}, 'huens')   % and is huens method
+                    % remove last time step between blocks for huens to huens
+                    g.vts.fts{n} = g.vts.t_block(n,1):g.k.h(n):g.vts.t_block(n,2)-g.k.h(n);
+                else
+                    % Create time block with last time step
+                    g.vts.fts{n} = g.vts.t_block(n,1):g.k.h(n):g.vts.t_block(n,2);
+                end
+            else
+                % Create time block with last time step
+                g.vts.fts{n} = g.vts.t_block(n,1):g.k.h(n):g.vts.t_block(n,2);
+            end
             
             % DC time vector...
             if ~isempty(g.dc.dcl_con)
@@ -64,8 +74,8 @@ for n = 1:size(g.sys.sw_con,1)-1
     
 end
 
-g.vts.t_block(end,2) = g.sys.sw_con(end,1); % ensure simulation end time correct for variable sims
-g.vts.fts{end}(end) = g.sys.sw_con(end,1); % ensure simulation end time correct for fixed step sims
+%g.vts.t_block(end,2) = g.sys.sw_con(end,1); % ensure simulation end time correct for variable sims
+%g.vts.fts{end}(end) = g.sys.sw_con(end,1); % ensure simulation end time correct for fixed step sims
 g.vts.t_blockN = []; % init time block index
 
 end

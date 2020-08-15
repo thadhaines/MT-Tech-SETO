@@ -128,7 +128,7 @@ if flag == 0
     if g.pwr.n_pwrmod~=0
         fsdn = [fsdn; {'pwr','pwrmod_p_st', 'dpwrmod_p_st', 0}];
         fsdn = [fsdn; {'pwr','pwrmod_q_st', 'dpwrmod_q_st', 0}];
-        % the below values are in cells
+        % the below values are in cells - variable number of states per cell....
         fsdn = [fsdn; {'pwr','pwrmod_p_sigst', 'dpwrmod_p_sigst', 0}];
         fsdn = [fsdn; {'pwr','pwrmod_q_sigst', 'dpwrmod_q_sigst', 0}];
     end
@@ -159,7 +159,16 @@ if flag == 0
             end
             fsdn{ndx, 4} = agcStateVec;
             nStates = nStates + agcStateTot;
-            
+            % NOTE: below could be/should be adapted to handle ivm too
+        elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') % handle pwrmod cells...
+            cellStateVec = zeros(size(g.(f1).(f2),1),1); % place to collect number of states per cell
+            cellStateTot = 0;
+            for n=1:size(g.(f1).(f2),1)
+                cellStateVec(n) = size( g.(f1).(f2){n},1);
+                cellStateTot = cellStateTot + cellStateVec(n);
+            end
+            fsdn{ndx, 4} = cellStateTot;
+            nStates = nStates + cellStateTot;
         else
             fsdn{ndx, 4} = size( g.(f1).(f2), 1);
             nStates = nStates + fsdn{ndx, 4};
@@ -191,7 +200,7 @@ if flag == 1
         if all(g.vts.fsdn{ndx, 4} ~= 0)
             % collect derivative loction
             f1 = g.vts.fsdn{ndx, 1};
-            f2 = g.vts.fsdn{ndx, 3};
+            f2 = g.vts.fsdn{ndx, 3}; % derivative
             
             if strcmp(f1, 'agc')
                 for n = 1:g.agc.n_agc
@@ -207,13 +216,19 @@ if flag == 1
                 
             elseif strcmp(f2, 'dpwrmod_p_sigst') || strcmp(f2, 'dpwrmod_q_sigst')  || ...  % pwrmod handling of variable cell states
                     strcmp(f2, 'divmmod_d_sigst') || strcmp(f2, 'divmmod_e_sigst') % ivmmod handling of variable cell states
-                for n = 1:g.vts.fsdn{ndx,4}
+                for n = 1:size(g.(f1).(f2),1)
                     % place derivatives into dxVec using dynamic field names
-                    g.vts.dxVec(startN) = g.(f1).(f2){n}(k);
-                    startN = startN + 1; % increment starting dxVec index
+                    endNdx = size(g.(f1).(f2){n},1)-1;
+                    if endNdx == 0 % only 1 state
+                        g.vts.dxVec(startN) = g.(f1).(f2){n}(k);
+                        startN = startN + 1; % increment starting dxVec index
+                    else
+                    g.vts.dxVec(startN : startN + size(g.(f1).(f2){n},1) - 1) = g.(f1).(f2){n}(:,k)';
+                    startN = startN + size(g.(f1).(f2){n},1); % increment starting dxVec index
+                    end
                 end
                 
-            else% 'normal' operation
+            else% 'normal' operation using global arrays
                 % place derivatives into dxVec using dynamic field names
                 g.vts.dxVec(startN:startN+g.vts.fsdn{ndx,4}-1) = g.(f1).(f2)(1:g.vts.fsdn{ndx,4}, k);
                 startN = startN + g.vts.fsdn{ndx,4}; % increment starting dxVec index
@@ -241,7 +256,7 @@ if flag == 2
         if g.vts.fsdn{ndx, 4} ~= 0
             % collect field and state name
             f1 = g.vts.fsdn{ndx,1};
-            f2 = g.vts.fsdn{ndx, 2};
+            f2 = g.vts.fsdn{ndx, 2}; % state
             
             if strcmp(f1, 'agc')
                 for n = 1:g.agc.n_agc
@@ -257,12 +272,20 @@ if flag == 2
                 
             elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') || ... % pwrmod handling of variable cell states
                     strcmp(f2, 'ivmmod_d_sigst') || strcmp(f2, 'ivmmod_e_sigst') % ivmmod handling of variable cell states
-                for n = 1:g.vts.fsdn{ndx,4}
+                for n = 1:size(g.(f1).(f2),1) % for each cell,
                     % write solution vector to states
-                    g.(f1).(f2){n}(k) = slnVec(startN);
-                    startN = startN + 1; % increment starting slnVec index
+                    
+                    endNdx = size(g.(f1).(f2){n},1)-1;
+                    if endNdx == 0 % only 1 state
+                        g.(f1).(f2){n}(k) = slnVec(startN); %rotate?
+                        startN = startN + 1; % increment starting dxVec index
+                    else
+                        
+                        
+                    g.(f1).(f2){n}(:,k) = slnVec(startN: startN + size(g.(f1).(f2){n},1) -1); %rotate?
+                    startN = startN + size(g.(f1).(f2){n},1); % increment starting slnVec index
+                    end
                 end
-                
             else
                 
                 for i=1:g.vts.fsdn{ndx, 4}
@@ -291,7 +314,7 @@ if flag == 3
         if g.vts.fsdn{ndx, 4} ~= 0
             % collect derivative loction
             f1 = g.vts.fsdn{ndx, 1};
-            f2 = g.vts.fsdn{ndx, 2};
+            f2 = g.vts.fsdn{ndx, 2}; % state
             
             
             if strcmp(f1, 'agc')
@@ -308,12 +331,18 @@ if flag == 3
                 
             elseif strcmp(f2, 'pwrmod_p_sigst') || strcmp(f2, 'pwrmod_q_sigst') || ... % pwrmod handling of variable cell states
                     strcmp(f2, 'ivmmod_d_sigst') || strcmp(f2, 'ivmmod_e_sigst') % ivmmod handling of variable cell states
-                for n = 1:g.vts.fsdn{ndx,4}
+                for n = 1:size(g.(f1).(f2),1) % for each cell,
                     % place states into stVec using dynamic field names
-                    g.vts.stVec(startN) = g.(f1).(f2){n}(k);
-                    startN = startN + 1; % increment starting stVec index
+                    endNdx = size(g.(f1).(f2){n},1)-1;
+                    if endNdx == 0 % only 1 state
+                        g.vts.stVec(startN) = g.(f1).(f2){n}(k);
+                        startN = startN + 1; % increment starting dxVec index
+                    else
+                    g.vts.stVec(startN: startN + size(g.(f1).(f2){n},1) -1 ) = g.(f1).(f2){n}(:,k);
+                    startN = startN + size(g.(f1).(f2){n},1); % increment starting stVec index
+                    end
                 end
-                
+                               
             else
                 
                 % place state into stVec using dynamic field names
@@ -331,7 +360,7 @@ end
 if flag == 4
     %% DEBUG verify write
     % input ...
-    % include at all? - Not updated to accomodate for agc...
+    % include at all? - Not updated to accomodate for agc or pwr or ivm...
     for ndx=1:size(g.vts.fsdn,1)
         if g.vts.fsdn{ndx, 4} ~= 0
             % collect field and state name
