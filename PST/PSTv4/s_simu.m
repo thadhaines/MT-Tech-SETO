@@ -1,12 +1,13 @@
 %S_SIMU runs a non-linear simulation of a given data file.
-% S_SIMU simulates power system transients using the MATLAB Power System Toolbox
+% S_SIMU simulates power system transients using Power System Toolbox
 % This m-file takes the dynamic and load flow data and calculates the
 % response of the power system to a fault (which is specified in a
 % switching file) or other power system perturbance. See one of the supplied
 % examples for file format and/or replacing technique.
 %
-%   NOTES:  Will run whatever is specified in the DataFile.m located in the
-%           same folder as this script.
+%   NOTES:  To run in stand-alone mode, clear all variables before 
+%           running script from PST main directory.
+%           Accomodates for batch mode runs automatically.
 %
 %   Runs scripts:
 %   octaveComp      - Checks if running in Octave, takes compatibility steps
@@ -61,6 +62,7 @@
 %   07/30/20    20:34   Thad Haines     Added selectable solution methods
 %   08/11/20    11:36   Thad Haines     added ivm to global
 %   08/13/20    09:37   Thad Haines     Incorporated new license
+%   08/16/20    20:28   Thad Haines     Increase logged data only if VTS
 
 % (c) Montana Technological University / Thad Haines 2020
 % (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 2020 - All rights reserved
@@ -85,11 +87,11 @@
 %
 
 format compact;
-disp('*** Using: PST v4.0.0a2 ***')
+disp('*** Using: PST v4.0.0a3 ***')
 disp('*** s_simu Start')
 disp('*** Declare Global Variables')
 %% Remaining 'loose' globals
-%% DeltaP/omega filter variables - 21
+%% DeltaP/omega filter variables - 21 - model use not documented
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
@@ -113,7 +115,6 @@ clear dataCheck
 
 %% IF run as a standalone script: querry user
 % Assumes all variables up to this point are global.
-% A 'clear all'  and 'close all' command is the best way to ensure this will run properly
 
 if all( size(whos('global')) == size(whos()) )
     scriptRunFlag = 1;
@@ -192,17 +193,17 @@ end
 clear Fbase Sbase
 
 %% other init operations
-tic % start timer
+tic                     % start timer
 g.sys.syn_ref = 0 ;     % synchronous reference frame
-g.mac.ibus_con = []; % ignore infinite buses in transient simulation
+g.mac.ibus_con = [];    % ignore infinite buses in transient simulation
 
 %% unused/unimplemented damping controls -thad 07/15/20
 % intentionally removed/ignored?
-g.svc.svc_dc=[];
-g.tcsc.tcsc_dc=[];
+g.svc.svc_dc = [];
+g.tcsc.tcsc_dc = [];
 g.tcsc.n_tcscud = 0;
-g.dc.dcr_dc=[];
-g.dc.dci_dc=[];
+g.dc.dcr_dc = [];
+g.dc.dci_dc = [];
 
 %% solve for loadflow - loadflow parameter
 warning('*** Solve initial loadflow')
@@ -210,8 +211,8 @@ if isempty(g.dc.dcsp_con)
     % AC power flow
     g.dc.n_conv = 0;
     g.dc.n_dcl = 0;
-    g.dc.ndcr_ud=0;
-    g.dc.ndci_ud=0;
+    g.dc.ndcr_ud = 0;
+    g.dc.ndci_ud = 0;
     tol = 1e-9;   % tolerance for convergence
     iter_max = 30; % maximum number of iterations
     acc = 1.0;   % acceleration factor
@@ -257,10 +258,7 @@ if ~isempty(g.pwr.n_pwrmod)
     clear kk n
 end
 
-%% VTS SPECIFIC: arbitrarilly allocate more space by decreasing sw_con ts col.
-g.sys.sw_con(:,7) = g.sys.sw_con(:,7)./20;
-
-%% construct simulation switching sequence as defined in sw_con
+%% construct simulation switching sequence as defined in sw_con (original method)
 warning('*** Initialize time and switching variables')
 
 k = 1;
@@ -278,15 +276,15 @@ g.k.h_dc = zeros(n_switch,1);
 for sw_count = 1:n_switch-1
     g.k.h(sw_count) = g.sys.sw_con(sw_count,7);%specified time step
     
-    if g.k.h(sw_count)==0
+    if g.k.h(sw_count) == 0
         g.k.h(sw_count) = 0.01;
     end % default time step
     
     % number of steps in 'time block'
     g.k.k_inc(sw_count) = fix((g.sys.sw_con(sw_count+1,1)-g.sys.sw_con(sw_count,1))/g.k.h(sw_count));%nearest lower integer
     
-    if g.k.k_inc(sw_count)==0
-        g.k.k_inc(sw_count)=1;
+    if g.k.k_inc(sw_count) == 0
+        g.k.k_inc(sw_count) = 1;
     end% minimum 1
     
     % adjust time step so integer number of steps in block
@@ -308,22 +306,34 @@ for sw_count = 1:n_switch-1
     kdc = kdc + g.k.k_incdc(sw_count);
 end
 
-% time for dc - multi-rate...
+% time for dc - multi-rate
 if ~isempty(g.dc.dcsp_con)
     g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
-    for kk=1:10
-        kdc=kdc+1;
-        g.dc.t_dc(kdc)=g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
+    for kk = 1:10
+        kdc = kdc+1;
+        g.dc.t_dc(kdc) = g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
     end
 end
-k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation (+1 for final predictor step)
 
+k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation (+1 for final predictor step)
 t(k) = g.sys.sw_con(n_switch,1); % final time into time vector
 
-% NOTE: the time vector created above is NOT used
-
-% add blank time array to global g - thad
+% NOTE: the time vector created above is used only to create zeros...
 g.sys.t = zeros(1,size(t,2));
+g.sys.t_OLD = t; % for reference only
+g.dc.t_dc_OLD = g.dc.t_dc;
+
+%% creation of VTS time blocks
+initTblocks()
+
+% If variable step, increase amount of zeros to log
+if ~all(strcmp(g.vts.solver_con, 'huens'))
+    k = max(size(g.sys.t_OLD))*3;
+    kdc = k*10;
+else
+    k = max(size(g.sys.t))+1;
+    kdc = k*10+1;
+end
 
 %% =====================================================================================================
 %% Start of Initializing Zeros ============================================
@@ -345,22 +355,14 @@ g.mac.mac_trip_states = 0;
 %% ========================================================================
 % Variable time step specific ==== Temporary location =====================
 
-%% VTS SPECIFIC: retruns sw_con to original state...
-g.sys.sw_con(:,7) = g.sys.sw_con(:,7).*20;
-g.k.h = g.k.h .*20;
-g.k.h_dc = g.k.h_dc.*20;
-
-% creation of VTS time blocks
-initTblocks()
-
 % initialize global st/dx vectors
-handleStDx(1, 0, 0) % init vectors name cells
-handleStDx(1, [], 3) % update g.vts.stVec to initial conditions of states
-handleStDx(1, [], 1) % update g.vts.dxVec to initial conditions of derivatives
+handleStDx(1, 0, 0)     % init vectors name cells
+handleStDx(1, [], 3)    % update g.vts.stVec to initial conditions of states
+handleStDx(1, [], 1)    % update g.vts.dxVec to initial conditions of derivatives
 
 % initlaize network solution handling
-handleNetworkSln([],0)
-handleNetworkSln(1, 1) % update g.vts.netSlnVec to initial network solution
+handleNetworkSln([],0)  % init network solution vector
+handleNetworkSln(1, 1)  % update g.vts.netSlnVec to initial network solution
 
 % defining ODE input and output functions
 inputFcn = str2func('vtsInputFcn');
@@ -398,17 +400,16 @@ for simTblock = 1:size(g.vts.t_block)
     end
     
     % Select solution method =========================================
-    if strcmp( odeName, 'huens')
-        % use standard PST huens method
+    if strcmp( odeName, 'huens')    % use standard PST huens method
         fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
             simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
         
-        % incorporate fixed time vector int system time vector
+        % incorporate fixed time vector into system time vector
         nSteps = length(g.vts.fts{simTblock});
         g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
         
         % account for pretictor last step time check
-        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(simTblock,7);
+        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1) + g.sys.sw_con(simTblock,7);
         
         for cur_Step = 1:nSteps
             k = g.vts.dataN;
@@ -449,7 +450,7 @@ for simTblock = 1:size(g.vts.t_block)
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
         handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives
         
-    else % use given variable method
+    else % use user supplied variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
             odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
         
@@ -465,11 +466,11 @@ end% end simulation loop
 %% ========================================================================
 %% Variable step specific cleanup =========================================
 
-% check if last time block used huens, remove last extra predictor step
+% check if last time block used huens, remove last 'extra' step
 if strcmp(g.vts.solver_con{end}, 'huens')
     g.vts.dataN = g.vts.dataN-1;
 else
-    % final network/state solution
+    % final network/state solution for VTS
     networkSolution(g.vts.dataN)
     dynamicSolution(g.vts.dataN)
     g.vts.tot_iter = g.vts.tot_iter + 1;
@@ -487,7 +488,7 @@ disp(['*** Elapsed Simulation Time = ' ets 's'])
 disp(['*** Total solutions = ' int2str(g.vts.tot_iter)])
 disp(['*** Total data points = ' int2str(g.vts.dataN)])
 
-%whos('g') % to see if trimming zeros matters. 1/2
+%whos('g') % to see if trimming/clearing zeros matters. 1/2
 
 %% Trim logged values to length of g.vts.dataN
 trimLogs(g.vts.dataN)
@@ -557,7 +558,7 @@ end
 g.sys.clearedVars = clearedVars; % attach cleard vars to global g
 clear varNames vName zeroTest clearedVars % variables associated with clearing zeros.
 
-%whos('g') % see if trimming zeros matters. 2/2 (it does)
+%whos('g') % see if trimming/clearing zeros matters. 2/2 (it does)
 
 %% Execute original s_simu plotting (if run as a standalone script)
 standAlonePlot(scriptRunFlag)

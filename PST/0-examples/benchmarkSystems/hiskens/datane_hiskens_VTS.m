@@ -10,7 +10,7 @@
 
 gov_flag = true;    % (true=turbine governor models, false=no governors)
 pssV3 = true;       % (true=Accout for pss v3 washout correction, false=assume v2 pss model)
-VTSflag = true;    % (true=use defined solver_con)
+VTSflag = false;    % (true=use defined solver_con)
 
 %-------------------------------------------------------------------------------------------------------------%
 % power flow data

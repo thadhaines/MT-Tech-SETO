@@ -10,10 +10,10 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =  'pstSETO'; % 'pstV2p3';%   'pstV3P1';%  
+pstVer = 'PSTv4'; %   'pstSETO'; % 'pstV2p3';%   'pstV3P1';% 
 
 % automatically handle global g usage
-if strcmp(pstVer, 'pstSETO')
+if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
     useGlobalG = true;
 else
     useGlobalG = false;
@@ -45,9 +45,14 @@ else
     copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 end
 
-% s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
-
+if strcmp(pstVer, 'PSTv4')
+    s_simu
+else
+    
+    % s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
+    s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
+    
+end
 % % reset modulation file
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']);
 

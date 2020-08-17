@@ -99,7 +99,7 @@ while(flag == 0)
     elseif sel == 7
         figure
         nline = length(g.line.line(:,1));
-        if nline<50
+        if nline<25
             V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,1)),:);
             V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(:,2)),:);
             R = g.line.line(:,3);
@@ -113,7 +113,7 @@ while(flag == 0)
             disp('(for example: 2 or 4:5 or [4, 7, 10] )')
             line_range = input('>> ');
             if isempty(line_range)
-                line_range = 1:round(size(g.sys.line,1)/8);
+                line_range = 1:round(size(g.line.line,1)/8);
             end
             V1 = g.bus.bus_v(g.bus.bus_int(g.line.line(line_range,1)),:);
             V2 = g.bus.bus_v(g.bus.bus_int(g.line.line(line_range,2)),:);
