@@ -313,6 +313,7 @@ if ~isempty(g.dc.dcsp_con)
         kdc = kdc+1;
         g.dc.t_dc(kdc) = g.dc.t_dc(kdc-1)+g.k.h_dc(sw_count);
     end
+    g.dc.t_dc_OLD = g.dc.t_dc;
 end
 
 k = sum(g.k.k_inc)+1; % k is the total number of time steps in the simulation (+1 for final predictor step)
@@ -321,7 +322,6 @@ t(k) = g.sys.sw_con(n_switch,1); % final time into time vector
 % NOTE: the time vector created above is used only to create zeros...
 g.sys.t = zeros(1,size(t,2));
 g.sys.t_OLD = t; % for reference only
-g.dc.t_dc_OLD = g.dc.t_dc;
 
 %% creation of VTS time blocks
 initTblocks()

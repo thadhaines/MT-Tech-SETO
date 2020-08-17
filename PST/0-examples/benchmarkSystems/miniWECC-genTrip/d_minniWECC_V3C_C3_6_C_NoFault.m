@@ -869,7 +869,7 @@ lmon_con = [1:size(line,1)]; %All lines
 %No Fault
 sw_con = [...
  0        0    0    0    0    0    1/120;%sets intitial time step
- 5    6  106    0    0    6    1/120; %apply fault (three phase)
+ 5    6  106    0    0    6    1/120; % do nothing
  8    0    0    0    0    0    1/120; %increas time step
 20    0    0    0    0    0    1/120; %increas time step
  60    0    0    0    0    0    0]; %end simulation

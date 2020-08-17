@@ -24,7 +24,7 @@ global g
 
 if kT<2
     tripOut = false(g.mac.n_mac,1);
-    mac_trip_states = [0 0;0 0];
+    mac_trip_states = [0 0;0 0]; % to store two generators trip data...
 else
     tripOut = tripStatus;
     if abs(t(kT)-5)<1e-5
