@@ -63,6 +63,7 @@
 %   08/11/20    11:36   Thad Haines     added ivm to global
 %   08/13/20    09:37   Thad Haines     Incorporated new license
 %   08/16/20    20:28   Thad Haines     Increase logged data only if VTS
+%   08/18/20    10:51   Thad Haines     Moved network solution in Huen's method to work with AGC
 
 % (c) Montana Technological University / Thad Haines 2020
 % (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 2020 - All rights reserved
@@ -194,6 +195,8 @@ clear Fbase Sbase
 
 %% other init operations
 tic                     % start timer
+%startStr = datestr(now);% start time String
+%startClock = clock;     % start date time vector
 g.sys.syn_ref = 0 ;     % synchronous reference frame
 g.mac.ibus_con = [];    % ignore infinite buses in transient simulation
 
@@ -370,7 +373,7 @@ outputFcn = str2func('vtsOutputFcn');
 
 % define ODE settings
 %options = odeset('RelTol',1e-3,'AbsTol',1e-6); % MATLAB default settings
-options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
+options = odeset('RelTol',1e-5,'AbsTol',1e-7, ...
     'InitialStep', 1/60/4, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
@@ -418,6 +421,12 @@ for simTblock = 1:size(g.vts.t_block)
             % display k and t at every first, last, and 50th step
             if ( mod(k,50)==0 ) || cur_Step == 1 || cur_Step == nSteps
                 fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
+                %fprintf('* current time: %s\t* start time: %s\n', datestr(now), startStr);
+                % elapsed time
+                %tempClock = clock;
+                %eClock = tempClock - startClock;
+                %fprintf('Elapsed Hours: %3d\t Minutes: %3d\t Seconds: %3.4f\n', ...
+                %    eClock(4),eClock(5),eClock(6));
             end
             
             %% Time step start
@@ -425,6 +434,10 @@ for simTblock = 1:size(g.vts.t_block)
             
             %% Predictor Solution =========================================
             networkSolutionVTS(k, g.sys.t(k))
+            
+            % most recent network solution based on completely calculated states is k
+            monitorSolution(k); % moved for correct AGC action -thad 08/18/20
+            
             dynamicSolution(k)
             dcSolution(k)
             predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated in network solution i_simu call
@@ -435,8 +448,7 @@ for simTblock = 1:size(g.vts.t_block)
             dcSolution(j)
             correctorIntegration(k, j, g.k.h_sol)
             
-            % most recent network solution based on completely calculated states is k
-            monitorSolution(k);
+            
             %% Live plot call
             if g.sys.livePlotFlag
                 livePlot(k)

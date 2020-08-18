@@ -48,3 +48,28 @@ save('test.mat'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
+
+%% Plot 
+figure
+n = find(g.sys.t<20);
+plot(g.sys.t(n),g.mac.mac_spd(1,n),'k')
+hold on
+plot(g.sys.t(n),g.mac.mac_spd(7,n),'r')
+plot(g.sys.t(n),g.mac.mac_spd(13,n),'g','LineWidth',2)
+ylabel('Gen Speed [PU]')
+xlabel('Time [seconds]')
+grid on
+legend('Gen 1','Gen 7','Gen 13','Location','Best')
+
+%% Average speed and system inertia
+figure 
+subplot(2,1,1)
+plot(g.sys.t, g.sys.aveF)
+ylabel('Ave. Sys. Freq. [PU]')
+xlabel('Time [seconds]')
+grid on
+subplot(2,1,2)
+plot(g.sys.t, g.sys.totH)
+ylabel('System Inertia [PU]')
+xlabel('Time [seconds]')
+grid on

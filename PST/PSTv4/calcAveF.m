@@ -7,8 +7,7 @@ function calcAveF(k,flag)
 % Syntax: calcAveF(k,flag)
 %
 %   NOTES:  Flag option included incase more initialization operations
-%           are desired in the future...
-%           Does not account for tripped gens (for now).
+%           are desired in the future.
 %
 %   Input:
 %   k - data index
@@ -22,6 +21,7 @@ function calcAveF(k,flag)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/18/20    11:11   Thad Haines     Version 1
+%   08/18/20    11:12   Thad Haines     Version 2 - Accounts for tripped generators
 
 global g
 
@@ -44,10 +44,10 @@ if flag == 1
     
     if g.area.n_area == 0
         % calculate average system frequency only
-        % calculate total system H NOTE: does not account for tripped gens
-        g.sys.totH(k) = sum(g.mac.mac_con(:,16).*g.mac.mac_con(:,3));
+        % calculate total system H  
+        g.sys.totH(k) = sum(g.mac.mac_con(:,16).*g.mac.mac_con(:,3).*~g.mac.mac_trip_flags);
         % calculate ave weighted f = sum(mac_speed.*MVA.*H) / totH
-        g.sys.aveF(k) = sum(g.mac.mac_spd(:,k).*g.mac.mac_con(:,3).*g.mac.mac_con(:,16))/g.sys.totH(k);
+        g.sys.aveF(k) = sum(g.mac.mac_spd(:,k).*g.mac.mac_con(:,3).*g.mac.mac_con(:,16).*~g.mac.mac_trip_flags)/g.sys.totH(k);
     else
         % calculate weighted average frequency for each area, sum for system
         runningSysF = 0;
@@ -55,9 +55,9 @@ if flag == 1
         for areaN=1:g.area.n_area
             % calculate area total inertia
             mNdx = g.area.area(areaN).macBusNdx;
-            g.area.area(areaN).totH(k) = sum(g.mac.mac_con(mNdx,16).*g.mac.mac_con(mNdx,3));
+            g.area.area(areaN).totH(k) = sum(g.mac.mac_con(mNdx,16).*g.mac.mac_con(mNdx,3).*~g.mac.mac_trip_flags(mNdx));
             % calculate ave weighted f = sum(mac_speed.*MVA.*H) / totH
-            g.area.area(areaN).aveF(k) = sum(g.mac.mac_spd(mNdx,k).*g.mac.mac_con(mNdx,3).*g.mac.mac_con(mNdx,16)) ...
+            g.area.area(areaN).aveF(k) = sum(g.mac.mac_spd(mNdx,k).*g.mac.mac_con(mNdx,3).*g.mac.mac_con(mNdx,16).*~g.mac.mac_trip_flags(mNdx)) ...
                 /g.area.area(areaN).totH(k);
             
             runningSysF = runningSysF + g.area.area(areaN).aveF(k);

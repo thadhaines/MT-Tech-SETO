@@ -1,0 +1,107 @@
+\documentclass[12pt]{article}
+\usepackage[english]{babel}
+\usepackage[utf8]{inputenc}
+
+%% Pointer to 'default' preamble
+\input{../../thad_preamble.tex}
+
+%% Header
+\rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
+\chead{Mini WECC \\   10 Minute AGC Recovery (Generator Trips 01)}
+\lhead{Research \\ 08/18/20}
+
+\usepackage[hidelinks]{hyperref} % allow links in pdf
+\usepackage{setspace}
+\usepackage{multicol}
+\usepackage{minted}
+
+\begin{document}
+\onehalfspacing
+\paragraph{10 Minute AGC recovery of Mini WECC after generator trips} \ \\
+
+\begin{minipage}{0.47\linewidth}
+\begin{itemize}
+\item Mini WECC system:
+\begin{itemize}
+\itemsep 0 em
+\small
+\item Buses: 122
+\item Lines: 171
+\item Loads: 88
+\item Machines: 34
+\item States: 623
+\end{itemize}
+\item Events: Trip of Gen on Bus 1 at t= 5\\ Trip of Gen on Bus 30 at t = 8
+
+\item Each area has identical conditional AGC that acts at t=40 and again when t=160, 280, 400, 520 (i.e. 2 minute action time).
+
+\item ODE solver tolerances:
+\subitem Relative: 1e-5
+\subitem Absolute: 1e-7
+
+\end{itemize}
+\vfill
+\end{minipage}\hspace{2em}% 
+\begin{minipage}{0.47\linewidth}
+\includegraphics[width=\linewidth]{miniWECC_split03.png}
+\end{minipage}% 
+
+\paragraph{Result Summary:}
+\begin{itemize}
+\item Generators trip successfully, average system frequency and system inertia calculated correctly.
+\item Case needs minor adjustment as AGC controlled machines hit generation limits.
+\item Tripped generator models are still calculated and effect size of time step.
+\end{itemize}
+
+\begin{center}
+\includegraphics[width=.45\linewidth]{genTripSPD01}%
+\includegraphics[width=.45\linewidth]{genTripFnH01}%
+\end{center}
+
+
+\pagebreak
+\paragraph{Select Comparisons: t = 0:600 (full simulation)} \ \\
+
+\includegraphics[width=\linewidth]{genTripAGC01}
+
+
+\includegraphics[width=\linewidth]{genTripteps01}
+
+\pagebreak
+\paragraph{EFD and Mechanical Power} \ \\
+The oscillations of tripped generators affect the size of the variable time step.
+
+\begin{center}
+\includegraphics[width=.5\linewidth]{genTripEFD01}% 
+\includegraphics[width=.5\linewidth]{genTripPOW01}
+\end{center}
+
+A solution would be to zero out the associated derivatives of tripped machines.
+
+Something along the lines of:
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+if ~all(~g.mac.mac_trip_flags)
+	g.mac.dXXX1 = g.mac.dXXX1 .* ~g.mac.mac_trip_flags
+	g.mac.dXXX2 = g.mac.dXXX2 .* ~g.mac.mac_trip_flags
+	...
+end
+\end{minted}
+
+Placed in the \verb|handleStDx| function and called if the field is \verb|mac|.
+
+
+This would prevent any associated states from changing, which may be confusing to some during data analysis.
+
+
+
+
+
+\end{document}

@@ -10,6 +10,7 @@ function calcAreaVals(k,flag)
 %           positive load is real and reactive absorbtion
 %           positive B shunt is capacitive VAR injection
 %           positive G shunt is inductive VAR injection
+%           May not correctly account for interchange lines being tripped (untested)
 %
 %   Input:
 %   k - data index

@@ -99,6 +99,8 @@ if flag == 2 && k ~=1  % skip first step
             else
                 condOk = 1;
             end
+            %fprintf('DEBUG AGC %d, delta_w = %2.7f\t sign of RACE %d\t condOk = %d\n' , ...
+            % n, delta_w, sign(g.agc.agc(n).sace(k)), condOk);
             
             % aceSig is signal sent to all generators (after a gain) % maybe not the most efficient method...
             g.agc.agc(n).aceSig(k:end) = g.agc.agc(n).aceSig(k) + ... % modified..
@@ -107,6 +109,8 @@ if flag == 2 && k ~=1  % skip first step
             % increment nextActionTime
             g.agc.agc(n).nextActionTime = g.agc.agc(n).nextActionTime ...
                 + g.agc.agc(n).actionTime;
+            
+            clear condOk
         end
         
         % Gain aceSig and Log ace2dist

@@ -871,8 +871,8 @@ sw_con = [...
  0        0    0    0    0    0    1/120;%sets intitial time step
  5    6  106    0    0    6    1/120; % do nothing
  8    0    0    0    0    0    1/120; %increas time step
-20    0    0    0    0    0    1/120; %increas time step
- 60    0    0    0    0    0    0]; %end simulation
+20    0    0    0    0    0    1/120]; %increas time step
+% 60    0    0    0    0    0    0]; %end simulation
 
 %% solver_con format
 % A cell with a solver method in each row corresponding to the specified
@@ -891,5 +891,5 @@ solver_con ={ ...
     'ode23'; % pre fault - fault
     'ode23'; % fault - post fault 1
     'ode23'; % post fault 1 - post fault 2
-   'ode23t'; % post fault 2 - 3
+ %  'ode23t'; % post fault 2 - 3
     };
