@@ -11,7 +11,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'PSTv4';  %'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -21,7 +21,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
@@ -35,27 +35,12 @@ copyfile('d_OMIB_EXC.m',[PSTpath 'DataFile.m']); % copy system data file to batc
 delete([PSTpath 'mexc_sig.m']); % ensure ml_sig file is empty
 copyfile('exciterModSigG.m',[PSTpath 'mexc_sig.m']); % copy simulation specific data file to batch run location
 
-s_simu_Batch %Run PST non-linear sim
-
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-        zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-        if zeroTest
-            eval(sprintf('clear %s',vName{1}) ); % clear variable
-            clearedVars{end+1} = vName{1}; % add name to cell for reference
-        end
-    catch ME
-        disp(ME.message)
-        disp(vName)
-    end
-    
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch %Run PST non-linear sim
 end
-clear varNames vName zeroTest
+
 
 %% Save cleaned output data
 save('exciterTest.mat'); %Save simulation outputs

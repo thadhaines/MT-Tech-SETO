@@ -4,7 +4,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO'; % 'pstV2p3';% 'pstV3P1';%   
+pstVer = 'PSTv4'; %'pstSETO'; % 'pstV2p3';% 'pstV3P1';%   
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -14,7 +14,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 % %% Select PSS model
@@ -34,27 +34,11 @@ copyfile('ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % copy simulation specific
 
 copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % copy simulation specific data file to batch run location
 
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-    zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-    if zeroTest
-        eval(sprintf('clear %s',vName{1}) ); % clear variable
-        clearedVars{end+1} = vName{1}; % add name to cell for reference
-    end
-    catch ME
-        disp(ME.message)
-        disp(vName)
-    end
-
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 end
-clear varNames vName zeroTest
 
 %% Save cleaned output data
 save('loadStepNONLIN.mat'); %Save simulation outputs

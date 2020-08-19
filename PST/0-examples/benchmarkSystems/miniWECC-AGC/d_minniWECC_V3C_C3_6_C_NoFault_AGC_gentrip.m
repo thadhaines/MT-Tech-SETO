@@ -981,18 +981,21 @@ agc(1).ctrlGen_con = [ ...
     %col 1 gen bus
     %col 2 participation Factor
     %col 3 low pass filter time constant [seconds]
-    23, 0.5, 60;
-    24, 0.5, 60; % Untested addition of ctrlGen
+    1, 0.25, 60;
+    2, 0.5, 60; % Untested addition of ctrlGen
+    3, 0.25, 60; % Untested addition of ctrlGen
     ];
 
 agc(2) = agc(1); % duplicate most settings from AGC 1 to AGC 2
 
 agc(2).area = 2;
 agc(2).ctrlGen_con = [...
-%  	col 1 gen bus
+%  	col 1 gen bus... Generator internal number?
 %  	col 2 participation Factor
 %   col 3 low pass filter time constant [seconds]
-    32, 1.0, 60;
+    13, 1.0, 60;
+    14, 1.0, 60;
+    16, 1.0, 60;
     ];
 
 agc(3)=agc(1); % duplicate most settings from AGC 1 to AGC 3
@@ -1002,8 +1005,8 @@ agc(3).ctrlGen_con = [...
 %   col 1 gen bus
 %   col 2 participation Factor
 %   col 3 low pass filter time constant [seconds]
-    45, 0.75, 60;
-    53, 0.25, 60;
+    19, 0.75, 60;
+    21, 0.25, 60;
     ];
 
 if ~enableAGC
@@ -1104,7 +1107,7 @@ sw_con = [...
 % ode23tb - similar to 23t, sometimes more large sln counts
 
 solver_con ={ ...
-    'ode23'; % pre event - event
+    'ode113'; % pre event - event
     'ode23'; % added block for trip event
     'ode23t'; % event - first AGC signal
     'ode23t'; % following AGC signals

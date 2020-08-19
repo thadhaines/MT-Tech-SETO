@@ -1,5 +1,5 @@
 % Example of two machine Pmech step with govs
-% smaller system used to more easily study inner workings of PST 
+% smaller system used to more easily study inner workings of PST
 
 % Experimentation with gov input mod
 
@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'PSTv4'; % 'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -18,7 +18,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
@@ -37,36 +37,18 @@ delete([PSTpath 'mac_sub.m']); % ensure sig file is empty
 copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % copy simulation specific data file to batch run location
 
 
-
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-    zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-    if zeroTest
-        eval(sprintf('clear %s',vName{1}) ); % clear variable
-        clearedVars{end+1} = vName{1}; % add name to cell for reference
-    end
-    catch ME
-        % gets called for structs... (global g)
-        disp(ME.message)
-        disp(vName)
-    end
-
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 end
-clear varNames vName zeroTest
 
 %% Save cleaned output data
 save('pMechStepNonLin.mat'); %Save simulation outputs
 
 %% PST linear system creation
 clear all; close all;
-svm_mgen_Batch  
+svm_mgen_Batch
 
 %% MATLAB linear system creation using linearized PST results
 tL = (0:0.01:15); % time to match PST d file time
@@ -83,7 +65,7 @@ y = lsim(G,[modSig; zeros(1,length(modSig))],tL); % run input into state space s
 % collect bus voltage magnitudes and adjust by initial conditions
 linV = y(:,1:4)'; % rotate into col vectors
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
+    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
 end
 
 % collect machine speeds and adjust by initial condition
@@ -107,7 +89,6 @@ copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % copy simulation sp
 
 %% temp file clean up
 delete('PSTpath.mat')
-delete('sim_fle.mat')
 
 %% load data for plot comparisons
 load pMechStepNonLin.mat

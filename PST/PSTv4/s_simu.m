@@ -90,7 +90,7 @@
 %
 
 format compact;
-disp('*** Using: PST v4.0.0-a3 ***')
+disp('***    PST v4.0.0-a3    ***')
 disp('*** s_simu Start')
 disp('*** Declare Global Variables')
 
@@ -579,5 +579,5 @@ clear varNames vName zeroTest clearedVars % variables associated with clearing z
 standAlonePlot(scriptRunFlag)
 clear scriptRunFlag
 
-disp('*** s_simu_BatchVTS End')
+disp('*** s_simu End')
 disp(' ')

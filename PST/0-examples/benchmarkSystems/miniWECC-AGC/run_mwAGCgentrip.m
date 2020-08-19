@@ -22,7 +22,7 @@ clear folderDepth pathParts pNdx PSTpath scenario
 clear all; close all; clc
 load PSTpath.mat
 
-copyfile('d_minniWECC_V3C_C3_6_C_NoFault_AGC.m',[PSTpath 'DataFile.m']);
+copyfile('d_minniWECC_V3C_C3_6_C_NoFault_AGC_gentrip.m',[PSTpath 'DataFile.m']);
 copyfile([PSTpath 'livePlot_2.m'],[PSTpath 'livePlot.m']);
 
 %Use gen trips
@@ -100,3 +100,16 @@ xlim([0,20])
 ylabel('System Inertia [PU]')
 xlabel('Time [seconds]')
 grid on
+
+%% time step plot
+vts = zeros(g.vts.dataN-1,1);
+for n=2:g.vts.dataN
+    vts(n-1)= g.sys.t(n)-g.sys.t(n-1);
+end
+figure
+
+stairs(g.sys.t(1:end-1),vts,'k','linewidth',1.25)
+grid on
+title({'Time Step Comparison'})
+ylabel('Time Step Size [seconds]')
+xlabel('Time [seconds]')

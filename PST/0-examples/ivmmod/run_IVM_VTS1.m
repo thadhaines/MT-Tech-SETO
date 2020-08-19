@@ -5,7 +5,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'PSTv4'; % 'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -16,7 +16,7 @@ PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
 addpath([PSTpath, 'test', filesep]) % to handle new functionized code
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
@@ -33,10 +33,12 @@ copyfile('d2m_ivmmod1_VTS.m',[PSTpath 'DataFile.m']); %System data file
 delete([PSTpath 'ivmmod_dyn.m']); 
 copyfile('ivmmod_dyn_VTS1.m',[PSTpath 'ivmmod_dyn.m']); %Modulation file
 
-% s_simu_Batch %Run PST
-% s_simu_BatchTestF %Run PST
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    % s_simu_Batch
 s_simu_BatchVTS %Run PST
-
+end
 save('ivmVTS'); %Save
 
 %% restore default models

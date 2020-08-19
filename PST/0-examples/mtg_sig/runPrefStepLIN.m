@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'PSTv4'; %'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -18,7 +18,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
@@ -31,8 +31,11 @@ copyfile('d_PrefStepLIN.m',[PSTpath 'DataFile.m']); % copy system data file to b
 delete([PSTpath 'mtg_sig.m']); % ensure ml_sig file is empty
 copyfile('mtg_sig_PrefStepLIN.m',[PSTpath 'mtg_sig.m']); % copy simulation specific data file to batch run location
 
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-
+end
 %% Simulation variable cleanup
 % Clear any varables that contain only zeros
 varNames = who()'; % all variable names in workspace
@@ -89,7 +92,6 @@ copyfile([PSTpath 'mtg_sig_ORIG.m'],[PSTpath 'mtg_sig.m']); % Replace original f
 
 %% temp file clean up
 delete('PSTpath.mat')
-delete('sim_fle.mat')
 
 %% load data for plot comparisons
 load prefStepNonLin.mat

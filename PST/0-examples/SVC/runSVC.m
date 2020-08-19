@@ -8,7 +8,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =    'pstSETO'; %  'pstV2p3';% 'pstV3P1';% 
+pstVer =    'PSTv4'; %  'pstSETO'; %  'pstV2p3';% 'pstV3P1';% 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -30,8 +30,12 @@ copyfile('d2a_dceREF.m',[PSTpath 'DataFile.m']); % copy system data file to batc
 % move modulation file
 copyfile('msvc_sig_SmallStepG.m',[PSTpath 'msvc_sig.m']); % copy system data file to batch run location
 pssGainFix = 1;
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch %Run PST
+end
 % reset modulation file
 copyfile([PSTpath 'msvc_sig_ORIG.m'],[PSTpath 'msvc_sig.m']); % copy system data file to batch run location
 

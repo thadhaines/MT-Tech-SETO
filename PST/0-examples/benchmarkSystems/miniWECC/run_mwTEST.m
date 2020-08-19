@@ -12,7 +12,7 @@ scenario = 'L';% L line, F colstrip faul, C cascade?
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 3; % depth of current directory from main PST directory
-pstVer =   'pstV2P3'; % 'pstSETO';% 'pstV3p1'; %  
+pstVer =    'pstSETO';% 'pstV3p1'; %  'pstV2P3'; %
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 

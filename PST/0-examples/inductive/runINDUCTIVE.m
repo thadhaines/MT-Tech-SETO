@@ -10,7 +10,7 @@ case2run = 2; % 1= fault, 2 = load step
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =   'pstSETO'; % 'pstV2p3';%  'pstV3P1';%   
+pstVer =   'PSTv4'; % 'pstSETO'; % 'pstV2p3';%  'pstV3P1';%   
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -22,12 +22,12 @@ PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 addpath(PSTpath)
 addpath([PSTpath, 'test', filesep]) % to handle new functionized code
 
-% save PSTpath.mat PSTpath pstVer
-% clear folderDepth pathParts pNdx PSTpath
-% 
+save PSTpath.mat PSTpath pstVer case2run
+clear folderDepth pathParts pNdx PSTpath
+
 %% Run nonlinear simulation and store results
-% clear all; clc
-% load PSTpath.mat
+clear all; clc
+load PSTpath.mat
 
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 if case2run == 1
@@ -46,8 +46,11 @@ copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file 
 copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
 livePlotFlag = 1;
 
-% s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch %Run PST non-linear sim
+end
 
 %reset inductive load file
 copyfile([PSTpath 'mac_ind2.m'],[PSTpath 'mac_ind.m']); % copy system data file to batch run location
