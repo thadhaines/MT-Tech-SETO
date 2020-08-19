@@ -17,7 +17,7 @@
 
 \begin{document}
 \onehalfspacing
-\paragraph{10 Minute AGC recovery of Mini WECC after 435 MW load Step} \ \\
+\paragraph{10 Minute AGC Recovery of Mini WECC after 435 MW Load Step} \ \\
 
 \begin{minipage}{0.47\linewidth}
 \begin{itemize}
@@ -43,63 +43,67 @@
 \vfill
 \end{minipage}\hspace{2em}% 
 \begin{minipage}{0.47\linewidth}
-\includegraphics[width=\linewidth]{miniWECC_split03.png}
+\includegraphics[width=.9\linewidth]{miniWECC_split03.png}
 \end{minipage}% 
 
 \paragraph{Result Summary:}
 \begin{itemize}
-\item Using the ode23/ode23t methods provided a 9.06x speed up over Huen's `fixed step' method.
-\item Recorded data is approximately 23.75 times smaller when using VTS. \\ (778,259,381 bytes versus 32,772,591 bytes)
-\item Variable time step (VTS) methods appeared to capture fast dynamics well. 
-\item VTS and fixed time step results  may `drift' slightly when time steps become large. \\ Effect can be reduced via ODE solver tolerance settings.
+\item Using the ode23/ode23t methods provided a 9 times speed up over Huen's `fixed step' method.
+\item  27 times fewer steps were taken using VTS which resulted with a saved file size that was approximately 24 times smaller than the Huen's method data file.
+\item VTS methods appeared to capture fast dynamics well. 
+\item VTS and fixed time step results  may `drift' slightly when time steps become large. \\ Effect can be reduced via ODE solver tolerance settings or additional \verb|sw_con| time blocks.
 
 \end{itemize}
 \begin{table}[!ht]
 \resizebox{\linewidth}{!}{
 
 	\begin{tabular}{@{} L{1.75cm} 
-	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{0.75cm} R{1.5cm} R{2cm} R{2cm}@{}} 	
+	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{1cm} R{1.5cm} R{2cm} R{2.5cm}@{}} 	
 		\toprule % @ signs to remove extra L R space
 		\footnotesize % this will affect the table font (makse it 10pt)
 		\raggedright % for non justified table text
 
-	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{\shortstack{Solutions\\Per Step}}			&		&		&		\\	
-Method			&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. Time	&	Speed Up	\\ \midrule	
-Huen's			 &	0.0083	&	8.33e-3	&	0.0083	&	72,001	&	2	&	2	&	144,002	&	483.64	&	1.00	\\	
-ode23 / ode23t	&	8.6300	&	1.19e-6	&	0.0570	&	2,662	&	2	&	775	&	6,632	&	53.40	&	9.06	\\	
-																				\bottomrule
+			&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{\shortstack{Solutions\\Per Step}}			&		&		&		\\	
+		Method	&	Max	&	Min	&	Ave	&	Total Steps	&	Ave	&	Max	&	Total Slns.	&	Sim. Time [seconds]	&	File Size [bytes]	\\ \midrule	
+		Huen's	&	0.0083	&	8.33E-03	&	0.0083	&	72,001	&	2	&	2	&	144,002	&	483.64	&	778,259,381	\\	
+		ode23/ ode23t	&	8.6300	&	1.19E-06	&	0.0570	&	2,662	&	2	&	775	&	6,632	&	53.4	&	32,772,591	\\	\midrule
+		$\Delta$Ratio	&	0.001	&	7,000	&	0.146	&	27.05	&	1	&	0.003	&	21.71	&	9.06	&	23.75	\\	\bottomrule
+
 	\end{tabular}
 	}%end resize box
 \end{table}
 
 \pagebreak
 \paragraph{Step Size and Solution Count Data} \ \\
+Time blocks from: [0:1], [1:40], and [40:600].
+Many solutions are executed at beginning of time blocks due to ODE solver method \emph{possibly} creating a Jacobian.\\
 
-\includegraphics[width=\linewidth]{MWstepComp}
+\includegraphics[width=.97\linewidth]{MWstepComp}
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:600 (full simulation)} \ \\
+Simulation has a lot of time where not many fast dynamic changes are taking place. \\
+
 
 \includegraphics[width=\linewidth]{MWdetailFull}
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:10} \ \\
+Initial transients are captured well.\\
 
 \includegraphics[width=\linewidth]{MWdetailComp0}
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:40} \ \\
+Simulation methods continue to match while system stabilizes.\\
 
 \includegraphics[width=\linewidth]{MWdetailComp1}
 
 
 \pagebreak
 \paragraph{Select Comparisons: t = 260:360 (Result `Drift' - Scale should be noted)} \ \\
+As individual time blocks were not created for each AGC action, dispatches may not be synchronized between simulations and add to state drift. \\
 
 \includegraphics[width=\linewidth]{MWdetailComp2}
-
-
-
-
 
 \end{document}

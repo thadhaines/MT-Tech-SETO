@@ -39,12 +39,12 @@
 		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200811-IVMwithVTS/200811-IVMwithVTS.pdf}{Tested IVM in VTS, created result doc.}
 \end{comment}
 	\begin{enumerate}	
-		\item Added license to code repository
-		\item Corrected PWRMOD handling of states in VTS
-		\item Refined VTS order of operations and time vector
-		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200817-AGCminiWECC10min/200817-AGCminiWECC10min.pdf}{Created MiniWECC AGC results for Pload Step}
-		\item Added handling of generator trip to AGC H and F calcs
-		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200818-AGCminiWECCgenTrips/200818-AGCminiWECCgenTrips.pdf}{Created MiniWECC AGC results for Gen Trips}
+		\item Added PST license from Joe Chow to code repository
+		\item Corrected PWRMOD handling of user defined cell states in VTS
+		\item Refined VTS order of operations and time vector handling/creation
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200817-AGCminiWECC10min/200817-AGCminiWECC10min.pdf}{Created MiniWECC AGC result document for P load step}
+		\item Added handling of generator trip to AGC inertia and frequency calculations
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200818-AGCminiWECCgenTrips/200818-AGCminiWECCgenTrips.pdf}{Created MiniWECC AGC result document for generator trips}
 		\item Updated PST to version 4.0.0-a4
 		
 		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
@@ -62,13 +62,12 @@
 	\begin{enumerate}
 		\itemsep 0em 
 	\item Create long term event (with pwrmod)
-	\item Verify VTS operation
-		\item Refine VTS documentation	
-		\item Work for PST 4.0.0:
+		\item Work towards PST 4.0.0:
 		\begin{itemize}
 		\footnotesize
 		\itemsep0em
 		\item Verify and Validate operation of AGC, PWRMOD, IVMMOD, and VTS.
+		\item Refine documentation	
 		\item Clean up examples
 		\item Clean up code comments
 		\item Clean up readme files
@@ -105,7 +104,7 @@
 	%	Possibly employ \verb|feval| for a more dynamic calculation routine.
 		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
 %		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
-		\item Generate comparison scripts to verify simulated results match after code changes.
+		\item Generate comparison scripts to verify simulated results match  between code reversions and modifications.
 		
 
 	\end{enumerate}
@@ -129,12 +128,11 @@
 	\begin{enumerate}
 	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
 		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov)
-		\item In original \verb|s_simu_Batch|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times.
+		\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. It probably shouldn't.
 		\item Constant Power or Current loads seem to require a portion of constant Impedance.
 		\item PSS design functionality not explored
 		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
 		\item Differences in \verb|mac_ind| between pst 2 and 3. Seem backward compatible - untested.
-		\item A tripped generators inertia should be removed from total inertia calculations of average frequency used in the AGC model.
 	\end{enumerate}
 \vfill\null
 

@@ -17,7 +17,7 @@
 
 \begin{document}
 \onehalfspacing
-\paragraph{10 Minute AGC recovery of Mini WECC after generator trips} \ \\
+\paragraph{10 Minute AGC Recovery of Mini WECC after 2 Generator Trips} \ \\
 
 \begin{minipage}{0.47\linewidth}
 \begin{itemize}
@@ -31,7 +31,7 @@
 \item Machines: 34
 \item States: 623
 \end{itemize}
-\item Events: Trip of Gen on Bus 1 at t= 5\\ Trip of Gen on Bus 30 at t = 8
+\item Events: Trip of Bus 1 Gen at t= 5\\ Trip of Bus 30 Gen at t = 8
 
 \item Each area has identical conditional AGC that acts at t=40 and again when t=160, 280, 400, 520 (i.e. 2 minute action time).
 
@@ -43,14 +43,14 @@
 \vfill
 \end{minipage}\hspace{2em}% 
 \begin{minipage}{0.47\linewidth}
-\includegraphics[width=\linewidth]{miniWECC_split03.png}
+\includegraphics[width=.97\linewidth]{miniWECC_split03.png}
 \end{minipage}% 
 
 \paragraph{Result Summary:}
 \begin{itemize}
 \item Generators trip successfully, average system frequency and system inertia calculated correctly.
-\item Case needs minor adjustment as AGC controlled machines hit generation limits.
-\item Tripped generator models are still calculated and effect size of time step.
+\item AGC controlled machines hit generation limits - Case needs minor adjustment.
+\item Tripped generator calculated states and derivatives effect size of time step.
 \end{itemize}
 
 \begin{center}
@@ -61,6 +61,9 @@
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:600 (full simulation)} \ \\
+System frequency does not return to 1 as controlled machine generation limits are hit.
+AGC distributed ACE (DACE) continues to accumulate.
+Time step does not increase past 0.2 seconds.
 
 \includegraphics[width=\linewidth]{genTripAGC01}
 
@@ -69,14 +72,15 @@
 
 \pagebreak
 \paragraph{EFD and Mechanical Power} \ \\
-The oscillations of tripped generators affect the size of the variable time step.
+The oscillations of tripped generators affect the size of variable time steps as dynamic calculations still account for disconnected machines.
+This is noticeable in exciter EFD and pmech oscillations of tripped generators.
 
 \begin{center}
 \includegraphics[width=.5\linewidth]{genTripEFD01}% 
 \includegraphics[width=.5\linewidth]{genTripPOW01}
 \end{center}
 
-A solution would be to zero out the associated derivatives of tripped machines.
+A possible solution may be to zero out the associated derivatives of tripped machines.
 
 Something along the lines of:
 \begin{minted}[
@@ -98,7 +102,7 @@ end
 Placed in the \verb|handleStDx| function and called if the field is \verb|mac|.
 
 
-This would prevent any associated states from changing, which may be confusing to some during data analysis.
+This would prevent any associated states from changing, which may be confusing during data analysis and may have other network solution related effects, but should allow time step to increase.
 
 
 
