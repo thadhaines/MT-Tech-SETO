@@ -1,6 +1,8 @@
 Power System Toobox (PST) license agreement
 
 (c) Montana Technological University / Thad Haines 2020
+(c) Montana Technological University / Daniel Trudnowski 2019
+(c) Montana Tech / Daniel Trudnowski 2015
 (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 2020 - All rights reserved
 
 Permission is hereby granted, free of charge, to any person obtaining a copy

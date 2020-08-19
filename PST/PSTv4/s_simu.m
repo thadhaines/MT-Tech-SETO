@@ -66,6 +66,8 @@
 %   08/18/20    10:51   Thad Haines     Moved network solution in Huen's method to work with AGC
 
 % (c) Montana Technological University / Thad Haines 2020
+% (c) Montana Technological University / Daniel Trudnowski 2019
+% (c) Montana Tech / Daniel Trudnowski 2015
 % (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 2020 - All rights reserved
 % 
 % Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -88,9 +90,10 @@
 %
 
 format compact;
-disp('*** Using: PST v4.0.0a3 ***')
+disp('*** Using: PST v4.0.0-a3 ***')
 disp('*** s_simu Start')
 disp('*** Declare Global Variables')
+
 %% Remaining 'loose' globals
 %% DeltaP/omega filter variables - 21 - model use not documented
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
