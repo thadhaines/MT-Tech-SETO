@@ -128,11 +128,11 @@
 	\begin{enumerate}
 	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
 		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov)
-		\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. It probably shouldn't.
+		\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\It probably shouldn't be.
 		\item Constant Power or Current loads seem to require a portion of constant Impedance.
 		\item PSS design functionality not explored
 		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
-		\item Differences in \verb|mac_ind| between pst 2 and 3. Seem backward compatible - untested.
+		\item Differences in \verb|mac_ind| between pst 2 and 3 seem backward compatible - untested.
 	\end{enumerate}
 \vfill\null
 

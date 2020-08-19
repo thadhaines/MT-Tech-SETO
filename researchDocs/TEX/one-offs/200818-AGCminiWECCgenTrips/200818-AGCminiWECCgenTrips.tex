@@ -50,7 +50,7 @@
 \begin{itemize}
 \item Generators trip successfully, average system frequency and system inertia calculated correctly.
 \item AGC controlled machines hit generation limits - Case needs minor adjustment.
-\item Tripped generator calculated states and derivatives effect size of time step.
+\item Tripped generator states and derivatives affect size of time step.
 \end{itemize}
 
 \begin{center}
@@ -65,7 +65,7 @@ System frequency does not return to 1 as controlled machine generation limits ar
 AGC distributed ACE (DACE) continues to accumulate.
 Time step does not increase past 0.2 seconds.
 
-\includegraphics[width=\linewidth]{genTripAGC01}
+\includegraphics[width=\linewidth]{agc}
 
 
 \includegraphics[width=\linewidth]{genTripteps01}
@@ -76,8 +76,8 @@ The oscillations of tripped generators affect the size of variable time steps as
 This is noticeable in exciter EFD and pmech oscillations of tripped generators.
 
 \begin{center}
-\includegraphics[width=.5\linewidth]{genTripEFD01}% 
-\includegraphics[width=.5\linewidth]{genTripPOW01}
+\includegraphics[width=.5\linewidth]{efd}% 
+\includegraphics[width=.5\linewidth]{POW}
 \end{center}
 
 A possible solution may be to zero out the associated derivatives of tripped machines.

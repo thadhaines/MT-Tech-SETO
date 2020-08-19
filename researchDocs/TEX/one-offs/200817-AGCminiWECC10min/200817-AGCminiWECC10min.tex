@@ -75,27 +75,27 @@
 
 \pagebreak
 \paragraph{Step Size and Solution Count Data} \ \\
-Time blocks from: [0:1], [1:40], and [40:600].
-Many solutions are executed at beginning of time blocks due to ODE solver method \emph{possibly} creating a Jacobian.\\
+Time blocks were created at: [0:1], [1:40], and [40:600].
+Many solutions were executed at beginning of each blocks due to ODE solver method \emph{possibly} creating a Jacobian.\\
 
 \includegraphics[width=.97\linewidth]{MWstepComp}
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:600 (full simulation)} \ \\
-Simulation has a lot of time where not many fast dynamic changes are taking place. \\
+Simulation had a lot of time where not many fast dynamic changes were taking place. \\
 
 
 \includegraphics[width=\linewidth]{MWdetailFull}
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:10} \ \\
-Initial transients are captured well.\\
+Initial transients were captured well.\\
 
 \includegraphics[width=\linewidth]{MWdetailComp0}
 
 \pagebreak
 \paragraph{Select Comparisons: t = 0:40} \ \\
-Simulation methods continue to match while system stabilizes.\\
+Simulation methods continued to match as system stabilized.\\
 
 \includegraphics[width=\linewidth]{MWdetailComp1}
 
@@ -105,5 +105,62 @@ Simulation methods continue to match while system stabilizes.\\
 As individual time blocks were not created for each AGC action, dispatches may not be synchronized between simulations and add to state drift. \\
 
 \includegraphics[width=\linewidth]{MWdetailComp2}
+\pagebreak
+\paragraph{AGC Settings} \ \\
+\vspace{-2em}
 
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		breaklines
+		]{MATLAB}
+%{ 
+Each agc(x) has following fields:
+    area        - Area number / controlled area
+    startTime   - Time of first AGC signal to send
+    actionTime  - Interval of time between all following AGC signals
+    gain        - Gain of output ACE signal
+    Btype       - Fixed frequency bias type (abs, percent of max capacity...)
+        0 - absolute - Input B value is set as Frequency bias (positive MW/0.1Hz)
+        1 - percent of max area capacity
+    B           - Fixed frequency bias Value
+    Kbv         - Varaible frequency bias gain used to gain B as B(1+kBv*abs(delta_w))
+    condAce     - Conditional ACE flag
+        0 - Conditional ACE not considered
+        1 - ace2dist updated only if sign matches delta_w (i.e. in area event)
+
+    (PI Filter Values)
+    Kp          - Proportional gain
+    a           - ratio between integral and proportional gain (placement of zero)
+    ctrlGen_con - col 1 = generator bus, 
+                  col 2 = participation factor, 
+                  col 3 = low pass filter time constant [seconds]
+%}
+agc(1).area = 1;
+agc(1).startTime = 40;
+agc(1).actionTime = 120;
+agc(1).gain = 1; % gain of output signal
+agc(1).Btype = 1; % per max area capacity
+agc(1).B = 1;
+agc(1).Kbv = 0; % no variable bias
+agc(1).condAce = 1; % conditional ACE
+agc(1).Kp = 0.015;
+agc(1).a = 0.0001;
+agc(1).ctrlGen_con = [ 23, 1.0, 60 ];
+
+agc(2) = agc(1); % duplicate most settings from AGC 1 to AGC 2
+agc(2).area = 2;
+agc(2).ctrlGen_con = [ 32, 1.0, 60 ];
+
+agc(3)=agc(1); % duplicate most settings from AGC 1 to AGC 3
+agc(3).area = 3;
+agc(3).ctrlGen_con = [...
+    45, 0.75, 60;
+    53, 0.25, 60;
+    ];
+\end{minted}
 \end{document}
