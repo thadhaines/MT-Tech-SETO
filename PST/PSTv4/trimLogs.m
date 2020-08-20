@@ -49,7 +49,7 @@ for f=1:size(nCell,1)
     
     % Handle AGC structure
     if strcmp(nCell{f,1}, 'agc')
-        aceVars = {'race', 'd_sace', 'sace', 'ace2dist', 'aceSig'};
+        aceVars = {'race', 'd_sace', 'sace', 'ace2dist', 'aceSig','curGen'};
         cgVars = {'input', 'dx' ,'x'};
         for n = 1:g.agc.n_agc
             % Trim AGC variables

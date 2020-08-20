@@ -15,7 +15,8 @@ function agc_indx
 %   History:
 %   Date        Time    Engineer        Description
 %   07/21/20    15:58   Thad Haines     Version 1.0.0
-
+%   08/20/20    10:52   Thad Haines     Version 1.0.1 - added fields to calculate maxGen
+%%
 global g
 
 if ~isempty(g.agc.agc)
@@ -34,6 +35,7 @@ if ~isempty(g.agc.agc)
         g.agc.agc(ndx).macBusNdx = [];
         g.agc.agc(ndx).tgNdx = [];
         g.agc.agc(ndx).ctrlGen =[];
+        g.agc.agc(ndx).maxGen = 0; % Maximum MW output of ctrl gens
         
         % for each areas controlled generator...
         for gNdx =1:g.agc.agc(ndx).n_ctrlGen
@@ -51,6 +53,12 @@ if ~isempty(g.agc.agc)
                 g.agc.agc(ndx).macBusNdx(gNdx), 2);
             % put participation factor into ctrlGen Struct
             g.agc.agc(ndx).ctrlGen(gNdx).pF = g.agc.agc(ndx).ctrlGen_con(gNdx, 2);
+            
+            % store machine base
+            g.agc.agc(ndx).ctrlGen(gNdx).mBase = g.mac.mac_con(g.agc.agc(ndx).macBusNdx(gNdx), 3); 
+            
+            % calculate maximum MW output
+            g.agc.agc(ndx).maxGen = g.agc.agc(ndx).maxGen + g.agc.agc(ndx).ctrlGen(gNdx).mBase;
         end
     end
     

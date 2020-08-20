@@ -90,7 +90,7 @@
 %
 
 format compact;
-disp('***    PST v4.0.0-a3    ***')
+disp('***    PST v4.0.0-a5    ***')
 disp('*** s_simu Start')
 disp('*** Declare Global Variables')
 
@@ -334,7 +334,8 @@ initTblocks()
 
 % If variable step, increase amount of zeros to log
 if ~all(strcmp(g.vts.solver_con, 'huens'))
-    k = max(size(g.sys.t_OLD))*3;
+    k = max(size(g.sys.t_OLD))*4;
+    g.sys.t = zeros(1,k);
     kdc = k*10;
 else
     k = max(size(g.sys.t))+1;

@@ -31,10 +31,9 @@ if flag == 0
     % for each defined agc
     for n = 1:g.agc.n_agc
         % set initial ACE signal to zero for all time
-        g.agc.agc(n).aceSig = zeros(size(g.sys.t,2));
+        g.agc.agc(n).aceSig = zeros(1,size(g.agc.agc(n).ace2dist,2));
         % Create place holders for current and available capacity
-        %g.agc.agc(n).genCur = zeros(size(g.sys.t,2));
-        %g.agc.agc(n).genAvail = zeros(size(g.sys.t,2));
+        g.agc.agc(n).curGen = zeros(1,size(g.agc.agc(n).ace2dist,2)); % current AGC gen output
         
         % set icS intial condition
         g.area.area(g.agc.agc(n).area).icS = g.area.area(g.agc.agc(n).area).icS ...
@@ -54,9 +53,13 @@ if flag == 0
         g.agc.agc(n).nextActionTime = g.agc.agc(n).startTime;
         
         % calculate total AGC capacity and percent/mw available
+        for cg = 1:g.agc.agc(n).n_ctrlGen
+            g.agc.agc(n).curGen(1) = g.agc.agc(n).curGen(1) ...
+                + g.mac.pmech(g.agc.agc(n).macBusNdx(cg),1)* g.agc.agc(n).ctrlGen(cg).mBase;
+        end
     end
     
-    % inital states of generation control set when zeros allocated in s_simu_batch
+    % inital states of generation control set when zeros allocated
     
 end
 
@@ -121,6 +124,9 @@ if flag == 2 && k ~=1  % skip first step
         % Gain aceSig and Log ace2dist
         g.agc.agc(n).ace2dist(k) = g.agc.agc(n).aceSig(k) * g.agc.agc(n).gain;
         
+        % reset current generation value
+        g.agc.agc(n).curGen(k) = 0;
+        
         % ensure agc signal updated in tg model for each agc ctrlGen
         for gNdx = 1:g.agc.agc(n).n_ctrlGen
             % send signal to input of lowpass filter
@@ -132,6 +138,9 @@ if flag == 2 && k ~=1  % skip first step
             % send filtered signal to governor
             g.tg.tg_sig(g.agc.agc(n).tgNdx(gNdx),k) = g.tg.tg_sig(g.agc.agc(n).tgNdx(gNdx),k) ...
                 - g.agc.agc(n).ctrlGen(gNdx).x(k); % NOTE: negative sign is important here.
+            % update curGen value
+            g.agc.agc(n).curGen(k) = g.agc.agc(n).curGen(k) ...
+                + g.mac.pmech(g.agc.agc(n).macBusNdx(gNdx),k)* g.agc.agc(n).ctrlGen(gNdx).mBase;
         end
     end
 end

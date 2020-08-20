@@ -39,7 +39,7 @@ end
 %     % not handled.
 % end
 
-livePlotFlag = 1;
+livePlotFlag = 0;
 
 if strcmp(pstVer , 'PSTv4')
     s_simu
@@ -102,3 +102,17 @@ grid on
 title({'Time Step Comparison'})
 ylabel('Time Step Size [seconds]')
 xlabel('Time [seconds]')
+
+%% AGC capacity
+figure
+plot(g.sys.t, g.agc.agc(1).curGen/g.agc.agc(1).maxGen)
+hold on
+plot(g.sys.t, g.agc.agc(2).curGen/g.agc.agc(2).maxGen)
+plot(g.sys.t, g.agc.agc(3).curGen/g.agc.agc(3).maxGen)
+legend({'Area 1', 'Area 2', 'Area 3'}, 'location', 'best')
+grid on
+title({'Dispatched Area Generation'})
+ylabel('Current Generation [PU]')
+xlabel('Time [seconds]')
+
+

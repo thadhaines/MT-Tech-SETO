@@ -993,8 +993,10 @@ agc(2).ctrlGen_con = [...
 %  	col 1 gen bus... Generator internal number?
 %  	col 2 participation Factor
 %   col 3 low pass filter time constant [seconds]
-    30, 0.5, 60;
-    32, 0.5, 60;
+    30, 0.25, 60;
+    32, 0.25, 60;
+    71, 0.25, 60;
+    107, 0.25, 60;
     ];
 
 agc(3)=agc(1); % duplicate most settings from AGC 1 to AGC 3
@@ -1115,13 +1117,3 @@ solver_con ={ ...
    % 'ode23t'; % following AGC signals
    % 'ode23t'; % following AGC signals
     };
-
-% solver_con ={ ...
-%     'ode23'; % pre event - event
-%     'ode23'; % event - first AGC signal
-%     'huens'; % following AGC signals
-%     'ode23t'; % following AGC signals
-%     'ode23t'; % following AGC signals
-%     'ode23t'; % following AGC signals
-%     'ode23t'; % following AGC signals
-%     };
