@@ -59,17 +59,6 @@ save('tripTest.mat'); %Save simulation outputs
 delete('PSTpath.mat')
 
 
-%% Plot 
-figure
-n = find(g.sys.t<20);
-plot(g.sys.t(n),g.mac.mac_spd(1,n),'k')
-hold on
-plot(g.sys.t(n),g.mac.mac_spd(7,n),'r')
-plot(g.sys.t(n),g.mac.mac_spd(13,n),'g','LineWidth',2)
-ylabel('Gen Speed [PU]')
-xlabel('Time [seconds]')
-grid on
-legend('Gen 1','Gen 7','Gen 13','Location','Best')
 
 %% Plot tripped Gen speed
 figure

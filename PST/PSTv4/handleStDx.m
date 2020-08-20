@@ -29,6 +29,7 @@ function handleStDx(k, slnVec, flag)
 %   08/03/20    15:31   Thad Haines     Version 1.0.2 - added AGC
 %   08/05/20    13:15   Thad Haines     Version 1.0.3 - added pwrmod
 %   08/11/20    11:18   Thad Haines     Version 1.0.4 - added ivmmod
+%   08/20/20    08:33   Thad Hainse     Version 1.0.5 - added zeroing out of tripped machine derivatives and states
 
 
 %% Remaining 'loose' globals - Not required for now -thad 07/24/20
@@ -202,6 +203,11 @@ if flag == 1
             f1 = g.vts.fsdn{ndx, 1};
             f2 = g.vts.fsdn{ndx, 3}; % derivative
             
+            % Zero out machine derivatives of tripped gens
+            if strcmp(f1,'mac') && ~all(~g.mac.mac_trip_flags)
+                g.(f1).(f2)(:,k) = g.(f1).(f2)(:,k) .* ~g.mac.mac_trip_flags;
+            end
+            
             if strcmp(f1, 'agc')
                 for n = 1:g.agc.n_agc
                     % collect d_sace for each agc
@@ -316,6 +322,10 @@ if flag == 3
             f1 = g.vts.fsdn{ndx, 1};
             f2 = g.vts.fsdn{ndx, 2}; % state
             
+            % Zero out machine states of tripped gens
+            if strcmp(f1,'mac') && ~all(~g.mac.mac_trip_flags)
+                g.(f1).(f2)(:,k) = g.(f1).(f2)(:,k) .* ~g.mac.mac_trip_flags;
+            end            
             
             if strcmp(f1, 'agc')
                 for n = 1:g.agc.n_agc

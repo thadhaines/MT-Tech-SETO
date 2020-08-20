@@ -31,7 +31,10 @@ if flag == 0
     % for each defined agc
     for n = 1:g.agc.n_agc
         % set initial ACE signal to zero for all time
-        g.agc.agc(n).aceSig = g.agc.agc(n).ace2dist;
+        g.agc.agc(n).aceSig = zeros(size(g.sys.t,2));
+        % Create place holders for current and available capacity
+        %g.agc.agc(n).genCur = zeros(size(g.sys.t,2));
+        %g.agc.agc(n).genAvail = zeros(size(g.sys.t,2));
         
         % set icS intial condition
         g.area.area(g.agc.agc(n).area).icS = g.area.area(g.agc.agc(n).area).icS ...
@@ -49,6 +52,8 @@ if flag == 0
         
         % set nextActionTime to start time
         g.agc.agc(n).nextActionTime = g.agc.agc(n).startTime;
+        
+        % calculate total AGC capacity and percent/mw available
     end
     
     % inital states of generation control set when zeros allocated in s_simu_batch

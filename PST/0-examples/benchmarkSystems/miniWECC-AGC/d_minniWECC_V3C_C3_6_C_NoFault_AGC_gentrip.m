@@ -982,8 +982,8 @@ agc(1).ctrlGen_con = [ ...
     %col 2 participation Factor
     %col 3 low pass filter time constant [seconds]
     1, 0.25, 60;
-    2, 0.5, 60; % Untested addition of ctrlGen
-    3, 0.25, 60; % Untested addition of ctrlGen
+    3, 0.5, 60; % Untested addition of ctrlGen
+    5, 0.25, 60; % Untested addition of ctrlGen
     ];
 
 agc(2) = agc(1); % duplicate most settings from AGC 1 to AGC 2
@@ -993,9 +993,8 @@ agc(2).ctrlGen_con = [...
 %  	col 1 gen bus... Generator internal number?
 %  	col 2 participation Factor
 %   col 3 low pass filter time constant [seconds]
-    13, 1.0, 60;
-    14, 1.0, 60;
-    16, 1.0, 60;
+    30, 0.5, 60;
+    32, 0.5, 60;
     ];
 
 agc(3)=agc(1); % duplicate most settings from AGC 1 to AGC 3
@@ -1005,8 +1004,8 @@ agc(3).ctrlGen_con = [...
 %   col 1 gen bus
 %   col 2 participation Factor
 %   col 3 low pass filter time constant [seconds]
-    19, 0.75, 60;
-    21, 0.25, 60;
+    45, 0.75, 60;
+    48, 0.25, 60;
     ];
 
 if ~enableAGC
