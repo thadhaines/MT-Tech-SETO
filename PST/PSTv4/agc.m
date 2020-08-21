@@ -20,8 +20,9 @@ function agc(k,flag)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/21/20    15:58   Thad Haines     Version 1
-%   07/22/20    10:17   Thad Haines     Version 1.0.1 - Added conditional AGC
-%   08/04/20    06:07   Thad Haines     Version 1.0.2 - adjusted for VTS
+%   07/22/20    10:17   Thad Haines     Version 1.1 - Added conditional AGC
+%   08/04/20    06:07   Thad Haines     Version 1.1.1 - adjusted for VTS
+%   08/21/20    10:47   Thad Haines     Version 1.2 - Added icAdj handling
 
 global g
 
@@ -32,9 +33,9 @@ if flag == 0
     for n = 1:g.agc.n_agc
         % set initial ACE signal to zero for all time
         g.agc.agc(n).aceSig = zeros(1,size(g.agc.agc(n).ace2dist,2));
-        % Create place holders for current and available capacity
+        % Create place holder current AGC controlled Generation
         g.agc.agc(n).curGen = zeros(1,size(g.agc.agc(n).ace2dist,2)); % current AGC gen output
-        
+    
         % set icS intial condition
         g.area.area(g.agc.agc(n).area).icS = g.area.area(g.agc.agc(n).area).icS ...
             * g.area.area(g.agc.agc(n).area).icA(1);
@@ -74,8 +75,9 @@ if flag == 2 && k ~=1  % skip first step
     for n = 1:g.agc.n_agc
         % calcualte RACE using most recently monitored values via j index
         delta_w = g.area.area(g.agc.agc(n).area).aveF(j) - g.sys.sys_freq(j);
-        icError = g.area.area(g.agc.agc(n).area).icA(j) - ...
-            g.area.area(g.agc.agc(n).area).icS(j);
+        icError = g.area.area(g.agc.agc(n).area).icA(j) ...
+            - g.area.area(g.agc.agc(n).area).icS(j) ...
+            - g.area.area(g.agc.agc(n).area).icAdj(k); % account for AGC ic adj
         
         % handle frequency bias scaling
         fError = delta_w * g.agc.agc(n).Bcalc * 10 * (1+abs(delta_w)*g.agc.agc(n).Kbv);

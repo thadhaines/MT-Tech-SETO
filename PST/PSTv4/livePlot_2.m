@@ -17,6 +17,7 @@ function livePlot(k)
 %   Date        Time    Engineer        Description
 %   08/13/20    11:14   Thad Haines     Version 1.0.0
 %   08/18/20    11:21   Thad Haines     Added 'cla' command to live updates
+%   08/21/20    11:05   Thad Haines     Added icAdj to IC calcs
 
 global g
 if isnumeric(k)
@@ -43,7 +44,9 @@ if isnumeric(k)
         cla
         Lcolor = lines(g.agc.n_agc*2);
         for ndx = 1:g.agc.n_agc
-            plot(g.sys.t(1:k),real(g.area.area(ndx).icA(1:k)) - real(g.area.area(ndx).icA(1)),'.-','linewidth',2, 'color',Lcolor(ndx,:))
+            plot(g.sys.t(1:k),(real(g.area.area(ndx).icA(1:k)) - ...
+                real(g.area.area(ndx).icS(1:k)) - ...
+                real(g.area.area(ndx).icAdj(1:k))),'.-','linewidth',2, 'color',Lcolor(ndx,:))
             hold on
             plot(g.sys.t(1:k),g.agc.agc(ndx).race(1:k), 'color',Lcolor(ndx,:), 'color',Lcolor(ndx+1,:))
         end
@@ -97,7 +100,9 @@ else % end of sim full data plot
     Lcolor = lines(g.agc.n_agc*2);
     legNames = {};
     for ndx = 1:g.agc.n_agc
-        plot(g.sys.t,real(g.area.area(ndx).icA) - real(g.area.area(ndx).icA(1)),'.-','linewidth',2, 'color',Lcolor(ndx,:))
+        plot(g.sys.t,(real(g.area.area(ndx).icA) - ...
+                real(g.area.area(ndx).icS) - ...
+                real(g.area.area(ndx).icAdj)),'.-','linewidth',2, 'color',Lcolor(ndx,:))
         hold on
         plot(g.sys.t, g.agc.agc(ndx).race, 'color',Lcolor(ndx,:), 'color',Lcolor(ndx+1,:))
         legNames(end+1) = {['Area ',int2str(g.area.area(ndx).number),' IC Error']};

@@ -16,6 +16,8 @@ function initZeros(k, kdc)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    12:54   Thad Haines     Version 1
+%   08/21/20    10:54   Thad Haines     Version 1.1 - added icAdj to AGC
+
 
 %% Remaining 'loose' globals
 % DeltaP/omega filter variables - 21
@@ -438,7 +440,8 @@ if g.area.n_area ~=0
         g.area.area(areaN).totGen = zeros(1,k);
         g.area.area(areaN).totLoad = zeros(1,k);
         g.area.area(areaN).icA = zeros(1,k); % Actual interchange
-        g.area.area(areaN).icS = ones(1,k); % Scheduled interchange
+        g.area.area(areaN).icAdj = zeros(1,k); % Interchange adjustment signal
+        g.area.area(areaN).icS = ones(1,k); % Scheduled interchange ones for future init multiply
     end
 end
 clear areaN

@@ -4,8 +4,7 @@ function dynamicSolution(k)
 %
 % Syntax: dynamicSolution(k)
 %
-%   NOTES:  Non-global IVM variables will NOT work until added the
-%           global g.
+%   NOTES:  
 %
 %   Input:
 %   k - data index
@@ -16,8 +15,9 @@ function dynamicSolution(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    11:31   Thad Haines     Version 1
-%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
-%   08/11/20    11:18   Thad Haines     Version 1.0.2 - added ivmmod
+%   08/05/20    13:15   Thad Haines     Version 1.1 - added pwrmod signals to global
+%   08/11/20    11:18   Thad Haines     Version 1.2 - added ivmmod
+%   08/21/20    10:51   Thad Haines     Version 1.3 - added mAGC_sig
 
 %% Remaining 'loose' globals
 % DeltaP/omega filter variables - 21
@@ -57,6 +57,7 @@ exc_dc12(0,k,flag);
 mtg_sig(k); % executed twice? - thad 07/18/20
 % AGC calculations after tg_sig, before tg dynamics
 if g.agc.n_agc ~= 0
+    mAGC_sig(k); % perform user defined AGC modulation
     agc(k,flag); % perform calculations
 end
 

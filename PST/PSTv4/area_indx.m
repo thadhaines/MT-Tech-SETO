@@ -17,7 +17,8 @@ function area_indx
 %   Date        Time    Engineer        Description
 %   07/18/20    05:07   Thad Haines     Version 1.0.0
 %   07/19/20    15:18   Thad Haines     Version 1.0.1 - minor additions to indices, area counts
-%   07/20/20    19:42   Thad Haines     Version 1.0.2 - added max capacity to area init
+%   07/20/20    19:42   Thad Haines     Version 1.1 - added max capacity to area init
+%   08/21/20    10:47   Thad Haines     Version 1.2 - Added icAdj
 
 global g
 
@@ -81,8 +82,10 @@ if ~isempty(g.area.area_def)
         g.area.area(areaN).aveF = [];
         g.area.area(areaN).totGen = [];
         g.area.area(areaN).totLoad = [];
+        
         g.area.area(areaN).icA = []; % Actual interchange
-        g.area.area(areaN).icS = []; % Scheduled interchange (AGC?)
+        g.area.area(areaN).icS = []; % Scheduled interchange 
+        g.area.area(areaN).icAdj = []; % For adjusting interchange
         
         % Create placeholders for line indices
         g.area.area(areaN).exportLineNdx = [];

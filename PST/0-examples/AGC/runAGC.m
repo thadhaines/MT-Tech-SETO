@@ -32,12 +32,14 @@ clear folderDepth pathParts pNdx PSTpath
 clear all; close all; clc
 load PSTpath.mat
 
-FTS = 'no';
+FTS = 'mixed';
 
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 
 if strcmp(FTS,'no')
     copyfile('d2a_AGC_VTS.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
+elseif strcmp(FTS,'mixed')
+    copyfile('d2a_AGC_mixed.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 else
     copyfile('d2a_AGC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 end
@@ -70,6 +72,8 @@ printFigs = 0;
 
 if strcmp(FTS,'no')
     save([caseName,'testVTS2.mat']); %Save simulation outputs
+elseif strcmp(FTS,'mixed')
+    save([caseName,'testVTSmix.mat']); %Save simulation outputs
 else
     save([caseName,'testFTS.mat']); %Save simulation outputs
 end

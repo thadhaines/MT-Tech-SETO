@@ -5,7 +5,7 @@
 % switching file) or other power system perturbance. See one of the supplied
 % examples for file format and/or replacing technique.
 %
-%   NOTES:  To run in stand-alone mode, clear all variables before 
+%   NOTES:  To run in stand-alone mode, clear all variables before
 %           running script from PST main directory.
 %           Accomodates for batch mode runs automatically.
 %
@@ -64,22 +64,23 @@
 %   08/13/20    09:37   Thad Haines     Incorporated new license
 %   08/16/20    20:28   Thad Haines     Increase logged data only if VTS
 %   08/18/20    10:51   Thad Haines     Moved network solution in Huen's method to work with AGC
+%   08/21/20    12:53   Thad Haines     Handled FTS->VTS unique time vector issue
 
 % (c) Montana Technological University / Thad Haines 2020
 % (c) Montana Technological University / Daniel Trudnowski 2019
 % (c) Montana Tech / Daniel Trudnowski 2015
 % (c) Copyright: Joe Chow/ Cherry Tree Scientific Software 1991 to 2020 - All rights reserved
-% 
+%
 % Permission is hereby granted, free of charge, to any person obtaining a copy
 % of this software and associated documentation files (the "Software"), to deal
 % in the Software without restriction, including without limitation the rights
 % to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 % copies of the Software, and to permit persons to whom the Software is
 % furnished to do so.
-% 
+%
 % The above copyright notice and this permission notice shall be included in all
 % copies or substantial portions of the Software.
-% 
+%
 % THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
 % IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
 % FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
@@ -90,7 +91,7 @@
 %
 
 format compact;
-disp('***    PST v4.0.0-a5    ***')
+disp('***    PST v4.0.0-a6    ***')
 disp('*** s_simu Start')
 disp('*** Declare Global Variables')
 
@@ -406,6 +407,13 @@ for simTblock = 1:size(g.vts.t_block)
         odeName = 'huens'; % default PST solver
     end
     
+    % account for extra index increment from FTS to VTS - that - 08/21/20
+    if ~strcmp(odeName, 'huens') && (g.vts.t_blockN > 1)        % use VTS
+        if   strcmp(g.vts.solver_con{g.vts.t_blockN-1}, 'huens')% previous was FTS
+            g.vts.dataN = g.vts.dataN-1;
+        end
+    end
+    
     % Select solution method =========================================
     if strcmp( odeName, 'huens')    % use standard PST huens method
         fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
@@ -465,6 +473,8 @@ for simTblock = 1:size(g.vts.t_block)
         % Account for next time block using VTS
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
         handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives
+        
+        
         
     else % use user supplied variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...

@@ -4,7 +4,8 @@ function trimLogs(k)
 %
 % Syntax: trimLogs(k)
 %
-%   NOTES: nCell not made via logicals - may lead to errors if fields not initialized (i.e. model not used)
+%   NOTES: nCell not made via logicals - may lead to errors if fields not initialized 
+%          (i.e. model not used)
 %
 %   Input:
 %   k - data index
@@ -15,9 +16,10 @@ function trimLogs(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/28/20    11:47   Thad Haines     Version 1
-%   08/03/20    15:30   Thad Haines     Version 1.0.1 - addition of AGC, area values, and tg_sig
-%   08/05/20    13:15   Thad Haines     Version 1.0.2 - added pwrmod signals to global
-%   08/11/20    11:42   Thad Haines     Version 1.0.3 - added ivm
+%   08/03/20    15:30   Thad Haines     Version 1.1 - addition of AGC, area values, and tg_sig
+%   08/05/20    13:15   Thad Haines     Version 1.2 - added pwrmod signals to global
+%   08/11/20    11:42   Thad Haines     Version 1.3 - added ivm
+%   08/21/20    10:54   Thad Haines     Version 1.4 - added icAdj to area, curGen to agc
 
 global g
 %%
@@ -38,7 +40,7 @@ nCell = { ...
     'igen', {'vdpig', 'vqpig', 'slig', 'dvdpig', 'dvqpig', 'dslig', 's_igen', 'pig', 'qig', 'tmig'};
     'ind', {'vdp', 'vqp', 'slip', 'dvdp', 'dvqp', 'dslip', 's_mot', 'p_mot', 'q_mot' };
     'vts', {'slns'};
-    'area', {'totH', 'aveF', 'totGen', 'totLoad', 'icA', 'icS'}; % add optionally?
+    'area', {'totH', 'aveF', 'totGen', 'totLoad', 'icA', 'icS','icAdj'}; % add optionally?
     'lmon', {'iFrom', 'iTo', 'sFrom', 'sTo'}; % add optionally?
     'agc', {'Handled Differently'} ; % add optionally?
     'ivm', {'ivmmod_d_sig', 'ivmmod_e_sig'};

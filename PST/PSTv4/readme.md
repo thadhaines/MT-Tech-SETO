@@ -26,3 +26,4 @@ A number of bug fixes are imagined to be required while new code base is tested.
 % 	08/15/20 	09:33	Thad Haines 	4.0.0-a3 - fix of pwrmod to include multiple cell states, update of initTblock time vector creation, cleanup of s_simu and PSTv4 directory.  
 %   08/18/20    16:31   Thad Haines     4.0.0-a4 - moved monitor solution to allow for correct AGC action during Huen's method, initial AGC capabilities to handle tripped generators. 
 %   08/20/20    14:35   Thad Haines     4.0.0-a5 - zeroing out of tripped generator derivatives added   
+%	08/21/20 	14:01 	Thad Haines 	4.0.0-a6 - added icAdj modulation capabilites to AGC, FTS-> VTS time index adjustments  
