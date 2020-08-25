@@ -66,10 +66,13 @@
 		\coordinate [right=of sum1]  (deltaw) {};
 		\coordinate [above=-.1em of deltaw,label={$\Delta\omega$}]  (deltaWlabel){};
 		
+		
 		% input ICsched
 		\node [input, name=ICsched, below=3 cm of inputwref, label=$IC_{S}$] {};
 		% input IC
 		\node [input, name=IC, below=of ICsched, label=$IC_A$] {};
+		% input ICadjust
+		\node [input, name=ICadj, above=of ICsched, label=$IC_{adj}$] {};
 		% sum 2
 		\node [sum, right=of ICsched] (sum2) {$\Sigma$};
 		
@@ -91,9 +94,12 @@
 		\draw [->] (inputw) -| node[pos=0.8] {$+$} (sum1);
 		\draw [->] (sum1) -- (fbias);
 		\draw [draw,->] (ICsched) -- node[pos=0.8] {$-$} (sum2); 
+		
+		\draw [draw,->] (ICadj) -| node[pos=0.8] {$-$} (sum2); 
+		
 		\draw [->] (IC) -| node[pos=0.8] {$+$} (sum2);
 		\draw [->] (fbias) -| (RACEsum);
-		\draw [->] (sum2) -| (RACEsum); 		
+		\draw [->] (sum2) -| node[pos=0.07] {$IC_{error}$}(RACEsum); 		
 		
 		\draw [->] (RACEsum) -| (filter);
 		\draw [->] (filter) -- (output);

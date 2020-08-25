@@ -10,7 +10,7 @@
 %% Header
 \rhead{Thad Haines \\ Page \thepage\ of \pageref{LastPage}}
 \chead{PST and AGC \\ }
-\lhead{Research \\ 7/20/20}
+\lhead{Research \\ 7/20/20 (Updated \today)}
 \usepackage{minted}
 \usepackage{setspace}
 \begin{document}
@@ -19,9 +19,10 @@
 This document is meant to explain PST additions and alterations created to accommodate AGC.
 Code examples are taken from the AGC example file \verb|d2a_AGC.m| which is a modified version of \verb|d2a_dce.m|.
 
+%==========================================================================
 
 \paragraph{Area Definitions} \ \\
-To enable area calculations, each bus  in the \verb|bus| array must be assigned to an area in the \verb|area_def| array.
+To enable allow for AGC and the required area calculations, each bus  in the \verb|bus| array must be assigned to an area in the \verb|area_def| array.
 An example \verb|area_def| array is shown below.
 \begin{minted}[
 		frame=lines,
@@ -107,6 +108,10 @@ ans =
 It should be noted that \verb|icS| represents a placeholder for a scheduled interchange value and the \verb|totLoad|  is a field for collected total load.
 The collection of actual running load values may prove more complicated as the bus array does not seem to be updated every step, only a reduced Y matrix used in the \verb|nc_load| function called from \verb|i_simu|. 
  
+ 
+ %==========================================================================
+ 
+ 
  \pagebreak
 \paragraph{Line Monitoring} \ \\
 Power flow on a line must be calculated each step as AGC requires actual area interchange for the ACE calculation.
@@ -173,6 +178,9 @@ ans =
             sTo: [1x4063 double]
 \end{minted}
 
+
+%==========================================================================
+
 \pagebreak
 \paragraph{Weighted Average Frequency} \ \\
 An average weighted frequency is calculated for the total system and for each area if there are areas detected.
@@ -217,27 +225,36 @@ H_{tot} &= \sum_{i}^{N} MVA_{base_i}H_i \\
 F_{ave} &= \left( \sum_{i}^{N}Mach_{speed_i}MVA_{base_i}H_i \right) \dfrac{1}{H_{tot}}
 \end{align*}
 
+%==========================================================================
+
 \pagebreak
 \paragraph{Automatic Generation Control} \ \\
+The AGC complete process is shown as the three following block diagrams.
 RACE and SACE are calculated using PU values assuming B is a positive non-PU value with units of $MW/0.1Hz$
 If $K_{bv}$ is not zero, the resulting $RACE$ is not the industry standard $RACE$ value.
+The scheduled interchange may be altered by the user via a \verb|mAGC_sig| file that controls the behavior of the $IC_{adj}$ input.
+
 \begin{center}
-\includegraphics[width=.8\linewidth]{200722-AGCblockdiagram-p1}
+\includegraphics[width=.75\linewidth]{200722-AGCblockdiagram-p1}
 \end{center}
 
-The action of the AGC model is determined by the \verb|startTime| and \verb|actionTime| variables.
+$RACE$ and $SACE$ are calculated every time step, however
+distribution of $SACE$ is determined by the \verb|startTime| and \verb|actionTime| variables.
 Assuming action, the conditional $\Delta\omega$ logic is processed before adjusting the \verb|aceSig| value which is then gained to become \verb|ace2dist|.
 
 \begin{center}
-\includegraphics[width=.8\linewidth]{200722-AGCblockdiagram-p2}
+\includegraphics[width=.75\linewidth]{200722-AGCblockdiagram-p2}
 \end{center}
 
-The \verb|ace2dist| value is distributed to all controlled generators according to their respective participation factor \verb|pF|.
+The \verb|ace2dist| value is distributed to all controlled generators associated with the AGC model according to their respective participation factor \verb|pF|.
 Each \verb|ctrlGen| has a unique low pass filter that processes the signal that is then gained by -1 and added to the existing associated governor \verb|tg_sig| value.
 
 \begin{center}
-\includegraphics[width=.85\linewidth]{200722-AGCblockdiagram-p3}
+\includegraphics[width=.75\linewidth]{200722-AGCblockdiagram-p3}
 \end{center}
+
+
+%==========================================================================
 \pagebreak
 \paragraph{Example AGC settings} \ \\ 
 The following AGC settings are not entirely realistic, but useful in demonstrating the required user definitions and functionality of the AGC model.
