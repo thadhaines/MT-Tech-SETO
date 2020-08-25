@@ -37,6 +37,18 @@
 		\item `Single Time Block' idea tested - not viable due to MATLAB solver operations.
 		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200709-PSTsetoVersionChanges/200709-PSTsetoVersionChanges.pdf}{Updated pst SETO change doc}
 		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200811-IVMwithVTS/200811-IVMwithVTS.pdf}{Tested IVM in VTS, created result doc.}
+
+
+\paragraph{Action Items From Sandia:}
+	\begin{itemize}
+		\itemsep 0em 
+		%	\item Continue development of pwrmod / ivmmod models and their implementation in PST.
+			%\item Be aware of multi rate methods % mostly TAMU/Power world
+		%	\item Decide on PST base version (3.1$\longrightarrow$SETO$\longrightarrow$4.0)
+			\item Run long term simulation to show benefits of VTS.
+		%	\item Allow them to duplicate work.
+	\end{itemize}
+
 \end{comment}
 	\begin{enumerate}	
 		\item Added zeroing of derivatives for tripped machines to improve VTS performance.
@@ -46,7 +58,8 @@
 		 VTS $\longrightarrow$ FTS may have minor issues
 		\item Added capacity tracking to AGC
 		\item Added interchange modulation capabilities and created associated use case document/code example.
-		\item Updated PST to version 4.0.0-aXXX
+		\item Updated PST to version 4.0.0-a7
+		\item miniWECC 3 area \`{a} la EIA regions
 		
 		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
 		%\item Started work on batch unit testing
@@ -56,7 +69,7 @@
 
 		\item \href{https://github.com/thadhaines/MT-Tech-SETO}{GitHub updated:}\\
 	{\footnotesize \verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
-	\item Employment ``good'' till 09/18/20
+%	\item Employment ``good'' till 09/18/20
 	\end{enumerate}
 
 \paragraph{Current Tasks:}
@@ -67,14 +80,15 @@
 	\begin{itemize}
 			\footnotesize
 			\itemsep0em
+	\item miniWECC
 	\item Rolling blackouts in CA
 	\item High PV penetration
-	\item Drought has lead to lower hydro output
+	\item Drought has led to lower hydro output
 	\item initial Low N$\longrightarrow$S Flows
 	\item Solar decline as load increases %every evening
-	\item inadequate dispatable generation %in CA to replace PV
+	\item inadequate dispatchable generation %in CA to replace PV
 	\item Leads to Large N$\longrightarrow$S Flows
-	\item EIA data from 8/15/20?
+	\item EIA data from 8/14/20 18:00? % 12% reservese, blackouts followed 30 minutes later
 	\end{itemize}
 		\item Work towards PST 4.0.0:
 		\begin{itemize}
@@ -91,15 +105,7 @@
 		\item Investigate Octave compatibility
 \end{enumerate}
 
-\paragraph{Action Items From Sandia:}
-	\begin{itemize}
-		\itemsep 0em 
-		%	\item Continue development of pwrmod / ivmmod models and their implementation in PST.
-			%\item Be aware of multi rate methods % mostly TAMU/Power world
-		%	\item Decide on PST base version (3.1$\longrightarrow$SETO$\longrightarrow$4.0)
-			\item Run long term simulation to show benefits of VTS.
-		%	\item Allow them to duplicate work.
-	\end{itemize}
+
 	
 
 \vfill\null

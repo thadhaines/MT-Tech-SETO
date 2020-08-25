@@ -16,6 +16,8 @@ function agc_indx
 %   Date        Time    Engineer        Description
 %   07/21/20    15:58   Thad Haines     Version 1.0.0
 %   08/20/20    10:52   Thad Haines     Version 1.0.1 - added fields to calculate maxGen
+%   08/25/20    12:06   Thad Haines     Version 1.0.2 - addition of warnings for empties and mis-matched machine arrays
+
 %%
 global g
 
@@ -55,10 +57,22 @@ if ~isempty(g.agc.agc)
             g.agc.agc(ndx).ctrlGen(gNdx).pF = g.agc.agc(ndx).ctrlGen_con(gNdx, 2);
             
             % store machine base
-            g.agc.agc(ndx).ctrlGen(gNdx).mBase = g.mac.mac_con(g.agc.agc(ndx).macBusNdx(gNdx), 3); 
+            g.agc.agc(ndx).ctrlGen(gNdx).mBase = g.mac.mac_con(g.agc.agc(ndx).macBusNdx(gNdx), 3);
             
             % calculate maximum MW output
             g.agc.agc(ndx).maxGen = g.agc.agc(ndx).maxGen + g.agc.agc(ndx).ctrlGen(gNdx).mBase;
+            
+            % notify of empties/mis-matches
+            if isempty(g.agc.agc(ndx).macBusNdx)
+                fprintf('*!* AGC %d has no indexed machines...\n', ndx)
+            end
+            if isempty(g.agc.agc(ndx).ctrlGen)
+                fprintf('*!* AGC %d has no controlled machines...\n', ndx)
+            end
+            if size(g.agc.agc(ndx).macBusNdx) ~= size(g.agc.agc(ndx).tgNdx)
+                fprintf('*!* AGC %d a size mis-match in number of machines and governors...\n', ndx)
+            end
+            
         end
     end
     

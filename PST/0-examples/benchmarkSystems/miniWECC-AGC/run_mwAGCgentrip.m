@@ -1,4 +1,4 @@
-% Example of miniwecc with generator tripping
+% Example of miniwecc with generator tripping with AGC
 
 clear all; close all; clc
 
@@ -22,7 +22,8 @@ clear folderDepth pathParts pNdx PSTpath scenario
 clear all; close all; clc
 load PSTpath.mat
 
-copyfile('d_minniWECC_V3C_C3_6_C_NoFault_AGC_gentrip.m',[PSTpath 'DataFile.m']);
+%copyfile('d_minniWECC_V3C_C3_6_C_NoFault_AGC_gentrip.m',[PSTpath 'DataFile.m']); % PSLTDSim 3 Area
+copyfile('d_minniWECC_V3C_C3_6_C_NoFault_AGC_gentrip2.m',[PSTpath 'DataFile.m']); % 'EIA' 3 Area
 copyfile([PSTpath 'livePlot_2.m'],[PSTpath 'livePlot.m']);
 
 %Use gen trips
@@ -39,7 +40,7 @@ end
 %     % not handled.
 % end
 
-livePlotFlag = 0;
+livePlotFlag = 0; % not ideal for extended term sim - may cause crashes/freezing
 
 if strcmp(pstVer , 'PSTv4')
     s_simu
@@ -53,12 +54,10 @@ copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']);
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']);
 
 %% Save cleaned output data
-save('tripTest.mat'); %Save simulation outputs
+save('tripTest2.mat'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
-
-
 
 %% Plot tripped Gen speed
 figure
@@ -69,6 +68,20 @@ plot(g.sys.t(n),g.mac.mac_spd(7,n),'r')
 plot(g.sys.t(n),g.mac.mac_spd(13,n),'g','LineWidth',2)
 grid on
 ylabel('Gen Speed [PU]')
+xlabel('Time [seconds]')
+legend('Gen 1','Gen 7','Gen 13','Location','Best')
+title('Select Generator Speeds')
+
+
+%% Plot tripped Gen derivatives
+figure
+n = find(g.sys.t<20);
+plot(g.sys.t(n),g.mac.dmac_spd(1,n),'k')
+hold on
+plot(g.sys.t(n),g.mac.dmac_spd(7,n),'r')
+plot(g.sys.t(n),g.mac.dmac_spd(13,n),'g','LineWidth',2)
+grid on
+ylabel('dGen Speed [PU]')
 xlabel('Time [seconds]')
 legend('Gen 1','Gen 7','Gen 13','Location','Best')
 title('Select Generator Speeds')

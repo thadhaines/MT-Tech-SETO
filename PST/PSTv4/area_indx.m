@@ -19,6 +19,7 @@ function area_indx
 %   07/19/20    15:18   Thad Haines     Version 1.0.1 - minor additions to indices, area counts
 %   07/20/20    19:42   Thad Haines     Version 1.1 - added max capacity to area init
 %   08/21/20    10:47   Thad Haines     Version 1.2 - Added icAdj
+%   08/25/20    11:23   Thad Haines     Version 1.3 - added initial PQGB calcs
 
 global g
 
@@ -42,7 +43,7 @@ if ~isempty(g.area.area_def)
         
         % doesn't assume/require same order of area and bus array
         
-        % collect area machine bus numbers
+        % collect area machine external bus numbers
         g.area.area(areaN).macBus = intersect(macBus, g.area.area(areaN).areaBuses);
         
         % collect area mac_con index numbers
@@ -54,6 +55,9 @@ if ~isempty(g.area.area_def)
         end
         % calculate area max capacity
         g.area.area(areaN).maxCapacity = sum(g.mac.mac_con(g.area.area(areaN).macBusNdx, 3));
+        % calculate initial P and Q gen
+        g.area.area(areaN).Pgen0 = sum(g.bus.bus(g.area.area(areaN).macBus, 4));
+        g.area.area(areaN).Qgen0 = sum(g.bus.bus(g.area.area(areaN).macBus, 5));
         
         % collect area load bus numbers
         g.area.area(areaN).loadBus = intersect(loadBus, g.area.area(areaN).areaBuses);
@@ -66,7 +70,14 @@ if ~isempty(g.area.area_def)
                 , find(g.bus.bus(:,1) == g.area.area(areaN).loadBus(ndx))]; % for references to machine array values
         end
         
-        % collect area generator bus numbers
+        % calculate initial P and Q load
+        g.area.area(areaN).Pload0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 6));
+        g.area.area(areaN).Qload0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 7));
+        % calculate initial shunt powers
+        g.area.area(areaN).G0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 8));
+        g.area.area(areaN).B0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 9));
+        
+        % collect area generator bus numbers - same as macBus? (excludes slack?) unsure - thad 08/25/20
         g.area.area(areaN).genBus = intersect(genBus, g.area.area(areaN).areaBuses);
         
         % collect area generator bus index numbers

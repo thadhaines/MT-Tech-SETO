@@ -8,6 +8,7 @@
 %   07/07/20    15:09   Thad Haines     Init
 %   07/17/20    13:31   Thad Haines     Added live plotting
 %   08/14/20    11:19   Thad Haines     Added machine trip logic
+%   08/24/20    14:15   Thad Haines     Added AGC modulation
 
 %% Model Dynamic Configuration
 % IVM MOD
@@ -47,6 +48,9 @@ copyfile('mtg_sig_ORIG.m', 'mtg_sig.m');
 
 % RML_SIG - Reactive load
 copyfile('rml_sig_ORIG.m', 'rml_sig.m');
+
+% MAGC_SIG - AGC modulation file
+copyfile('mAGC_sig_ORIG.m', 'mAGC_sig.m');
 
 %% Live plotting
 copyfile('livePlot_ORIG.m', 'livePlot.m'); % use altered as default

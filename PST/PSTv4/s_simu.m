@@ -51,20 +51,21 @@
 %   07/19/17    xx:xx   Rui             Version 1.8 - Add code for multiple HVDC systems
 %   xx/xx/19    xx:xx   Dan Trudnowski  Version 1.9 - Added ivmmod code
 %   07/15/20    14:27   Thad Haines     Version 2.0 - Revised format of globals and internal function documentation
-%   07/16/20    11:19   Thad Haines     V 2.0.1 - Added cleanZeros to end of script to clean global g
-%   07/18/20    10:52   Thad Haines     V 2.0.2 - Added Line monitor, area, and sytem average frequency calculations.
-%   07/21/20    16:20   Thad Haines     V 2.0.3 - Added AGC
-%   07/23/20    11:24   Thad Haines     Begining work on functionalization of solution.
-%   07/27/20    09:54   Thad Haines     Begining work on Variable Time step simulation
-%   07/28/20    16:20   Thad Haines     Initial working VTS simulation
-%   07/29/20    15:20   Thad Haines     jay -> 1j
-%   07/30/20    08:04   Thad Haines     Re-integrated interactive script running/plotting
-%   07/30/20    20:34   Thad Haines     Added selectable solution methods
-%   08/11/20    11:36   Thad Haines     added ivm to global
-%   08/13/20    09:37   Thad Haines     Incorporated new license
-%   08/16/20    20:28   Thad Haines     Increase logged data only if VTS
-%   08/18/20    10:51   Thad Haines     Moved network solution in Huen's method to work with AGC
-%   08/21/20    12:53   Thad Haines     Handled FTS->VTS unique time vector issue
+%   07/16/20    11:19   Thad Haines     V 2.1 - Added cleanZeros to end of script to clean global g
+%   07/18/20    10:52   Thad Haines     V 2.2 - Added Line monitor, area, and sytem average frequency calculations.
+%   07/21/20    16:20   Thad Haines     V 2.3 - Added AGC
+%   07/23/20    11:24   Thad Haines     V 2.3.1 - Begining work on functionalization of solution.
+%   07/27/20    09:54   Thad Haines     V 2.3.2 - Begining work on Variable Time step simulation
+%   07/28/20    16:20   Thad Haines     V 2.4 - Initial working VTS simulation
+%   07/29/20    15:20   Thad Haines     V 2.4.1 - jay -> 1j
+%   07/30/20    08:04   Thad Haines     V 2.5 - Re-integrated interactive script running/plotting
+%   07/30/20    20:34   Thad Haines     V 2.6 - Added selectable solution methods
+%   08/11/20    11:36   Thad Haines     V 2.7 - added ivm to global
+%   08/13/20    09:37   Thad Haines     V 2.8 - Incorporated new license
+%   08/16/20    20:28   Thad Haines     V 2.8.1 - Increase logged data only if VTS
+%   08/18/20    10:51   Thad Haines     V 2.8.2 - Moved network solution in Huen's method to work with AGC
+%   08/21/20    12:53   Thad Haines     V 2.8.3 - Handled FTS->VTS unique time vector issue
+%   08/25/20    11:02   Thad Haines     V 2.8.4 - Added try catch to handle non-convergence
 
 % (c) Montana Technological University / Thad Haines 2020
 % (c) Montana Technological University / Daniel Trudnowski 2019
@@ -91,9 +92,9 @@
 %
 
 format compact;
-disp('***    PST v4.0.0-a6    ***')
+disp('***    PST v4.0.0-a7    ***')
 disp('*** s_simu Start')
-disp('*** Declare Global Variables')
+disp('*** Declaring Global Variables...')
 
 %% Remaining 'loose' globals
 %% DeltaP/omega filter variables - 21 - model use not documented
@@ -396,6 +397,8 @@ g.sys.mach_ref = zeros(1, size(g.sys.t,2));
 
 %% Simulation loop start
 warning('*** Simulation Loop Start')
+try % for catching non-convergence
+    
 for simTblock = 1:size(g.vts.t_block)
     
     g.vts.t_blockN = simTblock;
@@ -445,11 +448,9 @@ for simTblock = 1:size(g.vts.t_block)
             initStep(k)
             
             %% Predictor Solution =========================================
-            networkSolutionVTS(k, g.sys.t(k))
-            
+            networkSolutionVTS(k, g.sys.t(k))          
             % most recent network solution based on completely calculated states is k
             monitorSolution(k); % moved for correct AGC action -thad 08/18/20
-            
             dynamicSolution(k)
             dcSolution(k)
             predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated in network solution i_simu call
@@ -459,7 +460,6 @@ for simTblock = 1:size(g.vts.t_block)
             dynamicSolution(j)
             dcSolution(j)
             correctorIntegration(k, j, g.k.h_sol)
-            
             
             %% Live plot call
             if g.sys.livePlotFlag
@@ -473,9 +473,7 @@ for simTblock = 1:size(g.vts.t_block)
         % Account for next time block using VTS
         handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
         handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives
-        
-        
-        
+          
     else % use user supplied variable method
         fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
             odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
@@ -488,6 +486,10 @@ for simTblock = 1:size(g.vts.t_block)
     end
     
 end% end simulation loop
+catch
+    disp('*!* Something has gone wrong and was caught!')
+    fprintf('*!* Data Index: %d\t Simulation Time: %5.5f\n\n', g.vts.dataN, g.sys.t(g.vts.dataN))
+end
 
 %% ========================================================================
 %% Variable step specific cleanup =========================================

@@ -5,6 +5,7 @@ function standAlonePlot(scriptRunFlag)
 % Syntax: standAlonePlot(scriptRunFlag)
 %
 %   NOTES: will act if scriptRunFlag == 1
+%          Can be run as a 'stand alone' function if flag is set to zero...
 %
 %   Input:
 %   scriptRunFlag - sets original flag to enter while loop
