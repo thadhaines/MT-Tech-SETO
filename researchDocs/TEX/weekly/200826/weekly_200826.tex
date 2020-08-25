@@ -50,16 +50,24 @@
 	\end{itemize}
 
 \end{comment}
-	\begin{enumerate}	
-		\item Added zeroing of derivatives for tripped machines to improve VTS performance.
+	\begin{enumerate}
+	\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/weekly/200819/weekly_200819.pdf}{Mention progress from last week?}
 		
-		\item Updated PST versioning document.
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200820-AGCminiWECCgenTrips2/200820-AGCminiWECCgenTrips2.pdf}{Added zeroing of derivatives for tripped machines to improve VTS performance.}
+		
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/00-PST-Versioning/00-PST-Versioning.pdf}{Updated PST versioning document.}
+		
 		\item FTS $\longrightarrow$ VTS seems okay\\
 		 VTS $\longrightarrow$ FTS may have minor issues
-		\item Added capacity tracking to AGC
-		\item Added interchange modulation capabilities and created associated use case document/code example.
-		\item Updated PST to version 4.0.0-a7
-		\item miniWECC 3 area \`{a} la EIA regions
+		\item Added capacity tracking and interchange modulation capabilities to area/AGC.
+		
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200821-AGCicAdjTest/200821-AGCicAdjTest.pdf}{Created} \verb|icAdj| use case document and code example.
+		
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200720-PSTandAGC/200720-PSTandAGC.pdf}{Updated AGC doc to include} \verb|icAdj|
+		
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/tree/master/PST/PSTv4}{Updated PST to version 4.0.0-a7}
+		
+		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/pdn/miniWECCsplit/miniWECC_split03.png}{miniWECC 3 area \`{a} la EIA regions}
 		
 		%\item Added Exciter models 0-4 to global g, tested as functional in both linear and non-linear batch runs.
 		%\item Started work on batch unit testing
@@ -75,19 +83,18 @@
 \paragraph{Current Tasks:}
 	\begin{enumerate}
 		\itemsep 0em 
-		\item update AGC docs to include \verb|icAdj|
-	\item Create extended term event with pwrmod and miniWECC
+	\item Create extended term event:
 	\begin{itemize}
 			\footnotesize
 			\itemsep0em
-	\item miniWECC
-	\item Rolling blackouts in CA
+	\item Use miniWECC and pwrmod
+	\item Issue: rolling blackouts in CA
 	\item High PV penetration
 	\item Drought has led to lower hydro output
-	\item initial Low N$\longrightarrow$S Flows
-	\item Solar decline as load increases %every evening
-	\item inadequate dispatchable generation %in CA to replace PV
-	\item Leads to Large N$\longrightarrow$S Flows
+	\item Initial low N$\longrightarrow$S flows
+	\item Solar generation declines as load increases %every evening
+	\item Inadequate CA dispatchable generation %in CA to replace PV
+	\item Leads to large N$\longrightarrow$S flows
 	\item EIA data from 8/14/20 18:00? % 12% reservese, blackouts followed 30 minutes later
 	\end{itemize}
 		\item Work towards PST 4.0.0:
@@ -97,7 +104,7 @@
 		\item Verify and Validate operation of AGC, PWRMOD, IVMMOD, and VTS.
 		\item Refine documentation	
 		\item Clean up examples
-		\item Clean up code comments
+		\item Clean up code/comments
 		\item Clean up readme files
 		\end{itemize}
 		\item Work on understanding PST operation
@@ -111,23 +118,6 @@
 \vfill\null
 \columnbreak
 
-\paragraph{Coding Thoughts:} 
-	\begin{enumerate}
-
-		\itemsep 0em 
-	%	\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category.
-	%	\item Create new \verb|s_simu_Batch| style script that functionalizes the newtork and dynamic calculations so that standard MATLAB ODE solvers may be used.
-		%\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
-	%	This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
-	%	Would enable addition of area definitions to models.
-	%	\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
-	%	Possibly employ \verb|feval| for a more dynamic calculation routine.
-		\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
-%		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
-		\item Generate comparison scripts to verify simulated results match  between code reversions and modifications.
-		
-
-	\end{enumerate}
 
 
 
@@ -135,10 +125,12 @@
 	\begin{enumerate}
 	\itemsep0em 
 	
-	
+	\item Only 1 pwrmod \textbf{model} allowed per case?
+	\item Real data for case/paper?
+	\item Paper expectations?
 %	\item Induction machines have no speed?\\ only angle?
 %	\item PST modeling of transformers?
-	\item Play in data for variable solar irradiance? (Slow Sine with step events for clouds.)
+%	\item Play in data for variable solar irradiance? (Slow Sine with step events for clouds.)
 %	\item PSS design doesn't seem to be used in normal simulation?
 %	\item Deadlines of any sort?
 	
@@ -154,6 +146,26 @@
 		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
 		\item Differences in \verb|mac_ind| between pst 2 and 3 seem backward compatible - untested.
 	\end{enumerate}
+	
+	
+	\paragraph{Coding Thoughts:} 
+		\begin{enumerate}
+	
+			\itemsep 0em 
+		%	\item Condense $\approx$340 globals into 1 structured array with $\approx$18 fields based on category.
+		%	\item Create new \verb|s_simu_Batch| style script that functionalizes the newtork and dynamic calculations so that standard MATLAB ODE solvers may be used.
+			%\item Enable `objects' (structure of arrays), but include functions to interact with condensed globals so vectorized operations are still possible.\\
+		%	This requires more conceptual modeling to understand what needs to be passed/references/changed for each `object'.
+		%	Would enable addition of area definitions to models.
+		%	\item Separate total system calculation of derivatives into scripts/functions to allow for easier changing of integration method.
+		%	Possibly employ \verb|feval| for a more dynamic calculation routine.
+			\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
+	%		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
+			\item Generate comparison scripts to verify simulated results match  between code revisions and modifications.
+			
+	
+		\end{enumerate}
+		
 \vfill\null
 
 \end{multicols}
