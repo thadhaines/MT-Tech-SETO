@@ -48,7 +48,9 @@ if g.mac.n_tra~=0
                     disp('changing xqp at generator');disp(i)
                 end
                 % check Tqo'
-                if g.mac.mac_con(i,14)==0;g.mac.mac_con(i,14)=999.0;end
+                if g.mac.mac_con(i,14)==0
+                    g.mac.mac_con(i,14)=999.0;
+                end
                 busnum = g.bus.bus_int(g.mac.mac_con(i,2)); % bus number
                 g.mac.mac_pot(i,1) = g.sys.basmva/g.mac.mac_con(i,3); % scaled MVA base
                 g.mac.mac_pot(i,2) = 1.0; % base kv

@@ -123,7 +123,9 @@ if sum(g.mac.mac_trip_flags)>0.5
     genBuses = g.mac.mac_con(g.mac.mac_trip_flags==1,2);
     for kB=1:length(genBuses)
         nL = find(genBuses(kB)==g.line.line_sim(:,1) | genBuses(kB)==g.line.line_sim(:,2));
-        if isempty(nL); error(' '); end
+        if isempty(nL)
+            error('*!* Line connecting generator to trip not found'); 
+        end
         g.line.line_sim(nL,4) = 1e7; %make reactance infinity
     end
     [Y1,Y2,Y3,Y4,Vr1,Vr2,bo] = red_ybus(g.bus.bus_sim,g.line.line_sim);
