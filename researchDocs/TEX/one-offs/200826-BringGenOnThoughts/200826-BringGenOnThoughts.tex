@@ -17,46 +17,68 @@
 
 \begin{document}
 \onehalfspacing
-\paragraph{Purpose} \ \\
-An extended term case may require the insertion of new generation resources.
-There is currently no known method in PST to bring more generation online.
-Additionally, seemed to be minor confusion/forgetfulness as to how PST currently handles tripping a generator.
+\paragraph{Document Purpose / Intent} \ \\
+An extended term case may require the insertion of new, or additional, modeled generation resources.
+There is currently no known method in PST to increase inertial generation during a simulation.
+Additionally, there seemed to be minor confusion/forgetfulness as to how PST currently handles tripping a generator.
 A closer look into what happens when machines are tripped off may provide some insight into a method to `un-trip', or insert, generators.
 
 
 \paragraph{How generators are currently tripped in PST} \ \\
-During simulation initialization, \verb|g.mac.mac_trip_flags| is set to a row vector of zeros to correspond to the \verb|mac_con| array, and 
-\verb|g.mac.mac_trip_states| is set to zero (and appears unused).
-To trip a generator, a \verb|mac_trip_flag| is set to one via the user generated \verb|mac_trip_logic| code.
-The \verb|mac_trip_logic| is executed in the \verb|initStep| function which alters \verb|g.mac.mac_trip_flags| to account for any programmed trips.
-The \verb|g.mac.mac_trip_flags| are summed in the \verb|networkSolution| (\verb|networkSoltuionVTS|).
-If the sum is larger than 0.5, the line number connected to the generator in the \verb|g.line.line_sim| is found and the reactance is set to infinity (1e7).
-The reduced y matrices are then recalculated and used to solve the network solution.
+During simulation initialization, \verb|g.mac.mac_trip_flags| is initialized as a row vector of zeros that correspond to the \verb|mac_con| array, and 
+\verb|g.mac.mac_trip_states| is set to zero. %\verb|g.mac.mac_trip_states|  ( appears unused).
+To trip a generator, a \verb|mac_trip_flag| is set to $1$ via the user generated \verb|mac_trip_logic| code.
+The \verb|mac_trip_logic| is executed in the \verb|initStep| function which alters \verb|g.mac.mac_trip_flags| to account for any programmed trip.
+Specifically, a $0$ in the \verb|g.mac.mac_trip_flags| row vector is changed to a 1 to signify a generator has tripped.
 
-If derivatives of the tripped machine are not set to zero (as current VTS methods do), the generator's speed increases, mechanical power output eventually drops to zero/near-zero, while any exciter Efd appears to go to something near 1.
+The \verb|g.mac.mac_trip_flags| vector is summed in the \verb|networkSolution| (\verb|networkSoltuionVTS|).
+If the resulting sum is larger than 0.5, the line number connected to the generator in the \verb|g.line.line_sim| is found and the reactance is set to infinity (1e7).
+The reduced y matrices are then recalculated and used to solve the network solution via an \verb|i_simu| call.
+
+If derivatives of the tripped machine are not set to zero (as the current VTS method does), the generator's speed increases, mechanical power output eventually drops to zero/near-zero, and the attached exciter Efd appears to approach 1.
 
 Realistically, Pmech and all P and Q limits should also probably be set to zero which may `clean up' values.
 
+It should be noted that if a machine is tripped, new reduced Y matrices are created every simulation step.
+This repeated action could be reduced via use of globals.
+\begin{itemize}
+\item create new globals for something along the lines of `Y sim' variables that are purposefully selected each network solution.
+\item create an \verb|old_mac_trip_flags|
+\item compare \verb|old_mac_trip_flags| to \verb|mac_trip_flags|
+\item if there has been a new trip, update associated Y matrix globals
+\item if there hasn't been a new trip, but a machine has tripped, use the stored Y matrix
+\end{itemize} 
+This is merely a calculation reduction and not required.
 
 \pagebreak
 \paragraph{Initial 'Un-trip' Thoughts} \ \\
 If the trip flag is changed from 1 to zero - the reactance would return to normal, essentially reconnecting the generator to the system.
 However, the calculated states and derivatives would be no longer be synchronized and probably cause all sorts of issues/transients.
 
-The machine model may be able to be re-initialized via the use of the 0 flag and setting $i$ to the correct number of the generator to re-initialize.
+The machine model may be re-initialized via the use of the 0 flag and setting $i$ to the correct number of the generator to re-initialize.
+This would require knowing what type of machine model is tripped so the proper function call is used.
+% are indices of machines tracked? or just number of models?
+The effects of such action is untested - a simple test case should be created and attempted.
+
+Basically:
+create small system with multiple generators, trip a generator, allow system to regain steady state, reconnect generator by setting machine trip flag back to zero.
+Observe and attempt to fix issues.
 
 \paragraph{`Un-trip' Method 1 - Alter Aggregate Generator } \ \\
-This method includes altering a machine base to imitate the addition of an aggregate generator.
+This method includes altering a machine's base during simulation to imitate the addition/reduction of an aggregate generator.
 It would require recalculation of all \verb|mac_pot| values used in model calculations.
-Additionally, the monitoring what is actually occurring may be obfuscated by the fact that any gains in capacity would be added to the existing aggregate value.
-This method was not predicted as being viable.
+Additionally, the monitoring of what is actually occurring may be obfuscated by the fact that any gains in capacity would be added to the existing aggregate value.
+This method was not predicted as being viable due to foreseen complexity/unavoidable transients.
 
 
 \paragraph{`Un-trip' Method 2 - Stand alone Generator } \ \\
-Start with Pref = Pmech = 0, exciter gain set to zero, and $\approx$ 0 inertia.
+Account for all generators that may, or may not, be added into the system during creation of the system data file (case).
+Start with Pref = Pmech = 0, turn exciter `off', and $\approx$ 0 inertia.
 While inertia is essentially 0, generator will likely respond very fast to any input.
 Inertia step and Pref altered.
 Essentially initialize a generator with zero Pmech to the connected bus with speed the same as other generators in the area/system...
+
+To track capacity/ineria: use -1 flag to denote a generator that is tripping from 1 to 0.
 
 
 \end{document}

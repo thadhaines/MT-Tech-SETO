@@ -486,9 +486,14 @@ for simTblock = 1:size(g.vts.t_block)
     end
     
 end% end simulation loop
-catch
+catch ME
     disp('*!* Something has gone wrong and was caught!')
     fprintf('*!* Data Index: %d\t Simulation Time: %5.5f\n\n', g.vts.dataN, g.sys.t(g.vts.dataN))
+    ME
+    for eN = 1:size(ME.stack,1)
+        revN = size(ME.stack,1)-eN+1;
+        fprintf('Error in %s at line %d\n', ME.stack(revN).name, ME.stack(revN).line)
+    end
 end
 
 %% ========================================================================
