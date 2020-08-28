@@ -66,6 +66,7 @@
 %   08/18/20    10:51   Thad Haines     V 2.8.2 - Moved network solution in Huen's method to work with AGC
 %   08/21/20    12:53   Thad Haines     V 2.8.3 - Handled FTS->VTS unique time vector issue
 %   08/25/20    11:02   Thad Haines     V 2.8.4 - Added try catch to handle non-convergence
+%   08/28/20    14:05   Thad Haines     V 2.8.5 - removed mac_trip_flags init, changed number of steps to print data
 
 % (c) Montana Technological University / Thad Haines 2020
 % (c) Montana Technological University / Daniel Trudnowski 2019
@@ -92,7 +93,7 @@
 %
 
 format compact;
-disp('***    PST v4.0.0-a7    ***')
+disp('***    PST v4.0.0-a8    ***')
 disp('*** s_simu Start')
 disp('*** Declaring Global Variables...')
 
@@ -358,7 +359,7 @@ g.k.ks = 1;
 g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
-g.mac.mac_trip_flags = false(g.mac.n_mac,1);
+%g.mac.mac_trip_flags = false(g.mac.n_mac,1); - initialized during handleNewGlobals - thad 08/28/20
 g.mac.mac_trip_states = 0;
 
 %% ========================================================================
@@ -433,8 +434,8 @@ for simTblock = 1:size(g.vts.t_block)
             k = g.vts.dataN;
             j = k+1;
             
-            % display k and t at every first, last, and 50th step
-            if ( mod(k,50)==0 ) || cur_Step == 1 || cur_Step == nSteps
+            % display k and t at every first, last, and 100th step
+            if ( mod(k,100)==0 ) || cur_Step == 1 || cur_Step == nSteps
                 fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
                 %fprintf('* current time: %s\t* start time: %s\n', datestr(now), startStr);
                 % elapsed time

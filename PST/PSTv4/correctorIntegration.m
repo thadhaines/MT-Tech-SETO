@@ -17,8 +17,9 @@ function correctorIntegration(k, j, h_sol)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    13:10   Thad Haines     Version 1
-%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
-%   08/11/20    11:18   Thad Haines     Version 1.0.2 - added ivmmod
+%   08/05/20    13:15   Thad Haines     Version 1.1 - added pwrmod signals to global
+%   08/11/20    11:18   Thad Haines     Version 1.2 - added ivmmod
+%   08/28/20    13:54   Thad Haines     Version 1.3 - added zeroing of tripped machine derivatives
 
 % %% Remaining 'loose' globals - commented out -thad 08/11/20
 % % DeltaP/omega filter variables - 21
@@ -31,6 +32,15 @@ global n_dpw
 
 %%
 global g
+
+%% multiple mac derivatives by not of mac trip flags 
+%(i.e. zero derivatives of tripped machines)
+g.mac.dmac_ang(:,j) = g.mac.dmac_ang(:,j).* ~g.mac.mac_trip_flags;
+g.mac.dmac_spd(:,j) = g.mac.dmac_spd(:,j).* ~g.mac.mac_trip_flags;
+g.mac.dedprime(:,j) = g.mac.dedprime(:,j).* ~g.mac.mac_trip_flags;
+g.mac.deqprime(:,j) = g.mac.deqprime(:,j).* ~g.mac.mac_trip_flags;
+g.mac.dpsikd(:,j) = g.mac.dpsikd(:,j).* ~g.mac.mac_trip_flags;
+g.mac.dpsikq(:,j) = g.mac.dpsikq(:,j).* ~g.mac.mac_trip_flags;
 
 %% following statements are corrector steps (RK2 computation)
 g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*(g.mac.dmac_ang(:,k)+g.mac.dmac_ang(:,j))/2.;

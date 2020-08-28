@@ -17,6 +17,7 @@ function networkSolutionVTS(k, vts_t)
 %   Date        Time    Engineer        Description
 %   07/23/20    11:28   Thad Haines     Version 1
 %   07/27/20    11:09   Thad Haines     Version 1.0.1 - alteration to use vts_t for switching
+%   08/28/20    08:18   Thad Haines     Version 1.2 - addition of exciter bypass
 
 %% Remaining 'loose' globals
 % DeltaP/omega filter variables - 21
@@ -178,6 +179,12 @@ smpexc(0,k,flag);
 smppi(0,k,flag);
 exc_st3(0,k,flag);
 exc_dc12(0,k,flag);
+
+% handle exciter bypass
+if any(g.exc.exc_bypass)
+    n = find(g.exc.exc_bypass, 1);
+    g.mac.vex(n,k) = g.mac.vex(n,k+1); % since stored post network solution this way
+end
 
 mtg_sig(k); % executed twice? - thad 07/18/20
 tg(0,k,flag);

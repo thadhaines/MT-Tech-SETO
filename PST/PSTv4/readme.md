@@ -28,3 +28,4 @@ A number of bug fixes are imagined to be required while new code base is tested.
 %   08/20/20    14:35   Thad Haines     4.0.0-a5 - zeroing out of tripped generator derivatives added     
 %	08/21/20 	14:01 	Thad Haines 	4.0.0-a6 - added icAdj modulation capabilites to AGC, FTS-> VTS time index adjustments   
 % 	08/25/20 	12:18 	Thad Haines 	4.0.0-a7 - added checks and warnings to area and AGC initialization, catching of non-convergence added to s_simu   
+%	08/28/20	13:58	Thad Haines		4.0.0-a8 - clean up of integration methods, added exciter bypass, experimental work on re-initializing models for 'un-tripping' machines.

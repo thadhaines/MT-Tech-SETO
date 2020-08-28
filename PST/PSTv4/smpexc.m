@@ -32,23 +32,25 @@ function smpexc(i,k,flag)
 %                                       Efd(i,k) = exc_cin(i,9); changed to Efd(i,k) = exc_con(i,9);
 %   06/19/20    10:34   Thad Haines     Revised format of globals and internal function documentation
 %   07/06/20    14:09   Thad Haines     Completion of global g alterations
+%   08/28/20    14:02   Thad Haines     Altered initialization to use passed in index instead of 1 when intializing a single exciter
 
 global g
 
-if i ~= 0
-    if g.exc.exc_con(i,1) ~= 0
-        error('SMPEXC: inappropriate exciter model')
-    end
-end
+% commented out - thad 08/28/20
+% if i ~= 0 
+%     if g.exc.exc_con(i,1) ~= 0
+%         error('SMPEXC: inappropriate exciter model')
+%     end
+% end
 
 if flag == 0 % initialization
     if i ~= 0  % scalar computation
         n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
-        g.exc.Efd(i,1) = g.mac.vex(n,1);
-        g.exc.V_A(i,1) = g.exc.Efd(i,1)/g.exc.exc_con(i,4); % laglead
-        g.exc.V_As(i,1) = g.exc.V_A(i,1); % leadlag state variable
-        g.exc.V_TR(i,1)= g.mac.eterm(n,1); % input filter state
-        err = g.exc.V_A(i,1); % summing junction error
+        g.exc.Efd(i,k) = g.mac.vex(n,k);
+        g.exc.V_A(i,k) = g.exc.Efd(i,k)/g.exc.exc_con(i,4); % laglead
+        g.exc.V_As(i,k) = g.exc.V_A(i,k); % leadlag state variable
+        g.exc.V_TR(i,k)= g.mac.eterm(n,k); % input filter state
+        err = g.exc.V_A(i,k); % summing junction error
         if g.exc.exc_con(i,6)~=0
             g.exc.exc_pot(i,5) = g.exc.exc_con(i,7)/g.exc.exc_con(i,6);
         else
@@ -78,8 +80,13 @@ end
 if flag == 1 % network interface computation
     if i ~= 0 % scalar computation
         n = g.mac.mac_int(g.exc.exc_con(i,2)); % machine number
+        % select only certain indexes to overwrite as a way to bypass exciter....
+        % n = n(n~=g.exc.exc_bypass); 
+        % requires an indivudual check i.e. iterate through ...
+        % do a ~& then remove zeros? 
         if g.exc.exc_con(i,5)~=0
             g.mac.vex(n,k) = g.exc.Efd(i,k); % field voltage for machines
+     
         else
             if g.exc.exc_con(i,6)==0
                 g.mac.vex(n,k)=(g.exc.exc_sig(i,k)+g.exc.exc_pot(i,3)-g.exc.V_TR(i,k)...

@@ -116,7 +116,7 @@ end
 if flag == 2 % turbine governor dynamics calculation
     if i ~= 0 % scalar computation
         n = g.mac.mac_int(g.tg.tg_con(i,2)); % machine number
-        spd_err = g.tg.tg_con(i,3) - g.mac.mac_spd(n,k);
+        spd_err = g.tg.tg_con(i,3) - g.mac.mac_spd(n,k); % ref_speed - actual speed
         % addition of tg_sig
         demand = g.tg.tg_pot(i,5) + spd_err*g.tg.tg_con(i,4) + g.tg.tg_sig(i,k);
         demand = min( max(demand,0),g.tg.tg_con(i,5) ); % ensure limited demand

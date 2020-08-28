@@ -19,14 +19,14 @@ function dynamicSolution(k)
 %   08/11/20    11:18   Thad Haines     Version 1.2 - added ivmmod
 %   08/21/20    10:51   Thad Haines     Version 1.3 - added mAGC_sig
 
-%% Remaining 'loose' globals
-% DeltaP/omega filter variables - 21
-global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
-global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
-global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
-
-% pss design - 3 - Not used in Simulation? - thad 07/18/20
-global ibus_con  netg_con  stab_con
+%% Remaining 'loose' globals - commented out
+% % DeltaP/omega filter variables - 21
+% global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
+% global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
+% global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
+% 
+% % pss design - 3 - Not used in Simulation? - thad 07/18/20
+% global ibus_con  netg_con  stab_con
 
 %%
 global g

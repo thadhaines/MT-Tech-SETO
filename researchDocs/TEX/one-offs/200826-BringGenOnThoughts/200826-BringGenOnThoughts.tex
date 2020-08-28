@@ -13,6 +13,7 @@
 \usepackage[hidelinks]{hyperref} % allow links in pdf
 \usepackage{setspace}
 \usepackage{multicol}
+\usepackage{lscape}
 %\usepackage{minted}
 
 \begin{document}
@@ -79,6 +80,36 @@ Inertia step and Pref altered.
 Essentially initialize a generator with zero Pmech to the connected bus with speed the same as other generators in the area/system...
 
 To track capacity/ineria: use -1 flag to denote a generator that is tripping from 1 to 0.
+
+\pagebreak
+\begin{landscape}
+
+\paragraph{Experimental Results}
+Using the previous notes as a guide, a 3 machine scenario was created where 1 generator will trip off, then attempt to be reconnected with minor transient behavior.
+Initial results are appear promising.
+All transient behavior may not be eliminated, but could possibly reduced by ramping signals (specifically the exciter).
+\begin{center}
+\includegraphics[width=.95\linewidth]{machineSpeedsNotes}
+\end{center}
+
+The exciter ramping up field voltage(and generating vars) caused the speed dip at 35.
+The exciter is required to be connected before mechanical power is ramped, else voltage collapse occurs and the machine `runs away'.
+The machine speeds do not return to 1 as the mechanical powers do not fully restore.
+The $P_{ref}$ setting of the tripped governor appears to not end at the 0.5 it is set to, or the value is scaled somewhere in the model that has been missed.
+\end{landscape}
+
+\paragraph{Results Continued} \ \\
+\begin{center}
+\includegraphics[width=.49\linewidth]{pelect} %
+\includegraphics[width=.49\linewidth]{pmech}
+
+\includegraphics[width=.49\linewidth]{qelect} %
+\includegraphics[width=.49\linewidth]{tg_sig}
+
+
+\includegraphics[width=.49\linewidth]{genBusV} %
+\includegraphics[width=.49\linewidth]{sysBusV} 
+\end{center}
 
 
 \end{document}

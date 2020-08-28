@@ -23,6 +23,7 @@
 %   07/17/20    07:57   Thad Haines     addition of bus, line, line mon
 %   07/20/20    19:48   Thad Haines     addition of AGC
 %   07/30/20    19:15   Thad Haines     addition of variable solver solver_con
+%   08/28/20    07:40   Thad Haines     addition of mac_trip_flags and exc_bypass
 
 global g
 
@@ -75,6 +76,15 @@ if exist('exc_con','var')
 else
     g.exc.exc_con = [];
 end
+
+% allow for bypassed exciters at start of simulation
+if exist('exc_bypass','var')
+    g.exc.exc_bypass = exc_bypass;
+    clear exc_bypass
+else
+    g.exc.exc_bypass = zeros(size(g.exc.exc_con,1),1);
+end
+
 %% machines
 if exist('mac_con','var')
     g.mac.mac_con = mac_con;
@@ -82,6 +92,15 @@ if exist('mac_con','var')
 else
     g.mac.mac_con = [];
 end
+
+% allow machines to be initialized as 'tripped' / disconnected
+if exist('mac_trip_flags','var')
+    g.mac.mac_trip_flags = mac_trip_flags;
+    clear mac_trip_flags
+else
+    g.mac.mac_trip_flags = zeros(size(g.mac.mac_con,1),1);
+end
+
 %% inifite bus (not really used?)
 if exist('ibus_con','var')
     g.mac.ibus_con = ibus_con;

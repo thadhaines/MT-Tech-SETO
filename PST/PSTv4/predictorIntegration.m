@@ -17,21 +17,32 @@ function predictorIntegration(k, j, h_sol)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    13:10   Thad Haines     Version 1
-%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
-%   08/11/20    11:36   Thad Haines     Version 1.0.2 - added ivm to global
+%   08/05/20    13:15   Thad Haines     Version 1.1 - added pwrmod signals to global
+%   08/11/20    11:36   Thad Haines     Version 1.2 - added ivm to global
+%   08/28/20    13:54   Thad Haines     Version 1.3 - added zeroing of tripped machine derivatives
 
-%% Remaining 'loose' globals
-% DeltaP/omega filter variables - 21
-global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
-global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
-global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
-
-% pss design - 3 - Not used in Simulation? - thad 07/18/20
-global ibus_con  netg_con  stab_con
+% %% Remaining 'loose' globals - commented out for now
+% % DeltaP/omega filter variables - 21
+% global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
+% global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
+% global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
+% 
+% % pss design - 3 - Not used in Simulation? - thad 07/18/20
+% global ibus_con  netg_con  stab_con
 
 %%
 global g
+global n_dpw
+%% multiple mac derivatives by not of mac trip flags 
+%(i.e. zero derivatives of tripped machines)
+g.mac.dmac_ang(:,k) = g.mac.dmac_ang(:,k).* ~g.mac.mac_trip_flags;
+g.mac.dmac_spd(:,k) = g.mac.dmac_spd(:,k).* ~g.mac.mac_trip_flags;
+g.mac.dedprime(:,k) = g.mac.dedprime(:,k).* ~g.mac.mac_trip_flags;
+g.mac.deqprime(:,k) = g.mac.deqprime(:,k).* ~g.mac.mac_trip_flags;
+g.mac.dpsikd(:,k) = g.mac.dpsikd(:,k).* ~g.mac.mac_trip_flags;
+g.mac.dpsikq(:,k) = g.mac.dpsikq(:,k).* ~g.mac.mac_trip_flags;
 
+%%
 g.mac.mac_ang(:,j) = g.mac.mac_ang(:,k) + h_sol*g.mac.dmac_ang(:,k);
 g.mac.mac_spd(:,j) = g.mac.mac_spd(:,k) + h_sol*g.mac.dmac_spd(:,k);
 g.mac.edprime(:,j) = g.mac.edprime(:,k) + h_sol*g.mac.dedprime(:,k);
