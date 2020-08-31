@@ -32,6 +32,7 @@ function mac_tra(i,k,bus,flag)
 %   06/19/20    10:17   Thad Haines     Revised format of globals and internal function documentation
 %   07/07/20    14:10   Thad Haines     Completion of global g alteration
 %   07/29/20    15:20   Thad Haines     jay -> 1j
+%   08/31/20    08:25   Thad Haines     Correction of g.mac.theta to updated g.bus.theta (reported by Ryan Elliot)
 
 global g
 
@@ -56,7 +57,7 @@ if g.mac.n_tra~=0
                 g.mac.mac_pot(i,2) = 1.0; % base kv
                 % extract bus information
                 g.mac.eterm(i,1) = bus(busnum,2);  % terminal bus voltage
-                g.mac.theta(busnum,1) = bus(busnum,3)*pi/180;
+                g.bus.theta(busnum,1) = bus(busnum,3)*pi/180;
                 % terminal bus angle in radians
                 g.mac.pelect(i,1) = bus(busnum,4)*g.mac.mac_con(i,22);
                 % electrical output power, active
@@ -66,10 +67,10 @@ if g.mac.n_tra~=0
                     /g.mac.eterm(i,1)*g.mac.mac_pot(i,1);  % current magnitude
                 phi = atan2(g.mac.qelect(i,1),g.mac.pelect(i,1));
                 % power factor angle
-                v = g.mac.eterm(i,1)*exp(1j*g.mac.theta(busnum,1));
+                v = g.mac.eterm(i,1)*exp(1j*g.bus.theta(busnum,1));
                 % voltage in real and imaginary parts
                 % on system reference frame
-                curr = curr*exp(1j*(g.mac.theta(busnum,1)-phi)); % current in real and
+                curr = curr*exp(1j*(g.bus.theta(busnum,1)-phi)); % current in real and
                 % imaginary parts on system reference frame
                 eprime = v +(g.mac.mac_con(i,5) + 1j*g.mac.mac_con(i,7))*curr;
                 ei = v + (g.mac.mac_con(i,5) + 1j*g.mac.mac_con(i,11))*curr;
@@ -133,7 +134,7 @@ if g.mac.n_tra~=0
             g.mac.mac_pot(g.mac.mac_tra_idx,2) = ones(g.mac.n_tra,1); % base kv
             % extract bus information
             g.mac.eterm(g.mac.mac_tra_idx,1) = bus(busnum,2);  % terminal bus voltage
-            g.mac.theta(busnum,1) = bus(busnum,3)*pi/180;
+            g.bus.theta(busnum,1) = bus(busnum,3)*pi/180;
             % terminal bus angle in radians
             g.mac.pelect(g.mac.mac_tra_idx,1) = bus(busnum,4).*g.mac.mac_con(g.mac.mac_tra_idx,22);
             % electrical output power, active
@@ -143,10 +144,10 @@ if g.mac.n_tra~=0
                 ./g.mac.eterm(g.mac.mac_tra_idx,1).*g.mac.mac_pot(g.mac.mac_tra_idx,1);  % current magnitude
             phi = atan2(g.mac.qelect(g.mac.mac_tra_idx,1),g.mac.pelect(g.mac.mac_tra_idx,1));
             % power factor angle
-            v = g.mac.eterm(g.mac.mac_tra_idx,1).*exp(1j*g.mac.theta(busnum,1));
+            v = g.mac.eterm(g.mac.mac_tra_idx,1).*exp(1j*g.bus.theta(busnum,1));
             % voltage in real and imaginary parts
             % on system reference frame
-            curr = curr.*exp(1j*(g.mac.theta(busnum,1)-phi)); % current in real and
+            curr = curr.*exp(1j*(g.bus.theta(busnum,1)-phi)); % current in real and
             % imaginary parts on system reference frame
             eprime = v + (g.mac.mac_con(g.mac.mac_tra_idx,5)+1j*g.mac.mac_con(g.mac.mac_tra_idx,7)).*curr;
             ei = v + (g.mac.mac_con(g.mac.mac_tra_idx,5)+1j*g.mac.mac_con(g.mac.mac_tra_idx,11)).*curr;
