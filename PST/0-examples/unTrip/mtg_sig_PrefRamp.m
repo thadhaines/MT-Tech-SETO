@@ -6,27 +6,27 @@ global g
 % actions to return a generator back on line
 
 % ramp Pref near to original value
-if abs(g.sys.t(k)-45) < 1e-5
-    disp('ramping gov Pref via tg_sig')
+if abs(g.sys.t(k)-45) < 1e-6
+    disp(['MTG_SIG:  ramping gov Pref via tg_sig at t = ', num2str(g.sys.t(k))])
 end
 if g.sys.t(k)>= 45 && g.sys.t(k)< 65 %
     g.tg.tg_sig(3,k) = (g.sys.t(k)-45)*(0.5)/20; % 25 second ramp up
 end
 
 % set signal near to pref,
-if abs(g.sys.t(k)-65) < 1e-5
-    disp('sig ramp done, setting sig')
+if abs(g.sys.t(k)-65) < 1e-6
+    disp(['MTG_SIG:  sig ramp done, setting sig at t = ', num2str(g.sys.t(k))])
 end
 if g.sys.t(k)>= 65 && g.sys.t(k)<70
     g.tg.tg_sig(3,k) = (0.5);
 end
 
 % set pref, remove signal
-if abs(g.sys.t(k)-70) < 1e-5
+if abs(g.sys.t(k)-70) < 1e-6
     g.tg.tg_sig(3,k) = 0; % remove Pref sig
     g.tg.tg_pot(3,5) = 0.5; % set Pref
     reInitGov(3,k) 
-    disp('setting Pref, removing sig')
+    disp(['MTG_SIG:  setting Pref, removing sig at t = ', num2str(g.sys.t(k))])
 end
 
 end

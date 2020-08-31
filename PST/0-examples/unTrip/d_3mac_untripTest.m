@@ -60,6 +60,12 @@ tg_con = [...
 1    3   1  20         1.0   0.10  10   3.0    0      0.01;%Steam
 ];
 
+%% Line Monitoring
+% Each value corresponds to an array index in the line array.
+% Complex current and power flow on the line will be calculated and logged during simulation
+
+lmon_con = find(line(:,2) == 3 | line(:,1) == 3); % lines to load on bus 3
+
  %% Load Modulation
 % 
 % % load_con format
@@ -72,7 +78,6 @@ tg_con = [...
 % load_con = [...
 %     %   1   2       3       4       5
 %         3   0       0       0       0;
-%         8   0       0       0       0; % SVC
 %         ]; %constant impedance
 % 
 % % lmod_con format
@@ -88,17 +93,7 @@ tg_con = [...
 % lmod_con = [ ...
 %   % 1   2   3       4       5       6       7
 %     1   3   100     1.0     0.0     1.0     0.1;];
-% %svc
-% % col 1           svc number
-% % col 2           bus number
-% % col 3           svc base MVA
-% % col 4           maximum susceptance Bcvmax(pu)
-% % col 5           minimum susceptance Bcvmin(pu)
-% % col 6           regulator gain
-% % col 7		  regulator time constant (s)
-% 
-% svc_con = [1  8  100  1  -1  10  0.05];
-% 
+
 
 %% Switching
 %Switching file defines the simulation control
@@ -124,7 +119,7 @@ tg_con = [...
 %     col7  time step (s)
 sw_con = [...
 0        0    0    0    0    0    1/120; % sets intitial time step
-2.0      6    1    0    0    6    1/120; % no switching action - trip gen via mac_trip_logic
+5.0      6    1    0    0    6    1/120; % no switching action - trip gen via mac_trip_logic
 15.0     0    0    0    0    0    1/120; % reconnect gen
 20.0     0    0    0    0    0    1/120; % SS reached, un-trip gen via mac_trip_logic
 25.0      0    0    0    0    0    1/120; % add Gov droop control

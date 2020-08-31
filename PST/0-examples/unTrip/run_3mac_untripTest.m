@@ -1,4 +1,6 @@
 % Run 3mac_untripTest
+% Only functional in PSTv4
+
 clear all; close all; clc
 
 %% Add correct PST verstion path to MATLAB in a generic way
@@ -33,7 +35,7 @@ copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % set live plot
 
 % Move correct trip logic files
 if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
-    copyfile('mac_trip_logic_Gen_3_G2.m', [PSTpath 'mac_trip_logic.m']);
+    copyfile('mac_trip_logic_Gen_3_G.m', [PSTpath 'mac_trip_logic.m']);
     %copyfile('mpm_sig_PmRampG.m', [PSTpath 'mpm_sig.m']);
 copyfile('mtg_sig_PrefRamp.m', [PSTpath 'mtg_sig.m']);
 else
@@ -86,30 +88,34 @@ plotCell = { ...
 % nE = nE(1);
 axLim = [24,28];
 
+
 for n = 1:size(plotCell,1)
     f1 = plotCell{n,1};
     f2 = plotCell{n,2};
 figure
+
 plot(g.sys.t, g.(f1).(f2))
+
 xlabel('Time [sec]')
-%xlim(axLim)
+% handle multiple y labels
+if strcmp(f2, 'pmech') || strcmp(f2, 'pelect')
+    ylabel('MW [PU]')
+elseif strcmp(f2, 'tg_sig')
+    ylabel('Mod Signal [PU]')
+elseif strcmp(f2, 'mac_spd')
+    ylabel('Speed [PU]')
+elseif strcmp(f2, 'qelect')
+    ylabel('MVAR [PU]')
+end
+
+%xlim(axLim) % for detail plots
 
 title([f1,'.',f2], 'Interpreter','None')
 grid on
 end
 
-% reconnecting a sub_transient machine is possible
-
-% exciter re init is uncertain- ramp out a 'negative' exc_sig to gradually allow model action?
-% if exciter enabled: qelect is restoration begins immediately upon connection
-
-% brief issue believed to be to transformer taps caused intial voltages not to match, could've been bad settings
-% used settings from user manual for a tap changing transformer and issue went away...
-
-% tg re-init would liekly involve Pref being ramped in
-
 %
-%%
+%% tripped gen xfmr bus voltages
 figure
 plot(g.sys.t, abs(g.bus.bus_v(6,:)))
 hold on
@@ -120,7 +126,7 @@ xlabel('Time [seconds]')
 legend({'High Side XFRMR','Gen Side XFRMR'},'location','best')
 grid on
 
-%%
+%% System Bus voltages
 figure
 legNames = {};
 for n=1:size(g.bus.bus_v,1)-1
@@ -136,3 +142,33 @@ ylabel('Bus Voltage [PU]')
 xlabel('Time [seconds]')
 legend(legNames, 'location','best')
 grid on
+
+%% Line currents feeding load
+figure
+legNames = {};
+for n=1:g.lmon.n_lmon
+subplot(2,1,1)
+plot(g.sys.t, real(g.lmon.line(n).sFrom))
+hold on
+grid on
+
+subplot(2,1,2)
+plot(g.sys.t, imag(g.lmon.line(n).sFrom))
+hold on
+grid on
+
+legNames{end+1} = ['Line ',num2str(g.lmon.line(n).FromBus), ' to ',num2str(g.lmon.line(n).ToBus),];
+end
+
+
+subplot(2,1,1)
+title('Real Power Flow on Lines')
+ylabel('MW[PU]')
+xlabel('Time [seconds]')
+legend(legNames, 'location','best')
+
+subplot(2,1,2)
+title('Reactive Power Flow on Lines')
+ylabel('MVAR[PU]')
+xlabel('Time [seconds]')
+legend(legNames, 'location','best')

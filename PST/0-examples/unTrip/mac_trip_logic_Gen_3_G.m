@@ -34,10 +34,10 @@ else
     tripOut = tripStatus;
     
     %% Trip generator
-    if abs(t(kT)-2)<1e-5
+    if abs(t(kT)-5)<1e-5
         tripOut(3) = true; %trip gen 1 at t=5 sec.
         mac_trip_states(3,:) = [3; t(kT)]; %keep track of when things trip
-        disp(['Tripping gen 3 at t = ' num2str(t(kT))])
+        disp(['MAC_TRIP_LOGIC:  Tripping gen 3 at t = ' num2str(t(kT))])
         for n=0:1
             g.mac.pmech(3,kT+n) = 0; % set pmech to zero
         end
@@ -51,7 +51,7 @@ else
     
     %% untrip gen
     if abs(t(kT)-15.0)<1e-5 %
-        disp(['"Un-Tripping" gen 3 at t = ' num2str(t(kT))])
+        disp(['MAC_TRIP_LOGIC:  "Un-Tripping" gen 3 at t = ' num2str(t(kT))])
         tripOut(3) = false; 
         mac_trip_states(3,:) = [3; t(kT)];  % keep track of when things trip
         g.mac.mac_trip_flags(3) = 0;        % set global flag to zero.
@@ -66,29 +66,30 @@ else
     
     % ramp R in
     if abs(g.sys.t(kT)-20) < 1e-5
-        disp('reinit gov, start ramping R in')
+        disp('MAC_TRIP_LOGIC:  reinit gov, start ramping R in')
        reInitGov(3,kT) 
     end
     if g.sys.t(kT)>= 20 && g.sys.t(kT)< 25 %
-        g.tg.tg_con(3,4) = (g.sys.t(kT)-20)*20/5; % 5 second ramp up
+        g.tg.tg_con(3,4) = 20*(1 - exp( 20-g.sys.t(kT) ) ); % concave down
+        %g.tg.tg_con(3,4) = (g.sys.t(kT)-20)*20/5; % 5 second ramp up linear ramp
     end
     
     if abs(t(kT)-25.0)<1e-5 % Reset governor delta w gain (keep Pref = 0)
        % Remove bypass of governor R
        g.tg.tg_con(3,4) = 20.0; % restore 1/R value
-        disp('R ramp in complete, allow governor to account for frequency deviation')
+        disp('MAC_TRIP_LOGIC:  R ramp in complete, allow governor to account for frequency deviation')
     end
     
     if abs(t(kT)-35.0)<1e-5 % remove bypass on exciter
-        disp('connecting exciter')
-        smpexc(3,kT,0) % re-init single exciter
+        disp('MAC_TRIP_LOGIC:  connecting exciter')
+        reInitSmpExc(3,kT)  % re-init single exciter
         g.exc.exc_bypass(3) = 0; % remove exciter bypass
         
     end
     
     if abs(t(kT)-80.0)<1e-5 % ramp exciter reference voltage
         
-        disp('ramping exciter to original ref voltage')
+        disp('MAC_TRIP_LOGIC:  ramping exciter to original ref voltage')
         excVrefNEW = excVrefOLD - g.exc.exc_pot(3,3); % calculate difference to make up
         excVrefOLD = g.exc.exc_pot(3,3);
     end
