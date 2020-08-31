@@ -20,7 +20,7 @@ function [tripOut,mac_trip_states] = mac_trip_logic(tripStatus,mac_trip_states,t
 % Date:   Jan 2017
 
 % 08/28/20  12:35   Thad Haines     Trip a generator, then bring it back online
-% All reinitializing and ramping are distinct (i.e. do not overlap in time)
+% exciter and governor ramp over 40-65
 
 %% define global variables
 global g
@@ -86,15 +86,15 @@ else
         
     end
     
-    if abs(t(kT)-80.0)<1e-5 % ramp exciter reference voltage
+    if abs(t(kT)-50.0)<1e-5 % ramp exciter reference voltage
         
         disp('ramping exciter to original ref voltage')
         excVrefNEW = excVrefOLD - g.exc.exc_pot(3,3); % calculate difference to make up
         excVrefOLD = g.exc.exc_pot(3,3);
     end
     
-    if t(kT)>=80 && t(kT) <100
-         g.exc.exc_pot(3,3) =  excVrefOLD + (t(kT)-80)*excVrefNEW/20;
+    if t(kT)>=50 && t(kT) <75
+         g.exc.exc_pot(3,3) =  excVrefOLD + (t(kT)-50)*excVrefNEW/25;
     end
     
 end

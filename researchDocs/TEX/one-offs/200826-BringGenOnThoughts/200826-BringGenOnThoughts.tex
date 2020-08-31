@@ -27,7 +27,7 @@ A closer look into what happens when machines are tripped off may provide some i
 
 \paragraph{How generators are currently tripped in PST} \ \\
 During simulation initialization, \verb|g.mac.mac_trip_flags| is initialized as a row vector of zeros that correspond to the \verb|mac_con| array, and 
-\verb|g.mac.mac_trip_states| is set to zero. %\verb|g.mac.mac_trip_states|  ( appears unused).
+\verb|g.mac.mac_trip_states| variable is set to zero. %\verb|g.mac.mac_trip_states|  ( appears unused).
 To trip a generator, a \verb|mac_trip_flag| is set to $1$ via the user generated \verb|mac_trip_logic| code.
 The \verb|mac_trip_logic| is executed in the \verb|initStep| function which alters \verb|g.mac.mac_trip_flags| to account for any programmed trip.
 Specifically, a $0$ in the \verb|g.mac.mac_trip_flags| row vector is changed to a 1 to signify a generator has tripped.
@@ -38,32 +38,32 @@ The reduced y matrices are then recalculated and used to solve the network solut
 
 If derivatives of the tripped machine are not set to zero (as the current VTS method does), the generator's speed increases, mechanical power output eventually drops to zero/near-zero, and the attached exciter Efd appears to approach 1.
 
-Realistically, Pmech and all P and Q limits should also probably be set to zero which may `clean up' values.
-
-It should be noted that if a machine is tripped, new reduced Y matrices are created every simulation step.
+%Realistically, Pmech and all P and Q limits should also probably be set to zero which may `clean up' values.
+\subparagraph{Performance Note}
+If a machine is tripped, altered reduced Y matrices are generated every simulation step.
 This repeated action could be reduced via use of globals.
 \begin{itemize}
-\item create new globals for something along the lines of `Y sim' variables that are purposefully selected each network solution.
+\item create new globals handling the Y matrices selected during the network solution.
 \item create an \verb|old_mac_trip_flags|
 \item compare \verb|old_mac_trip_flags| to \verb|mac_trip_flags|
 \item if there has been a new trip, update associated Y matrix globals
 \item if there hasn't been a new trip, but a machine has tripped, use the stored Y matrix
 \end{itemize} 
-This is merely a calculation reduction and not required.
+This is merely a calculation reduction and not required, but may result in a noticeable speed up.
 
 \pagebreak
 \paragraph{Initial 'Un-trip' Thoughts} \ \\
 If the trip flag is changed from 1 to zero - the reactance would return to normal, essentially reconnecting the generator to the system.
 However, the calculated states and derivatives would be no longer be synchronized and probably cause all sorts of issues/transients.
 
-The machine model may be re-initialized via the use of the 0 flag and setting $i$ to the correct number of the generator to re-initialize.
+The machine model may be re-initialized via the use of the 0 flag and setting $i$ to the internal number of the generator to re-initialize.
 This would require knowing what type of machine model is tripped so the proper function call is used.
 % are indices of machines tracked? or just number of models?
 The effects of such action is untested - a simple test case should be created and attempted.
 
 Basically:
 create small system with multiple generators, trip a generator, allow system to regain steady state, reconnect generator by setting machine trip flag back to zero.
-Observe and attempt to fix issues.
+Observe results and attempt to resolve issues.
 
 \paragraph{`Un-trip' Method 1 - Alter Aggregate Generator } \ \\
 This method includes altering a machine's base during simulation to imitate the addition/reduction of an aggregate generator.
@@ -74,31 +74,33 @@ This method was not predicted as being viable due to foreseen complexity/unavoid
 
 \paragraph{`Un-trip' Method 2 - Stand alone Generator } \ \\
 Account for all generators that may, or may not, be added into the system during creation of the system data file (case).
-Start with Pref = Pmech = 0, turn exciter `off', and $\approx$ 0 inertia.
-While inertia is essentially 0, generator will likely respond very fast to any input.
-Inertia step and Pref altered.
-Essentially initialize a generator with zero Pmech to the connected bus with speed the same as other generators in the area/system...
+Handle model re-initializations and bypasses as required to mimic actual procedure of connecting a generator to a synchronous system.
 
-To track capacity/ineria: use -1 flag to denote a generator that is tripping from 1 to 0.
+\paragraph{Test System}\ A simple 3 machine system was created where all machines have governors, exciters, and pss.
+Parameters are essentially the same except for MVA base for each generator which was 500, 200, and 100 for generator 1, 2, and 3, respectively
+
+\begin{center}
+\includegraphics[width=.85\linewidth]{200831-3mach7bus}
+\end{center}
 
 \pagebreak
 \begin{landscape}
 
 \paragraph{Experimental Results}
-Using the previous notes as a guide, a 3 machine scenario was created where 1 generator will trip off, then attempt to be reconnected with minor transient behavior.
+Using the previous notes as a guide, a 3 machine scenario was created where generator 3 will trip off, then attempt to be reconnected with minimal transient behavior.
 Initial results are appear promising.
-All transient behavior may not be eliminated, but could possibly reduced by ramping signals (specifically the exciter).
+All transient behavior may not be eliminated, but could possibly reduced by reseting set point values and then ramping to the new desired setting (most notably the exciter reference voltage).
 \begin{center}
 \includegraphics[width=.95\linewidth]{machineSpeedsNotes}
 \end{center}
 
-The exciter ramping up field voltage(and generating vars) caused the speed dip at 35.
+The exciter ramping up field voltage (and generating vars) caused the speed dip at t=35.
 The exciter is required to be connected before mechanical power is ramped, else voltage collapse occurs and the machine `runs away'.
 The machine speeds do not return to 1 as the mechanical powers do not fully restore.
-The $P_{ref}$ setting of the tripped governor appears to not end at the 0.5 it is set to, or the value is scaled somewhere in the model that has been missed.
+The $P_{ref}$ setting of the tripped governor appears to not end at the 0.5 it is set to, or the Pref value is scaled somewhere in the model that has been missed.
 \end{landscape}
 
-\paragraph{Results Continued} \ \\
+\paragraph{Various Other Result Plots} \ \\
 \begin{center}
 \includegraphics[width=.49\linewidth]{pelect} %
 \includegraphics[width=.49\linewidth]{pmech}

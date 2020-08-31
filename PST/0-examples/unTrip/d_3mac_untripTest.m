@@ -132,6 +132,7 @@ sw_con = [...
 45.0      0    0    0    0    0    1/120; % ramp tg sig to gov Pref
 65.0      0    0    0    0    0    1/120; % set tg sig to Pref
 70.0      0    0    0    0    0    1/120; % set Pref in gov, remove sig
+80.0      0    0    0    0    0    1/120; % start ramping exciter in
 120.0     0    0    0    0    0    1/120; % clear far end of fault - end simulation
     ]; % end simulation
 

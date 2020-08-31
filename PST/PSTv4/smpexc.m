@@ -56,7 +56,7 @@ if flag == 0 % initialization
         else
             g.exc.exc_pot(i,5)=1;
         end
-        g.exc.exc_pot(i,3) = g.mac.eterm(n,1)+err; % reference voltage
+        g.exc.exc_pot(i,3) = g.mac.eterm(n,k)+err; % reference voltage
         
     else  % vectorized computation
         
