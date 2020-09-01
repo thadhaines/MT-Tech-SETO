@@ -27,6 +27,7 @@ function pss(i,k,flag)
 %   04/xx/11    xx:xx   JHC             Version 3.1 - Corrected washout filter calculation
 %   07/06/20    13:57   Thad Haines     Revised format of globals and internal function documentation
 %   07/09/20    08:55   Thad Haines     'Un-corrected' JCH washout filter calculation so pss is same as model from V2
+%   09/01/20    10:08   Thad Haines     Modified non-vector initialize to use k as data index
 
 global g
 global dpw_out n_dpw % deals with delta omega filter...
@@ -38,23 +39,24 @@ if g.pss.n_pss~=0
         end
     end
     
-    if flag == 0; % initialization
-        if i ~= 0  % scalar computation
+    if flag == 0 % initialization
+         if i ~= 0  % scalar computation
             n = g.pss.pss_mb_idx(i); % machine number
-            if g.pss.pss_con(i,1) == 1
-                g.pss.pss1(i,1) = g.mac.mac_spd(n,1);
+            if g.pss.pss_con(i,1) == 1 
+                g.pss.pss1(i,k) = g.mac.mac_spd(n,k);% speed ref
             else
-                g.pss.pss1(i,1) = g.mac.pelect(n,1)*g.sys.basmva/g.mac.mac_con(n,3);
+                g.pss.pss1(i,k) = g.mac.pelect(n,k)*g.sys.basmva/g.mac.mac_con(n,3); % power ref
             end
             if n_dpw ~= 0
                 i_dpw = find(dpw_pss_idx==i);
                 if ~isempty(i_dpw)
-                    g.pss.pss1(i,1)= dpw_out(i_dpw,1);
+                    g.pss.pss1(i,k)= dpw_out(i_dpw,k);
                 end
             end
-            g.pss.pss2(i,1) = 0.;
-            g.pss.pss3(i,1) = 0.;
-            g.pss.pss_out(g.pss.pss_exc_idx(i),1) = 0.;
+            g.pss.pss2(i,k) = 0.;
+            g.pss.pss3(i,k) = 0.;
+            g.pss.pss_out(g.pss.pss_exc_idx(i),k) = 0.;
+            % constant gains
             g.pss.pss_pot(i,1) = g.pss.pss_con(i,5)/g.pss.pss_con(i,6);
             g.pss.pss_pot(i,2) = 1.0;
             if g.pss.pss_con(i,8) ~= 0

@@ -34,7 +34,7 @@ copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % set live plot
 
 % Move correct trip logic files
 if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
-    copyfile('mac_trip_logic_Gen_3_G.m', [PSTpath 'mac_trip_logic.m']);
+    copyfile('mac_trip_logic_Gen_3_G2.m', [PSTpath 'mac_trip_logic.m']);
     copyfile('mtg_sig_PrefRamp.m', [PSTpath 'mtg_sig.m']);
     %copyfile('mpm_sig_PmRampG.m', [PSTpath 'mpm_sig.m']);
 else
@@ -58,7 +58,7 @@ copyfile([PSTpath 'mpm_sig_ORIG.m'], [PSTpath 'mpm_sig.m']);
 copyfile([PSTpath 'mtg_sig_ORIG.m'], [PSTpath 'mtg_sig.m']);
 
 %% Save cleaned output data
-save('3mac_untripTest_noEXC.mat'); %Save simulation outputs
+save('3mac_untripTest_XXX.mat'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
@@ -70,15 +70,15 @@ xevents = g.sys.sw_con(:,1)';
 plotCell = { ...
     %f1, f2
     'mac','pmech';
-    'tg','tg_sig';
+   % 'tg','tg_sig';
     'mac','mac_spd';
     'mac','pelect';
     'mac','qelect';
-    %'mac','cur_re';
-    %'mac','cur_im';
-    %'mac','mac_ang';
-    %'mac','psi_re';
-    %'mac','psi_im';
+%     'mac','cur_re';
+%     'mac','cur_im';
+%     'mac','mac_ang';
+%     'mac','psi_re';
+%     'mac','psi_im';
     };
 
 % nS = find(g.sys.t > 24);

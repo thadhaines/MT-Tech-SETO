@@ -360,7 +360,7 @@ g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
 %g.mac.mac_trip_flags = false(g.mac.n_mac,1); - initialized during handleNewGlobals - thad 08/28/20
-g.mac.mac_trip_states = 0;
+g.mac.mac_trip_states = 0; % seems unused...
 
 %% ========================================================================
 % Variable time step specific ==== Temporary location =====================
@@ -411,7 +411,7 @@ for simTblock = 1:size(g.vts.t_block)
         odeName = 'huens'; % default PST solver
     end
     
-    % account for extra index increment from FTS to VTS - that - 08/21/20
+    % account for extra index increment from FTS to VTS - thad - 08/21/20
     if ~strcmp(odeName, 'huens') && (g.vts.t_blockN > 1)        % use VTS
         if   strcmp(g.vts.solver_con{g.vts.t_blockN-1}, 'huens')% previous was FTS
             g.vts.dataN = g.vts.dataN-1;
@@ -434,8 +434,8 @@ for simTblock = 1:size(g.vts.t_block)
             k = g.vts.dataN;
             j = k+1;
             
-            % display k and t at every first, last, and 100th step
-            if ( mod(k,100)==0 ) || cur_Step == 1 || cur_Step == nSteps
+            % display k and t at every first, last, and 250th step
+            if ( mod(k,250)==0 ) || cur_Step == 1 || cur_Step == nSteps
                 fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
                 %fprintf('* current time: %s\t* start time: %s\n', datestr(now), startStr);
                 % elapsed time
@@ -488,6 +488,7 @@ for simTblock = 1:size(g.vts.t_block)
     
 end% end simulation loop
 catch ME
+    % Custom catch message
     disp('*!* Something has gone wrong and was caught!')
     fprintf('*!* Data Index: %d\t Simulation Time: %5.5f\n\n', g.vts.dataN, g.sys.t(g.vts.dataN))
     ME

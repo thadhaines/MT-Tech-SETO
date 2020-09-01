@@ -42,7 +42,7 @@ a2 = 1 - g.tg.tg_pot(tgNum,3);
 g.tg.tg_pot(tgNum,4) = a2;
 g.tg.tg3(tgNum,kT) = a2*g.mac.pmech(macNum,kT);
 %
-g.tg.tg_pot(tgNum,5) = g.mac.pmech(macNum,kT); % Pref
+g.tg.tg_pot(tgNum,5) = g.mac.pmech(macNum,kT); % Pref init as current output
 %
 g.tg.tg_sig(tgNum,kT) = 0;
 % 

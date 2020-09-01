@@ -20,12 +20,13 @@ function [tripOut,mac_trip_states] = mac_trip_logic(tripStatus,mac_trip_states,t
 % Date:   Jan 2017
 
 % 08/28/20  12:35   Thad Haines     Trip a generator, then bring it back online
-% exciter and governor ramp over 40-65
+% exciter and governor ramp at same time
 
 %% define global variables
 global g
 
-persistent excVrefNEW excVrefOLD
+persistent excVrefNEW excVrefOLD % variables for exciter ramping
+persistent wRef0 wRef1 wDelta r0 % variables for governor ramping
 
 if kT<2
     tripOut = false(g.mac.n_mac,1);
@@ -43,15 +44,16 @@ else
         end
         
         % bypass governor
-        g.tg.tg_pot(3,5) = 0.0; % set Pref to zero
-        g.tg.tg_con(3,4) = 0.0; % set 1/R = 0
-        reInitGov(3,kT) % reset governor states
+        g.tg.tg_pot(3,5) = 0.0;     % set Pref to zero
+        r0 = g.tg.tg_con(3,4);      % store orginal 1/R
+        g.tg.tg_con(3,4) = 0.0;     % set 1/R = 0
+        reInitGov(3,kT)             % reset governor states
     end
     
     %% untrip gen
     if abs(t(kT)-15.0)<1e-5 %
         disp(['MAC_TRIP_LOGIC:  "Un-Tripping" gen 3 at t = ' num2str(t(kT))])
-        tripOut(3) = false; 
+        tripOut(3) = false;
         mac_trip_states(3,:) = [3; t(kT)];  % keep track of when things trip
         g.mac.mac_trip_flags(3) = 0;        % set global flag to zero.
         
@@ -61,39 +63,42 @@ else
         reInitSub(3,kT)                     % init machine states and voltage to connected bus at index kT
     end
     
-    
-    %% ramp R in
+    %% ramp wref to wref0
     if abs(g.sys.t(kT)-20) < 1e-5
-        disp(['MAC_TRIP_LOGIC:  reinit gov, start ramping R in at t = ', num2str(t(kT))])
-       reInitGov(3,kT) 
-    end
-    if g.sys.t(kT)>= 20 && g.sys.t(kT)< 25 
-        g.tg.tg_con(3,4) = 20*(1 - exp( 20-g.sys.t(kT) ) ); % concave down
-        %g.tg.tg_con(3,4) = (g.sys.t(kT)-20)*20/5; % 5 second ramp up linear ramp
+        disp(['MAC_TRIP_LOGIC:  reinit gov, start ramping wref at t = ', num2str(t(kT))])
+        g.tg.tg_con(3,4) = r0;       % restore original 1/R value
+        reInitGov(3,kT)              % re-init gov states
+        wRef0 = g.tg.tg_con(3,3);    % wref0
+        wRef1 = g.mac.mac_spd(3,kT); % current machine speed
+        g.tg.tg_con(3,3) = wRef1;    % set reference to current speed
+        wDelta = wRef0 - wRef1;      % amount to ramp in
     end
     
-    if abs(t(kT)-25.0)<1e-5 % Reset governor delta w gain (keep Pref = 0)
-       % Remove bypass of governor R
-       g.tg.tg_con(3,4) = 20.0; % restore 1/R value
-        disp(['MAC_TRIP_LOGIC:  R ramp in complete, allow governor to account for frequency deviation at t = ', num2str(t(kT)) ])
+    if g.sys.t(kT)>= 20 && g.sys.t(kT)< 35      % ramp w ref to original value
+        g.tg.tg_con(3,3) = wRef1+ wDelta*(1 - exp( 20-g.sys.t(kT) ) ); % concave down
+    end
+    
+    if abs(t(kT)-35.0)<1e-5 % Reset governor w ref
+        g.tg.tg_con(3,3) = wRef0;
+        disp(['MAC_TRIP_LOGIC:  wref ramp in complete at t = ', num2str(t(kT)) ])
     end
     
     %% Re-connect exciter
-    if abs(t(kT)-35.0)<1e-5 % remove bypass on exciter
+    if abs(t(kT)-35.0)<1e-5     % remove bypass on exciter
         disp(['MAC_TRIP_LOGIC:  connecting exciter at t = ', num2str(t(kT))])
-        reInitSmpExc(3,kT) % re-init single exciter
-        g.exc.exc_bypass(3) = 0; % remove exciter bypass
-        
+        reInitSmpExc(3,kT)      % re-init single exciter
+        pss(3,kT,0)             % re-init pss
+        g.exc.exc_bypass(3) = 0;% remove exciter bypass
     end
     
-    if abs(t(kT)-50.0)<1e-5 % ramp exciter reference voltage
-        disp(['MAC_TRIP_LOGIC:  ramping exciter to original ref voltage at t = ', num2str(t(kT))])
+    %% Ramp exciter
+    if abs(t(kT)-45.0)<1e-5 % ramp exciter reference voltage
+        disp(['MAC_TRIP_LOGIC:  ramping exciter to original Vref at t = ', num2str(t(kT))])
         excVrefNEW = excVrefOLD - g.exc.exc_pot(3,3); % calculate difference to make up
         excVrefOLD = g.exc.exc_pot(3,3);
     end
-    
-    if t(kT)>=50 && t(kT) <75
-         g.exc.exc_pot(3,3) =  excVrefOLD + (t(kT)-50)*excVrefNEW/25;
+    if t(kT)>=45 && t(kT) <65
+        g.exc.exc_pot(3,3) =  excVrefOLD + (t(kT)-45)*excVrefNEW/20;
     end
     
 end

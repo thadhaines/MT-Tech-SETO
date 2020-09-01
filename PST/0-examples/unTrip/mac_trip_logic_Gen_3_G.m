@@ -75,10 +75,11 @@ else
         disp(['MAC_TRIP_LOGIC:  R ramp in complete, allow governor to account for frequency deviation at t = ', num2str(t(kT))])
     end
     
-    %% bypass exciter
+    %% remove exciter bypass
     if abs(t(kT)-35.0)<1e-5 % remove bypass on exciter
         disp(['MAC_TRIP_LOGIC:  connecting exciter at t = ', num2str(g.sys.t(kT))])
         reInitSmpExc(3,kT)  % re-init single exciter
+        pss(3,kT,0)  % re-init pss
         g.exc.exc_bypass(3) = 0; % remove exciter bypass
     end
     
