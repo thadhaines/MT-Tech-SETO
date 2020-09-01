@@ -18,7 +18,6 @@
 
 \paragraph{Recent Progress:}
 \begin{comment}
-
 		\itemsep0em 
 		\item Added to global g and VTS:
 		\begin{minipage}{\linewidth}
@@ -51,7 +50,16 @@
 
 \end{comment}
 	\begin{enumerate}
-
+		\item Generator un-tripping work:
+			\begin{itemize}
+				\itemsep 0 em
+				\footnotesize
+				\item Tripping method examined
+				\item Un-Tripping experimental method created
+				\item Re-initialize functions created for smpexc, tg, mac\_sub
+				\item Test case and result document created
+			\end{itemize}
+		\item Zeroing out of derivatives for tripped machines added to fixed time-step routine. (Huen's Method)
 
 		%\item \href{https://github.com/thadhaines/MT-Tech-SETO/tree/master/PST/PSTv4}{Updated PST to version 4.0.0-a7}
 		
@@ -62,44 +70,53 @@
 		%\item ODE test for variable time step\
 		%\item Found example for SVC - shows version difference between 2 and 3 - possibly due to \verb|exc_dc12| model.
 		%\item Created more MATLAB plot functions to compare PST data
-
+	
 		\item \href{https://github.com/thadhaines/MT-Tech-SETO}{GitHub updated:}\\
 	{\footnotesize \verb|https://github.com/thadhaines/MT-Tech-SETO| }\\
 %	\item Employment ``good'' till 09/18/20
 	\end{enumerate}
 
 \paragraph{Current Tasks:}
-	\begin{enumerate}
-		\itemsep 0em 
-		\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200720-PSTandAGC/200720-PSTandAGC.pdf}{Rework AGC doc to better explain model/example?}
-		\item Figure out how to connect generator \textbf{during} simulation.
+\begin{enumerate}
+	\itemsep 0em 
+		
+	\item Work on un-trip functionality:
+		\begin{itemize}
+				\footnotesize
+				\itemsep0em
+				\item Further study re-initialization actions / requirements
+				\item More generic/functionalized programming
+				\item Compatibility with VTS
+			\end{itemize}
 	\item Create extended term event:
-	\begin{itemize}
+		\begin{itemize}
 			\footnotesize
 			\itemsep0em
-	\item Use miniWECC and pwrmod
-	\item Issue: rolling blackouts in CA
-	\item High PV penetration
-	\item Drought has led to lower hydro output
-	\item Initial low N$\longrightarrow$S flows
-	\item Solar generation declines as load increases %every evening
-	\item Inadequate CA dispatchable generation %in CA to replace PV
-	\item Leads to large N$\longrightarrow$S flows
-	\item EIA data from 8/14/20 18:00? % 12% reservese, blackouts followed 30 minutes later
-	\end{itemize}
-		\item Work towards PST 4.0.0:
-		\begin{itemize}
-		\footnotesize
-		\itemsep0em
-		\item Verify and Validate operation of AGC, PWRMOD, IVMMOD, and VTS.
-		\item Refine documentation	
-		\item Clean up examples
-		\item Clean up code/comments
-		\item Clean up readme files
+			\item Use miniWECC and pwrmod
+			\item Issue: rolling blackouts in CA
+			\item High PV penetration
+			\item Drought has led to lower hydro output
+			\item Initial low N$\longrightarrow$S flows
+			\item Solar generation declines as load increases %every evening
+			\item Inadequate CA dispatchable generation %in CA to replace PV
+			\item Leads to large N$\longrightarrow$S flows
+			\item EIA data from 8/14/20 18:00? % 12% reservese, blackouts followed 30 minutes later
 		\end{itemize}
-		\item Work on understanding PST operation
-		\item Document findings of PST functionality
-		\item Investigate Octave compatibility
+	\item Work towards PST 4.0.0:
+		\begin{itemize}
+			\footnotesize
+			\itemsep0em
+			\item Optimize Y-matrix reduction when tripping generators
+			\item Verify and Validate operation of AGC, PWRMOD, IVMMOD, and VTS.
+			\item Refine documentation	
+			\item Clean up examples
+			\item Clean up code/comments
+			\item Clean up readme files
+		\end{itemize}
+	\item \href{https://github.com/thadhaines/MT-Tech-SETO/blob/master/researchDocs/TEX/one-offs/200720-PSTandAGC/200720-PSTandAGC.pdf}{Rework AGC doc to better explain model/example?}
+	\item Work on understanding PST operation
+	\item Document findings of PST functionality
+	\item Investigate Octave compatibility
 \end{enumerate}
 
 
@@ -127,6 +144,7 @@
 
 \paragraph{Loose ends:} % Random stuff that will be left undone...
 	\begin{enumerate}
+	\itemsep 0 em
 	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
 		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov)
 		\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\It probably shouldn't be.
@@ -135,6 +153,8 @@
 		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
 		\item Differences in \verb|mac_ind| between pst 2 and 3 seem backward compatible - untested.
 		\item DC is not implemented in VTS - Just combine into main routine? Seems counter intuitive to do multi-rate variable time step integration.
+		\item AGC capacity should consider defined machine limits instead of assuming 1 PU max.
+		\item AGC should allow for a `center of inertia' frequency option instead of the weighted average frequency.
 	\end{enumerate}
 	
 	
@@ -152,8 +172,6 @@
 			\item Rework how switching \& perturbance events are handled into a more flexible and general format. (flags? objects?)
 	%		\item Generate something similar to unit test cases to verify code changes don't break everything during refactor.
 			\item Generate comparison scripts to verify simulated results match  between code revisions and modifications.
-			\item AGC capacity should probably consider defined machine limits - it assumes 1 PU as max, but this may not always be the case.
-			\item AGC should allow for a `center of inertia' frequency option instead of the current inertia weighted average frequency.
 	
 		\end{enumerate}
 		
