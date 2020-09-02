@@ -27,29 +27,30 @@ Various code additions and possible future work are also presented.
 
 
 \paragraph{How PST Trips Generators} \ \\
-During simulation initialization, \verb|g.mac.mac_trip_flags| is initialized as a row vector of zeros that correspond to the \verb|mac_con| array, and 
+During simulation initialization, \verb|g.mac.mac_trip_flags| is initialized as a column vector of zeros that correspond to the \verb|mac_con| array, and 
 \verb|g.mac.mac_trip_states| variable is set to zero. %\verb|g.mac.mac_trip_states|  ( appears unused).
-To trip a generator, a \verb|mac_trip_flag| is set to $1$ via the user generated \verb|mac_trip_logic| code.
-The \verb|mac_trip_logic| is executed in the \verb|initStep| function which alters \verb|g.mac.mac_trip_flags| to account for any programmed trip.
+To trip a generator, the \verb|mac_trip_flag| corresponding to the desired generator it trip is set to $1$ via the user generated \verb|mac_trip_logic| code.
+The \verb|mac_trip_logic| is executed in the \verb|initStep| function which alters \verb|g.mac.mac_trip_flags| to account for any programmed trips.
 Specifically, a $0$ in the \verb|g.mac.mac_trip_flags| row vector is changed to a 1 to signify a generator has tripped.\\
 
 
-The \verb|g.mac.mac_trip_flags| vector is summed in the \verb|networkSolution| (\verb|networkSoltuionVTS|).
-If the resulting sum is larger than 0.5, the line number connected to the generator in the \verb|g.line.line_sim| is found and the reactance is set to infinity (1e7).
+The \verb|g.mac.mac_trip_flags| vector is summed in the \verb|networkSolution| (\verb|networkSoltuionVTS|) function.
+If the resulting sum is larger than 0.5, the line number connected to the generator in \verb|g.line.line_sim| is found and the reactance is set to infinity (1e7).
 The reduced y matrices are then recalculated and used to solve the network solution via an \verb|i_simu| call.
-If derivatives of the tripped machine are not set to zero, the generator's speed increases, mechanical power output eventually drops to zero/near-zero, and the attached exciter Efd appears to approach 1.
+If derivatives of the tripped machine are not set to zero, the generator's speed increases, mechanical power output eventually drops to zero/near-zero, and the attached exciter Efd appears to the set reference voltage.
 
 %Realistically, Pmech and all P and Q limits should also probably be set to zero which may `clean up' values.
 
 \subparagraph{Performance Note} \ \\
-If a machine is tripped, altered reduced Y matrices are generated every simulation step.
-This repeated action could probably be reduced via use of globals and logic checks.
+If a machine is tripped, the altered reduced Y matrices are generated every simulation step.
+This repeated action could probably be reduced or eliminated via use of globals and logic checks.
 \begin{itemize}
 \item create new globals handling the Y matrices selected during the network solution.
 \item create an \verb|old_mac_trip_flags|
 \item compare \verb|old_mac_trip_flags| to \verb|mac_trip_flags|
 \item if there has been a new trip, update associated Y matrix globals
 \item if there hasn't been a new trip, but a machine has tripped, use the stored Y matrix
+\item must account for other system changes due to faulting scenarios
 \end{itemize} 
 This is merely a calculation reduction and not required for tripping/un-tripping, but may result in a noticeable speed up.
 
@@ -71,7 +72,7 @@ Generally, the current method involves:
 \end{enumerate}
 
 Changing a \verb|mac_trip_flag| from 1 to 0 returns the line reactance to normal and effectively re-connects a generator to the system.
-However, the model states and reference values are no longer synchronized with the system and must be handled to avoid unrealistic issues and excessive transients.
+However, the model states and reference values are no longer synchronized with the system and must be handled to avoid unrealistic state scenarios and excessive transients.
 Test cases have been created that utilize the  \verb|mac_trip_logic| and \verb|mtg_sig| user defined code files to manage the required bypassing, reinitializations, and reference ramping tasks.\\
 
 

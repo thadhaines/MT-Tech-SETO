@@ -34,7 +34,7 @@ copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % set live plot
 
 % Move correct trip logic files
 if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
-    copyfile('mac_trip_logic_Gen_3_G2.m', [PSTpath 'mac_trip_logic.m']);
+    copyfile('mac_trip_logic_Gen_3_G.m', [PSTpath 'mac_trip_logic.m']);
     copyfile('mtg_sig_PrefRamp.m', [PSTpath 'mtg_sig.m']);
     %copyfile('mpm_sig_PmRampG.m', [PSTpath 'mpm_sig.m']);
 else

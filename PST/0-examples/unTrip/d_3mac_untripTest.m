@@ -147,8 +147,13 @@ sw_con = [...
 % 
 % solver_con ={ ...
 %     'ode113'; % pre fault - fault
-%     'ode23'; % fault - post fault 1
-%     'huens'; % post fault 1 - post fault 2
-%     'ode23';
-%     'ode23';
+%     'ode113'; % fault - post fault 1
+%     'ode113'; % post fault 1 - post fault 2
+%     'ode113';
+%     'ode113';
 %     };
+
+% solver_con = {};
+% for n = 1:size(sw_con,1)-1;
+%     solver_con{end+1} = 'ode113';
+% end
