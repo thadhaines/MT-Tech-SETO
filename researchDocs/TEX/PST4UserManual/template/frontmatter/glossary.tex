@@ -1,0 +1,140 @@
+\chapter*{Glossary of Terms}
+\addcontentsline{toc}{\fmAddAs}{\tocGlossary} %%%%
+\vspace{-2em}
+% There are may be a better way to do this (i.e. use of glossaries package)
+% Obviously, A table is used for now.
+
+% using the glossaries package requires the installation of perl.
+% additionally, the glossaries package reuires a seperate build of the glossary so that t prints at all (similar to the bibliography using biber)
+\renewcommand*{\glsclearpage}{} % remove pagebreak pre-glossary
+\renewcommand{\glossarysection}[2][]{} % remove auto glossary title
+
+\newglossaryentry{IPY}{name={IPY},%
+	description={ IronPython }}
+\newglossaryentry{PY3}{name={PY3},%
+	description={ Python version 3.x}}
+\newglossaryentry{AMQP}{name={AMQP},%
+	description={Advanced Message Queue Protocol}}
+\newglossaryentry{ACE}{name={ACE},%
+	description={Area Control Error }}
+\newglossaryentry{AC}{name={AC},%
+	description={Alternating Current}}
+\newglossaryentry{PU}{name={PU},%
+	description={Per-Unit}}
+\newglossaryentry{SACE}{name={SACE},%
+	description={Smoothed ACE}}
+\newglossaryentry{IACE}{name={IACE},%
+	description={Integral of ACE}}
+\newglossaryentry{TLB}{name={TLB},%
+	description={Tie-Line Bias}}
+\newglossaryentry{ERCOT}{name={ERCOT},%
+	description={Electric Reliability Council of Texas }}
+\newglossaryentry{PI}{name={PI},%
+	description={Proportional and Integral}}
+\newglossaryentry{PST}{name={PST},%
+	description={Power System Toolbox}}
+\newglossaryentry{RACE}{name={RACE},%
+	description={Reported ACE}}
+\newglossaryentry{DACE}{name={DACE},%
+	description={Distributed ACE}}
+\newglossaryentry{PSLF }{name={PSLF},%
+	description={Positive Sequence Load Flow}}
+\newglossaryentry{PSDS}{name={PSDS},%
+	description={PSLF Dynamic Subsystem}}
+\newglossaryentry{PSS}{name={PSS},%
+	description={Power System Stabilizer }}
+\newglossaryentry{AGC}{name={AGC},%
+	description={Automatic Generation Control }}
+\newglossaryentry{LFC}{name={LFC},%
+	description={Load Frequency Control }}
+\newglossaryentry{WECC}{name={WECC},%
+	description={Western Electricity Coordinating Council }}
+\newglossaryentry{NERC}{name={NERC},%
+	description={North American Electric Reliability Corporation }}
+\newglossaryentry{FERC }{name={FERC},%
+	description={Federal Energy Regulatory Commission }}
+\newglossaryentry{PSLTDSim}{name={PSLTDSim},%
+	description={Power System Long-Term Dynamic Simulator}}
+\newglossaryentry{LTD}{name={LTD},%
+	description={ Long-Term Dynamic}}
+\newglossaryentry{API}{name={API},%
+		description={ Application Programming Interface }}
+\newglossaryentry{EIA}{name={EIA},%
+		description={ United States Energy Information Administration}}
+\newglossaryentry{PyPI}{name={PyPI},%
+		description={ Python Package Index}}
+\newglossaryentry{TSPF}{name={TSPF},%
+		description={ Time-Sequenced Power Flow}}
+\newglossaryentry{CTS}{name={CTS},%
+		description={ Classical Transient Stability}}
+\newglossaryentry{ODE}{name={ODE},%
+	description={ Ordinary Differential Equation }}
+\newglossaryentry{FTL}{name={FTL},%
+	description={ Frequency Trigger Limit }}
+\newglossaryentry{IPC}{name={IPC},%
+	description={ Interprocess Communication }}
+\newglossaryentry{DTC}{name={DTC},%
+	description={ Definite Time Controller }}
+\newglossaryentry{CLR}{name={CLR},%
+	description={ Common Language Runtime }}
+\newglossaryentry{PMIO}{name={PMIO},%
+	description={ PSLF Model Information Object }}
+\newglossaryentry{US}{name={US},%
+	description={United States of America }}
+\newglossaryentry{RTO}{name={RTO},%
+	description={Regional Transmission Organization}}
+\newglossaryentry{ISO}{name={ISO},%
+	description={Independent Service Operator}}
+\newglossaryentry{SI}{name={SI},%
+	description={International System of Units}}
+\newglossaryentry{Hz}{name={Hz},%
+	description={Hertz, cycles per second}}
+\newglossaryentry{W}{name={W},%
+	description={Watt, Joules per second}}
+\newglossaryentry{J}{name={J},%
+	description={Joule, Neton meters, Watt seconds}}
+\newglossaryentry{ABS}{name={ABS},%
+	description={Agent Based Simulation}}
+\newglossaryentry{BES}{name={BES},%
+	description={Bulk Electrical System}}
+\newglossaryentry{BA}{name={BA},%
+	description={Balancing Authority}}
+\newglossaryentry{P}{name={P},%
+	description={Real Power}}
+\newglossaryentry{Q}{name={Q},%
+	description={Reactive power}}
+\newglossaryentry{VAR}{name={VAR},%
+	description={Volt Amps Reactive}}
+\newglossaryentry{GE}{name={GE},%
+	description={General Electric}}
+\newglossaryentry{ABM}{name={ABM},%
+	description={Agent Based Modeling}}
+\newglossaryentry{IC}{name={IC},%
+	description={Interchange}}
+\glsaddall % so that there is no need to call \gls{label} for each term
+\printglossaries
+
+
+\begin{comment}
+% table style glossary for record...
+
+\begin{table}[h]
+	\begin{tabular}{@{} p{.25\linewidth} p{.7\linewidth} @{}} %\toprule 
+	\textbf{Term} & \textbf{Definition}\\
+	%	
+	\LaTeX 			& A document preparation system. Favors logical design over visual design. Reportedly widely used in academia... \\
+	PSLF 	&	Positive Sequence Load Flow. GE's power system simulation software.\\
+	PSDS	&	PSLF Dynamic subsystem.\\
+	PSS		&	Power System Stabilizer \\
+	AGC		&	Automatic Generation Control \\
+	LFC		&	Load Frequency Control \\
+	WECC	&	Western Electricity Coordinating Council \\
+	NERC	&	North American Electric Reliability Corporation \\
+	FERC 	&	Federal Energy Regulatory Commission \\
+	PSLTDSim &	Power System Long-Term Dynamic Simulator\\
+	LTD		& 	Long-Term Dynamic. May also refer the type of simulation performed by PSLTDSim.\\
+
+	\end{tabular}
+\end{table}
+
+\end{comment}

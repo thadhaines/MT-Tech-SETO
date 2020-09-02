@@ -1,0 +1,191 @@
+%%	pretty_preamble.tex
+%	Thad Haines		Template
+% 	Purpose:		Provide alternative to ugly thesis format.
+%	Notes:			Included by thesis main.
+%					Build with LuaLatex, use biber as bibliography backend.
+%					Bibliography style can be changed below. see ***
+
+%	Alteration History:		10/05/19	Added numbering to paragraphs to mimic subsubsubsections
+%							10/11/19	Addition of lscape / pdflscape for landscape possibilities
+%							10/17/19	Addition of minted package for purty code~
+%							11/21/19	Use of glossaries package implemented.
+%							11/30/19	Added siunitx for table formatting
+
+
+% Tech specific formatting
+\usepackage{setspace}
+\setlength{\parindent}{0.5in}
+\usepackage{indentfirst}
+\usepackage{geometry}
+\geometry{letterpaper, margin=1in}
+
+%\usepackage{lscape} % for landscape pages
+\usepackage{pdflscape} % for landscape pages - rotates digital page so text appears 'normal'
+
+\usepackage{mathrsfs} % for laplace L
+
+\usepackage{comment}
+\usepackage{adjustbox}
+
+% Glossaries package configuration
+\usepackage[nogroupskip, nonumberlist, nopostdot]{glossaries}
+\setglossarystyle{long3colheader}
+\renewcommand*{\entryname}{Term}
+\renewcommand*{\descriptionname}{Definition}
+\renewcommand*{\pagelistname}{} % remove page number col
+\setlength{\glsdescwidth}{5 in} % width of description - may have to alter
+\makeglossaries
+
+% pretty commands for dual build
+\newcommand{\fmAddAs}{chapter} % what to add aditional toc as (ugly = parts, pretty = chap)
+\newcommand{\MTten}{\footnotesize}
+\newcommand{\coverSkip}{2em}
+\newcommand{\tocAbstract}{Abstract}
+\newcommand{\tocDedication}{Dedication}
+\newcommand{\tocAckno}{Acknowledgments}
+\newcommand{\tocGlossary}{Glossary of Terms}
+
+%*** Bibliography stuff
+\usepackage[backend=biber,style=ieee, % bibliography style may be changed
+sorting=nyt, % sorts by author, year, title
+autocite=inline, sortcites=true, labelnumber=true, % for compressed cites
+dashed=false, % show repeated authors (i.e. don't blank out names)
+]{biblatex}
+\addbibresource{bibliography.bib}
+\nocite{*} % include non referenced citations
+
+% for Altering Section titles to desired compact format.
+\usepackage{titlesec} 
+\titleformat{\chapter}
+{\normalfont\LARGE\bfseries}{\LARGE \thechapter}{20pt}{\LARGE} 
+
+\titlespacing*{\chapter}{0pt}{-30pt}{.25em}
+\titlespacing{\section}{0pt}{0pt}{0pt}
+\titlespacing{\subsection}{0pt}{0pt}{0pt}
+\titlespacing{\subsubsection}{0pt}{0pt}{0pt}
+\titlespacing{\bibliography}{0pt}{0pt}{0pt}
+
+% Packages for filler text
+\usepackage{blindtext} % for \blindtext -> Loerm ipsum dolor...
+\usepackage{lipsum} % for short lines
+
+% for maths and maths symbols
+\usepackage{amsmath} 
+\usepackage{amssymb}
+\usepackage{commath}
+\newcommand\numberthis{\addtocounter{equation}{1}\tag{\theequation}} % for simple \numberthis command to add equations to ...
+
+% For list of equations - much pushing around to match other toc,lof...
+% Required since list of equations not standard in report format
+\usepackage[titles]{tocloft}
+\newcommand{\listequationsname}{List of Equations}
+\newlistof{thesisequations}{loe}{\listequationsname}
+\newcommand{\eqcaption}[1]{
+	\addcontentsline{loe}{thesisequations}{%\hspace{1.12em}  
+	 \protect\numberline{\theequation} \hspace{1.85em} #1}\par\vspace{-2.5em}}%
+
+%removal of 'chapter change' additional space in lot, lof
+\usepackage{xpatch}
+\makeatletter
+\xpatchcmd{\@chapter}{%
+	\addtocontents{lof}{\protect\addvspace{10\p@}}%
+	\addtocontents{lot}{\protect\addvspace{10\p@}}%
+}{}{}{}
+\makeatother
+
+%%% Add Figure zz: to list of figures 
+\setlength{\cftfigindent}{0pt}  % remove indentation from figures in lof
+\renewcommand{\cftfigaftersnum}{\quad}
+\renewcommand{\cftfignumwidth}{4em}
+
+%%% Add Table XX: to list of tables
+\renewcommand{\cfttabaftersnum}{\quad}
+\setlength{\cfttabindent}{0pt}  % remove indentation from tables in lot
+\renewcommand{\cfttabnumwidth}{4em}
+
+% for chapter leader dots
+\renewcommand{\cftchapleader}{\cftdotfill{\cftdotsep}}
+
+% For figure usage and linking
+\usepackage{graphicx}
+\graphicspath{ {figures/} }
+
+% Caption formating footnotesize ~ 10 pt in a 12 pt document
+\usepackage[font={footnotesize, bf}]{caption}
+
+% For table formatting
+\usepackage{booktabs}
+\renewcommand{\arraystretch}{1.2}
+\usepackage{floatrow}
+\floatsetup[table]{capposition=top} % put table captions on top of tables
+
+% for code listings with color 10/17/19
+\usepackage{minted}
+\usepackage{xcolor}
+
+% For header and footer control:
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\renewcommand{\headrulewidth}{0pt}
+\rhead{\thepage}
+
+% Redefine the plain page style so plain pages are same as fancy
+\fancypagestyle{plain}{%
+	\fancyhf{}%
+	\rhead{\thepage}%
+	\renewcommand{\headrulewidth}{0pt}% Line at the header invisible
+	\renewcommand{\footrulewidth}{0pt}% Line at the footer nonvisible
+}
+
+% configurations of counters
+\usepackage{chngcntr}
+\setcounter{tocdepth}{5} % required to show subsubsections in toc
+\setcounter{secnumdepth}{5} % required for x.x.x.x sections % Changed from 3 - 10/5/19
+
+%%% Added for paragraph numbering to be subsubsection
+\makeatletter
+\renewcommand\paragraph{\@startsection{paragraph}{5}{\z@}%
+            {-2.5ex\@plus -1ex \@minus -.25ex}%
+            {1.25ex \@plus .25ex}%
+            {\normalfont\normalsize\bfseries}}
+\makeatother
+
+% Command to correctly add page numbers to toc, lof, lot, loe...
+\newcommand{\correctpagenumtoc}[1]{%
+	\cleardoublepage
+	\phantomsection
+	\addcontentsline{toc}{\fmAddAs}{#1}}
+
+% Fix header height
+\setlength{\headheight}{15pt}
+
+%%% SI unit x added for tables...
+\usepackage[per-mode=fraction]{siunitx} % for si units and num
+\sisetup{group-separator = {,}, group-minimum-digits = 3}
+
+\usepackage{array} 		% for >{} column characterisctis
+\newcolumntype{L}[1]{>{\raggedright\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{C}[1]{>{\centering\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+\newcolumntype{R}[1]{>{\raggedleft\let\newline\\\arraybackslash\hspace{0pt}}m{#1}}
+
+% Silence warning that is known to not be a 'thing' when using ieee bibliography
+% https://tex.stackexchange.com/questions/451192/file-english-ieee-lbx-not-found-ignoring-mapping-english-english-ieee
+\usepackage{silence}
+\WarningFilter{biblatex}{File 'english-ieee.lbx'}
+
+% Packages enables content to function as links and describe default pdf behavior
+\usepackage[hidelinks]{hyperref}
+\hypersetup{
+	pdftitle={\CAPTitle},
+	pdfauthor={\Author},
+	pdfsubject={\Subject},
+	pdfkeywords={\Keywords},
+	bookmarksnumbered=true,     
+	bookmarksopen=true,         
+	bookmarksopenlevel=3,       
+	colorlinks=false,            
+	pdfstartview=Fit,           
+	pdfpagemode=UseOutlines,   
+	pdfpagelayout=OneColumn
+}

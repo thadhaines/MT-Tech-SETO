@@ -227,3 +227,17 @@
 /researchDocs/TEX/one-offs/200901-refinedUntripResults2/_minted-200901-refinedUntripResults2
 /PST/0-examples/unTrip/3mac_untripTest_XXX.mat
 /PST/0-examples/unTrip/3mac_untripTest_concurrent.mat
+/researchDocs/TEX/PST4UserManual/template/_minted-PST4UserManual
+/researchDocs/TEX/PST4UserManual/template/PST4UserManual.toc
+*.loe
+*.lof
+*.lot
+/researchDocs/TEX/PST4UserManual/template/PST4UserManual.run.xml
+/researchDocs/TEX/PST4UserManual/template/bibliography.bbl
+/researchDocs/TEX/PST4UserManual/template/bibliography.blg
+*.bbl
+*.bcf
+*.blg
+*.ist
+/researchDocs/TEX/PST4UserManual/template/PST4UserManual.glo
+/researchDocs/TEX/PST4UserManual/template/PST4UserManual.glsdefs

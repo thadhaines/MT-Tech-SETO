@@ -1,0 +1,95 @@
+%%	PST4UserManual.tex
+%	Thad Haines		
+% 	Purpose:		Document to collect PST v4 changes/information that will end up being a pseudo user manual.
+%	Notes:			Build with LuaLatex, use biber as bibliography backend.
+
+\documentclass[12pt]{report}
+
+%% Document Knowns
+\newcommand{\CAPTitle}{Power System Toolbox 4 \\
+	\vspace{2em}
+	--User Manual--\\
+	Documentation Version 0.0.0-a.1
+}
+\newcommand{\Author}{Thad Haines}
+\newcommand{\Degree}{-}
+\newcommand{\University}{-}
+\newcommand{\Year}{2020}
+\newcommand{\Subject}{Software Documentation}
+\newcommand{\Keywords}{PST, Power System Toolbox, MATLAB, Power system dynamics, AGC, Variable Time Step Integraion}
+
+\input{pretty_preamble}
+
+%% For including only certain parts of document in build, uncomment :
+%\includeonly{frontmatter/glossary} % Optional build modes
+\nocite{} 
+\newcommand{\tempPB}{\pagebreak \clearpage}
+\newcommand{\uglyVspace}{\vspace{-0.75 em}} % used for creating spaces in front matter
+\newcommand{\uglyPB}{ }  % used for creating spaces in front matter
+\newcommand{\prettyPB}{\pagebreak \clearpage}
+\begin{document}
+\Large % for cover font size
+\include{frontmatter/pretty_UserManualCover}
+
+% Begin roman numbers after cover
+\pagestyle{fancy}
+\pagenumbering{roman}
+\setcounter{page}{2}
+\fancyfoot{} % clear footer
+\fancyhead[R]{\thepage}
+
+\normalsize
+\setlength\parindent{0cm}
+\onehalfspacing % for nicer look
+
+%% Front matter
+\include{frontmatter/softDocIntro}
+%\include{frontmatter/dedication}
+%\include{frontmatter/acknowledgments}
+
+%% Table of contents, lists of tables,figures, equations
+% \correctpagenumtoc enables content line to be defined before table or list command is executed
+\renewcommand{\contentsname}{Table of Contents \vspace{-.5em}}
+\correctpagenumtoc{Table of Contents} 
+\tableofcontents
+
+\correctpagenumtoc{List of Tables}
+\listoftables
+
+\correctpagenumtoc{List of Figures}
+\listoffigures
+
+\correctpagenumtoc{List of Equations}
+\listofthesisequations
+
+\onehalfspacing
+\include{frontmatter/glossary}
+
+% Body Format
+\setlength\parindent{0.5in}
+\doublespacing
+\pagenumbering{arabic}
+\setcounter{page}{1} % Arabic Numbers start at the begining of chapter 1
+\setcounter{table}{0}
+
+%% Body of thesis goes here
+\include{chapters/chapter01}
+\include{chapters/chapter02}
+
+\chapter{Bibliography}
+\onehalfspacing
+\printbibliography[heading=none]
+
+% Appendix format
+\appendix
+\doublespacing
+
+%% appendicies go here
+\include{appendix/appendixA} % formatting examples
+%\include{appendix/numericalTech}
+%\include{appendix/largeTables}
+%\include{appendix/codeExamples}
+%\include{appendix/sixMachineDetails}
+%\include{appendix/validations}
+
+\end{document}

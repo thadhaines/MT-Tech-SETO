@@ -1,0 +1,28 @@
+% Testing of external table build for \input later
+\begin{singlespace}
+\begin{table}[H]
+	\centering
+	\begin{tabular}{@{} l l l  @{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+		Method	&		Result & Absolute Error		\\
+		\midrule		
+%
+%Step Input Low Pass Example
+%time step:  0.50
+%Method: Trapezoidal Int	 Absolute Error from calculated
+Calculated& 	1.750083866&	0.000000000\\
+Exact& 	1.750082530&	0.000001336\\
+RK4&	1.680138966&	0.069944900\\
+solve\_ivp& 	1.719657220	&0.030426646\\
+lsim&	1.671851297&	0.078232568\\
+%
+		\bottomrule
+	\end{tabular}
+	\caption{Trapezoidal integration results a of low pass filter using a $t$ step of 0.5.}
+	\label{tab: trap lowpass res}
+\end{table}
+\end{singlespace}
+	
+	
