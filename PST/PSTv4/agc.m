@@ -24,7 +24,7 @@ function agc(k,flag)
 %   08/04/20    06:07   Thad Haines     Version 1.1.1 - adjusted for VTS
 %   08/21/20    10:47   Thad Haines     Version 1.2 - Added icAdj handling
 %   08/25/20    12:11   Thad Haines     Version 1.2.1 - added warning for bad B
-
+%   09/03/20    12:27   Thad Haines     Version 1.2.2 - fixed bad B check
 
 global g
 
@@ -53,7 +53,7 @@ if flag == 0
         end
         
         % check for empty or nan B (i.e. bad B)
-        if isempty(g.agc.agc(n).Bcalc || isnan(g.agc.agc(n).Bcalc)
+        if isempty( g.agc.agc(n).Bcalc || isnan(g.agc.agc(n).Bcalc) )
             fprintf('*!* AGC %d has a non-computable B\n', n)
         end
         

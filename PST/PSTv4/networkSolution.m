@@ -15,6 +15,7 @@ function networkSolution(k)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/23/20    11:28   Thad Haines     Version 1
+%   09/03/20    12:00   Thad Haines     Version 1.1 - changed g.int to g.y
 
 %% Remaining 'loose' globals
 % DeltaP/omega filter variables - 21
@@ -53,13 +54,13 @@ if k >= sum(g.k.k_inc(1:3))+1
     g.bus.bus_sim = g.bus.bus_pf2;
     g.bus.bus_int = g.bus.bus_intpf2;
     
-    Y1 = g.int.Y_gpf2;
-    Y2 = g.int.Y_gncpf2;
-    Y3 = g.int.Y_ncgpf2;
-    Y4 = g.int.Y_ncpf2;
-    Vr1 = g.int.V_rgpf2;
-    Vr2 = g.int.V_rncpf2;
-    bo = g.int.bopf2;
+    Y1 = g.y.Y_gpf2;
+    Y2 = g.y.Y_gncpf2;
+    Y3 = g.y.Y_ncgpf2;
+    Y4 = g.y.Y_ncpf2;
+    Vr1 = g.y.V_rgpf2;
+    Vr2 = g.y.V_rncpf2;
+    bo = g.y.bopf2;
     
     % i_simu forms the network interface variables
     %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
@@ -73,13 +74,13 @@ elseif k >=sum(g.k.k_inc(1:2))+1
     g.bus.bus_sim = g.bus.bus_pf1;
     g.bus.bus_int = g.bus.bus_intpf1;
     
-    Y1 = g.int.Y_gpf1;
-    Y2 = g.int.Y_gncpf1;
-    Y3 = g.int.Y_ncgpf1;
-    Y4 = g.int.Y_ncpf1;
-    Vr1 = g.int.V_rgpf1;
-    Vr2 = g.int.V_rncpf1;
-    bo = g.int.bopf1;
+    Y1 = g.y.Y_gpf1;
+    Y2 = g.y.Y_gncpf1;
+    Y3 = g.y.Y_ncgpf1;
+    Y4 = g.y.Y_ncpf1;
+    Vr1 = g.y.V_rgpf1;
+    Vr2 = g.y.V_rncpf1;
+    bo = g.y.bopf1;
     
     %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     
@@ -90,13 +91,13 @@ elseif k>=g.k.k_inc(1)+1
     
     g.bus.bus_int = g.bus.bus_intf;
     
-    Y1 = g.int.Y_gf;
-    Y2 = g.int.Y_gncf;
-    Y3 = g.int.Y_ncgf;
-    Y4 = g.int.Y_ncf;
-    Vr1 = g.int.V_rgf;
-    Vr2 = g.int.V_rncf;
-    bo = g.int.bof;
+    Y1 = g.y.Y_gf;
+    Y2 = g.y.Y_gncf;
+    Y3 = g.y.Y_ncgf;
+    Y4 = g.y.Y_ncf;
+    Vr1 = g.y.V_rgf;
+    Vr2 = g.y.V_rncf;
+    bo = g.y.bof;
     
     %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     
@@ -107,13 +108,13 @@ elseif k<g.k.k_inc(1)+1
     
     g.bus.bus_int = g.bus.bus_intprf;
     
-    Y1 = g.int.Y_gprf;
-    Y2 = g.int.Y_gncprf;
-    Y3 = g.int.Y_ncgprf;
-    Y4 = g.int.Y_ncprf;
-    Vr1 = g.int.V_rgprf;
-    Vr2 = g.int.V_rncprf;
-    bo = g.int.boprf;
+    Y1 = g.y.Y_gprf;
+    Y2 = g.y.Y_gncprf;
+    Y3 = g.y.Y_ncgprf;
+    Y4 = g.y.Y_ncprf;
+    Vr1 = g.y.V_rgprf;
+    Vr2 = g.y.V_rncprf;
+    bo = g.y.boprf;
     
     %h_sol = i_simu(k,ks,k_inc,h,bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
 end

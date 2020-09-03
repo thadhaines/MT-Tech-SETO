@@ -1,0 +1,333 @@
+%===========================================================================================================
+\pagebreak
+
+\section{Global Variable Management}  
+To enable easier manipulation of PST - it was decided to create a global structure that contains all system globals.
+While this may or may not have been a good idea - it happened.
+Initial results show a speed up of over 2 times.
+In other words, it could be assumed previous versions of PST spent half of their computation time loading globals\ldots
+
+
+Inside the global variable \verb|g| are fields that corresponds to models, or groups, of other globals.
+For example, the \verb|g.mac.mac_spd| global contains a all machine speeds while the \verb|g.bus.bus_v| contains all bus voltages, etc.
+As of this writing, compiled on \today, the following subsections describe the globals contained in each field of the global \verb|g|. 
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{agc}  
+This contains variables for agc calculation and operation.
+An example of AGC variables are shown below
+
+\begin{minted}{MATLAB}
+>> g.agc
+ans = 
+      agc: [1x2 struct]
+    n_agc: 2
+do better
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{area}  
+This contains variables for area calculation and operation.
+An example of area variables are shown below.
+\begin{minted}{MATLAB}
+>> g.area
+ans = 
+    area_def: [13x2 double]
+      n_area: 2
+        area: [1x2 struct]
+>> g.area.area(1)
+do better
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{bus}  
+Contains \verb|bus| and all altered bus arrays associated with faults created in \verb|y_switch|.
+Also contains the \verb|bus_v| and \verb|theta| information related to buses.
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{dc}
+\begin{minted}{MATLAB}
+%% HVDC link variables 
+global  dcsp_con  dcl_con  dcc_con
+global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
+global  inv_ac_line  rec_ac_line ac_line dcli_idx
+global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
+global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma 
+global  VHT dc_sig  cur_ord dcr_dsig dci_dsig
+global  ric_idx  rpc_idx Vdc_ref dcc_pot
+global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
+global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
+
+% States
+%line
+global i_dcr i_dci  v_dcc
+global di_dcr  di_dci  dv_dcc
+global dc_dsig % added 07/13/20 -thad
+%rectifier
+global v_conr dv_conr
+%inverter
+global v_coni dv_coni
+
+% added to global dc
+global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
+global dcr_dc dci_dc % damping control
+global  ldc_idx
+global rec_par inv_par line_par
+\end{minted}
+Some DC related functions reused global variable names for local values but avoided conflict by not importing the specific globals.
+During global conversion this caused some issues with accidental casting to global and overwriting issues.
+While the non-linear and linear simulations run, there may be issues with this problem yet to be discovered.
+
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{exc}
+\begin{minted}{MATLAB}
+global  exc_con exc_pot n_exc
+global  Efd V_R V_A V_As R_f V_FB V_TR V_B
+global  dEfd dV_R dV_As dR_f dV_TR
+global  exc_sig % pm_sig n_pm % not related to exciters?
+global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
+global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
+global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
+global smp_TR smp_TR_idx smp_no_TR_idx ;
+global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
+global dc_TE  dc_TE_idx dc_noTE_idx;
+global dc_TF dc_TF_idx dc_TR dc_TR_idx
+global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
+global st3_TR st3_TR_idx st3_noTR_idx;
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{igen}
+\begin{minted}{MATLAB}
+%% induction genertaor variables - 19
+global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
+global  igen_int igbus n_ig
+%states
+global  vdpig vqpig slig
+%dstates
+global dvdpig dvqpig dslig
+% added globals
+global s_igen
+\end{minted}
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{ind}
+\begin{minted}{MATLAB}
+%% induction motor variables - 21
+global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
+global  motbus ind_int mld_con n_mot t_mot
+% states
+global  vdp vqp slip
+% dstates
+global dvdp dvqp dslip
+% added globals
+global s_mot
+global sat_idx dbc_idx db_idx % has to do with version 2 of mac_ind
+% changed all pmot to p_mot (mac_ind1 only)
+\end{minted}
+Two models of this are included as \verb|mac_ind1| (a basic version from 2.3), and \verb|mac_ind2| which is an updated induction motor model. Default behavior is to use the newer model (\verb|mac_ind2|).
+
+%---------------------------------------------------------------------------------------------------
+\subsection{int}  
+Contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with faults.
+Example variables are shown below.
+\begin{minted}{MATLAB}
+>> g.int
+ans = 
+      Y_gprf: [4x4 double]
+do better....
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{ivm} 
+voltage model...
+\begin{minted}{MATLAB}
+get the tstuff
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{k}  
+To allow for functionalized running, various index values were placed into the global structure
+
+\begin{minted}{MATLAB}
+global k_inc h ks h_sol
+golbal k_incdc h_dc
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{line}  
+Contains \verb|line| and all altered line arrays associated with faults created in \verb|y_switch|.
+
+%---------------------------------------------------------------------------------------------------
+\subsection{lmod}
+\begin{minted}{MATLAB}
+global lmod_con % defined by user
+global n_lmod lmod_idx % initialized and created in lm_indx
+global lmod_sig lmod_st dlmod_st % initialized in s_simu
+global lmod_pot  % created/initialized in lmod.m 
+global lmod_data % added by Trudnowski - doesn't appear to be used?
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{lmon}  
+This contains variables for line monitoring not previously collected during simulation.
+An example of lmon contents is shown below.
+\begin{minted}{MATLAB}
+>> g.lmon
+ans = 
+     lmon_con: [3 10]
+       n_lmon: 2
+    busFromTo: [2x2 double]
+         line: [1x2 struct]
+ >> g.lmon.line(1)
+ ans = 
+     busArrayNdx: 3
+         FromBus: 3
+           ToBus: 4
+           iFrom: [1x8751 double]
+             iTo: [1x8751 double]
+           sFrom: [1x8751 double]
+             sTo: [1x8751 double]
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{mac}
+\begin{minted}{MATLAB}
+global  mac_con mac_pot mac_int ibus_con
+global  mac_ang mac_spd eqprime edprime psikd psikq
+global  curd curq curdg curqg fldcur
+global  psidpp psiqpp vex eterm ed eq
+global  pmech pelect qelect
+global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
+global  n_mac n_em n_tra n_sub n_ib
+global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
+global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
+global pm_sig n_pm 
+global  psi_re psi_im cur_re cur_im
+
+% added
+global mac_trip_flags
+global mac_trip_states
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{ncl}
+\begin{minted}{MATLAB}
+global  load_con load_pot nload
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{pss}
+\begin{minted}{MATLAB}
+global  pss_con pss_pot pss_mb_idx pss_exc_idx
+global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
+global  pss_idx n_pss pss_sp_idx pss_p_idx;
+global  pss_T  pss_T2 pss_T4 pss_T4_idx  
+global pss_noT4_idx % misspelled in pss_indx as pss_noT4
+\end{minted}
+Despite the renaming of the \verb|pss_noT4_idx|, it doesn't seem to actually be used anywhere.
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{pwr}
+\begin{minted}{MATLAB}
+global  pwrmod_con n_pwrmod pwrmod_idx
+global  pwrmod_p_st dpwrmod_p_st
+global  pwrmod_q_st dpwrmod_q_st
+global  pwrmod_p_sig pwrmod_q_sig
+global  pwrmod_data
+\end{minted}
+There are some cells that contain user defined derivatives that aren't included yet.
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{rlmod}
+\begin{minted}{MATLAB}
+global  rlmod_con n_rlmod rlmod_idx
+global  rlmod_pot rlmod_st drlmod_st
+global  rlmod_sig
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{svc}
+\begin{minted}{MATLAB}
+global  svc_con n_svc svc_idx svc_pot svcll_idx
+global  svc_sig
+% svc user defined damping controls
+global n_dcud dcud_idx svc_dsig
+global svc_dc % user damping controls?
+global dxsvc_dc xsvc_dc
+%states
+global B_cv B_con
+%dstates
+global dB_cv dB_con
+\end{minted}
+There seems to be some code related to user defined damping control of SVC, but it is not described in the user manual. 
+(Added by Graham around 98/99)
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{sys}
+\begin{minted}{MATLAB}
+global  basmva basrad syn_ref mach_ref sys_freq
+\end{minted}
+
+%---------------------------------------------------------------------------------------------------
+\subsection{tcsc}
+\begin{minted}{MATLAB}
+global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
+global  B_tcsc dB_tcsc
+global  tcsc_sig tcsc_dsig
+global  n_tcscud dtcscud_idx  %user defined damping controls
+% previous non-globals added as they seem to relavant
+global xtcsc_dc dxtcsc_dc td_sig tcscf_idx 
+global tcsc_dc
+\end{minted}
+Similar to the SVC, there seems to be some added functionality for controlled damping, but no examples exist? (Added by Graham around 98/99)
+
+
+%---------------------------------------------------------------------------------------------------
+\subsection{tg}
+\begin{minted}{MATLAB}
+%% turbine-governor variables
+global  tg_con tg_pot
+global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
+global  tg_idx  n_tg tg_sig tgh_idx n_tgh
+\end{minted}
+It should be noted that the hydro governor model \verb|tgh| has not been modified as no examples seemed to use it.
+
+%---------------------------------------------------------------------------------------------------
+\subsection{vts}  
+Globals associated with variable time step simulation runs were placed in the \verb|g.vts| field.
+
+\begin{minted}{MATLAB}
+dataN % used as a the data index for logging values
+fsdn % a cell of fields, states, derivatives, and number of states
+n_states % total system state count
+dxVec % vector used to pass around current dataN derivatives
+stVec % vector used to pass around current dataN states
+t_block % a list of time blocks collected from sw_con
+t_blockN % current time block being executed
+iter % counter to monitor number of solutions per step
+tot_iter % total number of solutions
+slns % a running history of solution iterations
+\end{minted}
+
+
+%---------------------------------------------------------------------------------------------------
+\begin{comment}
+
+template for subparagraphs
+
+%---------------------------------------------------------------------------------------------------
+\subsection{xxx} %  
+\begin{minted}{MATLAB}
+
+\end{minted}
+
+\end{comment}

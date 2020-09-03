@@ -18,6 +18,7 @@ function networkSolutionVTS(k, vts_t)
 %   07/23/20    11:28   Thad Haines     Version 1
 %   07/27/20    11:09   Thad Haines     Version 1.0.1 - alteration to use vts_t for switching
 %   08/28/20    08:18   Thad Haines     Version 1.2 - addition of exciter bypass
+%   09/03/20    12:00   Thad Haines     Version 1.3 - changed g.int to g.y
 
 %% Remaining 'loose' globals
 % DeltaP/omega filter variables - 21
@@ -56,13 +57,13 @@ if vts_t >= g.sys.sw_con(4,1)% > 3 %k >= sum(g.k.k_inc(1:3))+1
     g.bus.bus_sim = g.bus.bus_pf2;
     g.bus.bus_int = g.bus.bus_intpf2;
     
-    Y1 = g.int.Y_gpf2;
-    Y2 = g.int.Y_gncpf2;
-    Y3 = g.int.Y_ncgpf2;
-    Y4 = g.int.Y_ncpf2;
-    Vr1 = g.int.V_rgpf2;
-    Vr2 = g.int.V_rncpf2;
-    bo = g.int.bopf2;
+    Y1 = g.y.Y_gpf2;
+    Y2 = g.y.Y_gncpf2;
+    Y3 = g.y.Y_ncgpf2;
+    Y4 = g.y.Y_ncpf2;
+    Vr1 = g.y.V_rgpf2;
+    Vr2 = g.y.V_rncpf2;
+    bo = g.y.bopf2;
     
 elseif vts_t >= g.sys.sw_con(3,1) && vts_t < g.sys.sw_con(4,1) %vts_t >= g.vts.t_block(g.vts.t_blockN,1) %g.vts.t_blockN == 3 %k >=sum(g.k.k_inc(1:2))+1
     %% near bus cleared - post fault 1
@@ -71,13 +72,13 @@ elseif vts_t >= g.sys.sw_con(3,1) && vts_t < g.sys.sw_con(4,1) %vts_t >= g.vts.t
     g.bus.bus_sim = g.bus.bus_pf1;
     g.bus.bus_int = g.bus.bus_intpf1;
     
-    Y1 = g.int.Y_gpf1;
-    Y2 = g.int.Y_gncpf1;
-    Y3 = g.int.Y_ncgpf1;
-    Y4 = g.int.Y_ncpf1;
-    Vr1 = g.int.V_rgpf1;
-    Vr2 = g.int.V_rncpf1;
-    bo = g.int.bopf1;
+    Y1 = g.y.Y_gpf1;
+    Y2 = g.y.Y_gncpf1;
+    Y3 = g.y.Y_ncgpf1;
+    Y4 = g.y.Y_ncpf1;
+    Vr1 = g.y.V_rgpf1;
+    Vr2 = g.y.V_rncpf1;
+    bo = g.y.bopf1;
     
 elseif vts_t >= g.sys.sw_con(2,1) && vts_t < g.sys.sw_con(3,1) %g.vts.t_blockN == 2 %k>=g.k.k_inc(1)+1
     %% fault applied - fault
@@ -86,13 +87,13 @@ elseif vts_t >= g.sys.sw_con(2,1) && vts_t < g.sys.sw_con(3,1) %g.vts.t_blockN =
     
     g.bus.bus_int = g.bus.bus_intf;
     
-    Y1 = g.int.Y_gf;
-    Y2 = g.int.Y_gncf;
-    Y3 = g.int.Y_ncgf;
-    Y4 = g.int.Y_ncf;
-    Vr1 = g.int.V_rgf;
-    Vr2 = g.int.V_rncf;
-    bo = g.int.bof;
+    Y1 = g.y.Y_gf;
+    Y2 = g.y.Y_gncf;
+    Y3 = g.y.Y_ncgf;
+    Y4 = g.y.Y_ncf;
+    Vr1 = g.y.V_rgf;
+    Vr2 = g.y.V_rncf;
+    bo = g.y.bof;
     
 elseif vts_t < g.sys.sw_con(2,1) %g.vts.t_blockN == 1 %k<g.k.k_inc(1)+1
     %% pre fault
@@ -101,13 +102,13 @@ elseif vts_t < g.sys.sw_con(2,1) %g.vts.t_blockN == 1 %k<g.k.k_inc(1)+1
     
     g.bus.bus_int = g.bus.bus_intprf;
     
-    Y1 = g.int.Y_gprf;
-    Y2 = g.int.Y_gncprf;
-    Y3 = g.int.Y_ncgprf;
-    Y4 = g.int.Y_ncprf;
-    Vr1 = g.int.V_rgprf;
-    Vr2 = g.int.V_rncprf;
-    bo = g.int.boprf;
+    Y1 = g.y.Y_gprf;
+    Y2 = g.y.Y_gncprf;
+    Y3 = g.y.Y_ncgprf;
+    Y4 = g.y.Y_ncprf;
+    Vr1 = g.y.V_rgprf;
+    Vr2 = g.y.V_rncprf;
+    bo = g.y.boprf;
 end
 
 %% apply gen trip - added from v2.3 - 06/01/20 - thad

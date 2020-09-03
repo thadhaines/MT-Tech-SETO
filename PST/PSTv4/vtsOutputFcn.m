@@ -18,7 +18,7 @@ function status = vtsOutputFcn(t,y,flag)
 %   History:
 %   Date        Time    Engineer        Description
 %   07/27/20    11:19   Thad Haines     Version 1
-%   08/03/20    10:24   Thad Haines     Version 1.0.1 - clean up actions
+%   08/03/20    10:24   Thad Haines     Version 1.1 - clean up actions
 
 global g
 
@@ -55,8 +55,8 @@ if isempty(flag) % normal step completion
     g.vts.stVec = y;                % update state vector
     handleStDx(g.vts.dataN, y, 2)   % place new solution results into associated globals
     
-    % display k and t at every first, last, and 50th step
-    if ( mod(g.vts.dataN,50)==0 ) || g.vts.iter > 100
+    % display k and t at every first, last, and 250th step
+    if ( mod(g.vts.dataN,250)==0 ) || g.vts.iter > 100
         fprintf('* dataN: %6d\tat time:\t%8.6f\trequired %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
     end
     

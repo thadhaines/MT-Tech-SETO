@@ -40,6 +40,12 @@ if ~isempty(g.area.area_def)
         g.area.area(areaN).number = areaNums(areaN);
         % collect area bus numbers
         g.area.area(areaN).areaBuses = g.area.area_def((g.area.area_def(:,2) == areaNums(areaN)),1);
+        g.area.area(areaN).areaBusNdx = [];
+        for mNdx=1:length(g.area.area(areaN).areaBuses)
+            % add index to global
+            g.area.area(areaN).areaBusNdx = [ g.area.area(areaN).areaBusNdx ...
+                , find(g.bus.bus(:,1) == g.area.area(areaN).areaBuses(mNdx))]; % for references to machine array values
+        end
         
         % doesn't assume/require same order of area and bus array
         
@@ -71,11 +77,11 @@ if ~isempty(g.area.area_def)
         end
         
         % calculate initial P and Q load
-        g.area.area(areaN).Pload0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 6));
-        g.area.area(areaN).Qload0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 7));
+        g.area.area(areaN).Pload0 = sum(g.bus.bus(g.area.area(areaN).areaBusNdx, 6));
+        g.area.area(areaN).Qload0 = sum(g.bus.bus(g.area.area(areaN).areaBusNdx, 7));
         % calculate initial shunt powers
-        g.area.area(areaN).G0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 8));
-        g.area.area(areaN).B0 = sum(g.bus.bus(g.area.area(areaN).areaBuses, 9));
+        g.area.area(areaN).G0 = sum(g.bus.bus(g.area.area(areaN).areaBusNdx, 8));
+        g.area.area(areaN).B0 = sum(g.bus.bus(g.area.area(areaN).areaBusNdx, 9));
         
         % collect area generator bus numbers - same as macBus? (excludes slack?) unsure - thad 08/25/20
         g.area.area(areaN).genBus = intersect(genBus, g.area.area(areaN).areaBuses);

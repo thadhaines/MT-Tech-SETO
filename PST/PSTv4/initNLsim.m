@@ -15,8 +15,9 @@ function initNLsim()
 %   History:
 %   Date        Time    Engineer        Description
 %   07/30/20    10:54   Thad Haines     Version 1
-%   08/05/20    13:15   Thad Haines     Version 1.0.1 - added pwrmod signals to global
-%   08/11/20    11:25   Thad Haines     Version 1.0.2 - added ivmmod
+%   08/05/20    13:15   Thad Haines     Version 1.1 - added pwrmod signals to global
+%   08/11/20    11:25   Thad Haines     Version 1.2 - added ivmmod
+%   09/03/20    12:00   Thad Haines     Version 1.3 - changed g.int to g.y
 
 % %% Remaining 'loose' globals commented out - thad 08/13/20
 % % DeltaP/omega filter variables - 21
@@ -324,7 +325,7 @@ end
 % if statement redundant - used in script... - thad 06/08/20
 if ~isempty(g.ncl.load_con)
     disp('non-linear loads')
-    vnc = nc_load(g.bus.bus,flag,g.int.Y_ncprf,g.int.Y_ncgprf); % return not used? - thad 07/17/20
+    vnc = nc_load(g.bus.bus,flag,g.y.Y_ncprf,g.y.Y_ncgprf); % return not used? - thad 07/17/20
 else
     g.ncl.nload = 0;
 end
@@ -342,13 +343,13 @@ if ~isempty(g.dc.dcsp_con)
     
     g.bus.bus_sim = g.bus.bus;
     g.bus.bus_int = g.bus.bus_intprf;
-    Y1 = g.int.Y_gprf;
-    Y2 = g.int.Y_gncprf;
-    Y3 = g.int.Y_ncgprf;
-    Y4 = g.int.Y_ncprf;
-    Vr1 = g.int.V_rgprf;
-    Vr2 = g.int.V_rncprf;
-    bo = g.int.boprf;
+    Y1 = g.y.Y_gprf;
+    Y2 = g.y.Y_gncprf;
+    Y3 = g.y.Y_ncgprf;
+    Y4 = g.y.Y_ncprf;
+    Vr1 = g.y.V_rgprf;
+    Vr2 = g.y.V_rncprf;
+    bo = g.y.boprf;
     
     g.k.h_sol = i_simu(1,1,g.k.k_inc, g.k.h, g.bus.bus_sim,Y1,Y2,Y3,Y4,Vr1,Vr2,bo);
     % reinitialize dc controls

@@ -1,25 +1,27 @@
 function y_switch
-
-% y_switch
-% 9:45 am July 20, 1998
-% script file for calculating the reduced Y matrices
-% for the various switching options
-% part of s_simu
-% calls red_ybus
-
-% Author: Graham Rogers
-% (c) copyright Cherry Tree Scientific Software/ J.H. Chow 1997 - 1998
-% All rights reserved
-
-% modified to add option 7, clear fault with out loss of line
-% suggested by Trong Nguyen and M.A. Pai University of Illinois
-% errors in line to line, line to ground and line to line to ground corrected
-
-%{
-functionalized
-added returns from red_ybus to g.int as they are used in the i_simu (network interface code)
-added appropriate lines and buses to g.line and g.bus respectively
-%}
+%Y_SWITCH selects and calculates reduced Y matrices
+% Y_SWITCH script file for calculating and selecting the reduced Y matrices 
+% for the various switching options. 
+%
+% Syntax: y_switch
+%
+%   NOTES: calls red_ybus
+%
+%   Input:
+%   VOID
+%
+%   Output:
+%   VOID
+%
+%   History:
+%   Date        Time    Engineer        Description
+%   07/20/98    09:45   Graham Rogers   Version 1
+%   (c) copyright Cherry Tree Scientific Software/ J.H. Chow 1997 - 1998 All rights reserved
+%   xx/xx/xx    xx:xx   xxx             Version 2 - modified to add option 7, clear fault with out loss of line
+%                                       suggested by Trong Nguyen and M.A. Pai University of Illinois
+%                                       errors in line to line, line to ground and line to line to ground corrected
+%   07/17/20    12:00   Thad Haines     Version 3.0 - changed to use global g, functionalized
+%   09/03/20    12:00   Thad Haines     Version 3.1 - changed g.int to g.y
 
 global g
 
@@ -28,7 +30,7 @@ if ~isempty(g.ncl.load_con)
     g.ncl.nload = length(g.ncl.load_con(:,1));
 end
 
-[g.int.Y_gprf,g.int.Y_gncprf,g.int.Y_ncgprf,g.int.Y_ncprf,g.int.V_rgprf,g.int.V_rncprf,g.int.boprf] = red_ybus(g.bus.bus,g.line.line);
+[g.y.Y_gprf,g.y.Y_gncprf,g.y.Y_ncgprf,g.y.Y_ncprf,g.y.V_rgprf,g.y.V_rncprf,g.y.boprf] = red_ybus(g.bus.bus,g.line.line);
 
 g.bus.bus_intprf = g.bus.bus_int;% store the internal bus numbers for the pre_fault system
 
@@ -98,7 +100,7 @@ if f_type == 5
     g.bus.bus_f(g.bus.bus_idx(1),7) = 0.0;
 end
 
-if f_type == 6;
+if f_type == 6
     %no fault
     f_nearbus = g.sys.sw_con(2,2);
     g.bus.bus_idx = find(g.bus.bus_f(:,1)==f_nearbus);
@@ -108,7 +110,7 @@ if f_type == 6;
 end
 
 % form fault on reduced matrices
-[g.int.Y_gf,g.int.Y_gncf,g.int.Y_ncgf,g.int.Y_ncf,g.int.V_rgf,g.int.V_rncf,g.int.bof] = red_ybus(g.bus.bus_f,g.line.line_f);   % fault-on admittance matrix
+[g.y.Y_gf,g.y.Y_gncf,g.y.Y_ncgf,g.y.Y_ncf,g.y.V_rgf,g.y.V_rncf,g.y.bof] = red_ybus(g.bus.bus_f,g.line.line_f);   % fault-on admittance matrix
 g.bus.bus_intf = g.bus.bus_int;
 
 %% second switching point, clear fault at near end/add new line
@@ -140,7 +142,7 @@ if f_type < 4
     g.line.line_pf1(dlpf1,2)=f_farbus;
     g.line.line_pf1(dlpf1,3:6) = g.line.line(line_idx(1),3:6);
     
-    [g.int.Y_gpf1,g.int.Y_gncpf1,g.int.Y_ncgpf1,g.int.Y_ncpf1,g.int.V_rgpf1,g.int.V_rncpf1,g.int.bopf1]...
+    [g.y.Y_gpf1,g.y.Y_gncpf1,g.y.Y_ncgpf1,g.y.Y_ncpf1,g.y.V_rgpf1,g.y.V_rncpf1,g.y.bopf1]...
         = red_ybus(g.bus.bus_pf1,g.line.line_pf1);  % post-fault
     % admittance matrix
     g.bus.bus_intpf1 = g.bus.bus_int;
@@ -151,13 +153,13 @@ elseif f_type==4 || f_type==5 || f_type==6
     g.bus.bus_pf1 = g.bus.bus_f;
     g.line.line_pf1 = g.line.line_f;
     
-    g.int.Y_gpf1 = g.int.Y_gf;
-    g.int.Y_gncpf1 = g.int.Y_gncf;
-    g.int.Y_ncgpf1 = g.int.Y_ncgf;
-    g.int.Y_ncpf1 = g.int.Y_ncf;
-    g.int.V_rgpf1 = g.int.V_rgf;
-    g.int.V_rncpf1 = g.int.V_rncf;
-    g.int.bopf1 = g.int.bof;
+    g.y.Y_gpf1 = g.y.Y_gf;
+    g.y.Y_gncpf1 = g.y.Y_gncf;
+    g.y.Y_ncgpf1 = g.y.Y_ncgf;
+    g.y.Y_ncpf1 = g.y.Y_ncf;
+    g.y.V_rgpf1 = g.y.V_rgf;
+    g.y.V_rncpf1 = g.y.V_rncf;
+    g.y.bopf1 = g.y.bof;
     
     g.bus.bus_intpf1 = g.bus.bus_intf;
     
@@ -166,13 +168,13 @@ elseif f_type == 7
     g.bus.bus_pf1 = g.bus.bus;
     g.line.line_pf1 = g.line.line;
     
-    g.int.Y_gpf1 = g.int.Y_gprf;
-    g.int.Y_gncpf1 = g.int.Y_gncprf;
-    g.int.Y_ncgpf1 = g.int.Y_ncgprf;
-    g.int.Y_ncpf1 = g.int.Y_ncprf;
-    g.int.V_rgpf1 = g.int.V_rgprf;
-    g.int.V_rncpf1 = g.int.V_rncprf;
-    g.int.bopf1 = g.int.boprf;
+    g.y.Y_gpf1 = g.y.Y_gprf;
+    g.y.Y_gncpf1 = g.y.Y_gncprf;
+    g.y.Y_ncgpf1 = g.y.Y_ncgprf;
+    g.y.Y_ncpf1 = g.y.Y_ncprf;
+    g.y.V_rgpf1 = g.y.V_rgprf;
+    g.y.V_rncpf1 = g.y.V_rncprf;
+    g.y.bopf1 = g.y.boprf;
     
     g.bus.bus_intpf1 = g.bus.bus_intprf;
 end
@@ -185,7 +187,7 @@ if f_type < 4
     g.bus.bus_pf2 = g.bus.bus_pf1;
     g.bus.bus_pf2(max_pf1b,9)=0.0;%remove short
     
-    [g.int.Y_gpf2,g.int.Y_gncpf2,g.int.Y_ncgpf2,g.int.Y_ncpf2,g.int.V_rgpf2,g.int.V_rncpf2,g.int.bopf2]...
+    [g.y.Y_gpf2,g.y.Y_gncpf2,g.y.Y_ncgpf2,g.y.Y_ncpf2,g.y.V_rgpf2,g.y.V_rncpf2,g.y.bopf2]...
         = red_ybus(g.bus.bus_pf2,g.line.line_pf2);  % post-fault
     % admittance matrix
     g.bus.bus_intpf2 = g.bus.bus_int;
@@ -195,13 +197,13 @@ else
     g.bus.bus_pf2 = g.bus.bus_pf1;
     g.line.line_pf2 = g.line.line_pf1;
     
-    g.int.Y_gpf2 = g.int.Y_gpf1;
-    g.int.Y_gncpf2 = g.int.Y_gncpf1;
-    g.int.Y_ncgpf2 = g.int.Y_ncgpf1;
-    g.int.Y_ncpf2 = g.int.Y_ncpf1;
-    g.int.V_rgpf2 = g.int.V_rgpf1;
-    g.int.V_rncpf2 = g.int.V_rncpf1;
-    g.int.bopf2 = g.int.bopf1;
+    g.y.Y_gpf2 = g.y.Y_gpf1;
+    g.y.Y_gncpf2 = g.y.Y_gncpf1;
+    g.y.Y_ncgpf2 = g.y.Y_ncgpf1;
+    g.y.Y_ncpf2 = g.y.Y_ncpf1;
+    g.y.V_rgpf2 = g.y.V_rgpf1;
+    g.y.V_rncpf2 = g.y.V_rncpf1;
+    g.y.bopf2 = g.y.bopf1;
     
     g.bus.bus_intpf2 = g.bus.bus_intpf1;
 end
