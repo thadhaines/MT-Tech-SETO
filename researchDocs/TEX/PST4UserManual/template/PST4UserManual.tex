@@ -44,8 +44,6 @@
 
 %% Front matter
 \include{frontmatter/intro} 
-\include{chapters/docHistory}
-\include{chapters/pstVersionHistory}
 % inclusions from template, may not be required.
 %\include{frontmatter/dedication}
 %\include{frontmatter/acknowledgments}
@@ -76,6 +74,7 @@
 \setcounter{table}{0}
 
 %% Body of document goes here
+\include{chapters/pstVersionHistory}
 \include{chapters/changesAndAdditions}
 \include{chapters/bugFixes}
 \include{chapters/operation}
@@ -90,6 +89,7 @@
 \onehalfspacing
 \printbibliography[heading=none]
 
+\include{chapters/docHistory}
 % Appendix format
 \appendix
 \doublespacing
