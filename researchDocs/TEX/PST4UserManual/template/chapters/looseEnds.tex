@@ -1,0 +1,19 @@
+% file to contain information on loose ends or things generaly unfinished
+%==============================================================================
+\chapter{Loose Ends} \ \\
+As software developement is never actually over, this chapter is meant to contain any loose ends that felt relevant.
+The below is copied from the most recent weekly (09/02/20)
+
+	\begin{enumerate}
+	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
+		\item \verb|tgh| model not converted for use with global g. (no examples of tgh gov)
+		\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\It probably shouldn't be.
+		\item Constant Power or Current loads seem to require a portion of constant Impedance.
+		\item PSS design functionality not explored
+		\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
+		\item Differences in \verb|mac_ind| between pst 2 and 3 seem backward compatible - untested.
+		\item DC is not implemented in VTS - Just combine into main routine? Seems counter intuitive to do multi-rate variable time step integration.
+		\item AGC capacity should consider defined machine limits instead of assuming 1 PU max.
+		\item AGC should allow for a `center of inertia' frequency option instead of the weighted average frequency.
+	\end{enumerate}
+	

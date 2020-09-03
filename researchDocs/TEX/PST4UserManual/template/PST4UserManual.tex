@@ -9,7 +9,7 @@
 \newcommand{\CAPTitle}{Power System Toolbox 4 \\
 	\vspace{2em}
 	--User Manual--\\
-	Documentation Version 0.0.0-a.1
+	Documentation Version 0.0.0-a.2
 }
 \newcommand{\Author}{Thad Haines}
 \newcommand{\Degree}{-}
@@ -43,7 +43,10 @@
 \onehalfspacing % for nicer look
 
 %% Front matter
-\include{frontmatter/softDocIntro}
+\include{frontmatter/intro} 
+\include{chapters/docHistory}
+\include{chapters/pstVersionHistory}
+% inclusions from template, may not be required.
 %\include{frontmatter/dedication}
 %\include{frontmatter/acknowledgments}
 
@@ -72,9 +75,16 @@
 \setcounter{page}{1} % Arabic Numbers start at the begining of chapter 1
 \setcounter{table}{0}
 
-%% Body of thesis goes here
-\include{chapters/chapter01}
-\include{chapters/chapter02}
+%% Body of document goes here
+\include{chapters/changesAndAdditions}
+\include{chapters/bugFixes}
+\include{chapters/operation}
+\include{chapters/examplesExplained}
+\include{chapters/looseEnds}
+
+% chapter01 and chapter02 are template docs to show how template works - they are not intended to be included in final document.
+%\include{chapters/chapter01}
+%\include{chapters/chapter02}
 
 \chapter{Bibliography}
 \onehalfspacing
