@@ -1,31 +1,28 @@
 % file to contain information on the various model fixes from version 3
 %==============================================================================
-\chapter{General Model or Bug Fixes}
+\chapter{Code Fixes}
+The purpose of this section is to record fixes to PST code from version 3 to version 4.
 
-This content will likely be separated into the changes/additions section as not all following sections are specific to code fixes but also additions/changes.
-%content copied from PSTsetoVersionChanges on 09/03/20 -thad 
-
-The purpose of this section is to record changes of note made to PST over the course of the SETO work that may be worth not forgetting about.
-It should be noted that PST SETO is based on PST version 3 and not \textbf{all} changes are recorded here.
-
-
-%===========================================================================================================
+%=============================
 \section{exc\_dc12}  
 In 2015 there were `errors' corrected in the saturation block that create differences between version 2 and 3 of this model.
 Effects are noticeable, but a solution hasn't been investigated yet.
 
-%===========================================================================================================
+%=============================
 \section{exc\_st3}  
 Corrected theta index to \verb|n_bus| from \verb|n| per Ryan Elliott.
 Corrected simple \verb|*| to \verb|.*| int the \verb|if ~isempty(nst3_sub)| section.
 
-%===========================================================================================================
+%=============================
+\section{lmod}  
+Fixed state limiting.
+ While if over-limit, the derivative was set to zero, the state was not set to the maximum/minimum value correctly.
+ 
+%=============================
 \section{mac\_tra}  
 Commented out code that prevented the setting equal of the transient reactances.
 
-%===========================================================================================================
-\section{lmod and rlmod}  
+%=============================
+\section{rlmod}  
 Fixed state limiting.
  While if over-limit, the derivative was set to zero, the state was not set to the maximum/minimum value correctly.
-
-

@@ -4,113 +4,41 @@
 \chapter{Changes and Additions}
 It's assumed the last version is 3.
 
+%==================================================
+\input{sections/area}
 
-Maybe make a note about Experimental features (VTS, un-tripping)
+%==================================================
+\input{sections/agc/agc}
 
-\begin{itemize}
-\item License
-\item IMVMOD
-\item PWRMOD
-\item Machine tripping
-\item Global Variable Structure
-\item \verb|s_simu| Functionalization / clean up
-\item AGC
-\subitem areas, average frequency
-\item VTS
-\subitem differences from FTS (Huen's)
-\item Speed up
-\item Zeroing derivatives
-\item Octave Compatibility
-\end{itemize}
-
-%% from pst version changes
-%content copied from PSTsetoVersionChanges on 09/03/20 -thad 
-
-The purpose of this section is to record changes of note made to PST over the course of the SETO work that may be worth not forgetting about.
-It should be noted that PST SETO is based on PST version 3 and not \textbf{all} changes are recorded here.
-
-%===========================================================================================================
-\section{PSS model}  
-There was a correction to the washout time constant in the PSS model between PST version 2.x and 3.
-To accommodate for this, the SETO version has two pss files named \verb|pss2| and \verb|pss3| which mimic the computation of each PST version respectively.
-The idea is to enable a user to specify which model the pss settings use in a particular case.
-The current usage is similar to:
-\begin{minted}{MATLAB}
-copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use version 2 model of PSS
-\end{minted}
-
-Alternatively, a \verb|pssGainFix| variable may be set to 1, or true, which will adjust the version 2 data from a \verb|d_| file to work the same way with the version 3 model.
-This is accomplished by executing: \verb|pss_con(:,3) = pss_con(:,3)./pss_con(:,4);|
-While this works, it's kind of confusing and may be removed.
-
-%===========================================================================================================
-\section{Sub-transient Machine model}  
-There are three versions of the \verb|mac_sub| model available.
-The \verb|_ORIG| model is the standard PST model based on the R. P. Schulz, "Synchronous machine modeling" algorithm.
-The \verb|_NEW| model is based on the PSLF 'genrou' model by John Undrill.
-The \verb|_NEW2| model is the same as the \verb|_NEW| model with alternative calculations for ....
-Any model may be copied over the \verb|mac_sub| file for use.
-
-%===========================================================================================================
-\section{pwrmod}  
-This is the power or current injection model Dan created for version 2.3.
-It's meant to model the `grid following' type of converters.
-It is included in both the non-linear and linear simulation modes of PST SETO.
-
-%===========================================================================================================
-\section{ivmmod}  
-This is the voltage behind an impedance model Dan created.
-It's meant to model a `grid forming' converter where voltage and angle are manipulatable.
-While there are questions about the reality of such operations, the model exists and appears to work in the non-linear simulation  of PST SETO.
-
-%===========================================================================================================
-\section{livePlot}  
-Function that creates plot during non-linear simulation.
-While this operation existed in previous versions of pst, it is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
-The \verb|livePlot| function is designed to be overwritten in a similar fashion as pss or machine models previously described.
-
-%===========================================================================================================
-\section{lmon}  
-Coded to actually monitor line current and power flow during non-linear simulation.
-The \verb|lmon_indx| function creates the required data structures and indices.
-%===========================================================================================================
-\section{area}  
-Created area functionality via the \verb|area_def|.
-The \verb|area_indx| function creates the required data structures and indices.
-
-%===========================================================================================================
-\section{calcAveF}  
-Calculates system and area weighted average frequency.
-System values stored in \verb|g.sys.aveF| and area values stored in \verb|g.area.area(x).aveF|.
-
-%===========================================================================================================
-\section{calcAreaVals}  
-Calculates total area generation and interchange.
-Intentions were to also sum total load, but there were complications with that and work in that direction seemed not entirely useful.
-
-%===========================================================================================================
-\section{agc}  
-Automatic generation control model that calculates RACE and distributes signal to defined controlled generators according to participation factor.
-The ACE signal is filtered through a PI before being distributed to each generator through a unique low pass filter that adds the negative of the value to the governor \verb|tg_sig| value.
-( NOTE: the \verb|tg_sig| value is equivalent to an addition to the governors $P_{ref}$ value)
-The \verb|agc_indx| function creates the required data structures and indices.
-
-%---------------------------------------------------------------------------------------------------
-\section{cleanZeros}  
-Function that cleans all zero variables from the global g.
-Executed at the end of \verb|s_simu_Batch|.
-Stores cleared variable names in the \verb|clearedVars| cell that is stored in \verb|g.sys|
-
-%---------------------------------------------------------------------------------------------------
-\section{trimLogs}  
-Function that trims all logged values in the global g to a given length \verb|k|.
-Executed near the end of \verb|s_simu_BatchXXX| before cleanZeros.
-
-%---------------------------------------------------------------------------------------------------
-\section{Variable Time Step Simulation}  
-Variable time step simulations are possible using standard MATLAB ODE solvers.
-A semi-complete and partially-detailed explanation of the functions and code used to make this happen will \emph{probably} be written in a separate document `later'\ldots
-
-
-%---------------------------------------------------------------------------------------------------
+%==================================================
 \input{sections/globalVariables}
+
+%==================================================
+\input{sections/ivmmod/ivmmod}
+
+%==================================================
+\input{sections/livePlot}
+
+%==================================================
+\input{sections/lmon}
+
+%==================================================
+\input{sections/mac_sub}
+
+%==================================================
+\input{sections/mac_trip_logic}
+
+%==================================================
+\input{sections/octaveComp}
+
+%==================================================
+\input{sections/pss}
+
+%==================================================
+\input{sections/pwrmod/pwrmod}
+
+%==================================================
+\input{sections/s_simu}
+
+%==================================================
+\input{sections/vts/vts}

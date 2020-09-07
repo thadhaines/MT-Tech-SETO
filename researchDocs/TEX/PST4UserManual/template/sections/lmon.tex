@@ -1,0 +1,70 @@
+%==========================================================================
+\pagebreak
+\section{Line Monitoring Model (lmon)}  
+Coded to actually monitor line current and power flow during non-linear simulation.
+The \verb|lmon_indx| function creates the required data structures and indices.
+
+ 
+Power flow on a line must be calculated each step as AGC requires actual area interchange for the ACE calculation.
+The previously existing \verb|line_pq| function performed this task, but was not fully incorporated into the simulation to allow calculation during execution.
+This minor oversight has been resolved and the \verb|lmon_con| array is still used to define monitored lines as in previous version of PST.
+It should be noted that areas with AGC automatically track area interchange flows and do not need to be user defined.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+%% Line Monitoring
+% Each value corresponds to an array index in the line array.
+% Complex current and power flow on the line will be calculated and logged during simulation
+
+%lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
+
+lmon_con = [3,10]; % lines to loads
+\end{minted}
+
+Line monitoring data is collected in the \verb|g.lmon| field of the global variable.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+>> g.lmon
+ans = 
+     lmon_con: [3 10]
+       n_lmon: 2
+    busFromTo: [2x2 double]
+         line: [1x2 struct]
+\end{minted}
+
+Each \verb|g.lmon.line| entry contains the following fields and logged data:
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+>> g.lmon.line(2)
+ans = 
+    busArrayNdx: 10
+        FromBus: 13
+          ToBus: 14
+          iFrom: [1x4063 double]
+            iTo: [1x4063 double]
+          sFrom: [1x4063 double]
+            sTo: [1x4063 double]
+\end{minted}

@@ -1,0 +1,90 @@
+\section{Area Definitions}  
+Created area functionality via the \verb|area_def|.
+The \verb|area_indx| function creates the required data structures and indices.
+
+% copied from doc...
+To enable allow for AGC and the required area calculations, each bus  in the \verb|bus| array must be assigned to an area in the \verb|area_def| array.
+An example \verb|area_def| array is shown below.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+%% area_def data format
+% should contain same number of rows as bus array (i.e. all bus areas defined)
+% col 1 bus number
+% col 2 area number
+area_def = [ ...
+            1  1;
+            2  1;
+            3  1;
+            4  1;
+            10 1;
+            11 2;
+            12 2;
+            13 2;
+            14 2; 
+            20 1;
+           101 1; 
+           110 2;
+           120 2];
+\end{minted}
+
+It should be noted that rows may not have to be in the same order as the bus array (untested).
+The \verb|area_def| array is automatically placed into the global g structure.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+>> g.area
+ans = 
+    area_def: [13x2 double]
+      n_area: 2
+        area: [1x2 struct]
+\end{minted}
+
+Each area currently contains values that may be relevant to AGC calculations.
+The \verb|calcAreaVals| function is used to calculate and store such values.
+An example of what is stored in the \verb|g.area.area(x)| structure is shown below.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+>> g.area.area(2)
+ans = 
+         number: 2
+      areaBuses: [6x1 double]
+         macBus: [2x1 double]
+      macBusNdx: [3 4]
+        loadBus: [4x1 double]
+     loadBusNdx: [8 9 12 13]
+         genBus: [2x1 double]
+      genBusNdx: [6 7]
+           totH: [1x4063 double]
+           aveF: [1x4063 double]
+         totGen: [1x4063 double]
+        totLoad: []
+            icA: [1x4063 double]
+            icS: []
+  exportLineNdx: [11 12]
+  importLineNdx: []
+       n_export: 2
+       n_import: []
+\end{minted}
+It should be noted that \verb|icS| represents a placeholder for a scheduled interchange value and the \verb|totLoad|  is a field for collected total load.
+The collection of actual running load values may prove more complicated as the bus array does not seem to be updated every step, only a reduced Y matrix used in the \verb|nc_load| function called from \verb|i_simu|. 

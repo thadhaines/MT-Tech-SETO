@@ -1,0 +1,10 @@
+\section{Sub-Transient Machine Models}  
+There are three versions of the sub-transient machine model (\verb|mac_sub|) included with PST 4.
+The \verb|_ORIG| model is the standard PST model based on the R. P. Schulz, "Synchronous machine modeling" algorithm.
+The \verb|_NEW| model is based on the PSLF 'genrou' model by John Undrill.
+The \verb|_NEW2| model is the same as the \verb|_NEW| model with minor alterations.
+Any model may be copied over the \verb|mac_sub| file for use.
+\begin{minted}{MATLAB}
+copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % use genrou model
+copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % restore model
+\end{minted}

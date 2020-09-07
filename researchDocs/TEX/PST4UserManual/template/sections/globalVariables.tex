@@ -1,6 +1,5 @@
 %===========================================================================================================
 \pagebreak
-
 \section{Global Variable Management}  
 To enable easier manipulation of PST - it was decided to create a global structure that contains all system globals.
 While this may or may not have been a good idea - it happened.
@@ -131,17 +130,6 @@ global sat_idx dbc_idx db_idx % has to do with version 2 of mac_ind
 % changed all pmot to p_mot (mac_ind1 only)
 \end{minted}
 Two models of this are included as \verb|mac_ind1| (a basic version from 2.3), and \verb|mac_ind2| which is an updated induction motor model. Default behavior is to use the newer model (\verb|mac_ind2|).
-
-%---------------------------------------------------------------------------------------------------
-\subsection{int}  
-Contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with faults.
-Example variables are shown below.
-\begin{minted}{MATLAB}
->> g.int
-ans = 
-      Y_gprf: [4x4 double]
-do better....
-\end{minted}
 
 %---------------------------------------------------------------------------------------------------
 \subsection{ivm} 
@@ -318,6 +306,16 @@ tot_iter % total number of solutions
 slns % a running history of solution iterations
 \end{minted}
 
+%---------------------------------------------------------------------------------------------------
+\subsection{y}  
+Contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with faults.
+Example variables are shown below.
+\begin{minted}{MATLAB}
+>> g.int
+ans = 
+      Y_gprf: [4x4 double]
+do better....
+\end{minted}
 
 %---------------------------------------------------------------------------------------------------
 \begin{comment}

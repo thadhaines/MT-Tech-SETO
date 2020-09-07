@@ -8,3 +8,99 @@ This is likely to include a flow chart/ multiple flow charts.
 Mention partitioned explicit method via Huen's, partitioned implicit via VTS.
 
 Overview of running \verb|s_simu| in batch or stand alone mode.
+
+copying of modulation files
+
+%==============================================================================
+\section{Simulation Loop}
+The complete simulation loop code is shown below.
+This code was copied from \verb|s_simu_BatchVTS| with corresponding line numbers.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		linenos,
+		firstnumber=362,
+		breaklines
+				]{MATLAB}
+%% Simulation loop start
+warning('*** Simulation Loop Start')
+for simTblock = 1:size(g.vts.t_block)
+    
+    g.vts.t_blockN = simTblock;
+    g.k.ks = simTblock; % required for huen's solution method.
+    
+    if ~isempty(g.vts.solver_con)
+        odeName = g.vts.solver_con{g.vts.t_blockN};
+    else
+        odeName = 'huens'; % default PST solver
+    end
+    
+    if strcmp( odeName, 'huens')
+        % use standard PST huens method
+        fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+            simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
+        
+        % add fixed time vector to system time vector
+        nSteps = length(g.vts.fts{simTblock});
+        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
+        
+        % account for pretictor last step time check
+        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1)+ g.sys.sw_con(simTblock,7);
+        
+        for cur_Step = 1:nSteps
+            k = g.vts.dataN;
+            j = k+1;
+            
+            % display k and t at every first, last, and 50th step
+            if ( mod(k,50)==0 ) || cur_Step == 1 || cur_Step == nSteps
+                fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
+            end
+            
+            %% Time step start
+            initStep(k)
+            
+            %% Predictor Solution =========================================
+            networkSolutionVTS(k, g.sys.t(k))
+            monitorSolution(k);
+            dynamicSolution(k)
+            dcSolution(k)
+            predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated i_simu
+            
+            %% Corrector Solution =========================================
+            networkSolutionVTS(j, g.sys.t(j))
+            dynamicSolution(j)
+            dcSolution(j)
+            correctorIntegration(k, j, g.k.h_sol)
+            
+            % most recent network solution based on completely calculated states is k
+            monitorSolution(k);
+            %% Live plot call
+            if g.sys.livePlotFlag
+                livePlot(k)
+            end
+            
+            g.vts.dataN = j;                        % increment data counter
+            g.vts.tot_iter = g.vts.tot_iter  + 2;   % increment total solution counter
+            g.vts.slns(g.vts.dataN) = 2;            % track step solution
+        end
+        % Account for next time block using VTS
+        handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
+        handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives 
+        
+    else % use given variable method
+        fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+            odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
+        
+        % feval used for ODE call - could be replaced with if statements.
+        feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+        
+        % Alternative example of using actual function name:
+        %ode113(inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+    end
+    
+end% end simulation loop
+\end{minted}
