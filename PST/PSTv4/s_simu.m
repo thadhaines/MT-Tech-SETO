@@ -500,6 +500,7 @@ try % for catching non-convergence
             % feval used for ODE call - could be replaced with if statements.
             feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
             
+            % NOTE: while feval is not recommended for repeated use, the funtion is called only once per time block.
             % Alternative example of using actual function name:
             %ode113(inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
         end
@@ -516,7 +517,7 @@ catch ME
     end
 end
 
-%% Post Simulation Variable Step Specific Cleanup =========================
+%% Post Simulation Variable Step Specific Cleanup =============================
 
 % check if last time block used huens, remove last 'extra' step
 if strcmp(g.vts.solver_con{end}, 'huens')
@@ -613,7 +614,7 @@ clear varNames vName zeroTest clearedVars % variables associated with clearing z
 
 %whos('g') % see if trimming/clearing zeros matters. 2/2 (it does)
 
-%% Execute original s_simu plotting (if run as a standalone script)
+%% Execute original s_simu plotting (if run as a stand alone script)
 standAlonePlot(scriptRunFlag)
 clear scriptRunFlag
 

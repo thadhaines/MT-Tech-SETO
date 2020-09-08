@@ -352,7 +352,7 @@ sw_con = [...
 1.0  0      0    0    0    0    ts;   % Do Nothing
 5.0  0    0    0    0    0    ts*2;	% increase time step
 10.0 0    0    0    0    0    ts*4; % increase time step % this timestep size blows up when a load ramp is simulated
-20.0 0    0    0    0    0    0];   % end simulation
+120.0 0    0    0    0    0    0];   % end simulation
 
 %% solver_con format
 % A cell with a solver method in each row corresponding to the specified

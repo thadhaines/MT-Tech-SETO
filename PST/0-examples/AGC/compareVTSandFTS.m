@@ -7,7 +7,7 @@ printFigs = 0;
 
 % load varible data
 % load('AGCtestVTS.mat')
-load('AGCtestVTS.mat')
+load('AGCtestVTS2.mat')
 gv = g;
 clear g;
 

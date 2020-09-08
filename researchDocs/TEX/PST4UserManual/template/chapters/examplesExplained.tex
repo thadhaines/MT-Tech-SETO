@@ -14,3 +14,12 @@ As github as many examples, this is a chapter to explain what the purpose of the
 \item Modulation via \verb|_mod| files
 \item Linear simulation where applicable
 \end{itemize}
+
+Variables to note in associated examples (where \verb|x| is the internal model number):
+\begin{itemize}
+\item exciter $V_{ref} = $ \verb|g.exc.exc_pot(x,3)|
+\item governor $P_{ref} = $ \verb|g.tg.tg_pot(x,5)|
+\item governor $\omega_{ref} = $ \verb|g.tg.tg_con(x,3)|
+\end{itemize}
+
+\input{sections/examples/agcExample}

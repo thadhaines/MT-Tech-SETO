@@ -53,7 +53,7 @@ copyfile('rml_sig_ORIG.m', 'rml_sig.m');
 copyfile('mAGC_sig_ORIG.m', 'mAGC_sig.m');
 
 %% Live plotting
-copyfile('livePlot_ORIG.m', 'livePlot.m'); % use altered as default
+copyfile('livePlot_ORIG.m', 'livePlot.m');
 
 %%
-display('Models, Modulation files, and life plotting restored')
+display('Models, Modulation files, and live plotting code has been restored.')

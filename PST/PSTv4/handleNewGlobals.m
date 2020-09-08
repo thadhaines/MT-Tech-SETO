@@ -1,6 +1,6 @@
 %% Script to detect 'legacy' data input and adjust to new global g approach
 % Usage of script to more easily detect legacy global definitons
-% global g is already defined. Assumes data file structure does not change.
+% global g is already defined. Assumes PST data file structure does not change.
 %
 %   History:
 %   Date        Time    Engineer        Description
@@ -24,6 +24,7 @@
 %   07/20/20    19:48   Thad Haines     addition of AGC
 %   07/30/20    19:15   Thad Haines     addition of variable solver solver_con
 %   08/28/20    07:40   Thad Haines     addition of mac_trip_flags and exc_bypass
+%   09/08/20    11:32   Thad Haines     removal of PSS gain fix.
 
 global g
 
@@ -108,6 +109,7 @@ if exist('ibus_con','var')
 else
     g.mac.ibus_con = [];
 end
+
 %% pwrmod
 if exist('pwrmod_con','var')
     g.pwr.pwrmod_con = pwrmod_con;
@@ -115,6 +117,7 @@ if exist('pwrmod_con','var')
 else
     g.pwr.pwrmod_con = [];
 end
+
 %% load_con
 if exist('load_con','var')
     g.ncl.load_con = load_con;
@@ -122,6 +125,7 @@ if exist('load_con','var')
 else
     g.ncl.load_con = [];
 end
+
 %% sw_con
 if exist('sw_con','var')
     g.sys.sw_con = sw_con;
@@ -132,20 +136,25 @@ end
 
 %% pss
 if exist('pss_con','var')
-    % account for washout gain alteration between version 2 and 3
-    if exist('pssGainFix','var')
-        if pssGainFix
-            pss_con(:,3) = pss_con(:,3)./pss_con(:,4);
-        end
-    else
-        pssGainFix = 0;
-    end
+    
+% removed the PSS gain fix - users encouraged to copy files if different
+% model is desired. - thad 09/08/20
+
+%     % account for washout gain alteration between version 2 and 3
+%     if exist('pssGainFix','var')
+%         if pssGainFix
+%             pss_con(:,3) = pss_con(:,3)./pss_con(:,4);
+%         end
+%     else
+%         pssGainFix = 0;
+%     end
+
     g.pss.pss_con = pss_con;
-    g.pss.pssGainFix = pssGainFix;
+    %g.pss.pssGainFix = pssGainFix;
     clear pss_con pssGainFix
 else
     g.pss.pss_con = [];
-    g.pss.pssGainFix = nan;
+    %g.pss.pssGainFix = nan;
 end
 
 %% svc_con
@@ -155,6 +164,7 @@ if exist('svc_con','var')
 else
     g.svc.svc_con = [];
 end
+
 %% tcsc_con
 if exist('tcsc_con','var')
     g.tcsc.tcsc_con = tcsc_con;
@@ -163,6 +173,7 @@ else
     g.tcsc.tcsc_con = [];
     g.tcsc.n_tcsc = 0;
 end
+
 %% igen_con
 if exist('igen_con','var')
     g.igen.igen_con = igen_con;
@@ -170,6 +181,7 @@ if exist('igen_con','var')
 else
     g.igen.igen_con = [];
 end
+
 %% ind_con and mld_con for inductive motor loads
 if exist('ind_con','var')
     g.ind.ind_con = ind_con;

@@ -4,7 +4,7 @@
 To enable easier manipulation of PST - it was decided to create a global structure that contains all system globals.
 While this may or may not have been a good idea - it happened.
 Initial results show a speed up of over 2 times.
-In other words, it could be assumed previous versions of PST spent half of their computation time loading globals\ldots
+In other words, it could be assumed previous versions of PST spent half of their computation time handling globals.
 
 
 Inside the global variable \verb|g| are fields that corresponds to models, or groups, of other globals.
@@ -78,6 +78,7 @@ global rec_par inv_par line_par
 Some DC related functions reused global variable names for local values but avoided conflict by not importing the specific globals.
 During global conversion this caused some issues with accidental casting to global and overwriting issues.
 While the non-linear and linear simulations run, there may be issues with this problem yet to be discovered.
+More specifically, the \verb|tap| variable is re-witten numerous times during a simulation when calculating line flows.
 
 
 

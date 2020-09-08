@@ -7,13 +7,16 @@
 % added agc
 
 % Meant to test AGC/ scheduled Interchange modulation
+% uses VTS
 
 enableGov = true;
 enableExciters = true;
 enablePSS = true;
 enableSVC = true;
 enableAGC = true;
-conditionalAGC = 0; % 1 or 0
+conditionalAGC = 0; % 1 or 0 - 
+% NOTE: conditional ace should be turned off as frequency will not deviate 
+% with icMod changes alone.
 
 disp('Two area, 4 machine, AGC test')
 %% bus data format

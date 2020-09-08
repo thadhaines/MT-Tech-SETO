@@ -1,15 +1,20 @@
-\section{livePlot Function} 
-Default action of PST 3 was to plot the bus voltage magnitude at the faulted bus.
+\section{Live Plotting Functionality (liveplot)} 
+Default action of PST 3 was to plot the bus voltage magnitude at a faulted bus.
 However, it may be useful to plot other values or turn off the plotting during a simulation.
-The live plotting is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
-The \verb|livePlot| function is designed to be overwritten in a similar fashion as PSS or machine models previously described.
+The live plotting routine is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
+The \verb|livePlot| function was designed to be overwritten in a similar fashion as PSS or machine models previously described.
 
 There are currently XXX live plot functions:
 
 \begin{itemize}
-\item \verb|liveplot_ORIG| - original faulted bus voltage plot.
-\item \verb|liveplot_1| - faulted bus voltage and system machine speeds plus any lmod signals
-\item \verb|liveplot_2| - AGC signals
+\item \verb|liveplot_ORIG| - Original faulted bus voltage plot.
+\item \verb|liveplot_1| - Faulted bus voltage and system machine speeds plus any lmod signals.
+\item \verb|liveplot_2| - AGC signals.
 \end{itemize}
 
 It should be noted that the live plotting can cause extremely slow simulations and occasional crashes.
+To disable live plotting:
+\begin{itemize}
+\item In stand-alone mode: \\Change the 'live plot?' field from a $1$ to a $0$ in the popup dialog box.
+\item In batch mode:  \\Create a variable \verb|livePlotFlag| and set as $0$ or \verb|false|.
+\end{itemize}

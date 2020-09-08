@@ -1,7 +1,7 @@
 % file to contain information on the various model fixes from version 3
 %==============================================================================
 \chapter{Code Fixes}
-The purpose of this section is to record fixes to PST code from version 3 to version 4.
+The purpose of this section is to record notable fixes to PST code from version 3 to version 4.
 
 %=============================
 \section{exc\_dc12}  
@@ -11,12 +11,12 @@ Effects are noticeable, but a solution hasn't been investigated yet.
 %=============================
 \section{exc\_st3}  
 Corrected theta index to \verb|n_bus| from \verb|n| per Ryan Elliott.
-Corrected simple \verb|*| to \verb|.*| int the \verb|if ~isempty(nst3_sub)| section.
+Corrected simple \verb|*| to \verb|.*| in the \verb|if ~isempty(nst3_sub)| section.
 
 %=============================
 \section{lmod}  
 Fixed state limiting.
- While if over-limit, the derivative was set to zero, the state was not set to the maximum/minimum value correctly.
+While if over-limit, the derivative was set to zero, the state was not set to the maximum/minimum value correctly.
  
 %=============================
 \section{mac\_tra}  
@@ -24,5 +24,5 @@ Commented out code that prevented the setting equal of the transient reactances.
 
 %=============================
 \section{rlmod}  
-Fixed state limiting.
- While if over-limit, the derivative was set to zero, the state was not set to the maximum/minimum value correctly.
+Fixed state limiting issue that was found in \verb|lmod|.
+If over-limit, the derivative was set to zero, however the state was not set to the maximum/minimum value correctly.
