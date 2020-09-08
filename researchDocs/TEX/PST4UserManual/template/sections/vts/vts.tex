@@ -61,9 +61,13 @@ This script will likely replace the \verb|s_simu| script in the main PST4 folder
 The variable time step implementation in PST revolves around using the built in MATLAB ODE solvers.
 All these methods perform actions depicted in the following block diagram.
 
-\begin{center}
-\includegraphics[width=.8\linewidth]{./../../one-offs/200804-ODEblockDiagram/200804-ODEblockDiagram}
-\end{center}
+\begin{figure}[!h]
+	\centering
+	\footnotesize
+	\includegraphics[width=.8\linewidth]{./../../one-offs/200804-ODEblockDiagram/200804-ODEblockDiagram}
+	\caption{MATLAB ODE block diagram.}
+	\label{fig: MATLAB ode block diagram}
+\end{figure}%\vspace{-1 em}
 
 The input to an ODE solver include, an input function, a time interval (time block), initial conditions, and solver options.
 The current options used for VTS are shown below and deal with error tolerance levels, initial step size, max step size, and an Output function.

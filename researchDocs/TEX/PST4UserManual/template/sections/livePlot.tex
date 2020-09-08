@@ -1,4 +1,15 @@
-\section{livePlot Function}  
-Function that creates plot during non-linear simulation.
-While this operation existed in previous versions of pst, it is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
-The \verb|livePlot| function is designed to be overwritten in a similar fashion as pss or machine models previously described.
+\section{livePlot Function} 
+Default action of PST 3 was to plot the bus voltage magnitude at the faulted bus.
+However, it may be useful to plot other values or turn off the plotting during a simulation.
+The live plotting is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
+The \verb|livePlot| function is designed to be overwritten in a similar fashion as PSS or machine models previously described.
+
+There are currently XXX live plot functions:
+
+\begin{itemize}
+\item \verb|liveplot_ORIG| - original faulted bus voltage plot.
+\item \verb|liveplot_1| - faulted bus voltage and system machine speeds plus any lmod signals
+\item \verb|liveplot_2| - AGC signals
+\end{itemize}
+
+It should be noted that the live plotting can cause extremely slow simulations and occasional crashes.

@@ -67,6 +67,8 @@
 %   08/21/20    12:53   Thad Haines     V 2.8.3 - Handled FTS->VTS unique time vector issue
 %   08/25/20    11:02   Thad Haines     V 2.8.4 - Added try catch to handle non-convergence
 %   08/28/20    14:05   Thad Haines     V 2.8.5 - removed mac_trip_flags init, changed number of steps to print data
+%   09/08/20    04:41   Thad Haines     V 2.8.6 - added option to not solve a power flow - to stand alone mode
+
 
 % (c) Montana Technological University / Thad Haines 2020
 % (c) Montana Technological University / Daniel Trudnowski 2019
@@ -93,17 +95,17 @@
 %
 
 format compact;
-disp('***    PST v4.0.0-a.9    ***')
+disp('***    PST v4.0.0-b.1    ***')
 disp('*** s_simu Start')
 disp('*** Declaring Global Variables...')
 
-%% Remaining 'loose' globals
-%% DeltaP/omega filter variables - 21 - model use not documented
+%% Remaining 'loose' globals - UNUSED (probably...)
+%% DeltaP/omega filter variables - model use not documented
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
 
-%% pss design - 3 - Not used in Simulation? - thad 07/18/20
+%% pss design -  Not used  - thad 07/18/20
 global ibus_con  netg_con  stab_con
 
 %% global structured array
@@ -199,46 +201,72 @@ end
 
 clear Fbase Sbase
 
-%% other init operations
-tic                     % start timer
-%startStr = datestr(now);% start time String
-%startClock = clock;     % start date time vector
-g.sys.syn_ref = 0 ;     % synchronous reference frame
-g.mac.ibus_con = [];    % ignore infinite buses in transient simulation
-
-%% unused/unimplemented damping controls -thad 07/15/20
-% intentionally removed/ignored?
+%% unused/unimplemented damping controls? 
+% intentionally removed/ignored? -thad 07/15/20
 g.svc.svc_dc = [];
 g.tcsc.tcsc_dc = [];
 g.tcsc.n_tcscud = 0;
 g.dc.dcr_dc = [];
 g.dc.dci_dc = [];
+g.sys.syn_ref = 0 ;     % synchronous reference frame
+g.mac.ibus_con = [];    % ignore infinite buses in transient simulation
 
 %% solve for loadflow - loadflow parameter
-warning('*** Solve initial loadflow')
-if isempty(g.dc.dcsp_con)
-    % AC power flow
+solveLoadFlow = 1;
+
+if scriptRunFlag == 1
+    % ask if load flow should be solved
+    prompt={'Solve Load Flow? [ y / n ]' };
+    name='Should a Load Flow be computed?';
+    numlines=1;
+    defaultanswer={'y'};
+    
+    answer=inputdlg(prompt,name,numlines,defaultanswer);
+    
+    if ~strcmp(answer, 'y')
+        solveLoadFlow = 0;
+    end
+    clear answer prompt name numlines defaultanswer answer
+end
+
+if solveLoadFlow
+    warning('*** Solve initial loadflow')
+    if isempty(g.dc.dcsp_con)
+        % AC power flow
+        g.dc.n_conv = 0;
+        g.dc.n_dcl = 0;
+        g.dc.ndcr_ud = 0;
+        g.dc.ndci_ud = 0;
+        tol = 1e-9;   % tolerance for convergence
+        iter_max = 30; % maximum number of iterations
+        acc = 1.0;   % acceleration factor
+        [bus_sol,line,~] = loadflow(g.bus.busOG,g.line.lineOG,tol,iter_max,acc,'n',2);
+        g.bus.bus = bus_sol;  % solved loadflow solution needed for initialization
+        g.line.line = line;
+        clear bus_sol line tol iter_max acc
+    else
+        % Has HVDC, use DC load flow
+        [bus_sol,line,~,rec_par, inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
+        g.bus.bus = bus_sol;
+        g.line.line = line;
+        g.dc.rec_par = rec_par;
+        g.dc.inv_par = inv_par;
+        g.dc.line_par = line_par;
+        clear bus_sol line rec_par inv_par line_par
+    end
+else
+    % Don't perform a power flow.
     g.dc.n_conv = 0;
     g.dc.n_dcl = 0;
     g.dc.ndcr_ud = 0;
-    g.dc.ndci_ud = 0;
-    tol = 1e-9;   % tolerance for convergence
-    iter_max = 30; % maximum number of iterations
-    acc = 1.0;   % acceleration factor
-    [bus_sol,line,~] = loadflow(g.bus.busOG,g.line.lineOG,tol,iter_max,acc,'n',2);
-    g.bus.bus = bus_sol;  % solved loadflow solution needed for initialization
-    g.line.line = line;
-    clear bus_sol line tol iter_max acc
-else
-    % Has HVDC, use DC load flow
-    [bus_sol,line,~,rec_par, inv_par, line_par] = lfdcs(g.bus.busOG,g.line.lineOG,g.dc.dci_dc,g.dc.dcr_dc);
-    g.bus.bus = bus_sol;
-    g.line.line = line;
-    g.dc.rec_par = rec_par;
-    g.dc.inv_par = inv_par;
-    g.dc.line_par = line_par;
-    clear bus_sol line rec_par inv_par line_par
+    g.bus.bus = g.bus.busOG;  % solved loadflow solution needed for initialization
+    g.line.line = g.line.lineOG;
 end
+clear solveLoadFlow
+
+%% Timer start 
+% (after all user input options)
+tic 
 
 %% Set indexes
 % note: dc index set in dc load flow
@@ -345,12 +373,10 @@ else
     kdc = k*10+1;
 end
 
-%% =====================================================================================================
-%% Start of Initializing Zeros ============================================
+%% Initialize Zeros =======================================================
 initZeros(k, kdc)
 
-%% =====================================================================================================
-%% Start Initialization ===================================================
+%% Initialize Simulation ==================================================
 initNLsim() % calls handleStDx at end.
 
 %% step 3: Beginning of Huen's  (predictor-corrector) method
@@ -359,11 +385,9 @@ g.k.ks = 1;
 g.bus.bus_sim = g.bus.bus;
 
 % added from v2.3 06/01/20 - thad
-%g.mac.mac_trip_flags = false(g.mac.n_mac,1); - initialized during handleNewGlobals - thad 08/28/20
 g.mac.mac_trip_states = 0; % seems unused...
 
-%% ========================================================================
-% Variable time step specific ==== Temporary location =====================
+%% Variable time step specific ==== 'Temporary' location ==================
 
 % initialize global st/dx vectors
 handleStDx(1, 0, 0)     % init vectors name cells
@@ -400,93 +424,87 @@ g.sys.mach_ref = zeros(1, size(g.sys.t,2));
 warning('*** Simulation Loop Start')
 try % for catching non-convergence
     
-for simTblock = 1:size(g.vts.t_block)
-    
-    g.vts.t_blockN = simTblock;
-    g.k.ks = simTblock; % required for huen's solution method h_sol selection
-    
-    if ~isempty(g.vts.solver_con)
-        odeName = g.vts.solver_con{g.vts.t_blockN}; % select user defined soln method
-    else
-        odeName = 'huens'; % default PST solver
-    end
-    
-    % account for extra index increment from FTS to VTS - thad - 08/21/20
-    if ~strcmp(odeName, 'huens') && (g.vts.t_blockN > 1)        % use VTS
-        if   strcmp(g.vts.solver_con{g.vts.t_blockN-1}, 'huens')% previous was FTS
-            g.vts.dataN = g.vts.dataN-1;
+    for simTblock = 1:size(g.vts.t_block)
+        
+        g.vts.t_blockN = simTblock;
+        g.k.ks = simTblock; % required for huen's solution method h_sol selection
+        
+        if ~isempty(g.vts.solver_con)
+            odeName = g.vts.solver_con{g.vts.t_blockN}; % select user defined soln method
+        else
+            odeName = 'huens'; % default PST solver
         end
-    end
-    
-    % Select solution method =========================================
-    if strcmp( odeName, 'huens')    % use standard PST huens method
-        fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
         
-        % incorporate fixed time vector into system time vector
-        nSteps = length(g.vts.fts{simTblock});
-        g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
-        
-        % account for pretictor last step time check
-        g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1) + g.sys.sw_con(simTblock,7);
-        
-        for cur_Step = 1:nSteps
-            k = g.vts.dataN;
-            j = k+1;
-            
-            % display k and t at every first, last, and 250th step
-            if ( mod(k,250)==0 ) || cur_Step == 1 || cur_Step == nSteps
-                fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
-                %fprintf('* current time: %s\t* start time: %s\n', datestr(now), startStr);
-                % elapsed time
-                %tempClock = clock;
-                %eClock = tempClock - startClock;
-                %fprintf('Elapsed Hours: %3d\t Minutes: %3d\t Seconds: %3.4f\n', ...
-                %    eClock(4),eClock(5),eClock(6));
+        % account for extra index increment from FTS to VTS - thad - 08/21/20
+        if ~strcmp(odeName, 'huens') && (g.vts.t_blockN > 1)        % use VTS
+            if   strcmp(g.vts.solver_con{g.vts.t_blockN-1}, 'huens')% previous was FTS
+                g.vts.dataN = g.vts.dataN-1;
             end
-            
-            %% Time step start
-            initStep(k)
-            
-            %% Predictor Solution =========================================
-            networkSolutionVTS(k, g.sys.t(k))          
-            % most recent network solution based on completely calculated states is k
-            monitorSolution(k); % moved for correct AGC action -thad 08/18/20
-            dynamicSolution(k)
-            dcSolution(k)
-            predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated in network solution i_simu call
-            
-            %% Corrector Solution =========================================
-            networkSolutionVTS(j, g.sys.t(j))
-            dynamicSolution(j)
-            dcSolution(j)
-            correctorIntegration(k, j, g.k.h_sol)
-            
-            %% Live plot call
-            if g.sys.livePlotFlag
-                livePlot(k)
-            end
-            
-            g.vts.dataN = j;                        % increment data counter
-            g.vts.tot_iter = g.vts.tot_iter  + 2;   % increment total solution counter
-            g.vts.slns(g.vts.dataN) = 2;            % track step solution
         end
-        % Account for next time block using VTS
-        handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
-        handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives
-          
-    else % use user supplied variable method
-        fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
-            odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
         
-        % feval used for ODE call - could be replaced with if statements.
-        feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+        % Select solution method =========================================
+        if strcmp( odeName, 'huens')    % use standard PST huens method
+            fprintf('*** Using Huen''s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+                simTblock, g.vts.fts{simTblock}(1), g.vts.fts{simTblock}(end))
+            
+            % incorporate fixed time vector into system time vector
+            nSteps = length(g.vts.fts{simTblock});
+            g.sys.t(g.vts.dataN:g.vts.dataN+nSteps-1) = g.vts.fts{simTblock};
+            
+            % account for pretictor last step time check
+            g.sys.t(g.vts.dataN+nSteps) = g.sys.t(g.vts.dataN+nSteps-1) + g.sys.sw_con(simTblock,7);
+            
+            for cur_Step = 1:nSteps
+                k = g.vts.dataN;
+                j = k+1;
+                
+                % display k and t at every first, last, and 250th step
+                if ( mod(k,250)==0 ) || cur_Step == 1 || cur_Step == nSteps
+                    fprintf('*** k = %5d, \tt(k) = %7.4f\n',k,g.sys.t(k)) % DEBUG
+                end
+                
+                %% Time step start
+                initStep(k)
+                
+                %% Predictor Solution =====================================
+                networkSolutionVTS(k, g.sys.t(k))
+                % most recent network solution based on completely calculated states is k
+                monitorSolution(k); % moved for correct AGC action -thad 08/18/20
+                dynamicSolution(k)
+                dcSolution(k)
+                predictorIntegration(k, j, g.k.h_sol)   % g.k.h_sol updated in network solution i_simu call
+                
+                %% Corrector Solution =====================================
+                networkSolutionVTS(j, g.sys.t(j))
+                dynamicSolution(j)
+                dcSolution(j)
+                correctorIntegration(k, j, g.k.h_sol)
+                
+                %% Live plot call
+                if g.sys.livePlotFlag
+                    livePlot(k)
+                end
+                
+                g.vts.dataN = j;                        % increment data counter
+                g.vts.tot_iter = g.vts.tot_iter  + 2;   % increment total solution counter
+                g.vts.slns(g.vts.dataN) = 2;            % track step solution
+            end
+            % Account for next time block using VTS
+            handleStDx(j, [], 3) % update g.vts.stVec to initial conditions of states
+            handleStDx(k, [], 1) % update g.vts.dxVec to initial conditions of derivatives
+            
+        else % use user supplied variable method
+            fprintf('*** Using %s integration method for time block %d\n*** t=[%7.4f, %7.4f]\n', ...
+                odeName, simTblock, g.vts.t_block(simTblock, 1), g.vts.t_block(simTblock, 2))
+            
+            % feval used for ODE call - could be replaced with if statements.
+            feval(odeName, inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+            
+            % Alternative example of using actual function name:
+            %ode113(inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
+        end
         
-        % Alternative example of using actual function name:
-        %ode113(inputFcn, g.vts.t_block(simTblock,:), g.vts.stVec , options);
-    end
-    
-end% end simulation loop
+    end% end simulation loop
 catch ME
     % Custom catch message
     disp('*!* Something has gone wrong and was caught!')
@@ -498,8 +516,7 @@ catch ME
     end
 end
 
-%% ========================================================================
-%% Variable step specific cleanup =========================================
+%% Post Simulation Variable Step Specific Cleanup =========================
 
 % check if last time block used huens, remove last 'extra' step
 if strcmp(g.vts.solver_con{end}, 'huens')
@@ -529,6 +546,7 @@ disp(['*** Total data points = ' int2str(g.vts.dataN)])
 trimLogs(g.vts.dataN)
 
 %% Clean up logged DC variables to length of DC simulated time.
+% Note: could be included in trimLogs - thad 09/08/20
 if ~isempty(g.dc.dcsp_con)
     disp('*** Adjusting logged data lengths...')
     g.dc.t_dc = g.dc.t_dc(1:length(g.dc.t_dc)-10);

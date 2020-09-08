@@ -14,7 +14,7 @@ without modification).
 
 'Funtionalization' of the non-linear simulation allows for easier future 
 alterations. For example, if there was a desire to implement a custom ODE solver 
-(variable or fixed time step), there is clear place to add that functionality 
+(varable or fixed time step), there is clear place to add that functionality 
 and code already in place to accommodate for user specified solution methods.
 
 A number of bug fixes are imagined to be required while new code base is tested.
@@ -30,3 +30,4 @@ A number of bug fixes are imagined to be required while new code base is tested.
 % 	08/25/20 	12:18 	Thad Haines 	4.0.0-a.7 - added checks and warnings to area and AGC initialization, catching of non-convergence added to s_simu.   
 %	08/28/20	13:58	Thad Haines		4.0.0-a.8 - clean up of integration methods, added exciter bypass, experimental work on re-initializing models for 'un-tripping' machines.   
 %	09/03/20	12:39	Thad Haines		4.0.0-a.9 - Change of g.int to g.y, updated y_switch comments, fixed Area calcs and AGC B check.   
+%	09/08/20	09:03	Thad Haines		4.0.0-b.1 - Beta release - included optional first power flow bypass, minor s_simu clean up   
