@@ -1,7 +1,7 @@
-\section{Variable Time Step (VTS)}  
+\section{Variable Time Step Integration}  
 %==============================================================================
-Variable time step simulations are possible using standard MATLAB ODE solvers.
-A semi-complete and partially-detailed explanation of the functions and code used to make this happen will \emph{probably} be written in a separate document `later'\ldots
+Variable time step (VTS) simulations are possible using standard MATLAB ODE solvers.
+
 
 Explain FTS and VTS
 
@@ -9,7 +9,7 @@ Cover speed up possibility
 
 explain zeroing derivatives.
 
-\textbf{NOTE:} Variable time step simulation is still experimental and should be used with caution.
+\noindent \textbf{NOTE:} Variable time step simulation is still experimental and should be used with caution.
 
 
 %------------------------------ from vts explained
@@ -53,8 +53,6 @@ solver_con ={ ...
     };
 \end{minted}
 
-As of this writing, the pstSETO version uses the \verb|s_simu_BatchVTS| script to perform variable time stepping methods.
-This script will likely replace the \verb|s_simu| script in the main PST4 folder after versioning is complete.\\
 
 %==============================================================================
 \subsection{MATLAB ODE Solvers}
@@ -88,6 +86,14 @@ options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
     'MaxStep',60, ...
     'OutputFcn',outputFcn); % set 'OutputFcn' to function handle
 \end{minted}
+
+
+%==============================================================================
+\subsection{Functions Specific to VTS}  
+A number of new functions were created to allow for VTS to be integrated into PST.
+Some functions were simply portions of code previously located in \verb|s_simu| and placed into a function for ease of use and clarity of code flow, while others were created to handle data or perform other tasks specifically related to VTS.
+The following sub paragraphs provide some information about such functions that have not been previously introduced.
+% related VTS functions
 
 %==============================================================================
 \subsubsection{vtsInputFcn} 
@@ -202,12 +208,7 @@ end % end if
 end % end function
 \end{minted}
 
-%==============================================================================
-\subsection{Functions for Variable Time Step Integration}  
-A number of new functions were created to allow for VTS to be integrated into PST.
-Some functions were simply portions of code previously located in \verb|s_simu| and placed into a function for ease of use and clarity of code flow, while others were created to handle data or perform other tasks specifically related to VTS.
-The following sub paragraphs provide some information about such functions that have not been previously introduced.
-% related VTS functions
+
 
 %==============================================================================
 \subsubsection{handleNetworkSln}  

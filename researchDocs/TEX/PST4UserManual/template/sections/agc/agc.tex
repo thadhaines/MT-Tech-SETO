@@ -1,9 +1,12 @@
 \pagebreak
-\section{Automatic Generation Control (AGC)}  
-Automatic generation control model that calculates RACE and distributes signal to defined controlled generators according to participation factor.
-The ACE signal is filtered through a PI before being distributed to each generator through a unique low pass filter that adds the negative of the value to the governor \verb|tg_sig| value.
-( NOTE: the \verb|tg_sig| value is equivalent to an addition to the governors $P_{ref}$ value)
-The \verb|agc_indx| function creates the required data structures and indices.
+\section{Automatic Generation Control}  
+Automatic generation control (AGC) is an extended-term model that acts to restore system frequency and area interchange values to set values over the course of minutes.
+This restoration is accomplished by calculating an area control error (ACE) that is distributed to controlled generation sources to correct any deviation from reference values.
+
+%model calculates an area control error (ACE) and distributes it to defined controlled generators according to participation factor.
+%The ACE signal is passed through a PI filter before being distributed to each generator through a unique low pass filter that adds the negative of the value to the governor \verb|tg_sig| value.
+%( NOTE: the \verb|tg_sig| value is equivalent to an addition to the governors $P_{ref}$ value)
+%The \verb|agc_indx| function creates the required data structures and indices.
 
 %==========================================================================
 \input{sections/agc/blockDiagramExplained}
@@ -11,12 +14,11 @@ The \verb|agc_indx| function creates the required data structures and indices.
 %==========================================================================
 \pagebreak
 \subsection{Weighted Average Frequency (calcAveF)} 
-Calculates system and area weighted average frequency.
-System values stored in \verb|g.sys.aveF| and area values stored in \verb|g.area.area(x).aveF|.
+An inertia weighted average frequency is used as the `actual' frequency $\omega$ in ACE calculations.
+The \verb|calcAveF| function calculates an average weighted frequency for the total system and for each area (if areas are defined).
+System values are stored in \verb|g.sys.aveF| and area values are stored in \verb|g.area.area(x).aveF| where \verb|x| is the area number.
+The calculation involves a sum of system inertias that changes with generator trips.
 
-An average weighted frequency is calculated for the total system and for each area if there are areas detected.
-The calculation involves a sum of system inertias that may change with generator trips.
-The current algorithm does not account for tripped generators, but was designed to incorporate this feature in the future.
 
 \vspace{1em}
 In a system with $N$ generators, $M$ areas, and $N_M$ generators in area $M$, the \verb|calcAveF| function performs the following calculations for each area $M$:
@@ -30,7 +32,7 @@ F_{ave_M} = \left( \sum_{i}^{N_M}Mach_{speed_i}MVA_{base_i}H_i \right) \dfrac{1}
 \end{equation}\eqcaption{Area Average System Frequency Calculation}
 \vspace{0.5 em}
 
-Then system total values are calculated as
+\noindent Then system total values are calculated as
 
 \begin{equation}{\label{eq: systemH} }
 H_{tot} = \sum_{i}^{M} H_{tot_M}
@@ -41,7 +43,7 @@ F_{ave} = \left( \sum_{i}^{M} F_{ave_M} \right) \dfrac{1}{M}
 \end{equation}\eqcaption{System Average System Frequency Calculation}
 \vspace{0.5 em}
 
-If $M==0$ (areas are not defined), \verb|calcAveF| performs
+\noindent If $M==0$ (areas are not defined), \verb|calcAveF| performs
 
 \begin{equation}{\label{eq: systemH2} }
 H_{tot} = \sum_{i}^{N} MVA_{base_i}H_i 

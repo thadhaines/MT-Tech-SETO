@@ -3,11 +3,37 @@
 %\addcontentsline{toc}{\fmAddAs}{\tocAbstract}%%% All caps == ugly
 % Note the required use of \vspace{1em} to seperate paragraphs.
 
-This section should contain a bit of history about how PST has developed into its current form.
-Mention of new MIT license also seems appropriate.
+This paragraph should contain a bit of history about how Power System Toolbox (PST) has developed into its current form- Possibly written/drafted by Trudnowski...
+Mention of renewed interest in PST via SETO/Sandia and the new MIT license may be appropriate.
 
+\vspace{1em}
+%A brief explanation of the user manual purpose and major content would make sense.
+The purpose of this user manual is to document work done on PST 3 to form PST 4. 
+It is meant only to augment the previous user manual provided with \mbox{PST 3} \cite{PST3manual}.
+%
+Major code changes presented include 
+how global variables are handled
+and the
+functionalization of the non-linear simulation routine.
+%
+Descriptions of new models created for
+inverter based resources
+%power (or current) injection, 
+%a voltage source behind a reactance,
+and
+automatic generation control
+are also presented.
+%
+Additionally, work to add functionality to PST such as
+variable time step integration routines,
+generator tripping, % mention un-tripping
+and
+code compatibility with Octave
+is documented.
+%
+To demonstrate and debug new and old PST capabilities, an example library has been created and brief explanations of examples are intended to be included.
+Unfortunately, due to time constraints, details may be rather lacking and intentions may only matter so much.
 
-A brief explanation of the user manual purpose and major content would make sense.
-
-
-Highlight/foreshadow major changes and additions that are explained in more detail later.
+\vspace{1em}
+Finally, it is worth noting that all source code, examples, and other research documentation can be accessed at 
+\href{https://github.com/thadhaines/MT-Tech-SETO/tree/master/PST}{https://github.com/thadhaines/MT-Tech-SETO/tree/master/PST}.
