@@ -36,7 +36,7 @@ load PSTpath.mat
 % 'yes' - use Huen's method
 % 'no' - use Variable time step methods described in d2a_AGC_VTS
 % 'mixed' - use Variable time step methods described in d2a_AGC_mixed 
-FTS = 'yes';
+FTS = 'no';
 
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 

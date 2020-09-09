@@ -2,11 +2,22 @@
 There was a modification to the washout time constant in the power system stabilizer (PSS) model between PST version 2 and 3 that affects the output of the model in a fairly drastic way.
 To accommodate for this, PST 4 has two PSS files named \verb|pss2| and \verb|pss3| which mimic the computation of each PST version PSS model respectively.
 This enables the user to specify which PSS model should be used by copying the numbered PSS files over the non-numbered PSS file.
-\begin{minted}{MATLAB}
+A code example of this overwritting process is shown below where \verb|PSTpath| is a variable containing the full path to the root directory of \mbox{PST 4}.
+
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use version 2 model of PSS
 copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use version 3 model of PSS
 \end{minted}
-The default PSS model used in PST 4 is \verb|pss2|.
+
+\noindent It should be noted that the default PSS model used in PST 4 is \verb|pss2|.
 
 %Alternatively, a \verb|pssGainFix| variable may be set to 1, or true, which will adjust the version 2 data from a \verb|d_| file to work the same way with the version 3 model.
 %This is accomplished by executing: \verb|pss_con(:,3) = pss_con(:,3)./pss_con(:,4);|

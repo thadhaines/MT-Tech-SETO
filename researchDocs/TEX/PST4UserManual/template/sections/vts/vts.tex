@@ -1,4 +1,4 @@
-\section{Variable Time Step Integration}  
+\section{Variable Time Step Integration - WIP}  
 %==============================================================================
 Variable time step (VTS) simulations are possible using standard MATLAB ODE solvers.
 
@@ -15,8 +15,8 @@ explain zeroing derivatives.
 %------------------------------ from vts explained
 %==============================================================================
 \subsection{Solver Control Array (solver\_con)}  
-Theoretically, a user will only have to add a \verb|solver_con| to a valid data file to use variable time step methods.
-If a \verb|solver_con| is not specified, Huen's method is used for all time blocks (i.e. default PST behavior).
+To use variable time step integration methods, a user will have to create a \verb|solver_con| to a valid data file.
+If a \verb|solver_con| is not specified, Huen's method is used for all time blocks (i.e. default PST 3 behavior).
 
 Between each \verb|sw_con| entry, a \emph{time block} is created that is then solved using a the defined solution method in the \verb|solver_con|.
 As such, the \verb|solver_con| array has 1 less row than the \verb|sw_con| array.
@@ -40,7 +40,7 @@ An example \verb|solver_con| array (with code comments) is shown below.
 % ode15s - large number of slns during init, time step increases to reasonable size
 % ode23 - realtively consistent # of required slns, timstep doesn't get very large
 % ode23s - many iterations per step - not efficient...
-% ode23t - occasionally hundereds of iterations, sometimes not... decent
+% ode23t - occasionally hundereds of iterations, most times not... decent performance
 % ode23tb - similar to 23t, sometimes more large solution counts
 
 solver_con ={ ...
@@ -48,7 +48,7 @@ solver_con ={ ...
     'huens'; % fault - post fault 1
     'huens'; % post fault 1 - post fault 2
     'huens'; % post fault 2 - sw_con row 5
-    'huens'; % sw_con row 5 - sw_con row 6 
+    'ode113'; % sw_con row 5 - sw_con row 6 
     'ode23t'; % sw_con row 6  - sw_con row 7  (end)
     };
 \end{minted}
@@ -56,8 +56,8 @@ solver_con ={ ...
 
 %==============================================================================
 \subsection{MATLAB ODE Solvers}
-The variable time step implementation in PST revolves around using the built in MATLAB ODE solvers.
-All these methods perform actions depicted in the following block diagram.
+The VTS implementation in PST revolves around using the built in MATLAB ODE solvers.
+All these methods perform actions depicted in Figure \ref{fig: MATLAB ode block diagram}.
 
 \begin{figure}[!h]
 	\centering
@@ -90,14 +90,16 @@ options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
 
 %==============================================================================
 \subsection{Functions Specific to VTS}  
-A number of new functions were created to allow for VTS to be integrated into PST.
-Some functions were simply portions of code previously located in \verb|s_simu| and placed into a function for ease of use and clarity of code flow, while others were created to handle data or perform other tasks specifically related to VTS.
-The following sub paragraphs provide some information about such functions that have not been previously introduced.
+A number of new functions were created to enable VTS to be integrated into PST.
+Most functions were created to handle data or perform other tasks specifically related to VTS.
+The following sections provide information about such functions.
 % related VTS functions
 
 %==============================================================================
 \subsubsection{vtsInputFcn} 
-The slightly abbreviated (mostly complete) input function is shown below.
+To use the MATLAB ODE solvers, a function must be passed in that returns a vector of derivatives associated with the states to integrate.
+The \verb|vtsInputFcn| was created to perform this critical task.
+The slightly abbreviated input function is shown below.
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -152,6 +154,9 @@ end % end vtsInputFcn
 %==============================================================================
 
 \subsubsection{vtsOutputFcn} 
+After each acceptable solution, the ODE solver calls a passed in `output function'.
+The \verb|vtsOutputFcn| was created to handle restoring the network solution and performing the monitor solution.
+Additionally, the \verb|vtsOutputFcn| handles required indexing and iteration accumulation and logging.
 The slightly abbreviated output function is shown below.
 \begin{minted}[
 		frame=lines,
@@ -214,8 +219,9 @@ end % end function
 \subsubsection{handleNetworkSln}  
 The \verb|handleNetworkSln| function was created to store, and restore, calculated values set to globals during a network solution.
 The purpose of this function was to allow for the first network solution performed each step to be carried forward after multiple other network solutions may over-write the calculated values at the same data index.
-This over-writing may occur during the MATLAB ODE solvers repeated call to the input function.
+This over-writing may occur during the MATLAB ODE solver's repeated calls to the input function.
 As shown below, \verb|handlNetworkSln| takes a data index \verb|k| and an operation \verb|flag| as inputs.
+
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -268,7 +274,7 @@ function handleStDx(k, slnVec, flag)
 %   snlVec - Input used to populate states with new values
 \end{minted}
 
-The new global structure created in the SETO version of PST enables this function to complete the stated operations by relying heavily on dynamic field names. 
+The new global structure created in PST 4 enables this function to complete the stated operations by relying heavily on dynamic field names. 
 Essentially, all required field names, sub-field names, and states are collected into a cell (flag operation 0) that is then iterated through to collect data from, or write data to the appropriate location (all other flag operations).
 
 The usefulness of \verb|handleStDx| is that the standard MATLAB ODE solvers require a single derivative vector as a returned value from some passed in `input function', and each PST model calculates derivatives and places them into various globals. 
@@ -280,7 +286,7 @@ To avoid handling function output, global vectors \verb|g.vts.dxVec| and \verb|g
 
 It should be noted that original PST globals follow the same data structure,
 however, new models (such as AGC and pwrmod/ivmmmod) use a slightly different data structure and must be handled in a slightly different way.
-As of this writing AGC and pwrmod functionality has been added to \verb|handleStDx| and it seems very possible to add more models that require integration as they arise.
+As of this writing AGC, pwrmod, and ivmmod functionality has been added to \verb|handleStDx| and it seems very possible to add more models that require integration as they arise.
 
 
 

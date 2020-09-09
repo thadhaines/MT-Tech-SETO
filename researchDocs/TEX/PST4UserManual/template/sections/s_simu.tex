@@ -1,8 +1,9 @@
+\pagebreak
 \section{s\_simu Changes}
-The \verb|s_simu| file from PST 3 was relatively and objectively messy.
-Work has been done to clean up code and functionalize sections for easier code readability.
+The \verb|s_simu| script used to run non-linear simulations from PST 3 was relatively long and objectively messy.
+Work has been done to clean up the pre-existing code and functionalize sections for easier readability and process understanding.
 Additionally, `stand alone mode' and 'batch mode' capabilities have been condensed into one file.
-The difference between batch and stand alone mode is that the later will prompt the user for input of system file and other simulation parameters while batch mode assumes the file to run is the \verb|DataFile.m| in the root PST directory.
+The difference between batch and stand alone mode is that the later will prompt the user for input of a system file and other simulation parameters while batch mode assumes the file to run is the \verb|DataFile.m| in the root PST directory.
 \begin{itemize}
 \item To use stand alone mode:\\
 Run \verb|s_simu| after issuing the \verb|clear all; close all| commands.
@@ -20,14 +21,14 @@ Below are some of the functions that were created from code originally in \verb|
 
 %------------------------------------------------------------------------------
 \subsubsection{cleanZeros}  
-To \verb|cleanZeros| function cleans all entirely zero variables from the global g and places the names of cleared variables into the \verb|clearedVars| cell that is stored in \verb|g.sys|.
-The function is executed at the end of \verb|s_simu|.
+The \verb|cleanZeros| function cleans all entirely zero variables from the global \verb|g| and places the names of cleared variables into the \verb|clearedVars| cell that is stored in \verb|g.sys|.
+The function is executed near the end of \verb|s_simu|.
 
 
 %------------------------------------------------------------------------------
 \subsubsection{correctorIntegration}  
 As shown in the code except below, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next accepted value of integrated states.
-The executed code was taken directly from \verb|s_simu| and modified to work with the new global g.
+The executed code was taken directly from \verb|s_simu| and modified to work with the new global \verb|g|.
 
 \begin{minted}[
 		frame=lines,
@@ -47,7 +48,7 @@ function correctorIntegration(k, j, h_sol)
 %   h_sol - time between k and j
 \end{minted}
 
-It should be noted that the two `Integration' functions write new states to the same \verb|j| data index.
+It should be noted that the two integration functions write new states to the same \verb|j| data index.
 Additionally, the \verb|h_sol| value is updated in \verb|i_simu| (called during the network solution) from the index of \verb|ks| referencing an \verb|h| array containing time step lengths$\ldots$\ 
 While this process seemed unnecessarily confusing and sort of  round-about, it has not been changed as of this writing.
 
@@ -57,6 +58,10 @@ While this process seemed unnecessarily confusing and sort of  round-about, it h
 The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step was moved into the \verb|dcSolution| function.
 This has not been tested with VTS, but was functionalized to enable future development.
 It appears to work as normal when using Huen's method (FTS), but a thorough testing has yet to be performed as of this writing.
+
+Realistically, it doesn't make much sense to include a multi-rate integration routine into a variable step routine.
+If DC is to be integrated into VTS, the models should be handled as all other models.
+While this may defeat the purpose of VTS simulation due to DC models traditionally having very fast time constants, it is an avenue to explore should future development be desired.
 
 %------------------------------------------------------------------------------
 \subsubsection{dynamicSolution}  
@@ -78,13 +83,13 @@ Operations are related to setting values for the next step equal to current valu
 %------------------------------------------------------------------------------
 \subsubsection{initTblocks}  
 The \verb|initiTblocks| function analyzes the global \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in non-linear simulation.
-Any fixed time vectors associated with time blocks that use Huen's method are created.
+Any fixed time vectors associated with time blocks that use Huen's method are also created.
 Care was taken to ensure a unique time vector (no duplicate time points).
 With the option to switch between fixed step and variable step  methods, this method may require slight modifications/refinements in the future.
 
 %------------------------------------------------------------------------------
 \subsubsection{initZeros}  
-A large amount of code ($\approx$400 lines) in \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
+A large amount of code ($\approx$400 lines) in PST 3's \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
 This code has been collected into the \verb|initZeros| function with inputs defining the desired length of vectors for normally logged data and DC data.
 
 \begin{minted}[
@@ -119,12 +124,12 @@ The call to \verb|i_simu| (which updates \verb|g.k.h_sol|) is also located in th
 The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on passed in simulation time.
 This was a required change when using VTS as the previous method relied on a known number of steps between switching events, and that is no longer a reality with the experimental VTS methods.
 
-The default behavior of PST 4 is to use \verb|newtowrkSolutionVTS| which requires the input of the current data index $k$ and the simulation time.
+The default behavior of PST 4 is to use \verb|newtowrkSolutionVTS| which requires the input of the current data index \verb|k| and the simulation time.
 
 %------------------------------------------------------------------------------
 \subsubsection{predictorIntegration}  
 The \verb|predictorIntegration| function performs the predictor (forward Euler) integration step of the simulation loop.
-The code was taken directly from \verb|s_simu| and uses the same variable names.
+The code was taken directly from \verb|s_simu| and uses the same variable names adapted for use with the global \verb|g|.
 
 \begin{minted}[
 		frame=lines,
@@ -149,15 +154,16 @@ function predictorIntegration(k, j, h_sol)
 \subsubsection{standAlonePlot}  
 The \verb|standAlonePlot| function is the updated plotting routine based on user input previously found at the end \verb|s_simu|.
 After a completed simulation, it is called from \verb|s_simu| if stand alone mode is detected.
+Alternatively, it can be run independently from the simulation to analyze a pre-existing global \verb|g| by being invoked as \verb|standAlonePlot(1)|.
 
 %------------------------------------------------------------------------------
 \subsubsection{trimLogs}  
 As there is no way to accurately predict the amount of (length of) data to be logged during a variable time step simulation, extra space is allocated, and then all logged values are trimmed to the proper length post simulation.
-It should be noted that the current size allocation was arbitrary and can be altered as need be.
-Typically,an actual extended term simulation using VTS will requires fewer steps than a fixed step method, but that is not always the case.
+It should be noted that the current size allocation was arbitrary and can be altered as deemed fitting.
+Typically, an extended term simulation using VTS will requires fewer steps than a fixed step method, but that is not always the case.
 It's important to note that if not enough space is allocated, the simulation will crash when the code attempts to access data indices outside of the allocated range.
 
-The \verb|trimLogs| function trims all logged values in the global g to a given length \verb|k|.
+The \verb|trimLogs| function trims all logged values in the global \verb|g| to a given length \verb|k|.
 It is executed near the end of \verb|s_simu| before \verb|cleanZeros|.
 
 

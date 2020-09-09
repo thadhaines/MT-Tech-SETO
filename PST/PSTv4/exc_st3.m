@@ -1,6 +1,6 @@
 function exc_st3(i,k,flag)
 %EXC_ST3 is a excitation system, model ST3 (exc_con(i,1)=3)
-% SMPPI is a excitation system, model ST3 (exc_con(i,1)=3)
+% EXC_ST3 is a excitation system, model ST3 (exc_con(i,1)=3)
 % Compound source controlled rectifier exciter, with vectorized computation option
 %
 %   Syntax: exc_st3(i,k,flag)
