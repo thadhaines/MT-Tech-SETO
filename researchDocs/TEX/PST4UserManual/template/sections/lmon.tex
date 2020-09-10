@@ -1,14 +1,8 @@
 %==========================================================================
-\pagebreak
-\section{Line Monitoring Functionality (lmon) - WIP}  
-Coded to actually monitor line current and power flow during non-linear simulation.
-The \verb|lmon_indx| function creates the required data structures and indices.
-
- 
-Power flow on a line must be calculated each step as AGC requires actual area interchange for the ACE calculation.
-The previously existing \verb|line_pq| function performed this task, but was not fully incorporated into the simulation to allow calculation during execution.
-This minor oversight has been resolved and the \verb|lmon_con| array is still used to define monitored lines as in previous version of PST.
-It should be noted that areas with AGC automatically track area interchange flows and do not need to be user defined.
+\section{Line Monitoring Functionality (lmon)}  
+Previous versions of PST had line monitoring functionality, but the calculation was performed after the simulation was completed.
+\mbox{PST 4} now calculates line current and power flow of monitored lines during non-linear simulation.
+The definition of the \verb|lmon_con| is the same as previous PST versions and an example is shown below.
 
 \begin{minted}[
 		frame=lines,
@@ -23,48 +17,7 @@ It should be noted that areas with AGC automatically track area interchange flow
 % Each value corresponds to an array index in the line array.
 % Complex current and power flow on the line will be calculated and logged during simulation
 
-%lmon_con = [5, 6, 13]; % lines between bus 3 and 101, and line between 13 and 120
-
-lmon_con = [3,10]; % lines to loads
+lmon_con = [3,10]; 
 \end{minted}
-
-Line monitoring data is collected in the \verb|g.lmon| field of the global variable.
-
-\begin{minted}[
-		frame=lines,
-		framesep=2mm,
-		baselinestretch=1.2,
-		bgcolor=gray!13,
-		fontsize=\footnotesize,
-		%linenos,
-		breaklines
-		]{MATLAB}
->> g.lmon
-ans = 
-     lmon_con: [3 10]
-       n_lmon: 2
-    busFromTo: [2x2 double]
-         line: [1x2 struct]
-\end{minted}
-
-Each \verb|g.lmon.line| entry contains the following fields and logged data:
-
-\begin{minted}[
-		frame=lines,
-		framesep=2mm,
-		baselinestretch=1.2,
-		bgcolor=gray!13,
-		fontsize=\footnotesize,
-		%linenos,
-		breaklines
-		]{MATLAB}
->> g.lmon.line(2)
-ans = 
-    busArrayNdx: 10
-        FromBus: 13
-          ToBus: 14
-          iFrom: [1x4063 double]
-            iTo: [1x4063 double]
-          sFrom: [1x4063 double]
-            sTo: [1x4063 double]
-\end{minted}
+\noindent Calculated values are stored in the respective \verb|g.lmon.line| structure.
+For example, if the above \verb|lmon_con| was used, \verb|g.lmon.line(2).iFrom(k)| would return the complex current injection at the from bus at data index \verb|k| of the line defined in the line array at index 10.
