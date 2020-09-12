@@ -70,7 +70,7 @@ if (~isempty(max_v_idx)|~isempty(min_v_idx))
             if ~isempty(chk_fb)
                 if line(chk_fb,8)~=0
                     % can change tap
-                    disp('voltage low changing tap on line');disp(chk_fb)
+                    disp(['*** Voltage low, changing tap on line ' ,int2str(chk_fb)])
                     vm2 = volt_min(min_v_idx(fb));
                     verror = vm2 - V(min_v_idx(fb));
                     % voltage too low tap must be reduced
@@ -83,7 +83,7 @@ if (~isempty(max_v_idx)|~isempty(min_v_idx))
                         tap = tap_set*line(chk_fb,10) + line(chk_fb,9);
                     end
                     tap = min(line(chk_fb,8),max(tap, line(chk_fb,9)));
-                    disp('taps reset to');tap
+                    disp(['*** Taps reset to ', int2str(tap)])
                     % reset tap in line data
                     line(chk_fb,6) = tap;
                 end

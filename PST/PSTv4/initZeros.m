@@ -32,7 +32,9 @@ global ibus_con  netg_con  stab_con
 global g
 
 %% create zero matrices for variables to make algorithm more efficient?
-warning('*** Initialize zero matricies...')
+if g.sys.DEBUG
+    warning('*** Initialize zero matricies')
+end
 
 n = size(g.mac.mac_con, 1) ;
 z = zeros(n,k);

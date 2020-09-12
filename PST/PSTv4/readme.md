@@ -1,4 +1,4 @@
-PST Version 4 - current version: 4.0.0-a.9
+PST Version 4 - current version: 4.0.0-b.2
 
 (c) Montana Technological University / Thad Haines 2020
 
@@ -17,8 +17,6 @@ alterations. For example, if there was a desire to implement a custom ODE solver
 (varable or fixed time step), there is clear place to add that functionality 
 and code already in place to accommodate for user specified solution methods.
 
-A number of bug fixes are imagined to be required while new code base is tested.
-
 %   History:  
 %   Date        Time    Engineer        Description  
 %   08/13/20    12:09   Thad Haines     4.0.0-a.1 - initial ALPHA collection of version 4 code base.   
@@ -31,3 +29,4 @@ A number of bug fixes are imagined to be required while new code base is tested.
 %	08/28/20	13:58	Thad Haines		4.0.0-a.8 - clean up of integration methods, added exciter bypass, experimental work on re-initializing models for 'un-tripping' machines.   
 %	09/03/20	12:39	Thad Haines		4.0.0-a.9 - Change of g.int to g.y, updated y_switch comments, fixed Area calcs and AGC B check.   
 %	09/08/20	09:03	Thad Haines		4.0.0-b.1 - Beta release - included optional first power flow bypass, minor s_simu clean up   
+%   09/12/20    12:26   Thad Haines     4.0.0-b.2 - Code cleanup, addition of g.sys.DEBUG, line_pq2 function name corrected

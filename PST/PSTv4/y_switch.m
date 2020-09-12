@@ -24,6 +24,11 @@ function y_switch
 %   09/03/20    12:00   Thad Haines     Version 3.1 - changed g.int to g.y
 
 global g
+if g.sys.DEBUG
+    warning('*** Initializing Y matricies')
+else
+    disp('*** Initializing Y matricies')
+end
 
 %% create pre-fault admittance matrix
 if ~isempty(g.ncl.load_con)

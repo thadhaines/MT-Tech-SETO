@@ -12,7 +12,7 @@ scenario = 'L';% L line, F colstrip faul, C cascade?
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 3; % depth of current directory from main PST directory
-pstVer =    'pstSETO';% 'pstV3p1'; %  'pstV2P3'; %
+pstVer =    'PSTv4';  %'pstSETO';   % 'pstV3p1'; %  'pstV2P3'; %
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -54,8 +54,12 @@ end
 
 livePlotFlag = 1;
 pssGainFix = 0;
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
+if strcmp(pstVer , 'PSTv4')
+    s_simu
+else
+    s_simu_Batch %Run PST 
+end
 %% Clean up modulation file alterations.
 % delete([PSTpath 'ml_sig.m']); % remove simulation specific ml_sig file
 % copyfile([PSTpath 'ml_sig_ORIG_TMP.m'],[PSTpath 'ml_sig.m']); % Replace original file
@@ -66,29 +70,10 @@ s_simu_Batch %Run PST <- this is the main file to look at for simulation working
 % copyfile([PSTpath 'mtg_sig_ORIG_TMP.m'],[PSTpath 'mtg_sig.m']); % Replace original file
 % delete([PSTpath 'mtg_sig_ORIG_TMP.m']); % delete temporary file
 
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
 
-for vName = varNames
-    try
-        zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-        if zeroTest
-            eval(sprintf('clear %s',vName{1}) ); % clear variable
-            clearedVars{end+1} = vName{1}; % add name to cell for reference
-        end
-    catch ME
-        % gets called for structs... (global g)
-        disp(ME.message)
-        disp(vName)
-    end
-end
-clear varNames vName zeroTest
 
 %% Save cleaned output data
 save([pstVer, caseName, scenario, '.mat']); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
-delete('sim_fle.mat')

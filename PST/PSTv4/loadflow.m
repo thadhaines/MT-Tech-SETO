@@ -86,8 +86,8 @@ lf_flag = 1;
 % set solution defaults
 if isempty(tol);tol = 1e-9;end
 if isempty(iter_max);iter_max = 30;end
-if isempty(acc);acc = 1.0; end;
-if isempty(display);display = 'n';end;
+if isempty(acc);acc = 1.0; end
+if isempty(display);display = 'n';end
 
 if flag <1 || flag > 2
     error('LOADFLOW: flag not recognized')
@@ -217,18 +217,17 @@ while (tap_it<tap_it_max&&mm_chk)
         gen_index=find(bus_type==2);
         Qg(gen_index) = Q(gen_index) + Ql(gen_index);
         lim_flag = chq_lim(qg_max,qg_min);
-        if lim_flag == 1;
-            disp('Qg at var limit');
+        if lim_flag == 1
+            disp('*** Qgen at var limit');
         end
     end
     if iter == iter_max
         imstr = int2str(iter_max);
-        disp(['inner ac load flow failed to converge after ', imstr,' iterations'])
+        disp(['*** Inner ac load flow failed to converge after ', imstr,' iterations'])
         tistr = int2str(tap_it);
-        disp(['at tap iteration number ' tistr])
+        disp(['*** at tap iteration number ' int2str(tistr)])
     else
-        disp('inner load flow iterations')
-        disp(iter)
+        disp(['*** Inner load flow iterations: ', int2str(iter)])
     end
     if no_taps == 0
         lftap
@@ -238,23 +237,22 @@ while (tap_it<tap_it_max&&mm_chk)
 end
 if tap_it >= tap_it_max
     titstr = int2str(tap_it_max);
-    disp(['tap iteration failed to converge after',titstr,' iterations'])
+    disp(['*** Tap iteration failed to converge after',titstr,' iterations'])
 else
-    disp(' tap iterations ')
-    disp(tap_it)
+    disp(['*** Tap iterations: ', int2str(tap_it)])
 end
 ste = clock;     % end the iteration time clock
 vmx_idx = find(V==volt_max);
 vmn_idx = find(V==volt_min);
 if ~isempty(vmx_idx)
-    disp('voltages at')
+    disp('*** Voltages at')
     bus(vmx_idx,1)'
-    disp('are at the max limit')
+    disp('*** are at the max limit')
 end
 if ~isempty(vmn_idx)
-    disp('voltages at')
+    disp('*** Voltages at')
     bus(vmn_idx,1)'
-    disp('are at the min limit');
+    disp('*** are at the min limit');
 end
 gen_index=find(bus_type==2);
 load_index = find(bus_type==3);
@@ -262,7 +260,7 @@ Pg(gen_index) = P(gen_index) + Pl(gen_index);
 Qg(gen_index) = Q(gen_index) + Ql(gen_index);
 gend_idx = find((bus(:,10)==2)&(bus_type~=2));
 if ~isempty(gend_idx)
-    disp('the following generators are at their var limits')
+    disp('*** The following generators are at their var limits')
     disp('    bus#    Qg')
     disp([bus(gend_idx,1)  Q(gend_idx)])
     Qlg = Ql(gend_idx)-bus(gend_idx,7);% the generator var part of the load
@@ -316,12 +314,12 @@ line_flow(1:nline, :)  =[iline from_bus to_bus P_s Q_s];
 line_flow(1+nline:2*nline,:) = [iline to_bus from_bus P_r Q_r];
 % Give warning of non-convergence
 if conv_flag == 1
-    disp('ac load flow failed to converge')
-    error('stop')
+    disp('*** AC load flow failed to converge')
+    error('AC load flow failed to converge')
 end
 
 % display results
-if display == 'y',
+if display == 'y'
     clc
     disp('                             LOAD-FLOW STUDY')
     disp('                    REPORT OF POWER FLOW CALCULATIONS ')
@@ -333,7 +331,7 @@ if display == 'y',
     fprintf('TOTAL TIME                 : %g sec.\n',etime(clock,tt))
     fprintf('TOTAL REAL POWER LOSSES    : %g.\n',P_loss)
     fprintf('TOTAL REACTIVE POWER LOSSES: %g.\n\n',Q_loss)
-    if conv_flag == 0,
+    if conv_flag == 0
         disp('                                      GENERATION             LOAD')
         disp('       BUS     VOLTS     ANGLE      REAL  REACTIVE      REAL  REACTIVE ')
         disp(bus_sol(:,1:7))
@@ -343,10 +341,10 @@ if display == 'y',
         disp(line_ffrom)
         disp(line_fto)
     end
-end; %
-if iter > iter_max,
-    disp('Note: Solution did not converge in %g iterations.\n', iter_max)
-    lf_flag = 0
+end
+if iter > iter_max
+    disp('*** NOTE: Solution did not converge in %g iterations.\n', iter_max)
+    lf_flag = 0;
 end
 
 return

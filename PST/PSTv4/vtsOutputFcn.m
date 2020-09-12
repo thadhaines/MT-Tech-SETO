@@ -21,7 +21,7 @@ function status = vtsOutputFcn(t,y,flag)
 %   08/03/20    10:24   Thad Haines     Version 1.1 - clean up actions
 
 global g
-
+persistent FirstRun
 status = 0; % required for normal operation
 
 %{
@@ -41,7 +41,7 @@ if isempty(flag) % normal step completion
     handleNetworkSln(g.vts.dataN ,2) % may cause issues with DC.
     % Save and restore first prediction of dx in a similar fashion as newtork soln?
     
-    %% Line Monitoring and Area Calculations ==============================
+    %% Line Monitoring and Area Calculations ===================================
     monitorSolution(g.vts.dataN);
     
     %% Live plot call
@@ -55,14 +55,16 @@ if isempty(flag) % normal step completion
     g.vts.stVec = y;                % update state vector
     handleStDx(g.vts.dataN, y, 2)   % place new solution results into associated globals
     
-    % display k and t at every first, last, and 250th step
-    if ( mod(g.vts.dataN,250)==0 ) || g.vts.iter > 100
-        fprintf('* dataN: %6d\tat time:\t%8.6f\trequired %4d solutions...\n', g.vts.dataN, t, g.vts.iter)
+    % display dataN and t at every first, last, and 250th step
+    if ( mod(g.vts.dataN,250)==0 ) || g.vts.iter > 100 || FirstRun
+        fprintf('*** dataN: %5d, g.sys.t(dataN) = %10.6f\tperformed %d solutions\n', ...
+            g.vts.dataN, t, g.vts.iter)
+        FirstRun = 0;
     end
     
     g.vts.tot_iter = g.vts.tot_iter + g.vts.iter;  % update total iterations
-    g.vts.slns(g.vts.dataN) = g.vts.iter;           % log solution step iterations
-    g.vts.iter = 0;                                 % reset iteration counter
+    g.vts.slns(g.vts.dataN) = g.vts.iter;          % log solution step iterations
+    g.vts.iter = 0;                                % reset iteration counter
     
     %{
     MATLAB DOCUMENTATION:
@@ -72,15 +74,16 @@ tspan and y0 are the input arguments to the ODE solver.
     %}
     
 elseif flag(1) == 'i' % init solver for new time block
-    
+    FirstRun = 1;
     g.sys.t(g.vts.dataN) = t(1);    % log step time
     handleStDx(g.vts.dataN, y, 2)   % set initial state conditions
     % set initial dx conditions? - Shouldn't matter as input function calculates new derivatives for dataN...
     
     % debug display
-    disp('*** ')
-    disp('Flag == init')
-    fprintf('Data step: %d\t%3.5f\n', g.vts.dataN, t(1))
+    if g.sys.DEBUG
+        disp('*** VTS Flag == init')
+        fprintf('*** Data step: %d\t%3.5f\n', g.vts.dataN, t(1))
+    end
     
     %{
     MATLAB DOCUMENTATION:
@@ -92,9 +95,10 @@ elseif flag(1) == 'd'
     % time block period complete
     
     % debug display
-    disp('*** ')
-    disp('Flag == done')
-    fprintf('Last complete data step: %d\t%8.10f\n', g.vts.dataN, g.sys.t(g.vts.dataN))
+    if g.sys.DEBUG
+        disp('*** VTS Flag == done')
+        fprintf('*** Last complete data step: %d\t%8.10f\n', g.vts.dataN, g.sys.t(g.vts.dataN))
+    end
 end
 
 end

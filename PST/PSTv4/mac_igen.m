@@ -44,8 +44,6 @@ global g
 bus_new = bus;
 if ~isempty(g.igen.igen_con)
     if flag == 0
-        % initialisation
-        disp(' initializing')
         if i == 0
             %vector computation
             g.igen.n_ig = length(g.igen.igen_con(:,1));

@@ -1,5 +1,5 @@
-function [sFrom,sTo] = line_pq(lines, k)
-% Syntax:   [sFrom,sTo] = line_pq(lines, k)
+function [sFrom,sTo] = line_pq2(lines, k)
+% Syntax:   [sFrom,sTo] = line_pq2(lines, k)
 %
 % Modified line_pq to just require lines and voltage index k as imput
 %

@@ -18,13 +18,14 @@ function initNLsim()
 %   08/05/20    13:15   Thad Haines     Version 1.1 - added pwrmod signals to global
 %   08/11/20    11:25   Thad Haines     Version 1.2 - added ivmmod
 %   09/03/20    12:00   Thad Haines     Version 1.3 - changed g.int to g.y
+%   09/12/20    11:06   Thad Haines     Version 1.4 - added g.sys.DEBUG outputs
 
 % %% Remaining 'loose' globals commented out - thad 08/13/20
 % % DeltaP/omega filter variables - 21
 % global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
 % global  sdpw1 sdpw2 sdpw3 sdpw4 sdpw5 sdpw6
 % global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
-% 
+%
 % % pss design - 3 - Not used in Simulation? - thad 07/18/20
 % global ibus_con  netg_con  stab_con
 
@@ -32,12 +33,17 @@ function initNLsim()
 global g
 
 %% step 1: construct reduced Y matrices
-warning('*** Initialize Y matrix (matracies?) and Dynamic Models')
-disp('constructing reduced y matrices')
-disp('initializing motor,induction generator, svc and dc control models')
+if g.sys.DEBUG
+    warning('*** Start Initialization')
+else
+    disp('*** Start Initialization')
+end
 
+disp('*** Initializing Induction Motors and Generators')
 g.bus.bus = mac_ind(0,1,g.bus.bus,0);% initialize induction motor
 g.bus.bus = mac_igen(0,1,g.bus.bus,0); % initialize induction generator
+
+disp('*** SVC and DC Controls')
 g.bus.bus = svc(0,1,g.bus.bus,0);%initialize svc
 dc_cont(0,1,1,g.bus.bus,0);% initialize dc controls
 % this has to be done before red_ybus is used since the motor and svc
@@ -45,7 +51,7 @@ dc_cont(0,1,1,g.bus.bus,0);% initialize dc controls
 
 y_switch % calculates the reduced y matrices for the different switching conditions
 
-disp('initializing other models...')
+disp('*** Initializing models for:')
 
 %% step 2: initialization
 n_bus = length(g.bus.bus(:,1));
@@ -145,17 +151,19 @@ if g.dc.n_conv~=0 % Seems like this should be put in a seperate script - thad 06
 end
 
 % Flag = 0 == Initialization
-warning('*** Dynamic model initialization via functions/scripts:')
+if g.sys.DEBUG
+    warning('*** Dynamic model initialization')
+end
 flag = 0;
 g.bus.bus_int = g.bus.bus_intprf;% pre-fault system
 
-disp('generators')
+disp('*** Generators')
 mac_sub(0,1,g.bus.bus,flag); % first
 mac_tra(0,1,g.bus.bus,flag);
 mac_em(0,1,g.bus.bus,flag);
 mac_ivm(0,1,g.bus.bus,flag); % ivm - thad 06/01/20
 
-disp('generator controls')
+disp('*** Generator Controls')
 dpwf(0,1,flag);
 pss(0,1,flag);
 
@@ -171,7 +179,7 @@ tg_hydro(0,1,g.bus.bus,flag);
 %% initialize ivm modulation control - added from v2.3 06/01/20 - thad
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.ivm.n_ivm~=0
-    disp('ivm modulation')
+    disp('*** IVM Modulation')
     [~,~,~,~,Dini,Eini] = ivmmod_dyn([],[],g.bus.bus,g.sys.t,1,flag);
     
     if (~iscell(Dini) || ~iscell(Eini))
@@ -203,7 +211,7 @@ end
 %% initialize svc damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.svc.n_dcud~=0
-    disp('svc damping controls')
+    disp('*** SVC Damping Controls')
     tot_states=0;
     for i = 1:g.svc.n_dcud
         ysvcmx = g.svc.svc_dc{i,4};
@@ -221,7 +229,7 @@ end
 %% initialize tcsc damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.tcsc.n_tcscud~=0
-    disp('tcsc damping controls')
+    disp('*** TCSC Damping Controls')
     tot_states=0;
     for i = 1:g.tcsc.n_tcscud
         ytcscmx = g.tcsc.tcsc_dc{i,4};
@@ -239,7 +247,7 @@ end
 %% initialize rectifier damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.dc.ndcr_ud~=0
-    disp('rectifier damping controls')
+    disp('*** Rectifier Camping Controls')
     tot_states=0;
     for i = 1:g.dc.ndcr_ud
         ydcrmx = g.dc.dcr_dc{i,5};
@@ -257,7 +265,7 @@ end
 %% initialize inverter damping controls
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.dc.ndci_ud~=0
-    disp('inverter damping controls')
+    disp('*** Inverter Damping Controls')
     tot_states = 0;
     for i = 1:g.dc.ndci_ud
         ydcimx = g.dc.dci_dc{i,5};
@@ -276,18 +284,18 @@ end
 %if ~isempty(lmod_con) % original line - thad
 % if statement redundant - used in script... - thad 06/08/20
 if ~isempty(g.lmod.lmod_con)
-    disp('load modulation')
+    disp('*** Real Load Modulation')
     lmod(0,1,flag); % removed bus - thad
 end
 if ~isempty(g.rlmod.rlmod_con)
-    disp('reactive load modulation')
+    disp('*** Reactive Load Modulation')
     rlmod(0,1,flag); % removed bus - thad
 end
 
 %% initialize power modulation control - copied from v2.3 06/01/20 -thad
 % Seems like this should be put in a seperate script - thad 06/08/20
 if g.pwr.n_pwrmod~=0
-    disp('power modulation')
+    disp('*** Power Injection Modulation')
     pwrmod_p(0,1,g.bus.bus,flag);
     pwrmod_q(0,1,g.bus.bus,flag);
     
@@ -324,7 +332,7 @@ end
 %% initialize non-linear loads
 % if statement redundant - used in script... - thad 06/08/20
 if ~isempty(g.ncl.load_con)
-    disp('non-linear loads')
+    disp('*** Non-Linear Loads')
     vnc = nc_load(g.bus.bus,flag,g.y.Y_ncprf,g.y.Y_ncgprf); % return not used? - thad 07/17/20
 else
     g.ncl.nload = 0;
@@ -339,7 +347,7 @@ end
 %% DC Stuff ? (5/22/20)
 if ~isempty(g.dc.dcsp_con)
     % Seems like this should be put in a seperate script - thad 06/08/20
-    disp('dc converter specification')
+    disp('*** DC Converter Specification')
     
     g.bus.bus_sim = g.bus.bus;
     g.bus.bus_int = g.bus.bus_intprf;
