@@ -66,9 +66,9 @@ This functionalized code is again taken directly from \verb|s_simu|.
 
 %------------------------------------------------------------------------------
 
-\subsubsection{huensMethod - WIP}  
+\subsubsection{huensMethod}  
 The default integration method used by PST is Huen's Method.
-The routine has been collected into a the \verb|huensMethod| from previously existing code in \verb|s_simu|.
+The routine has been collected into the \verb|huensMethod| function from previously existing code in \verb|s_simu|.
 Mathematically speaking, Huen's method is an improved Euler method that could also be described as a two-stage Runge-Kutta method, or as a predictor-corrector method.
 
 The description of a generalized Huen's method is as follows:
@@ -83,11 +83,11 @@ y_p = y_i + h \dot{x}_i
 \end{equation}\eqcaption{Huen's Method 2/4} 
 \noindent The derivative at the predicted point is also calculated.
 \begin{equation}{\label{eq: huens3} }
-\dot{x}_p = f(x_{i+1}), y_p)
-\end{equation}\eqcaption{Huen's Method 2/4} 
+\dot{x}_p = f(x_{i+1}, y_p)
+\end{equation}\eqcaption{Huen's Method 3/4} 
 \noindent The next value for $y$, $y_{i+1}$, is calculated using an average of the two derivatives
 \begin{equation}{\label{eq: huens4} }
-y_{i+1} = y_i + h/2( \dot{x}_i + \dot{x}_p ).
+y_{i+1} = y_i + \frac{h}{2}( \dot{x}_i + \dot{x}_p ).
 \end{equation}\eqcaption{Huen's Method 4/4} 
 
 %Essentially, 
@@ -97,10 +97,18 @@ y_{i+1} = y_i + h/2( \dot{x}_i + \dot{x}_p ).
 %to calculate the corrected $y_{i+1}$ at $x_{i+1}$.
 
 As a power system solution is not just a set of differential equations, but a system of algebraic and differential equations,
-the \verb|huensMethod| function performs the network, dynamic, DC, and monitor solutions required for each step of the method.
+\verb|huensMethod| performs the network, dynamic, DC, and monitor solutions required for each step of the method.
+A block diagram of these actions is shown in Figure \ref{fig: huens block diagram}.
 
-XXX Block diagram?
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[height=.85\textheight]{../../one-offs/200913-huensMethodBlockDiagram/200913-huensMethodBlockDiagram}
+	\caption{Huen's Method Block Diagram.}
+	\label{fig: huens block diagram}
+\end{figure}\vspace{-1 em}
 
+An added benefit of functionalizing Huen's method, is that it provides a clear location to insert alternative integration routines and can act as an example as to how to accomplish such a task.
 
 %------------------------------------------------------------------------------
 \subsubsection{initNLsim}  
