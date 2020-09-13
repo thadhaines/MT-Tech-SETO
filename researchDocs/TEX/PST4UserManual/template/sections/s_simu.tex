@@ -14,16 +14,13 @@ Ensure at least 1 non-global variable is in the workspace prior to running \verb
 
 %==============================================================================
 \subsection{Functionalization}
-The use of a single global allowed for easier functionalization of easily identifiable parts of code.
-Below are some of the functions that were created from code originally in \verb|s_simu|.
-
-
+The use of a single global allowed for easier functionalization of code.
+Below are some of the functions that were created from code originally found in \verb|s_simu|.
 
 %------------------------------------------------------------------------------
 \subsubsection{cleanZeros}  
 The \verb|cleanZeros| function cleans all entirely zero variables from the global \verb|g| and places the names of cleared variables into the \verb|clearedVars| cell that is stored in \verb|g.sys|.
 The function is executed near the end of \verb|s_simu|.
-
 
 %------------------------------------------------------------------------------
 \subsubsection{correctorIntegration}  
@@ -52,7 +49,6 @@ It should be noted that the two integration functions write new states to the sa
 Additionally, the \verb|h_sol| value is updated in \verb|i_simu| (called during the network solution) from the index of \verb|ks| referencing an \verb|h| array containing time step lengths$\ldots$\ 
 While this process seemed unnecessarily confusing and sort of  round-about, it has not been changed as of this writing.
 
-
 %------------------------------------------------------------------------------
 \subsubsection{dcSolution}  
 The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step was moved into the \verb|dcSolution| function.
@@ -68,6 +64,42 @@ While this may defeat the purpose of VTS simulation due to DC models traditional
 As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at data index \verb|k| by calling each required model with the input flag set to 2.
 This functionalized code is again taken directly from \verb|s_simu|.
 
+%------------------------------------------------------------------------------
+
+\subsubsection{huensMethod - WIP}  
+The default integration method used by PST is Huen's Method.
+The routine has been collected into a the \verb|huensMethod| from previously existing code in \verb|s_simu|.
+Mathematically speaking, Huen's method is an improved Euler method that could also be described as a two-stage Runge-Kutta method, or as a predictor-corrector method.
+
+The description of a generalized Huen's method is as follows:
+Suppose the initial conditions of an ODE $f(x,y)$ are given as $x_i$ and $y_i$.
+To calculate $y_{i+1}$ using Huen's method, the derivative at $x_i$, $\dot{x_i}$, is calculated from the initial conditions.
+\begin{equation}{\label{eq: huens1} }
+\dot{x}_i = f(x_i, y_i)
+\end{equation}\eqcaption{Huen's Method 1/4} 
+\noindent A predicted point is calculated using a Forward Euler method where $h$ is the time step size.
+\begin{equation}{\label{eq: huens2} }
+y_p = y_i + h \dot{x}_i
+\end{equation}\eqcaption{Huen's Method 2/4} 
+\noindent The derivative at the predicted point is also calculated.
+\begin{equation}{\label{eq: huens3} }
+\dot{x}_p = f(x_{i+1}), y_p)
+\end{equation}\eqcaption{Huen's Method 2/4} 
+\noindent The next value for $y$, $y_{i+1}$, is calculated using an average of the two derivatives
+\begin{equation}{\label{eq: huens4} }
+y_{i+1} = y_i + h/2( \dot{x}_i + \dot{x}_p ).
+\end{equation}\eqcaption{Huen's Method 4/4} 
+
+%Essentially, 
+%Huen's method uses a Forward Euler to create a prediction of the next point $y_p$ at $x_{i+1}$ using $\dot{x}_i$, 
+%calculates the slope (derivative) at the predicted point to get $\dot{x}_p$, 
+%then uses an average of the two derivatives $1/2(\dot{x}_t + \dot{x}_p)$
+%to calculate the corrected $y_{i+1}$ at $x_{i+1}$.
+
+As a power system solution is not just a set of differential equations, but a system of algebraic and differential equations,
+the \verb|huensMethod| function performs the network, dynamic, DC, and monitor solutions required for each step of the method.
+
+XXX Block diagram?
 
 
 %------------------------------------------------------------------------------
@@ -109,12 +141,10 @@ function initZeros(k, kdc)
 %   kdc - total number of DC time steps in the simulation
 \end{minted}
 
-
 %------------------------------------------------------------------------------
 \subsubsection{monitorSolution}  
 The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average system and/or area frequencies, and other interchange values for defined areas.
 It should be noted that these calculations are mostly based on complex voltages that are calculated during the network solution.
-
 
 %------------------------------------------------------------------------------
 \subsubsection{networkSolution \& networkSolutionVTS}  
@@ -149,7 +179,6 @@ function predictorIntegration(k, j, h_sol)
 %   h_sol - time between k and j
 \end{minted}
 
-
 %------------------------------------------------------------------------------
 \subsubsection{standAlonePlot}  
 The \verb|standAlonePlot| function is the updated plotting routine based on user input previously found at the end \verb|s_simu|.
@@ -165,7 +194,6 @@ It's important to note that if not enough space is allocated, the simulation wil
 
 The \verb|trimLogs| function trims all logged values in the global \verb|g| to a given length \verb|k|.
 It is executed near the end of \verb|s_simu| before \verb|cleanZeros|.
-
 
 \begin{minted}[
 		frame=lines,

@@ -9,68 +9,39 @@
 \renewcommand*{\glsclearpage}{} % remove pagebreak pre-glossary
 \renewcommand{\glossarysection}[2][]{} % remove auto glossary title
 
-\newglossaryentry{ACE}{name={ACE},%
-	description={Area Control Error }}
-\newglossaryentry{AC}{name={AC},%
-	description={Alternating Current}}
-\newglossaryentry{PU}{name={PU},%
-	description={Per-Unit}}
-\newglossaryentry{SACE}{name={SACE},%
-	description={Smoothed ACE}}
-\newglossaryentry{PI}{name={PI},%
-	description={Proportional and Integral}}
-\newglossaryentry{PST}{name={PST},%
-	description={Power System Toolbox}}
-\newglossaryentry{RACE}{name={RACE},%
-	description={Reported ACE}}
-\newglossaryentry{DACE}{name={DACE},%
-	description={Distributed ACE}}
-\newglossaryentry{PSS}{name={PSS},%
-	description={Power System Stabilizer }}
-\newglossaryentry{AGC}{name={AGC},%
-	description={Automatic Generation Control }}
-\newglossaryentry{LFC}{name={LFC},%
-	description={Load Frequency Control }}
-\newglossaryentry{WECC}{name={WECC},%
-	description={Western Electricity Coordinating Council }}
-\newglossaryentry{NERC}{name={NERC},%
-	description={North American Electric Reliability Corporation }}
-\newglossaryentry{FERC }{name={FERC},%
-	description={Federal Energy Regulatory Commission }}
-\newglossaryentry{EIA}{name={EIA},%
-		description={ United States Energy Information Administration}}
-\newglossaryentry{CTS}{name={CTS},%
-		description={ Classical Transient Stability}}
-\newglossaryentry{ODE}{name={ODE},%
-	description={ Ordinary Differential Equation }}
-\newglossaryentry{US}{name={US},%
-	description={United States of America }}
-\newglossaryentry{RTO}{name={RTO},%
-	description={Regional Transmission Organization}}
-\newglossaryentry{ISO}{name={ISO},%
-	description={Independent Service Operator}}
-\newglossaryentry{SI}{name={SI},%
-	description={International System of Units}}
-\newglossaryentry{Hz}{name={Hz},%
-	description={Hertz, cycles per second}}
-\newglossaryentry{W}{name={W},%
-	description={Watt, Joules per second}}
-\newglossaryentry{J}{name={J},%
-	description={Joule, Neton meters, Watt seconds}}
-\newglossaryentry{BES}{name={BES},%
-	description={Bulk Electrical System}}
-\newglossaryentry{BA}{name={BA},%
-	description={Balancing Authority}}
-\newglossaryentry{P}{name={P},%
-	description={Real Power}}
-\newglossaryentry{Q}{name={Q},%
-	description={Reactive power}}
-\newglossaryentry{VAR}{name={VAR},%
-	description={Volt Amps Reactive}}
-\newglossaryentry{IC}{name={IC},%
-	description={Interchange}}
+\newglossaryentry{ACE}{name={ACE}, description={Area Control Error }}
+\newglossaryentry{AC}{name={AC}, description={Alternating Current}}
+\newglossaryentry{DC}{name={DC}, description={Direct Current}}
+\newglossaryentry{PU}{name={PU}, description={Per-Unit}}
+\newglossaryentry{SACE}{name={SACE}, description={Smoothed ACE}}
+\newglossaryentry{PI}{name={PI}, description={Proportional and Integral}}
+\newglossaryentry{PST}{name={PST}, description={Power System Toolbox}}
+\newglossaryentry{RACE}{name={RACE}, description={Reported ACE}}
+\newglossaryentry{DACE}{name={DACE}, description={Distributed ACE}}
+\newglossaryentry{PSS}{name={PSS}, description={Power System Stabilizer }}
+\newglossaryentry{AGC}{name={AGC}, description={Automatic Generation Control }}
+\newglossaryentry{WECC}{name={WECC}, description={Western Electricity Coordinating Council }}
+\newglossaryentry{NERC}{name={NERC}, description={North American Electric Reliability Corporation }}
+\newglossaryentry{FERC }{name={FERC}, description={Federal Energy Regulatory Commission }}
+\newglossaryentry{EIA}{name={EIA}, description={ United States Energy Information Administration}}
+%\newglossaryentry{CTS}{name={CTS}, description={ Classical Transient Stability}}
+\newglossaryentry{ODE}{name={ODE}, description={ Ordinary Differential Equation }}
+%\newglossaryentry{US}{name={US}, description={United States of America }}
+%\newglossaryentry{RTO}{name={RTO}, description={Regional Transmission Organization}}
+%\newglossaryentry{ISO}{name={ISO}, description={Independent Service Operator}}
+%\newglossaryentry{SI}{name={SI}, description={International System of Units}}
+\newglossaryentry{Hz}{name={Hz}, description={Hertz, cycles per second}}
+\newglossaryentry{W}{name={W}, description={Watt, Joules per second}}
+\newglossaryentry{J}{name={J}, description={Joule, Neton meters, Watt seconds}}
+%\newglossaryentry{BES}{name={BES}, description={Bulk Electrical System}}
+%\newglossaryentry{BA}{name={BA}, description={Balancing Authority}}
+\newglossaryentry{P}{name={P}, description={Real Power}}
+\newglossaryentry{Q}{name={Q}, description={Reactive power}}
+\newglossaryentry{VAR}{name={VAR}, description={Volt Amps Reactive}}
+%\newglossaryentry{IC}{name={IC}, description={Interchange}}
 \newglossaryentry{VTS}{name={VTS}, description={Variable Time Step}}
 \newglossaryentry{FTS}{name={FTS}, description={Fixed Time Step}}
+
 \glsaddall % so that there is no need to call \gls{label} for each term
 \printglossaries
 

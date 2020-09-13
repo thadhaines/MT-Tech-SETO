@@ -1,7 +1,7 @@
-This is makeindex, version 2.15 [MiKTeX 2.9.7200 64-bit] (kpathsea + Thai support).
+This is makeindex, version 2.15 [MiKTeX 2.9.7000 64-bit] (kpathsea + Thai support).
 Scanning style file ./PST4UserManual.ist.............................done (29 attributes redefined, 0 ignored).
-Scanning input file PST4UserManual.glo....done (32 entries accepted, 0 rejected).
-Sorting entries....done (180 comparisons).
-Generating output file PST4UserManual.gls....done (86 lines written, 0 warnings).
+Scanning input file PST4UserManual.glo....done (24 entries accepted, 0 rejected).
+Sorting entries....done (123 comparisons).
+Generating output file PST4UserManual.gls....done (65 lines written, 0 warnings).
 Output written in PST4UserManual.gls.
 Transcript written in PST4UserManual.glg.
