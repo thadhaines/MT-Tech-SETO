@@ -1,0 +1,204 @@
+\chapter{PST 4 s\_simu Block Diagram} \label{sec: simu BD}
+% This block diagram was created in this file to allow for 'nicely' spanning multiple pages
+{\singlespacing
+%=============================================================================== Page 1
+\begin{tikzpicture}[node distance=1.75cm] 
+%----------------------------------------------------------------------------
+% Placement of flowcart nodes
+\node (start) [terminal] {\verb|s_simu| Start};
+\node (initGlobals) [process, below of = start] {Initialize Globals};
+
+% matlab decision block
+\node (checkProg) [decision, below of=initGlobals, yshift=-.75cm, text width=3cm] {MATLAB?};
+\node (octaveComp) [subprocess, right = 3 cm of checkProg] {\verb|octaveComp|};
+
+% batch decision block
+\node (checkBatch) [decision, below of=checkProg, yshift=-1.25cm, text width=3cm] {Batch Run?};
+\node (userInput1) [process, right = 3 cm of checkBatch] {Get User Input};
+
+\node (loadData) [process, below of = checkBatch, yshift = -0.75cm] {Load DataFile};
+\node (handleNewGlobals) [subprocess, below of = loadData] {\verb|handleNewGlobals|};
+
+\node (dataCheck) [ process, below of = handleNewGlobals] {Check for Valid Input};
+\node (setBase) [ process, below of = dataCheck] {Set $F_{base}$ and $S_{base}$};
+\node (ingoreModels) [ process, below of = setBase] {Ignore infinte bus and damping control models};
+
+\node (page1End) [pageconD, below of = ingoreModels ] {\Large A};
+
+%----------------------------------------------------------------------------
+% Draw lines
+\draw [arrow] (start) -- (initGlobals);
+\draw [arrow] (initGlobals) -- (checkProg);
+\draw [arrow] (loadData) -- (handleNewGlobals);
+\draw [arrow] (handleNewGlobals) -- (dataCheck);
+\draw [arrow] (dataCheck) -- (setBase);
+\draw [arrow] (setBase) -- (ingoreModels);
+\draw [arrow] (ingoreModels) -- (page1End);
+
+%----------------------------------------------------------------------------
+% Draw Decision Lines
+\draw [arrow] (checkProg) --  node[anchor=south] {False} (octaveComp);
+\draw [arrow] (checkProg) --  node[anchor=east] {True} (checkBatch);
+\draw [arrow] (octaveComp) |- (checkBatch.north);
+
+\draw [arrow] (checkBatch) --  node[anchor=south] {False} (userInput1);
+\draw [arrow] (checkBatch) --  node[anchor=east] {True} (loadData);
+\draw [arrow] (userInput1) |- (loadData);
+
+
+
+
+\end{tikzpicture}
+\pagebreak
+%===============================================================================  Page 2
+
+
+\begin{tikzpicture}[node distance=1.75cm] 
+%----------------------------------------------------------------------------
+% Placement of flowcart nodes
+\node (page2Start) [pageconU ] {\Large A};
+
+% batch  decision block 2
+\node (checkBatch2) [decision, below of=page2Start, yshift=-.75cm, text width=3cm] {Batch Run?};
+\node (userInput2) [process, right = 3 cm of checkBatch2] {Get User Input for Load Flow};
+
+% power flow  decision block
+\node (querryPFsoln) [decision, below of=userInput2, yshift=-.75cm, text width=3.5cm] {Solve Load Flow?};
+
+\node (solveLoadFlow) [subprocess, below of = checkBatch2, yshift = -0.75 cm] {Solve Load Flow};
+\node (startTimer) [process, below of=  solveLoadFlow] {Start Simulation Timer};
+
+\node (createIndex) [process, below of = startTimer] {Create model indicies};
+\node (pwrmodCheck1) [process, below of = createIndex] {Ensure \verb|pwrmod|\\initialized correctly};
+
+\node (createLegacyT) [process, below of = pwrmodCheck1] { Create legacy time vector}; % used only to create zeros
+
+\node (initTblocks) [ subprocess, below of = createLegacyT] {\verb|initTblocks|};
+
+% VTS  decision block
+\node (vtsCheck) [decision, below of=initTblocks, yshift=-.75cm, text width=3cm] {VTS?};
+\node (increaseZeros) [process, right = 3 cm of vtsCheck] {Increase data collection size};
+
+\node (initZeros) [subprocess, below of = vtsCheck, yshift = -0.75 cm] {\verb|initZeros|};
+
+\node (page2End) [pageconD, below of = initZeros ] {\Large B};
+
+%----------------------------------------------------------------------------
+% Drawing of Lines of main chart
+\draw [arrow] (page2Start) -- (checkBatch2);
+
+\draw [arrow] (solveLoadFlow) -- (startTimer);
+\draw [arrow] (startTimer) -- (createIndex);
+\draw [arrow] (createIndex) -- (pwrmodCheck1);
+\draw [arrow] (pwrmodCheck1) -- (createLegacyT);
+\draw [arrow] (createLegacyT) -- (initTblocks);
+\draw [arrow] (initTblocks) -- (vtsCheck);
+\draw [arrow] (initZeros) -- (page2End);
+
+%----------------------------------------------------------------------------
+%% Note nodes AND edges
+\node [note, right of=createLegacyT, node distance =7.75cm, ](note1){Used only to intialize zeros};
+\draw [arrow,dotted] (note1) -- (createLegacyT);
+
+%----------------------------------------------------------------------------
+% Draw Decision Lines
+\draw [arrow] (checkBatch2) --  node[anchor=east] {True} (solveLoadFlow);
+\draw [arrow] (checkBatch2) --  node[anchor=south] {False} (userInput2);
+
+\draw [arrow] (userInput2) -- (querryPFsoln);
+
+\draw [arrow] (querryPFsoln) --  node[anchor=south] {True} (solveLoadFlow);
+\draw [arrow] (querryPFsoln.south) |-  node[anchor=west] {False} (startTimer);
+
+\draw [arrow] (vtsCheck) --  node[anchor=east] {False} (initZeros);
+\draw [arrow] (vtsCheck) --  node[anchor=south] {True} (increaseZeros);
+\draw [arrow] (increaseZeros) |- (initZeros);
+
+\end{tikzpicture}
+\pagebreak
+%===============================================================================  Page 3
+
+\begin{tikzpicture}[node distance=1.75cm] 
+%----------------------------------------------------------------------------
+% Placement of flowcart nodes
+\node (page3Start) [pageconU ] {\Large B};
+\node (initNLsim) [subprocess, below of = page3Start] {\verb|initNLsim|};
+\node (initVarCounters) [process, below of = initNLsim] {Initialize VTS variables \& simulation counters};
+\node (simTblockInit) [process, below of = initVarCounters] {\verb|simTblock = 1|};
+\node (getSolnMethod) [process, below of = simTblockInit] {Get time block solution method};
+
+% VTS  decision block
+\node (solnCheck) [decision, below of=getSolnMethod, yshift=-1.25cm, text width=3cm] {Solution Method?};
+
+\node (huensMethod) [subprocess, below left = 1 cm of solnCheck] {Use \verb|huensMethod|};
+\node (ODEsoln) [subprocess, below right = 1 cm of solnCheck] {Use ODE Solver};
+
+\node (incTblock) [process,  below  = 2.5cm of solnCheck] {Increment \verb|simTblock|};
+
+% time block number decision block
+\node (tBlockCheck) [decision, below of=incTblock, yshift=-1.25cm, text width=3.5cm] {\verb|simTblock > | \\ Number of time blocks?};
+
+\node (page3End) [pageconD, below of = tBlockCheck, yshift=-1.25cm ] {\Large C};
+
+%----------------------------------------------------------------------------
+% Lines
+\draw [arrow] (page3Start) -- (initNLsim);
+
+\draw [arrow] (initNLsim) -- (initVarCounters);
+\draw [arrow] (initVarCounters) -- (simTblockInit);
+\draw [arrow] (simTblockInit) -- (getSolnMethod);
+\draw [arrow] (getSolnMethod) -- (solnCheck);
+
+\draw [arrow] (huensMethod) |- (incTblock);
+\draw [arrow] (ODEsoln) |- (incTblock);
+\draw [arrow] (incTblock) -- (tBlockCheck);
+
+%----------------------------------------------------------------------------
+% Draw Decision Lines
+\draw [arrow] (solnCheck.west) -|  node[anchor=south] {Huen's} (huensMethod);
+\draw [arrow] (solnCheck.east) -|  node[anchor=south] {VTS} (ODEsoln);
+
+\draw [arrow] (tBlockCheck.south) --  node[anchor=west] {True} (page3End);
+\draw [arrow] (tBlockCheck.east)  -- +(4.25,0)  node[anchor=north] {False} |-  (getSolnMethod);
+%----------------------------------------------------------------------------
+% Notes
+
+
+\end{tikzpicture}
+\pagebreak
+%===============================================================================  Page 4
+
+\begin{tikzpicture}[node distance=1.75cm] 
+%----------------------------------------------------------------------------
+% Placement of flowcart nodes
+\node (page4Start) [pageconU ] {\Large C};
+
+% VTS  decision block
+\node (VTScheck2) [decision, below of=page4Start, yshift=-0.75cm, text width=2.75cm] {Last time block VTS?};
+\node (vtsFinalization) [subprocess, right = 3 cm of VTScheck2] {Perform last network, dynamic, and monitor solutions};
+
+
+\node (dataClean) [subprocess,  below of = VTScheck2, yshift = -0.75 cm] {Clean logged Data};
+
+\node (finalPLot) [subprocess,  below of = dataClean] {Execute final plotting routine};
+
+\node (end) [terminal,  below of = finalPLot] {\verb|s_simu| End};
+%----------------------------------------------------------------------------
+% Lines
+\draw [arrow] (page3Start) -- (initNLsim);
+
+\draw [arrow] (vtsFinalization) |- (dataClean);
+\draw [arrow] (dataClean) -- (finalPLot);
+\draw [arrow] (finalPLot) -- (end);
+
+%----------------------------------------------------------------------------
+% Draw Decision Lines
+\draw [arrow] (VTScheck2) --  node[anchor=east] {False} (dataClean);
+\draw [arrow] (VTScheck2.east) -- node[anchor=south] {True} (vtsFinalization);
+
+%----------------------------------------------------------------------------
+% Notes
+
+
+\end{tikzpicture}
+} % end single spacing

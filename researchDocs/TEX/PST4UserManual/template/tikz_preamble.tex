@@ -1,0 +1,42 @@
+%% Flow chart specific packages
+\usepackage{tikz}
+%\usepackage{amsmath}
+%\usepackage{comment}
+\usetikzlibrary{shapes.geometric, arrows, positioning}
+\usetikzlibrary{calc,shapes,shapes.multipart}
+\tikzstyle{arrow} = [thick,->,>=stealth]
+
+%% Flow chart custom shapes
+% Terminal
+\tikzstyle{terminal} = [rectangle, rounded corners, minimum width=5cm, minimum height=1cm,text centered, text width=4.5cm, draw=black]
+
+% Process
+\tikzstyle{process} = [rectangle, minimum width=5cm, minimum height=1cm, text centered,text width=4.5cm, draw=black]
+
+% Decision
+\tikzstyle{decision} = [diamond, aspect=1.8, minimum width=2cm, minimum height=1cm, text centered, text width=2cm, draw=black]
+
+% Subprocess
+\newcommand\ppbb{path picture bounding box}
+\tikzset{
+	subprocess/.style = {rectangle, draw=black, 
+		minimum width=5cm, minimum height=1cm, inner xsep=3mm,
+		text width =\pgfkeysvalueof{/pgf/minimum width}-2*\pgfkeysvalueof{/pgf/inner xsep},
+		align=flush center,
+		path picture={\draw 
+			([xshift =2mm] \ppbb.north west) -- ([xshift= 2mm] \ppbb.south west)
+			([xshift=-2mm] \ppbb.north east) -- ([xshift=-2mm] \ppbb.south east);
+		},% end of path picture
+	}
+}
+
+% bubble note
+\tikzstyle{note} = [fill, ellipse,fill=gray!20, node distance=4cm, minimum height=1em, text width=3cm, text centered]
+
+%Off page connector
+\tikzset{
+pageconD/.style={shape=signal,draw, signal to=south,minimum width=3em,text height=1.5em,align=center}
+}
+\tikzset{
+pageconU/.style={shape=signal,draw, signal to=north,minimum width=3em,text height=1.5em,align=center}
+}

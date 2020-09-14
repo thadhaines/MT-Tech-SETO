@@ -20,4 +20,5 @@ As software development is never actually `done', this chapter is meant to conta
 	\item Re-initializing a tripped generator in VTS will likely require indexing the \verb|g.vts.stVec|. This could be aided by adding indices to the \verb|g.vts.fsdn| cell.
 	\item miniWECC DC lines (modeled as power injection) are not included in AGC calculations as the power does not travel over any simulated lines.
 	\item If a machine has been tripped, the Y matrix is adjusted and reduced every time step. This repeated action could be made more efficient.
+	\item Odd IVM behavior may have to do with how PST doesn't really use the synchronous reference frame (\verb|g.sys.syn_ref|) or assumes \verb|g.sys.sys_freq| is always 1.
 \end{enumerate}

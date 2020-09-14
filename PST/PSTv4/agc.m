@@ -81,7 +81,7 @@ if flag == 2 && k ~=1  % skip first step
     %for each area
     for n = 1:g.agc.n_agc
         % calcualte RACE using most recently monitored values via j index
-        delta_w = g.area.area(g.agc.agc(n).area).aveF(j) - g.sys.sys_freq(j);
+        delta_w = g.area.area(g.agc.agc(n).area).aveF(j) - 1.0; %g.sys.sys_freq(j); % assumes 1.0 is scheduled frequency
         icError = g.area.area(g.agc.agc(n).area).icA(j) ...
             - g.area.area(g.agc.agc(n).area).icS(j) ...
             - g.area.area(g.agc.agc(n).area).icAdj(k); % account for AGC ic adj

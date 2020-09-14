@@ -503,7 +503,7 @@ try % used to catch non-convergence or other issues/bugs
         
     end% end simulation loop
 catch ME
-    % Custom catch message
+    % Custom catch message display
     disp('*!* Something has gone wrong and was caught!')
     fprintf('*!* Data Index: %d\t Simulation Time: %5.5f\n\n', ...
         g.vts.dataN, g.sys.t(g.vts.dataN))
