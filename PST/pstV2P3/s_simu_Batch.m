@@ -1348,11 +1348,11 @@ while (kt <= ktmax)
         end
         
         if n_lmod~=0
-            ml_sig(t, k);
+            ml_sig(t(k), k);
             lmod(0,k,flag); % removed bus - thad
         end
         if n_rlmod~=0
-            rml_sig(t,k);
+            rml_sig(t(k),k);
             rlmod(0,k,bus_sim,flag);
         end
         
@@ -1718,11 +1718,11 @@ while (kt <= ktmax)
         end
         
         if n_lmod~=0
-            ml_sig(t,j); 
+            ml_sig(t(j),j); 
             lmod(0,j,flag); % removed bus - thad
         end
         if n_rlmod~=0
-            rml_sig(t,j);
+            rml_sig(t(j),j);
             rlmod(0,j,bus_sim,flag);
         end
         

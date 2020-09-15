@@ -9,7 +9,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'PSTv4'; % 'pstSETO';
+pstVer = 'PSTv4'; % 'pstSETO';  'pstV2P3'; % 'pstV3p1'; % 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -28,11 +28,12 @@ load PSTpath.mat
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d_2machineGov.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
-% Handle load modulation file placement etc...
-copyfile([PSTpath 'ml_sig.m'],[PSTpath 'ml_sig_ORIG_TMP.m']); % save copy of original ml_sig file
-delete([PSTpath 'ml_sig.m']); % ensure ml_sig file is empty
-copyfile('ml_sig_loadStep.m',[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
-
+% Handle load modulation file placement 
+if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+    copyfile('ml_sig_loadStepG.m',[PSTpath 'ml_sig.m']);
+else
+    copyfile('ml_sig_loadStep.m',[PSTpath 'ml_sig.m']);
+end
 if strcmp('PSTv4', pstVer)
     s_simu
 else
@@ -40,12 +41,22 @@ else
 end
 
 %% Clean up modulation file alterations.
-delete([PSTpath 'ml_sig.m']); % remove simulation specific ml_sig file
-copyfile([PSTpath 'ml_sig_ORIG_TMP.m'],[PSTpath 'ml_sig.m']); % Replace original file
-delete([PSTpath 'ml_sig_ORIG_TMP.m']); % delete temporary file
+copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % copy simulation specific data file to batch run location
 
 %% Save output data
 save('twoMachineGov.mat'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
+%%
+figure
+if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+    plot(g.sys.t, g.mac.mac_spd)
+else
+    plot(t, mac_spd)
+end
+
+xlabel('Time [seconds]')
+ylabel('Machine Speed [PU]')
+title('Machine Speeds')
+grid on

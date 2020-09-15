@@ -1,8 +1,8 @@
 function mpm_sig( k)
-% Syntax: f = mpm_sig(t,k)
+% Syntax: mpm_sig(k)
 % 1:19 PM 15/08/97
 % defines modulation signal for generator mechanical power
-%global pm_sig n_pm
+
 global g
 
 if g.mac.n_pm~=0

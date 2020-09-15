@@ -9,8 +9,9 @@ if exist('g', 'var')
     % handle global variable
     if isfield(g,'sys')
         tA = g.sys.t;
-        if isfield(g.sys, 'bus_v')
-            varA = g.sys.bus_v;
+        
+        if isfield(g, 'bus')
+            varA = g.bus.bus_v;
         else
             varA = bus_v;
         end
@@ -33,49 +34,47 @@ if exist('g', 'var')
     % handle global variable
     if isfield(g,'sys')
         tB = g.sys.t;
-        if isfield(g.sys, 'bus_v')
-            varB = g.sys.bus_v;
+        if isfield(g, 'bus')
+            varB = g.bus.bus_v;
         else
             varB = bus_v;
         end
+        
+    else
         tB = t;
         varB = bus_v;
     end
-else
-    tB = t;
-    varB = bus_v;
-end
-
-% manipulate case names for labels
-nameA = strsplit(caseA,'.');
-nameA = nameA{1};
-
-nameB = strsplit(caseB,'.');
-nameB = nameB{1};
-
-figure
-subplot(2,1,1)
-plot(tA, abs(varA), 'linewidth', 1)
-hold on
-plot(tB, abs(varB), '--', 'linewidth',1.5)
-
-title({'Bus Voltage Comparison'; [nameA,' (solid) - ', nameB, ' (dashed)']})
-
-ylabel('Voltage [PU]')
-xlabel('Time [sec]')
-
-% plot absolute difference
-subplot(2,1,2)
-plot(tA, abs(varA-varB) )
-title({ 'Absolute Voltage Difference'; [nameA,' - ', nameB] } )
-ylabel('Voltage Difference [PU]')
-xlabel('Time [sec]')
-
-% pdf output code
-if printFigs
-    set(gcf,'color','w'); % to remove border of figure
-    export_fig([nameA,nameB,'BusV'],'-pdf'); % to print fig
-end
-
+    
+    % manipulate case names for labels
+    nameA = strsplit(caseA,'.');
+    nameA = nameA{1};
+    
+    nameB = strsplit(caseB,'.');
+    nameB = nameB{1};
+    
+    figure
+    subplot(2,1,1)
+    plot(tA, abs(varA), 'linewidth', 1)
+    hold on
+    plot(tB, abs(varB), '--', 'linewidth',1.5)
+    
+    title({'Bus Voltage Comparison'; [nameA,' (solid) - ', nameB, ' (dashed)']})
+    
+    ylabel('Voltage [PU]')
+    xlabel('Time [sec]')
+    
+    % plot absolute difference
+    subplot(2,1,2)
+    plot(tA, abs(varA-varB) )
+    title({ 'Absolute Voltage Difference'; [nameA,' - ', nameB] } )
+    ylabel('Voltage Difference [PU]')
+    xlabel('Time [sec]')
+    
+    % pdf output code
+    if printFigs
+        set(gcf,'color','w'); % to remove border of figure
+        export_fig([nameA,nameB,'BusV'],'-pdf'); % to print fig
+    end
+    
 end
 

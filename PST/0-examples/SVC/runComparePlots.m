@@ -6,6 +6,7 @@ dataName = 'SVCnonLIN';
 a = ['pstSETO', dataName];
 b = ['pstV2P3', dataName];
 c = ['pstV3p1', dataName];
+a = ['PSTv4', dataName];
 
 printFigs = 0;
 %% Bus Voltage
@@ -27,6 +28,3 @@ compareMac_Spd( c, b, printFigs )
 compareB_cv( a, c, printFigs )
 compareB_cv( a, b, printFigs )
 compareB_cv( c, b, printFigs )
-
-
-% difference in saturation of exc_dc12 between version 2 and 3

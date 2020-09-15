@@ -3,15 +3,14 @@
 % One steam gov gen, One hydro gov.
 % only 1 exciter
 % Hydro gov twice size as Steam.
+% Works in all PST versions
 
-% NOTE: live plotting disabled in d_ file to test speed up and better compare MATLAB to Octave performance
-% (Octave seems a bit faster when plotting is removed from simulation run)
 clear all; close all; clc
 
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstV3p1'; %pstSETO';
+pstVer =   'PSTv4'; % 'pstSETO';  'pstV2P3'; % 'pstV3p1'; %
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -21,7 +20,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
@@ -31,31 +30,18 @@ delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
 copyfile('d_OMIB_EXC.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
 % Handle exciter modulation file placement etc.
-copyfile([PSTpath 'mexc_sig.m'],[PSTpath 'mexc_sig_ORIG_TMP.m']); % save copy of original ml_sig file
-delete([PSTpath 'mexc_sig.m']); % ensure ml_sig file is empty
-copyfile('exciterModSig.m',[PSTpath 'mexc_sig.m']); % copy simulation specific data file to batch run location
-
-s_simu_Batch %Run PST non-linear sim
-
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-        zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-        if zeroTest
-            eval(sprintf('clear %s',vName{1}) ); % clear variable
-            clearedVars{end+1} = vName{1}; % add name to cell for reference
-        end
-    catch ME
-        disp(ME.message)
-        disp(vName)
-    end
-    
+if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+    copyfile('exciterModSigG.m',[PSTpath 'mexc_sig.m']);
+else
+    copyfile('exciterModSig.m',[PSTpath 'mexc_sig.m']);
 end
-clear varNames vName zeroTest
+
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch %Run PST non-linear sim
+end
+
 
 %% Save cleaned output data
 save('exciterTest.mat'); %Save simulation outputs
@@ -74,8 +60,14 @@ y = lsim(G,excSig,tL); % run input into state space system
 
 % collect bus voltage magnitudes and adjust by initial conditions
 linV = y(:,1:4)'; % rotate into col vectors
+load PSTpath
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + bus_sol(busN,2);
+    if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+        linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+else
+        linV(busN,:) = linV(busN,:) + bus(busN,2);
+end
+
 end
 
 % collect machine speeds and adjust by initial condition
@@ -85,13 +77,11 @@ clear all
 
 %% Clean up modulation file alterations...
 load PSTpath.mat
-delete([PSTpath 'mexc_sig.m']); % remove simulation specific ml_sig file
-copyfile([PSTpath 'mexc_sig_ORIG_TMP.m'],[PSTpath 'mexc_sig.m']); % Replace original file
-delete([PSTpath 'mexc_sig_ORIG_TMP.m']); % delete temporary file
+
+copyfile([PSTpath 'mexc_sig_ORIG.m'],[PSTpath 'mexc_sig.m']); % Replace original file
 
 %% temp file clean up
 delete('PSTpath.mat')
-delete('sim_fle.mat')
 
 %% plot comparisons
 load exciterTest.mat
@@ -100,7 +90,14 @@ load linResults.mat
 figure
 hold on
 plot(tL,excSig)
-plot(t,exc_sig,'--')
+    if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+        plot(g.sys.t,g.exc.exc_sig,'--')
+else
+        plot(t,exc_sig,'--')
+    end
+
+
+
 legend('Linear','Non-Linear','location','best')
 title('Exciter Modulation Signal')
 %% compare bus voltage magnitude
@@ -110,7 +107,14 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(t,abs(bus_v(busN,:)),'--')
+    
+    
+        if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+        plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
+else
+        plot(t,abs(bus_v(busN,:)),'--')
+        end
+    
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
@@ -123,7 +127,12 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
+            if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+    plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
+else
     plot(t,mac_spd(busN,:),'--')
+            end
+        
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end

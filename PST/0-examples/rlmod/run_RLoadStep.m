@@ -1,5 +1,5 @@
 %% Example of one machine infinite bus line trip using d_OneMacInfBusXX
-% smaller system used to more easily study inner workings of PST 
+% smaller system used to more easily study inner workings of PST
 % uses seto version
 % Experimentation with reative load modulation
 % Load step on bus 2 of +0.1 PU at t=1 where rlmod T_R = 0.1 second
@@ -11,7 +11,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO'; %  
+pstVer =  'PSTv4'; % 'pstSETO'; %'pstV2P3'; % 'pstV3p1'; % 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -21,40 +21,28 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
 clear all; close all; clc
 load PSTpath.mat
-delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
+
 copyfile('d_smallRLoadStep.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 
+
 % Handle load modulation file placement etc...
-delete([PSTpath 'rml_sig.m']); % ensure ml_sig file is empty
-copyfile('rml_sig_smallStep.m',[PSTpath 'rml_sig.m']); % copy simulation specific data file to batch run location
-
-s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-
-%% Simulation variable cleanup
-% Clear any varables that contain only zeros
-varNames = who()'; % all variable names in workspace
-clearedVars = {}; % cell to hold names of deleted 'all zero' variables
-
-for vName = varNames
-    try
-    zeroTest = eval(sprintf('all(%s(:)==0)', vName{1})); % check if all zeros
-    if zeroTest
-        eval(sprintf('clear %s',vName{1}) ); % clear variable
-        clearedVars{end+1} = vName{1}; % add name to cell for reference
-    end
-    catch ME
-        disp(ME.message)
-        disp(vName)
-    end
-
+if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+    copyfile('rml_sig_smallStepG.m',[PSTpath 'rml_sig.m']);
+else
+    copyfile('rml_sig_smallStep.m',[PSTpath 'rml_sig.m']);
 end
-clear varNames vName zeroTest
+
+if strcmp('PSTv4', pstVer)
+    s_simu
+else
+    s_simu_Batch
+end
 
 %% Save cleaned output data
 save('loadStepNONLIN.mat'); %Save simulation outputs
@@ -63,7 +51,7 @@ save('loadStepNONLIN.mat'); %Save simulation outputs
 clear all; close all;
 svm_mgen_Batch
 
-%%  
+%%
 
 %% MATLAB linear system creation using linearized PST results
 tL = (0:0.01:15); % time to match PST d file time
@@ -76,22 +64,25 @@ y = lsim(G,lmodSig,tL); % run input into state space system
 
 % collect bus voltage magnitudes and adjust by initial conditions
 linV = y(:,1:4)'; % rotate into col vectors
+load PSTpath
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+    
+    if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+        linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+    else
+        linV(busN,:) = linV(busN,:) + bus(busN,2);
+    end
+    
 end
 
 % collect machine speeds and adjust by initial condition
 linSpd = y(:,5:6)'+ 1.0; % rotate into col vectors
 save linResults.mat tL linV linSpd lmodSig
 
-%% Clean up load modulation file alterations...
-load PSTpath
-delete([PSTpath 'rml_sig.m']); % remove simulation specific ml_sig file
+%% Clean up load modulation file alterations.
 copyfile([PSTpath 'rml_sig_ORIG.m'],[PSTpath 'rml_sig.m']); % Replace original file
 clear all
 
-%% temp file clean up
-delete('PSTpath.mat')
 
 %% plot comparisons
 load loadStepNONLIN.mat
@@ -101,8 +92,15 @@ load linResults.mat
 figure
 hold on
 plot(tL,lmodSig)
-plot(g.sys.t,g.rlmod.rlmod_sig,'--')
-plot(g.sys.t,g.rlmod.rlmod_st,'--')
+
+if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+    plot(g.sys.t,g.rlmod.rlmod_sig,'--')
+    plot(g.sys.t,g.rlmod.rlmod_st,'--')
+else
+    plot(t,rlmod_sig,'--')
+    plot(t,rlmod_st,'--')
+end
+
 ylabel('Reactive Power [PU MVAR]')
 
 %plot(t,lmod_sig,'--')
@@ -115,7 +113,13 @@ legNames={};
 for busN=1:size(linV,1)
     plot(tL,linV(busN,:))
     legNames{end+1}= ['Bus ', int2str(busN), ' Linear'];
-    plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
+    
+    if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+        plot(g.sys.t,abs(g.bus.bus_v(busN,:)),'--')
+    else
+        plot(t,abs(bus_v(busN,:)),'--')
+    end
+    
     legNames{end+1}= ['Bus ', int2str(busN), ' non-Linear'];
     
 end
@@ -128,9 +132,18 @@ legNames={};
 for busN=1:size(linSpd,1)
     plot(tL,linSpd(busN,:))
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' Linear'];
-    plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
+    if strcmp('PSTv4', pstVer) || strcmp('pstSETO', pstVer)
+        plot(g.sys.t,g.mac.mac_spd(busN,:),'--')
+    else
+        plot(t,mac_spd(busN,:),'--')
+    end
+    
     legNames{end+1}= ['Gen Speed ', int2str(busN), ' non-Linear'];
     
 end
 legend(legNames,'location','best')
 title('Machine Speeds')
+
+%% temp file clean up
+delete('PSTpath.mat')
+

@@ -1,1 +1,2 @@
-Simple 2 machine 1 governor response to load step test case
+Simple 2 machine response to load step via lmod.  
+Has a governor and a no governor case.

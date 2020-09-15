@@ -8,8 +8,8 @@ load(caseA)
 if exist('g', 'var')
     % handle global variable
     tA = g.sys.t;
-    if isfield(g,'mac')
-        varA = g.sys.theta;
+    if isfield(g,'bus')
+        varA = g.bus.theta;
     else
         varA = theta;
     end
@@ -26,8 +26,8 @@ load(caseB)
 if exist('g', 'var')
     % handle global variable
     tB = g.sys.t;
-    if isfield(g,'mac')
-        varB = g.sys.theta;
+    if isfield(g,'bus')
+        varB = g.bus.theta;
     else
         varB = theta;
     end

@@ -65,6 +65,8 @@
 % the above clears were removed to allow for running w/o running DataFile.m 5/20/20
 % assumes required arrays created before this script runs and DataFile is delted
 
+disp('***    PST v3.1    ***')
+disp('***')
 warning('*** s_simu_Batch Start')
 
 close % close graphics windows

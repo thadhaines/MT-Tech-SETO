@@ -6,6 +6,7 @@ dataName = 'TCSCnonLIN';
 a = ['pstSETO', dataName];
 b = ['pstV2P3', dataName];
 c = ['pstV3p1', dataName];
+a = ['PSTv4', dataName];
 
 printFigs = 0;
 %% Bus Voltage
