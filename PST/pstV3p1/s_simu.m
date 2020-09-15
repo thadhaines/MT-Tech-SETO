@@ -60,6 +60,8 @@ jay = sqrt(-1);
 pst_var % set up global variables 
 svc_dc=[];tcsc_dc=[];dcr_dc=[];dci_dc=[];
 % load input data from m.file
+disp('***    PST v3.1    ***')
+disp('***')
 disp('non-linear simulation')
 % input data file
 [dfile,pathname]=uigetfile('d*.m','Select Data File');

@@ -1,11 +1,12 @@
-%% File to New England 39 bus system
+%% File to run New England 39 bus system
 clear all; close all; clc
 caseName = 'datane_hiskens';
 
 %% Add pst path to MATLAB
 % generate relative path generically
-folderDepth = 3; % depth of current directory from main PST directory
-pstVer =   'pstSETO';%  'pstV3p1'; % 'pstV2P3'; %  
+folderDepth = 2;    % depth of current directory from main PST directory
+pstVer =  'pstV2P3'; %  'PSTv4';  %   'pstSETO';%   'pstV3p1'; % 
+
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -15,7 +16,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-addpath([PSTpath, 'test', filesep]) % to handle new functionized code
+
 save PSTpath.mat PSTpath pstVer caseName
 clear folderDepth pathParts pNdx PSTpath
 
@@ -23,31 +24,36 @@ clear folderDepth pathParts pNdx PSTpath
 clear all; close all; clc
 load PSTpath.mat
 
-delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
-copyfile([caseName, '.m'],[PSTpath 'DataFile.m']); % copy system data file to batch run location
+copyfile([caseName, '.m'],[PSTpath 'DataFile.m']);          % copy system data file to batch run location
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']);             % specify pss model
+copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']);  % specify machine model
 
-copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % specify pss model
-copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % specify machine model
-copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
-livePlotFlag = 1;
+if strcmp(pstVer, 'PSTv4') || strcmp(pstVer, 'pstSETO')
+    copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']); % specify plot operation
+    livePlotFlag = 1;
+end
 
-s_simu_Batch %Run PST with original format
-% s_simu_BatchTestF %Run PST functionalized test
-% s_simu_BatchVTS %Run PST with variable timestep
+% Run PST
+if strcmp(pstVer, 'PSTv4')
+    s_simu
+else
+    s_simu_Batch
+end
 
-copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % reset pss
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % reset mac_sub
-copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
 
+if strcmp(pstVer, 'PSTv4') || strcmp(pstVer, 'pstSETO')
+    copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % reset live plot
+end
 
 %% Save cleaned output data
-save(['FTS',pstVer, caseName, '.mat']); %Save simulation outputs
+save(['FTS_',pstVer,'_', caseName, '.mat']); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
 
 % %% plots to match dynamic response in hiskens pdf
-% % assumes pstSETO
+% % assumes pstSETO or PSTv4 (global g)
 % % Generator Angle - ref gen 1 as per pdf
 % figure
 % for gen=1:g.mac.n_mac

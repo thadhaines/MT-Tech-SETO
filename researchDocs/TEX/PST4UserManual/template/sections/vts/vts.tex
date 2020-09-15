@@ -185,8 +185,7 @@ status = 0; % required for normal operation
 
 if isempty(flag) % normal step completion
     % restore network to initial solution
-    handleNetworkSln(g.vts.dataN ,2) % may cause issues with DC.
-    
+    handleNetworkSln(g.vts.dataN ,2) % may cause issues with DC.    
     monitorSolution(g.vts.dataN); % Perform Line Monitoring and Area Calculations 
     
     %% Live plot call

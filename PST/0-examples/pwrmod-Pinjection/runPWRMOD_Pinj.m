@@ -1,11 +1,11 @@
-% Example of how to use pwrmod_dyn.m to modulate real power into a bus.
+% Example of how to use pwrmod_dyn.m to inject real power into a bus.
 % Data file = d2m_pwrmod1.m
 clear all; close all; clc
 
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'pstSETO';% 'pstV2p3';%
+pstVer = 'PSTv4'; % 'pstSETO';% 'pstV2p3';%
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -15,34 +15,31 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-save PSTpath.mat PSTpath
+save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts pNdx PSTpath
 
 %% Run nonlinear simulation and store results
 clear all; close all; clc
 load PSTpath.mat
-delete([PSTpath 'mac_sub.m']); 
-copyfile([PSTpath 'mac_sub_NEW.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
 
-delete([PSTpath 'pss.m']); 
-copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use specific pss model
+copyfile([PSTpath 'mac_sub_NEW2.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
+copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']);             % ensure default pss model
+copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']);           % System data file
+copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); % PWRMOD dynamic file
 
+% Run PST
+if strcmp(pstVer, 'PSTv4')
+    s_simu
+else
+    s_simu_Batch
+end
 
-delete([PSTpath 'DataFile.m']); 
-copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
-
-delete([PSTpath 'pwrmod_dyn.m']); 
-copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
-
-s_simu_Batch %Run PST
 save('Example1_NonlinearSim','g'); %Save t and bus_v results
 
 %% Build linear model, simulate, and store results
 %Build linear model
-clear all; %clc; close all
+clear all;
 load PSTpath
-%delete([PSTpath 'DataFile.m']); copyfile('d2m_pwrmod1.m',[PSTpath 'DataFile.m']); %System data file
-%delete([PSTpath 'pwrmod_dyn.m']); copyfile('pwrmod_dyn_Example1.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 svm_mgen_Batch %Conduct linearization
 
 save('Example1_Linear','a_mat','b_pwrmod_p','c_v','c_ang');
@@ -63,7 +60,6 @@ subplot(414)
 plot(g.sys.t,g.pwr.pwrmod_q_st(2,:),'k')
 ylabel('Bus 3 Q (pu)')
 xlabel('Time (sec.)')
-%set(gcf,'Position',[360 202 560 720]);
 
 %% Simulate linear model
 Gv = ss(a_mat,b_pwrmod_p,c_v,zeros(6,2));
@@ -114,10 +110,9 @@ plot(g.sys.t,f,'k',tL,fL,'r')
 legend('non-linear','linear','location','best')
 ylabel(['bus ' num2str(nb) ' (mHz)'])
 
-%set(gcf,'Position',[360 102 560 720]);
-
 %% clean up file manipulations
 load PSTpath.mat
 copyfile([PSTpath 'mac_sub_ORIG.m'],[PSTpath 'mac_sub.m']); % subtransient machine model
 copyfile([PSTpath 'pwrmod_dyn_ORIG.m'],[PSTpath 'pwrmod_dyn.m']); %Modulation file
+copyfile([PSTpath 'pss3.m'],[PSTpath 'pss.m']); % use specific pss model
 delete PSTpath.mat

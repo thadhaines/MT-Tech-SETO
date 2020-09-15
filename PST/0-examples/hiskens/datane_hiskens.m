@@ -9,8 +9,6 @@
 % Date: July 10, 2020
 
 gov_flag = true;    % (true=turbine governor models, false=no governors)
-pssV3 = true;       % (true=Accout for pss v3 washout correction, false=assume v2 pss model)
-VTSflag = false;    % (true=use defined solver_con)
 
 %-------------------------------------------------------------------------------------------------------------%
 % power flow data
@@ -273,10 +271,6 @@ pss_con = [
    1   9   20.0  10.0  1.00  0.50  2.00  0.10  0.200  -0.200;
    1  10   10.0  10.0  1.00  0.05  3.00  0.50  0.200  -0.200];
 
-if pssV3 
-    pss_con(:,3) = pss_con(:,3)./pss_con(:,4);% Alter gain for washout correction
-end
-
 %-------------------------------------------------------------------------------------------------------------%
 % simulation control data
 
@@ -317,39 +311,11 @@ sw_con = [
 
 % Hiskens event
 ne_tstep = 0.02; % 20 ms, same as Hiskens report
-%ne_tstep = 0.001; % for allocating vts arrays....
 sw_con = [
   0.00   0    0    0        0       0    ne_tstep;  % sets intitial time step
   0.5   16   17    0.001    0.001 	7    ne_tstep;  % apply three-phase fault at bus 16 with fault impedance
   0.64   0    0    0        0       0    ne_tstep;  % clear fault at bus 16
   0.7    0    0    0        0       0    ne_tstep;  % clear remote end (may do nothing)
-  3.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
-%  7.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
-%  9.0    0    0    0        0       0    ne_tstep;  % aditional time block for method testing
  20.00   0    0    0        0       0    ne_tstep]; % end simulation
-
-%% solver_con format
-% A cell with a solver method in each row corresponding to the specified
-% 'time blocks' defined in sw_con
-%
-% Valid solver names:
-% huens - Fixed time step default to PST
-% ode113 - works well during transients, consistent # of slns, time step stays relatively small
-% ode15s - large number of slns during init, time step increases to reasonable size
-% ode23 - realtively consistent # of required slns, timstep doesn't get very large
-% ode23s - many iterations per step - not efficient...
-% ode23t - occasionally hundereds of iterations, sometimes not... decent
-% ode23tb - similar to 23t, sometimes more large sln counts
-if VTSflag
-solver_con ={ ...
-    'ode23'; % pre fault - fault
-    'ode23'; % fault - post fault 1
-    'ode23'; % post fault 1 - post fault 2
-    'ode23'; % post fault 2 - 3
-    'ode23t'; % 3 - 7
-    %'ode23t'; % 7 - 9
-  %  'ode23t'; % 9 - end
-    };
-end
 
 % eof

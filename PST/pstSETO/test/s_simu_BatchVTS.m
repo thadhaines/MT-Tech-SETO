@@ -86,6 +86,9 @@
 %
 
 format compact;
+
+disp('***    PST SETO    ***')
+disp('***')
 disp('*** s_simu_BatchVTS Start')
 disp('*** Declare Global Variables')
 %% Remaining 'loose' globals

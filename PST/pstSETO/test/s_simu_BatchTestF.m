@@ -86,7 +86,10 @@
 % the above clears were removed to allow for running w/o running DataFile.m 5/20/20
 % assumes required arrays created before this script runs and DataFile is delted/not found
 format compact;
-disp('*** s_simu_Batch Start')
+
+disp('***    PST SETO    ***')
+disp('***')
+disp('*** s_simu_BatchTestF Start')
 
 close % close graphics windows
 tic % set timer

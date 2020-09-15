@@ -344,6 +344,7 @@ if g.tcsc.n_tcsc~=0
     g.tcsc.dB_tcsc = zeros(g.tcsc.n_tcsc,k);
     g.tcsc.tcsc_sig = zeros(g.tcsc.n_tcsc,k);
     g.tcsc.tcsc_dsig=zeros(g.tcsc.n_tcsc,k);
+    g.tcsc.td_sig = zeros(g.tcsc.n_tcsc,k);
     
     if g.tcsc.n_tcscud~=0
         g.tcsc.td_sig = zeros(g.tcsc.n_tcscud,k);%input to tcsc damping control

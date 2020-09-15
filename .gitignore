@@ -241,3 +241,10 @@
 *.ist
 /researchDocs/TEX/PST4UserManual/template/PST4UserManual.glo
 /researchDocs/TEX/PST4UserManual/template/PST4UserManual.glsdefs
+/PST/0-examples/hiskens/FTS_PSTv4_datane_hiskens.mat
+/PST/0-examples/hiskens/FTS_pstV3p1_datane_hiskens.mat
+/PST/0-examples/hiskens/FTS_pstV2P3_datane_hiskens.mat
+/PST/0-examples/hiskens/FTS_pstSETO_datane_hiskens.mat
+/PST/0-examples/hiskens/sim_fle.mat
+/PST/0-examples/hiskens/VTStest.mat
+/PST/0-examples/TCSC/PSTv4TCSCnonLIN.mat

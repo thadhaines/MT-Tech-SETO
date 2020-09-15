@@ -1,14 +1,34 @@
 % file to contain information on examples
 %==============================================================================
 \chapter{Examples Explained - WIP}
-As github as many examples, this is a chapter to explain what the purpose of them is and detail non-linear vs linear operation of examples that do such things.
+Examples are located in the \verb|0-examples| folder and are designed to be run in batch mode.
+This means that each example copies any required system, model, or modulation file to the main PST directory before running.
+Typically, each example folder contains a \verb|.m| file that starts with \verb|run| that can be used to run the example.
+As example cases are located on a github repository, relative file paths are used so that examples can be run without much difficulty from various different machines.
+While most examples can be run in multiple versions of PST, some functionality can only be found in specific versions.
 
+\noindent The general structure of created examples tend to reflect the following:
+\begin{enumerate}
+\itemsep 0em
+\item Clear all variables, close all figures, and clear the command window
+\item Define which version of PST to use
+\item Create a relative path to the root directory of chosen PST version
+\item Copy any system, model, or modulation file to the PST root directory
+\item Run \verb|s_simu|
+\item Save output data
+\item Restore any model, or modulation file to original state
+\item Create data plots
+\end{enumerate}
+
+%=================================================================
+\input{examples/hiskens}
+
+\pagebreak
 \begin{itemize}
 \item Experimental VTS
 \item AGC
 \item AGC interchange modulation
 \item Extended term with VTS
-\item Hiskens NE model via Ryan
 \item MiniWECC via Dan
 \item Experimental Un-tripping
 \item Modulation via \verb|_mod| files

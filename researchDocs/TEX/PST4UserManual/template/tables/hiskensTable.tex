@@ -1,0 +1,27 @@
+% table data for hiskens fault comparison 
+
+
+\begin{table}[H]
+%\resizebox{\linewidth}{!}{ % Use to resize large tables
+\singlespacing
+	\begin{tabular}{@{} L{1.75cm} 
+	R{2cm} R{2cm}  R{2cm} @{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+						
+										
+										
+		PST Version	&	Simulation Time [seconds]	&	Resulting Workspace Variables	&	Saved Data Size [KB]	\\ \midrule	
+		2.3	&	16.56	&	206	&	7,549	\\	
+		3.1	&	16.70	&	210	&	7,548	\\	
+		SETO	&	8.42	&	24	&	3,965	\\	
+		4	&	7.96	&	6	&	3,974	\\	\bottomrule
+
+													
+	\end{tabular}
+
+	\caption{PST Version Comparisons of Hiskens Example.}
+	\label{tab: hiskens}
+%	}%end resize box
+\end{table}

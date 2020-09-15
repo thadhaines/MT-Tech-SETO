@@ -87,146 +87,8 @@
 % clear
 % clear global
 tic % start timer
-%close %graphics windows
-% set up global variables
 
-% %pst_var
-% % copied from pst_var for global highlighs 06/11/20 -thad
-%     %% system variables - 13
-%     global  basmva basrad syn_ref mach_ref sys_freq
-%     global  bus_v bus_ang psi_re psi_im cur_re cur_im bus_int
-%     global  lmon_con % lmon_con not used in non-linear sim...
-%     global theta % moved from g.mac as it is a system variable
-%
-% % synchronous machine variables
-% global  mac_con mac_pot mac_int ibus_con
-% global  mac_ang mac_spd eqprime edprime psikd psikq
-% global  curd curq curdg curqg fldcur
-% global  psidpp psiqpp vex eterm theta ed eq
-% global  pmech pelect qelect
-% global  dmac_ang dmac_spd deqprime dedprime dpsikd dpsikq
-% global  n_mac n_em n_tra n_sub n_ib
-% global  mac_em_idx mac_tra_idx mac_sub_idx mac_ib_idx not_ib_idx
-% global  mac_ib_em mac_ib_tra mac_ib_sub n_ib_em n_ib_tra n_ib_sub
-% global pm_sig n_pm
-
-% % excitation system variables
-% global  exc_con exc_pot n_exc
-% global  Efd V_R V_A V_As R_f V_FB V_TR V_B
-% global  dEfd dV_R dV_As dR_f dV_TR
-% global  exc_sig
-% global smp_idx n_smp dc_idx n_dc  dc2_idx n_dc2 st3_idx n_st3;
-% global smppi_idx n_smppi smppi_TR smppi_TR_idx smppi_no_TR_idx ;
-% global smp_TA smp_TA_idx smp_noTA_idx smp_TB smp_TB_idx smp_noTB_idx;
-% global smp_TR smp_TR_idx smp_no_TR_idx ;
-% global dc_TA dc_TA_idx dc_noTR_idx dc_TB dc_TB_idx dc_noTB_idx;
-% global dc_TE  dc_TE_idx dc_noTE_idx;
-% global dc_TF dc_TF_idx dc_TR dc_TR_idx
-% global st3_TA st3_TA_idx st3_noTA_idx st3_TB st3_TB_idx st3_noTB_idx;
-% global st3_TR st3_TR_idx st3_noTR_idx;
-
-% load modulation variables % converted to g 06/12/20 - thad
-%global  lmod_con n_lmod lmod_idx
-%global  lmod_pot lmod_st dlmod_st
-%global  lmod_sig
-
-% reactive load modulation variables
-%global  rlmod_con n_rlmod rlmod_idx
-%global  rlmod_pot rlmod_st drlmod_st
-%global  rlmod_sig
-% turbine-governor variables % converted to g 06/12/20 - thad
-%global  tg_con tg_pot
-%global  tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
-%global  tg_idx  n_tg tg_sig tgh_idx n_tgh
-
-% % power injection variables
-% global  pwrmod_con n_pwrmod pwrmod_idx
-% global  pwrmod_p_st dpwrmod_p_st
-% global  pwrmod_q_st dpwrmod_q_st
-% global  pwrmod_p_sig pwrmod_q_sig
-% global  pwrmod_data
-
-% % non-conforming load variables
-% global  load_con load_pot nload
-
-% % simulation control
-% global sw_con  scr_con
-
-% % pss variables
-% global  pss_con pss_pot pss_mb_idx pss_exc_idx
-% global  pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
-% global  pss_idx n_pss pss_sp_idx pss_p_idx;
-% global  pss_T  pss_T2 pss_T4 pss_T4_idx  pss_noT4_idx;
-%
-%     %% svc variables - 13
-%     global  svc_con n_svc svc_idx svc_pot svcll_idx
-%     global  svc_sig
-%     % svc user defined damping controls
-%     global n_dcud dcud_idx svc_dsig
-%     global svc_dc % user damping controls?
-%     global dxsvc_dc xsvc_dc
-%     %states
-%     global B_cv B_con
-%     %dstates
-%     global dB_cv dB_con
-%
-%     %% tcsc variables - 10
-%     global  tcsc_con n_tcsc tcsvf_idx tcsct_idx
-%     global  B_tcsc dB_tcsc
-%     global  tcsc_sig tcsc_dsig
-%     global  n_tcscud dtcscud_idx  %user defined damping controls
-% 	% previous non-globals added as they seem to relavant
-% 	global xtcsc_dc dxtcsc_dc td_sig tcscf_idx
-%     global tcsc_dc
-
-%     %% induction genertaor variables - 19
-%     global  tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
-%     global  igen_int igbus n_ig
-%     %states
-%     global  vdpig vqpig slig
-%     %dstates
-%     global dvdpig dvqpig dslig
-%     % added globals
-%     global s_igen
-
-%     %% induction motor variables - 21
-%     global  tload t_init p_mot q_mot vdmot vqmot  idmot iqmot ind_con ind_pot
-%     global  motbus ind_int mld_con n_mot t_mot
-%     % states
-%     global  vdp vqp slip
-%     % dstates
-%     global dvdp dvqp dslip
-%     % added globals
-%     global s_mot
-%     global sat_idx dbc_idx db_idx % has to do with version 2 of mac_ind
-%     % changed all pmot to p_mot (mac_ind1 only)
-% global  lmod_sig lmod_data
-%
-%     %% HVDC link variables
-%     global  dcsp_con  dcl_con  dcc_con
-%     global  r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
-%     global  inv_ac_line  rec_ac_line ac_line dcli_idx
-%     global  tap tapr tapi tmax tmin tstep tmaxr tmaxi tminr tmini tstepr tstepi
-%     global  Vdc  i_dc P_dc i_dcinj dc_pot alpha gamma
-%     global  VHT dc_sig  cur_ord dcr_dsig dci_dsig
-%     global  ric_idx  rpc_idx Vdc_ref dcc_pot
-%     global  no_cap_idx  cap_idx  no_ind_idx  l_no_cap  l_cap
-%     global  ndcr_ud ndci_ud dcrud_idx dciud_idx dcrd_sig dcid_sig
-%
-%     % States
-%     %line
-%     global i_dcr i_dci  v_dcc
-%     global di_dcr  di_dci  dv_dcc
-%     global dc_dsig % added 07/13/20 -thad
-%     %rectifier
-%     global v_conr dv_conr
-%     %inverter
-%     global v_coni dv_coni
-%
-%     % added to global dc
-%     global xdcr_dc dxdcr_dc xdci_dc dxdci_dc angdcr angdci t_dc
-%     global dcr_dc dci_dc % damping control
-%     global  ldc_idx
+%% set up global variables
 
 % DeltaP/omega filter variables
 global  dpw_con dpw_out dpw_pot dpw_pss_idx dpw_mb_idx dpw_idx n_dpw dpw_Td_idx dpw_Tz_idx
@@ -236,17 +98,13 @@ global  dsdpw1 dsdpw2 dsdpw3 dsdpw4 dsdpw5 dsdpw6
 % pss design
 global  netg_con  stab_con
 
-
-% ivmmod
+% ivmmod - not added to linear analysis yet - thad 09/15/20
 global n_ivm mac_ivm_idx ivmmod_data ivmmod_d_sig ivmmod_e_sig
 
 % begning of global strucutred g
 global g
 
-
-%
-%
-% load input data from m.file
+%% load input data from m.file
 disp('linearized model development by perturbation of the non-linear model')
 %set user defined SVC and TCSC models to empty
 g.svc.svc_dc = [];
@@ -272,8 +130,6 @@ handleNewGlobals
 if isempty(g.mac.mac_con)
     error(' the selected file is not a valid data file')
 end
-
-
 
 %basdat = inputdlg({'Base MVA:','Base Frequency Hz:'},'Input Base Data',1,{'100','60'});
 basdat = {'100';'60'};

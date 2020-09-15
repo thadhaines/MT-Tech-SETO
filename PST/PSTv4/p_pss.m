@@ -1,7 +1,7 @@
 %perturb the pss variables
 k_pss = find(mac_pss ==k);
 if ~isempty(k_pss)
-    disp(' disturb pss')
+    disp('disturb pss')
     j=j+1;
     pert = 0.0001*abs(g.pss.pss1(k_pss,1));
     pert = max(pert,0.0001);
