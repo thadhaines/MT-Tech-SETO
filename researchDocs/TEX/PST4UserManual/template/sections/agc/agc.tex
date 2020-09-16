@@ -28,8 +28,8 @@ Settings from one AGC model can be easily copied to another using \verb|agc(2) =
 		%linenos,
 		breaklines
 		]{MATLAB}
-%{  AGC definition
-Each agc(x) has following fields:
+%{  
+AGC definition. Each agc(x) has following fields:
     area        - Area Number 
     startTime   - Time of first AGC signal to send
     actionTime  - Interval of time between all following AGC signals
@@ -71,7 +71,7 @@ agc(1).ctrlGen_con = [ ...
 \subsection{Weighted Average Frequency (calcAveF)} 
 An inertia weighted average frequency is used as the `actual' frequency $\omega$ in ACE calculations.
 The \verb|calcAveF| function calculates an average weighted frequency for the total system and for each area (if areas are defined).
-System values are stored in \verb|g.sys.aveF| and area values are stored in \verb|g.area.area(x).aveF| where \verb|x| is the area number.
+System values are stored in \verb|g.sys.aveF| and area values are stored in \verb|g.area.area(x).aveF| where \verb|x| is the internal area number.
 The calculation involves a sum of system inertias that changes with generator trips.
 
 

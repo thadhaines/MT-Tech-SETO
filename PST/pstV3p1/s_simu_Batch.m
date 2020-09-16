@@ -2017,6 +2017,6 @@ clear smp_no_TR_idx st3_TA st3_TA_idx st3_TB st3_TB_idx st3_TR st3_TR_idx st3_id
 clear st3_noTB_idx st3_noTR_idx st_state stab_con sv svc_con svc_dc
 clear svc_idx svc_pot svcll_idx sw_con sw_count syn_ref t_init t_switch tap
 clear tapi tapr tcsc_con tcsc_dc tcsct_idx  tcsvf_idx tg_con tg_idx tg_pot
-clear tg_sig tgh_idx timestep tload tmax tmaxi tmaxr tmin tmini tminr
+clear tgh_idx timestep tload tmax tmaxi tmaxr tmin tmini tminr
 clear tot_states tstep tstepi tstepr tswitch vdig vdmot vnc vqig vqmot ydcrmn ydcrmx
 clear z z1 z_dpw z_pss z_tg zdc zdcl ze zig zm

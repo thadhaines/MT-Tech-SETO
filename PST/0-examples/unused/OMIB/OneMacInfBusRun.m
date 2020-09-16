@@ -1,13 +1,12 @@
-% Example of one machine infinite bus line trip using d_OneMacInfBusXX
+% Example of one machine infinite bus line trip using d_OneMacInfBus
 % smaller system used to more easily study inner workings of PST 
-%% 02 
-% trip line, no fault... Works in MATLAB and Octave
+% modified to work with various versions of pst...
 
 clear all; close all; clc
 
 %% Add pst path to MATLAB
 % generate relative path generically
-folderDepth = 2; % depth of current directory from main PST directory
+folderDepth = 3; % depth of current directory from main PST directory
 pstVer = 'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
@@ -25,7 +24,7 @@ clear folderDepth pathParts pNdx PSTpath
 clear all; close all; clc
 load PSTpath.mat
 delete([PSTpath 'DataFile.m']); % ensure batch datafile is cleared
-copyfile('d_OneMacInfBus02.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
+copyfile('d_OneMacInfBus.m',[PSTpath 'DataFile.m']); % copy system data file to batch run location
 s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
 
 %% Simulation variable cleanup
@@ -49,7 +48,7 @@ end
 clear varNames vName zeroTest
 
 %% Save cleaned output data
-save('OneMacInfBus02.mat'); %Save simulation outputs
+save('OneMacInfBus01'); %Save simulation outputs
 
 %% temp file clean up
 delete('PSTpath.mat')
@@ -57,7 +56,6 @@ delete('sim_fle.mat')
 
 %% Plotting init and function call
 clear all % ensure only saved data is plotted
-load('OneMacInfBus02.mat')
 
 %pstMegaPlot
 disp('fin')

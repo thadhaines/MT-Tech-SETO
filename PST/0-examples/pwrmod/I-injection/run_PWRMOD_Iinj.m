@@ -5,7 +5,7 @@ clear all; close all; clc
 
 %% Add pst path to MATLAB
 % generate relative path generically
-folderDepth = 2; % depth of current directory from main PST directory
+folderDepth = 3; % depth of current directory from main PST directory
 pstVer = 'pstSETO';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);

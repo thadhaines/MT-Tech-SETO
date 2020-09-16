@@ -24,37 +24,56 @@ While most examples can be run in multiple versions of PST, some functionality c
 \input{examples/hiskens}
 
 
+%=====================================================================
+\section{Modulation Examples - WIP} \label{sec: modExamples}
+PST provides numerous ways to input a defined modulation signal into a variety of models.
+The following list of example folder names work in all versions of PST and typically create linear/non-linear comparison plots.
+While the examples themselves do not reflect any particular scenario, the provided code may be useful in creating particular scenarios.
 
+\begin{itemize}
+\item \verb|lmod| - Uses the \verb|ml_sig| file to modulate real load power.
+\item \verb|mexc| - Uses the \verb|mexc_sig| file to modulate the exciter reference signal.
+\item \verb|mtg_sig| - Uses the \verb|mtg_sig| file to modulate the governor $P_{ref}$ reference signal.
+\item \verb|pm_sig| -Uses the \verb|mpm_sig| file to modulate a machines mechanical power.
+\item \verb|rlmod| - Uses the \verb|rml_sig| file to modulate a load's reactive power.
+\item \verb|SVC| - Uses the \verb|msvc_sig| file to modulate an SVC's output value.
+\item \verb|TCSC| - Uses the \verb|mtcsc_sig| file to modulate an TCSC's output value.
+\end{itemize}
 
-
+\noindent It should be noted that modulation files for PST 2 and 3 assume input to function is ($t, k$), i.e. full time vector and data index, while PST 4 only requires the data index $k$.
 
 %=====================================================================
 % all current examples
 \pagebreak
-All examples from 0-examples folder are listed below - last bit of User manual work will be to `thin the herd', insert previous results, confirm working, and provide minor details about content
-
-Modulation files for PST version 2 and 3 assume input to function is (t, k), i.e. time vector and data index.
+All un-categorized examples from 0-examples folder are listed below - last bit of User manual work will be to `thin the herd', insert previous results, confirm working, and provide minor details about content
 
 
 \section{AGC - WIP}
 PST 4 only
 
-run\_AGC- 2 area kundur with optional integration methods = load step - 120 second recovery.
+\subsection{run\_AGC - WIP}
+- 2 area kundur with optional integration methods = load step - 120 second recovery.
 
- run\_AGC\_mod - same system as above - uses Interchange modulation signal as perturbance
+\subsection{run\_AGC\_mod - WIP}
+  - same system as above - uses Interchange modulation signal as perturbance
 
 
 \section{DC - WIP}
-All versions - linear analysis doesn't seem to work, non-linear simulation seems to work
+All versions - 
+
+non-linear simulation seems to work
+
+linear analysis doesn't seem to work correctly - user error?
+
 
 \section{exciterBatchTests - WIP}
 PST 4 only - used to compare all 4 exciter models linear/non-linear response to load step
 
+Was useful in ensuring exciter models were cast to globals correctly
+
 \section{extendedTerm - WIP}
 Results written up in 200806-ExtendedVersionComp
 
-\section{hiskens - WIP}
-Basic tripping - covered in above section
 
 \section{inductive - WIP}
 meant to verify functionality of inductive generators and loads (motors)
@@ -68,15 +87,10 @@ requires some minor reworking -
 
 shows how angle change `moves' entire system.
 
-\section{lmod - WIP}
-Requires clean up - one of first example cases -- update to follow similar strucutre as newer examples.
-
-\section{mexc - WIP}
-Exciter signal modulation with linear/non-linear comparison
-
-Works in all versions of PST
+VTS method used - clearly shows how variable time steps adjust to capture dynamics
 
 \section{miniWECC - WIP}
+
 	miniWECC - examples pretty sloppy - trips of line / colstrip
 
 	miniWECCAGC - 
@@ -84,38 +98,19 @@ Works in all versions of PST
 	miniWECC-genTrip -
 
 
-\section{mtg\_sig - WIP}
 \section{OMIB - WIP}
-\section{pm\_sig - WIP}
-Modulation of mechanical power to a generator - linear/non-lienar comparison
-
-Works in all versions
+One machine infinite bus used to test load modulation - may not be useful as lmod does the same thing
 
 \section{pss  - WIP}
-\section{pwrmod-Iinjection - WIP}
+seemed to be used to test pss models
 
-\section{pwrmod-Pinjection  - WIP}
+No pss modulation functionality seems to exist.
 
-\section{rlmod - WIP}
-Reactive load modulation
 
-linear/non-linear comparison plots
+\section{pwrmod -WIP} \label{sec: pwrmodExamples}
+\subsection{P-injection - WIP}
+\subsection{I-injection - WIP}
 
-Works in all Versions
-
-\section{SVC - WIP}
-Modulation of Static Var Compensator
-
-linear/non-linear comparison plots
-
-Works in all versions
-
-\section{TCSC - WIP}
-Modulation of Thyristor Controlled Series Reactor...
-
-linear/non-linear comparison plots
-
-Works in all versions
 
 \section{tg - WIP}
 Simple load step - contains to run files: one with governors, one without
@@ -126,7 +121,7 @@ Works in all versions
 
 
 \section{untrip - WIP}
-Documentation created in \verb|MT-Tech-SETO\researchDocs\TEX\one-offs\200901-refinedUntripResults2|
+Documentation created in\\ \verb|MT-Tech-SETO\researchDocs\TEX\one-offs\200901-refinedUntripResults2|
 
 Variables to note in associated examples (where \verb|x| is the internal model number):
 \begin{itemize}

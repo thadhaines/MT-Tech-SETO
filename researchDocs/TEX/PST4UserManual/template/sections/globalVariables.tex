@@ -5,14 +5,14 @@ Previous versions of PST rely on the use of over 340 global variables.
 It was decided to create a global structure that contains all exiting globals to enable easier development and use of PST.
 %While this may or may not have been a good idea - it happened.
 After global restructuring, initial simulation results showed a speed up of over 2 times.
-In other words, it could be assumed previous versions of PST spent half of their computation time handling globals.
+%In other words, it could be assumed previous versions of PST spent half of their computation time handling globals.
 
 
 Inside the global variable \verb|g| are fields that corresponds to models, or groups, of other globals.
 Essentially, globals defined in the \verb|pst_var| script were collected into related fields.
 For example, the \verb|g.mac.mac_spd| global contains all machine speeds while the \verb|g.bus.bus_v| contains all bus voltages, etc.
 The following subsections describe the globals contained in each field of the global \verb|g|. 
-Consult \cite{PST3manual} for a description of what most global variables represent.
+Consult \cite{PST3manual} for a more detailed description of what most global variables represent.
 
 
 %---------------------------------------------------------------------------------------------------
@@ -194,7 +194,7 @@ To allow for functionalized running, various index values were placed into the g
 
 \begin{minted}{MATLAB}
 global k_inc h ks h_sol
-golbal k_incdc h_dc
+global k_incdc h_dc
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
@@ -219,8 +219,8 @@ For example:\\ \verb|g.lmon.line(n).sFrom(k)| would return the complex power flo
 A description of the logged variables contained in every \verb|g.lmon.line| structure are listed below.
 
 \begin{minted}{MATLAB}
-iFrom  % Comlex current injection at from bus
-iTo    % Comlex current injection at to bus
+iFrom  % Complex current injection at from bus
+iTo    % Complex current injection at to bus
 sFrom  % Complex power injection at from bus
 sTo    % Complex power injection at to bus
 \end{minted}

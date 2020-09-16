@@ -1,11 +1,11 @@
-\section{Power Injection Model (pwrmod) - WIP}  
+\section{Power Injection Model (pwrmod)}  
 %This is the power/current injection model Dan created for version 2.3.
 %It's meant to model the `grid-following' type of inverters.
 %It is included in both the non-linear and linear simulation modes of PST 4.
 %There is pre-existing documentation and an example that should be condensed into this document.
 
-The \verb|pwrmod| model was created by Dan Trudnowski and is designed to inject real and reactive power into a bus.
-This model works with transient simulation via \verb|s_simu| and linear analysis via \verb|svm_mgen|.
+The \verb|pwrmod| model was created by Dr. Dan Trudnowski and is designed to inject real and reactive power into a bus.
+This model works with transient simulation via \verb|s_simu| and linear analysis via \verb|svm_mgen_Batch|.
 \verb|pwrmod| can be used to model many devices such as wind turbines and solar plants, as well as any controls associated with such a device.
 
 Figure \ref{fig: pwrmod BD} is a block diagram describing how power (or current) is injected into a given bus $i$.
@@ -15,14 +15,15 @@ The model must be constructed in state-space form.
 \begin{figure}[H]
 	\centering
 	\footnotesize
-	\includegraphics[width=.85\linewidth]{sections/pwrmod/BlockDiagram1}
+	\includegraphics[width=.75\linewidth]{sections/pwrmod/BlockDiagram1}
 	\caption{Block diagram of power modulation approach.}
 	\label{fig: pwrmod BD}
 \end{figure}%\vspace{-1 em}
 
 The insertion of a \verb|pwrmod| model requires the target bus to be type 2 (generator type).
 Additionally, the bus must be defined as constant power (for power injection) or constant current (for current injection) in the \verb|load_con|.
-An example of defining bus 2 as a power injection model and bus 3 as current injection model using \verb|pwrmod| is shown below.
+An example of defining bus 2 for a power injection model and bus 3 for a current injection model using \verb|pwrmod| is shown below.
+Other examples of \verb|pwrmod| are described in Section \ref{sec: pwrmodExamples}.
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -58,5 +59,3 @@ load_con = [...
   2   1     1     0       0;    % Modulation bus
   3   0     0     1       1;];  % Modulation bus
 \end{minted}
-
-More \verb|pwrmod| examples can be found in XXX...
