@@ -5,7 +5,7 @@ function mtcsc_sig(t,k)
 global tcsc_sig n_tcsc
 % f=0; %dummy variable
 if n_tcsc ~=0
-  if t >= 0.5 && t<1.5
+  if t(k) >= 0.5 && t(k)<1.5
     tcsc_sig(1,k) = 0.01;
   else
      tcsc_sig(:,k) = 0;

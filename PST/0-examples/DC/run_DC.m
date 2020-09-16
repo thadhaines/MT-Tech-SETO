@@ -1,16 +1,12 @@
 % DC line load case
-% % Tested as working in all Versions
-% % output the same in 3.1 and SETO, 2.3 is slightly different
-
-%                       SETO        3.1         2.3
-% pre global run time:  12.6195     18.8766s    19.7401s
-% post global structure 8.853
+% Tested as 'working' in all Versions
+% Linear simulation doesn't match non-linear output - probably user error
 
 clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer = 'PSTv4'; %   'pstSETO'; % 'pstV2p3';%   'pstV3P1';% 
+pstVer =  'PSTv4'; %   'pstSETO'; % 'pstV2p3';%  'pstV3P1';% 
 
 % automatically handle global g usage
 if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
@@ -45,13 +41,10 @@ else
     copyfile( 'ml_sig_smallStep.m',[PSTpath 'ml_sig.m']); % for v 2.3 and 3.1
 end
 
-if strcmp(pstVer, 'PSTv4')
+if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
     s_simu
 else
-    
-    % s_simu_Batch %Run PST <- this is the main file to look at for simulation workings
-    s_simu_BatchTestF %Run PST <- this is the main file to look at for simulation workings
-    
+    s_simu_Batch %Run PST
 end
 % % reset modulation file
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']);
@@ -103,9 +96,16 @@ linV = y(:,1:size(c_v,1))'; % rotate into col vectors
 linAng = y(:,size(c_v,1)+1:end)'; % collect and rotate angle data
 
 % adjust data changes by initial conditions
+load PSTpath
 for busN = 1:size(linV,1)
-    linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
-    linAng(busN,:) = linAng(busN,:) + deg2rad(g.bus.bus(busN,3));
+    if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
+        linV(busN,:) = linV(busN,:) + g.bus.bus(busN,2);
+        linAng(busN,:) = linAng(busN,:) + deg2rad(g.bus.bus(busN,3));
+    else
+        linV(busN,:) = linV(busN,:) + bus(busN,2);
+        linAng(busN,:) = linAng(busN,:) + deg2rad(bus(busN,3));
+    end
+    
 end
 
 load PSTpath.mat

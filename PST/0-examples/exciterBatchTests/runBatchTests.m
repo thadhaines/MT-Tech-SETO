@@ -140,4 +140,4 @@ for ut=1:length(compTest)
     feval('clear',linDataN, nlDataN)
 end
 %% Clean up Temp .mat files
-delete compTest.mat PSTpath.mat sim_fle.mat
+delete compTest.mat PSTpath.mat 

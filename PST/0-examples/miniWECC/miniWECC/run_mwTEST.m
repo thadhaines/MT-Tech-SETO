@@ -7,7 +7,7 @@
 
 clear all; close all; clc
 caseName = 'PSS';
-scenario = 'L';% L line, F colstrip faul, C cascade?
+scenario = 'C';% L line, F colstrip fault, C cascade?
 
 %% Add pst path to MATLAB
 % generate relative path generically

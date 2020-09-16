@@ -15,7 +15,7 @@ end
 PSTpath = [char(PSTpath), filesep, pstVer, filesep];
 
 addpath(PSTpath)
-addpath([PSTpath, 'test', filesep]) % to handle new functionized code
+
 save PSTpath.mat PSTpath pstVer
 clear folderDepth pathParts p Ndx PSTpath
 

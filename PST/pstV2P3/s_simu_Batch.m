@@ -1688,7 +1688,7 @@ while (kt <= ktmax)
         tg_hydro(0,j,bus_sim,flag);
         
         if n_svc~=0
-            msvc_sig(t(j),j);
+            msvc_sig(t,j);
             if n_dcud~=0
                 tot_states=0;
                 for jj = 1:n_dcud
@@ -1703,7 +1703,7 @@ while (kt <= ktmax)
             bus_sim = svc(0,j,bus_sim,flag,v_svc);
         end
         if n_tcsc~=0
-            mtcsc_sig(t(j),j);
+            mtcsc_sig(t,j);
             if n_tcscud~=0
                 tot_states=0;
                 for jj = 1:n_tcscud

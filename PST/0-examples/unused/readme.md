@@ -1,0 +1,1 @@
+Examples collected here seemed interesting at one point, but were not pursued much further.

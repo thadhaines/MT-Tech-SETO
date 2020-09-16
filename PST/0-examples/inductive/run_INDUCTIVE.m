@@ -8,7 +8,7 @@ case2run = 2; % 1= fault, 2 = load step
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =  'PSTv4'; %  'pstSETO'; %  'pstV2p3';%  'pstV3P1';%
+pstVer =   'PSTv4'; % 'pstSETO'; %  'pstV2p3';%  'pstV3P1';% 
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
