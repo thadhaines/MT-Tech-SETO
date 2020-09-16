@@ -1073,7 +1073,7 @@ while (kt <= ktmax)
         mac_tra(0,k,bus_sim,flag);
         mac_em(0,k,bus_sim,flag);
         mac_ivm(0,k,bus_sim,flag);
-        mdc_sig(t(k),k);
+        mdc_sig(t,k);
         dc_cont(0,k,10*(k-1)+1,bus_sim,flag);
         
         %% Calculate current injections and bus voltages and angles
@@ -1195,12 +1195,12 @@ while (kt <= ktmax)
         %% network interface for control models
         dpwf(0,k,bus_sim,flag);
         pss(0,k,bus_sim,flag);
-        mexc_sig(t(k),k);
+        mexc_sig(t,k);
         smpexc(0,k,bus_sim,flag);
         smppi(0,k,bus_sim,flag);
         exc_st3(0,k,bus_sim,flag);
         exc_dc12(0,k,bus_sim,flag);
-        mtg_sig(t(k),k);
+        mtg_sig(t,k);
         tg(0,k,bus_sim,flag);
         tg_hydro(0,k,bus_sim,flag);
         
@@ -1294,7 +1294,7 @@ while (kt <= ktmax)
         %% step 3b: compute dynamics and integrate
         flag = 2;
         sys_freq(k) = 1.0; % why?... 5/21/20
-        mpm_sig(t(k),k);
+        mpm_sig(t,k);
         mac_ind(0,k,bus_sim,flag);
         mac_igen(0,k,bus_sim,flag);
         mac_sub(0,k,bus_sim,flag);
@@ -1302,12 +1302,12 @@ while (kt <= ktmax)
         mac_em(0,k,bus_sim,flag);
         dpwf(0,k,bus_sim,flag);
         pss(0,k,bus_sim,flag);
-        mexc_sig(t(k),k);
+        mexc_sig(t,k);
         smpexc(0,k,bus_sim,flag);
         smppi(0,k,bus_sim,flag);
         exc_st3(0,k,bus_sim,flag);
         exc_dc12(0,k,bus_sim,flag);
-        mtg_sig(t(k),k);
+        mtg_sig(t,k);
         tg(0,k,bus_sim,flag);
         tg_hydro(0,k,bus_sim,flag);
         
@@ -1326,7 +1326,7 @@ while (kt <= ktmax)
                         svc_sud(jj,k,flag,svc_dc{jj,1},d_sig(jj,k),ysvcmx,ysvcmn,xsvc_dc(st_state:tot_states,k));
                 end
             end
-            msvc_sig(t(k),k);
+            msvc_sig(t,k);
             svc(0,k,bus_sim,flag,v_svc);
         end
         if n_tcsc~=0
@@ -1343,16 +1343,16 @@ while (kt <= ktmax)
                         tcsc_sud(jj,k,flag,tcsc_dc{jj,1},td_sig(jj,k),ytcscmx,ytcscmn,xtcsc_dc(st_state:tot_states,k));
                 end
             end
-            mtcsc_sig(t(k),k);
+            mtcsc_sig(t,k);
             tcsc(0,k,bus_sim,flag);
         end
         
         if n_lmod~=0
-            ml_sig(t(k), k);
+            ml_sig(t, k);
             lmod(0,k,flag); % removed bus - thad
         end
         if n_rlmod~=0
-            rml_sig(t(k),k);
+            rml_sig(t,k);
             rlmod(0,k,bus_sim,flag);
         end
         
@@ -1434,7 +1434,7 @@ while (kt <= ktmax)
         end
         
         %% integrate dc at ten times rate (DC Stuff? 5/14/20)
-        mdc_sig(t(k),k);
+        mdc_sig(t,k);
         if n_conv~=0
             hdc_sol = h_sol/10;
             for kk = 1:10
@@ -1514,7 +1514,7 @@ while (kt <= ktmax)
         % mach_ref(j) = mac_ang(syn_ref,j);
         mach_ref(j) = 0;
         % perform network interface calculations again with predicted states
-        mpm_sig(t(j),j);
+        mpm_sig(t,j);
         mac_ind(0,j,bus_sim,flag);
         mac_igen(0,j,bus_sim,flag);
         mac_sub(0,j,bus_sim,flag);
@@ -1522,7 +1522,7 @@ while (kt <= ktmax)
         mac_em(0,j,bus_sim,flag);
         mac_ivm(0,j,bus_sim,flag);
         % assume Vdc remains unchanged for first pass through dc controls interface
-        mdc_sig(t(j),j);
+        mdc_sig(t,j);
         dc_cont(0,j,10*(j-1)+1,bus_sim,flag);
         
         % Calculate current injections and bus voltages and angles
@@ -1718,11 +1718,11 @@ while (kt <= ktmax)
         end
         
         if n_lmod~=0
-            ml_sig(t(j),j); 
+            ml_sig(t,j); 
             lmod(0,j,flag); % removed bus - thad
         end
         if n_rlmod~=0
-            rml_sig(t(j),j);
+            rml_sig(t,j);
             rlmod(0,j,bus_sim,flag);
         end
         

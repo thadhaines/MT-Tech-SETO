@@ -6,10 +6,10 @@ function mpm_sig(t, k)
 global n_pm pm_sig
 
 if n_pm~=0
-    if t > 1.0
+    if t(k) > 1.0
         pm_sig(1,k) = -0.025;
     end
-    if t > 5
+    if t(k) > 5
         pm_sig(1,k) = 0;
     end
 end

@@ -13,10 +13,10 @@ global rlmod_sig
 global n_rlmod
 
 if n_rlmod~=0
-    if t > 1
+    if t(k) > 1
         rlmod_sig(1,k) = 0.01;
     end
-    if t > 8
+    if t(k) > 8
         rlmod_sig(1,k) = 0.0;
     end
 end
