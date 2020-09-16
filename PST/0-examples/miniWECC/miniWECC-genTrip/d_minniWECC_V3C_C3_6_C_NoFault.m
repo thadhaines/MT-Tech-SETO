@@ -887,9 +887,9 @@ sw_con = [...
 % ode23t - occasionally hundereds of iterations, sometimes not... decent
 % ode23tb - similar to 23t, sometimes more large sln counts
 
-solver_con ={ ...
-    'ode23'; % pre fault - fault
-    'ode23'; % fault - post fault 1
-    'ode23'; % post fault 1 - post fault 2
- %  'ode23t'; % post fault 2 - 3
-    };
+% solver_con ={ ...
+%     'ode23'; % pre fault - fault
+%     'ode23'; % fault - post fault 1
+%     'ode23'; % post fault 1 - post fault 2
+%  %  'ode23t'; % post fault 2 - 3
+%     };
