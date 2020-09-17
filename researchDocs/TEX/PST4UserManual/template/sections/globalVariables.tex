@@ -22,7 +22,15 @@ The \verb|g.agc| field contains the number of AGC models as \verb|g.agc.n_agc| a
 For example, \verb|g.agc.agc(n).race(k)| would return the RACE value at index \verb|k| of the \verb|n|th AGC model.
 A description of the variables contained in every AGC structure are listed below.
 
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 a               % Ratio between integral and proportional gain
 ace2dist        % Running value of ACE dispatch signal
 aceSig          % Ungained ACE dispatch signal
@@ -54,7 +62,15 @@ tgNdx           % Index of controlled machines governors
 Similar to the \verb|g.agc| field, area globals did not exist prior to \mbox{PST 4} and are handled similarly to AGC globals.
 For example, \verb|g.area.area(n).icA(k)| will return the actual interchange value at data index \verb|k| from the \verb|n|th area.
 A description of notable variables in the the area field are listed below.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 areaBusNdx     % Area bus array index
 areaBuses      % Area bus external numbers
 aveF           % Running area average frequency [pu]
@@ -84,7 +100,15 @@ The bus field also contains the running values for bus voltages and angles in th
 %---------------------------------------------------------------------------------------------------
 \subsection{dc}
 This field contains collected global variables for DC models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 %% HVDC link variables 
 global dcsp_con  dcl_con  dcc_con
 global r_idx  i_idx n_dcl  n_conv  ac_bus rec_ac_bus  inv_ac_bus
@@ -121,7 +145,15 @@ More specifically, the \verb|tap| variable is re-written numerous times during a
 %---------------------------------------------------------------------------------------------------
 \subsection{exc}
 This field contains collected global variables for exciter models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 %% Exciter variables
 global exc_con exc_pot n_exc
 global Efd V_R V_A V_As R_f V_FB V_TR V_B
@@ -141,7 +173,15 @@ global st3_TR st3_TR_idx st3_noTR_idx
 %---------------------------------------------------------------------------------------------------
 \subsection{igen}
 This field contains collected global variables for induction generator models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 %% induction genertaor variables 
 global tmig  pig qig vdig vqig  idig iqig igen_con igen_pot
 global igen_int igbus n_ig
@@ -157,7 +197,15 @@ global s_igen
 %---------------------------------------------------------------------------------------------------
 \subsection{ind}
 This field contains collected global variables for induction motor models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 %% induction motor variables
 global  tload t_init p_mot q_mot vdmot vqmot idmot iqmot ind_con ind_pot
 global  motbus ind_int mld_con n_mot t_mot
@@ -176,7 +224,15 @@ Two models of this are included as \verb|mac_ind1| (a basic version from 2.3), a
 %---------------------------------------------------------------------------------------------------
 \subsection{ivm} 
 This field contains collected global variables for the internal voltage model signals, calculations, and operations that use the \verb|ivmmod| model.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global divmmod_d_sigst
 global divmmod_e_sigst
 global ivmmod_d_sig
@@ -192,9 +248,16 @@ global n_ivm
 \subsection{k}  
 To allow for functionalized running, various index values were placed into the global structure in the \verb|g.k| field
 
-\begin{minted}{MATLAB}
-global k_inc h ks h_sol
-global k_incdc h_dc
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
+global k_inc h ks h_sol k_incdc h_dc
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
@@ -204,7 +267,15 @@ The \verb|g.line| field contains the user supplied \verb|line| array and all alt
 %---------------------------------------------------------------------------------------------------
 \subsection{lmod}
 This field contains collected global variables for real load modulation models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global lmod_con % defined by user
 global n_lmod lmod_idx % initialized and created in lm_indx
 global lmod_sig lmod_st dlmod_st % initialized in s_simu
@@ -218,7 +289,15 @@ Line monitoring during simulation is new to PST 4 and like AGC or area fields, i
 For example:\\ \verb|g.lmon.line(n).sFrom(k)| would return the complex power flow from the \verb|n|th monitored line at index \verb|k|.
 A description of the logged variables contained in every \verb|g.lmon.line| structure are listed below.
 
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 iFrom  % Complex current injection at from bus
 iTo    % Complex current injection at to bus
 sFrom  % Complex power injection at from bus
@@ -228,7 +307,15 @@ sTo    % Complex power injection at to bus
 %---------------------------------------------------------------------------------------------------
 \subsection{mac}
 This field contains collected global variables for machine models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global mac_con mac_pot mac_int ibus_con
 global mac_ang mac_spd eqprime edprime psikd psikq
 global curd curq curdg curqg fldcur
@@ -248,27 +335,52 @@ global mac_trip_states
 %---------------------------------------------------------------------------------------------------
 \subsection{ncl}
 This field contains collected global variables for non-conforming load models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global  load_con load_pot nload
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
 \subsection{pss}
 This field contains collected global variables for power system stabilizer models, calculations, and operations.
-\begin{minted}{MATLAB}
+The \verb|pss_noT4_idx| was renamed, but doesn't seem to be used.
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global pss_con pss_pot pss_mb_idx pss_exc_idx
 global pss1 pss2 pss3 dpss1 dpss2 dpss3 pss_out
 global pss_idx n_pss pss_sp_idx pss_p_idx;
 global pss_T  pss_T2 pss_T4 pss_T4_idx  
 global pss_noT4_idx % misspelled in pss_indx as pss_noT4
 \end{minted}
-Despite the renaming of the \verb|pss_noT4_idx|, it doesn't seem to actually be used anywhere.
+
 
 
 %---------------------------------------------------------------------------------------------------
 \subsection{pwr}
 This field contains collected global variables for power or current injection models, calculations, and operations that use the \verb|pwrmod| model.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global pwrmod_con n_pwrmod pwrmod_idx
 global pwrmod_p_st dpwrmod_p_st
 global pwrmod_q_st dpwrmod_q_st
@@ -280,7 +392,15 @@ global pwrmod_data
 %---------------------------------------------------------------------------------------------------
 \subsection{rlmod}
 This field contains collected global variables for reactive load modulation models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global rlmod_con n_rlmod rlmod_idx
 global rlmod_pot rlmod_st drlmod_st
 global rlmod_sig
@@ -289,7 +409,15 @@ global rlmod_sig
 %---------------------------------------------------------------------------------------------------
 \subsection{svc}
 This field contains collected global variables for static VAR control system models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global svc_con n_svc svc_idx svc_pot svcll_idx
 global svc_sig
 % svc user defined damping controls
@@ -309,7 +437,15 @@ This damping functionality was added by Graham Rogers circa 1998/1999.
 %---------------------------------------------------------------------------------------------------
 \subsection{sys}
 This field contains variables that deal with simulation operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global basmva basrad syn_ref mach_ref sys_freq
 % globals added
 global sw_con livePlotFlag Fbase t t_OLD
@@ -320,7 +456,15 @@ global ElapsedNonLinearTime clearedVars
 %---------------------------------------------------------------------------------------------------
 \subsection{tcsc}
 This field contains collected global variables for thyristor controlled series reactor models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 global tcsc_con n_tcsc tcsvf_idx tcsct_idx
 global B_tcsc dB_tcsc
 global tcsc_sig tcsc_dsig
@@ -334,9 +478,18 @@ Similar to the SVC model, there seems to be some added functionality for control
 This damping functionality was added by Graham Rogers circa 1998/1999.
 
 %---------------------------------------------------------------------------------------------------
+\pagebreak
 \subsection{tg}
 This field contains collected global variables for turbine governor models, calculations, and operations.
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 %% turbine-governor variables
 global tg_con tg_pot
 global tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
@@ -350,7 +503,15 @@ It should be noted that the hydro governor model \verb|tgh| has not been modifie
 Globals associated with variable time step simulation runs were placed in the \verb|g.vts| field.
 A description of the included variables is shown below.
 
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 dataN       % Used as a the data index for logging values
 dxVec       % Vector used to collect current dataN derivatives
 fsdn        % A cell of fields, states, derivatives, and number of states
@@ -370,6 +531,7 @@ tot_iter    % Total number of solutions
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
+\pagebreak
 \subsection{y}  
 The \verb|g.y| field contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with fault conditions.
 These variables are later selected in the \verb|networkSolution| to simulate programmed conditions.
@@ -381,7 +543,15 @@ template for subparagraphs
 
 %---------------------------------------------------------------------------------------------------
 \subsection{xxx} %  
-\begin{minted}{MATLAB}
+\begin{minted}[
+		frame=lines,
+		framesep=2mm,
+		baselinestretch=1.2,
+		bgcolor=gray!13,
+		fontsize=\footnotesize,
+		%linenos,
+		breaklines
+		]{MATLAB}
 
 \end{minted}
 
