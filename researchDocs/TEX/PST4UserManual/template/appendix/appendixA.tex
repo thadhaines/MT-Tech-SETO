@@ -1,4 +1,4 @@
-\chapter{Appendix A: Formatting Examples}
+\chapter{TEMPORARY: Formatting Examples}
 %%% Ugly version requires Appendix A:, seems redundant in pretty version
 
 %% Blow up counters for toc, lo(tfe) style examples. Probably not useful in real thesis
@@ -18,7 +18,7 @@ V = IR
 \section{Numberings in Tables}
 Table~\ref{tab:exp2} is full of nonsense data and is numbered artificially large.
 
-\begin{table}[!ht]
+\begin{table}[!ht] % use H to turn into a float...
 	\centering
 	\begin{tabular}{@{} lllll @{}} 	
 		\toprule % @ signs to remove extra L R space
@@ -84,3 +84,87 @@ def sumPe(mirror):
 \end{figure}\vspace{-1em} % will remove 1 white space after image - typically good
 
 Other packages exist for code insertion, but they may or may not be as pretty. Remember, as with anything, this is totally optional and voluntary...
+
+\pagebreak
+\section{Labeled Code Listing}
+Sometime you might want to label code as listing - like a person may in \ref{lst: rando code}.
+\begin{lstlisting}[caption={Some MATLAB code},label={lst: rando code},language=MATLAB]
+for n=1:length(ts)
+    
+    % Handle basic generation curve
+    if ts(n) >= 30 && ts(n) < 90
+        % up ramp
+        % use first 1/4 cycle of a sin to ramp up
+        xs(n) = maxGen*sin( (ts(n)-30) * 2*pi/240); 
+    elseif ts(n) >= 150 && ts(n) < 210
+        % down ramp
+        % use second 1/4 cycle of a sin to ramp down
+        xs(n) = maxGen*sin( (ts(n)-150) * 2*pi/240 + pi/2);   
+    elseif ts(n) >= 90 && ts(n) < 150
+        % held peak
+        xs(n) = maxGen;
+    else
+        % no generation
+        xs(n) = 0;
+    end
+    
+    % Handle Cloud cover generation reductions
+    if ts(n) >= 45 && ts(n) < 55
+        xs(n) = maxGen*.2;
+    elseif ts(n) >= 120 && ts(n) < 140
+        xs(n) = xs(n)*0.7;
+    elseif ts(n) >= 180 && ts(n) < 190
+        xs(n) = xs(n)*0.85;
+    end
+    
+end
+\end{lstlisting}
+
+
+\pagebreak
+Of course, the listing format may not be very `great', so, a listing environment can precede a minted block to get the best of both yeah?
+I mean, if Listing \ref{lst: code 2} is an example then like, yeah.
+
+\begin{lstlisting}[caption={Empty listing before a minted block},label={lst: code 2},language=MATLAB]
+\end{lstlisting}\vspace{-2 em}
+\begin{minted}[
+frame=lines,
+framesep=2mm,
+baselinestretch=1.2,
+bgcolor=gray!13,
+fontsize=\footnotesize,
+%linenos
+]{Matlab}
+for n=1:length(ts)
+    
+    % Handle basic generation curve
+    if ts(n) >= 30 && ts(n) < 90
+        % up ramp
+        % use first 1/4 cycle of a sin to ramp up
+        xs(n) = maxGen*sin( (ts(n)-30) * 2*pi/240); 
+    elseif ts(n) >= 150 && ts(n) < 210
+        % down ramp
+        % use second 1/4 cycle of a sin to ramp down
+        xs(n) = maxGen*sin( (ts(n)-150) * 2*pi/240 + pi/2);   
+    elseif ts(n) >= 90 && ts(n) < 150
+        % held peak
+        xs(n) = maxGen;
+    else
+        % no generation
+        xs(n) = 0;
+    end
+    
+    % Handle Cloud cover generation reductions
+    if ts(n) >= 45 && ts(n) < 55
+        xs(n) = maxGen*.2;
+    elseif ts(n) >= 120 && ts(n) < 140
+        xs(n) = xs(n)*0.7;
+    elseif ts(n) >= 180 && ts(n) < 190
+        xs(n) = xs(n)*0.85;
+    end
+    
+end
+\end{minted}
+
+Right? I mean ideally this should look really good.
+

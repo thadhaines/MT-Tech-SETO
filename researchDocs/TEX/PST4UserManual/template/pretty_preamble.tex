@@ -123,6 +123,14 @@ dashed=false, % show repeated authors (i.e. don't blank out names)
 \usepackage{minted}
 \usepackage{xcolor}
 
+% for labeled listings 09/18/20
+\usepackage{listings}
+\renewcommand\lstlistlistingname{List of Listings} % rename page header
+\lstset{basicstyle=\singlespacing,} % basic format of listing...
+\makeatletter
+\renewcommand*{\l@lstlisting}{\@dottedtocline{1}{0em}{2.3em}} % removing indent from main list of listings
+\makeatother
+
 % For header and footer control:
 \usepackage{fancyhdr}
 \pagestyle{fancy}
