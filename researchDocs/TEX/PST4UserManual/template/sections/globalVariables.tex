@@ -4,24 +4,26 @@
 Previous versions of PST rely on the use of over 340 global variables.
 It was decided to create a global structure that contains all exiting globals to enable easier development and use of PST.
 %While this may or may not have been a good idea - it happened.
-After global restructuring, initial simulation results showed a speed up of over 2 times.
+After global restructuring, initial simulation results showed a speed up of over 2 times (See Section \ref{ex: hiskens}).
 %In other words, it could be assumed previous versions of PST spent half of their computation time handling globals.
 
 
 Inside the global variable \verb|g| are fields that corresponds to models, or groups, of other globals.
-Essentially, globals defined in the \verb|pst_var| script were collected into related fields.
+Essentially, globals defined in the pre-existing \verb|pst_var| script were collected into related fields.
 For example, the \verb|g.mac.mac_spd| global contains all machine speeds while the \verb|g.bus.bus_v| contains all bus voltages, etc.
 The following subsections describe the globals contained in each field of the global \verb|g|. 
-Consult \cite{PST3manual} for a more detailed description of what most global variables represent.
+Consult \cite{PST3manual} for a more detailed description of what pre-existing global variables represent.
 
 
 %---------------------------------------------------------------------------------------------------
 \subsection{agc}  
-As the AGC is a model new to PST 4, the global field is structured slightly differently from other previously existing global fields.
+As the AGC is a model new to PST 4, the global field is structured slightly differently from other global fields.
 The \verb|g.agc| field contains the number of AGC models as \verb|g.agc.n_agc| and all other AGC model information is stored in the \verb|a.agc.agc| structure.
 For example, \verb|g.agc.agc(n).race(k)| would return the RACE value at index \verb|k| of the \verb|n|th AGC model.
-A description of the variables contained in every AGC structure are listed below.
+A description of the variables contained in every AGC structure are shown in Listing \ref{lst: agc g}.
 
+\begin{lstlisting}[caption={AGC Global Field Variables},label={lst: agc g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,

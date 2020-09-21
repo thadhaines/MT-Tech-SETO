@@ -1,5 +1,6 @@
-\section{Octave Compatibility}
+\section{Octave Compatibility (octaveComp)}
 To more fully support free and open-source software, PST 4 has been developed to be compatible with Octave.
+The \verb|octaveComp| function handles a number of known required commands for Octave compatibility.
 Standard PST actions have been found to be compatible with Octave, however some plotting features or other code inside the supplied examples may not be.
 It should be noted that more experimental features, like VTS, have not been tested fully in Octave.
 It is known that not all ODE options that exist in MATLAB are included in Octave.
@@ -13,3 +14,4 @@ Current Octave compatible solution methods are:
 \end{itemize}
 When using Octave, calls to save and load data must include explicit file endings (i.e. \verb|save someData.mat|).
 Additionally, simulations executed in MATLAB generally run faster than those run in Octave.
+

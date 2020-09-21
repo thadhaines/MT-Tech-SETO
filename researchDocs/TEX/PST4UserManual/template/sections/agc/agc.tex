@@ -16,9 +16,11 @@ This restoration is accomplished by calculating an area control error (ACE) that
 %==================================================
 \pagebreak
 \subsection{AGC Definition Example}
-The following AGC settings are not realistic, but useful in demonstrating the required user definitions and functionality of the AGC model.
+The AGC settings in Listing \ref{lst: agc def} are not realistic, but useful in demonstrating the required user definitions and functionality of the AGC model.
 Settings from one AGC model can be easily copied to another using \verb|agc(2) = agc(1)| and then changing the area number and \verb|ctrlGen_con| array as desired.
 
+\begin{lstlisting}[caption={AGC Definition Example},label={lst: agc def}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -59,16 +61,15 @@ agc(1).Kbv = 0;         % no variable bias
 agc(1).condAce = 0;     % conditional ACE ignored
 agc(1).Kp = 0.04;       % PI proportional gain
 agc(1).a = 0.001;       % Ratio between integral and proportional gain
-agc(1).ctrlGen_con = [ ...
-    1, 0.75, 15;
-    2, 0.25, 2;  ];
+agc(1).ctrlGen_con = [ 1, 0.75, 15;
+                       2, 0.25, 2;  ];
 \end{minted}
 
 
 
 %==========================================================================
 
-\subsection{Weighted Average Frequency (calcAveF)} 
+\subsection{Weighted Average Frequency Calculation (calcAveF)} 
 An inertia weighted average frequency is used as the `actual' frequency $\omega$ in ACE calculations.
 The \verb|calcAveF| function calculates an average weighted frequency for the total system and for each area (if areas are defined).
 System values are stored in \verb|g.sys.aveF| and area values are stored in \verb|g.area.area(x).aveF| where \verb|x| is the internal area number.

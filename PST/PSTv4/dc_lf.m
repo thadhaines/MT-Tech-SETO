@@ -26,7 +26,8 @@ function [rec_par,inv_par,line_par,tap,Sr,Si] = dc_lf(bus,line,dci_dc,dcr_dc)
 %   (c) Copyright Joe Chow 1996 - All rights reserved
 %   07/15/20    10:55   Thad Haines     Revised format of globals and internal function documentation
 
-% NOTE: output tap NOT global. ? -thad 07/14/20
+% NOTE: output tap NOT global - but is set to global tap in function return handling
+% -thad 09/21/20
 
 global g
 
