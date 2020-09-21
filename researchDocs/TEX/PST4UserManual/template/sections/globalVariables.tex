@@ -14,7 +14,7 @@ For example, the \verb|g.mac.mac_spd| global contains all machine speeds while t
 The following subsections describe the globals contained in each field of the global \verb|g|. 
 Consult \cite{PST3manual} for a more detailed description of what pre-existing global variables represent.
 
-
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{agc}  
 As the AGC is a model new to PST 4, the global field is structured slightly differently from other global fields.
@@ -59,11 +59,15 @@ startTime       % Time (in seconds) of first AGC dispatch
 tgNdx           % Index of controlled machines governors
 \end{minted}
 
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{area} \label{ss: area globals} 
-Similar to the \verb|g.agc| field, area globals did not exist prior to \mbox{PST 4} and are handled similarly to AGC globals.
+Similar to the \verb|g.agc| field, area globals did not exist prior to \mbox{PST 4} and are handled in a related fashion.
 For example, \verb|g.area.area(n).icA(k)| will return the actual interchange value at data index \verb|k| from the \verb|n|th area.
-A description of notable variables in the the area field are listed below.
+A description of notable variables in the the area field are shown in Listing \ref{lst: area g}.
+
+\begin{lstlisting}[caption={Area Global Field Variables},label={lst: area g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -95,13 +99,17 @@ totH           % Running total area inertia
 
 %---------------------------------------------------------------------------------------------------
 \subsection{bus}  
-The \verb|g.bus| field contains the user supplied \verb|bus| array and all altered bus arrays associated with faults created in \verb|y_switch|.
+The \verb|g.bus| field contains the user supplied \verb|bus| array and all altered bus arrays associated with fault conditions created in \verb|y_switch|.
 The bus field also contains the running values for bus voltages and angles in the \verb|g.bus.bus_v| and \verb|g.bus.theta| arrays respectively.
 
-
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{dc}
 This field contains collected global variables for DC models, calculations, and operations.
+The global variables collected into the \verb|g.dc| field are shown in Listing \ref{lst: dc g}.
+
+\begin{lstlisting}[caption={DC Global Field Variables},label={lst: dc g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -143,10 +151,14 @@ While the non-linear and linear simulations run, there may be issues with this p
 More specifically, the \verb|tap| variable is re-written numerous times during a simulation when calculating line flows.
 
 
-
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{exc}
 This field contains collected global variables for exciter models, calculations, and operations.
+The global variables collected into the \verb|g.exc| field are shown in Listing \ref{lst: exc g}.
+
+\begin{lstlisting}[caption={Exciter Global Field Variables},label={lst: exc g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -175,6 +187,10 @@ global st3_TR st3_TR_idx st3_noTR_idx
 %---------------------------------------------------------------------------------------------------
 \subsection{igen}
 This field contains collected global variables for induction generator models, calculations, and operations.
+The global variables collected into the \verb|g.igen| field are shown in Listing \ref{lst: igen g}.
+
+\begin{lstlisting}[caption={Induction Generator Global Field Variables},label={lst: igen g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -199,6 +215,10 @@ global s_igen
 %---------------------------------------------------------------------------------------------------
 \subsection{ind}
 This field contains collected global variables for induction motor models, calculations, and operations.
+The global variables collected into the \verb|g.ind| field are shown in Listing \ref{lst: ind g}.
+
+\begin{lstlisting}[caption={Induction Load Global Field Variables},label={lst: ind g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -226,6 +246,10 @@ Two models of this are included as \verb|mac_ind1| (a basic version from 2.3), a
 %---------------------------------------------------------------------------------------------------
 \subsection{ivm} 
 This field contains collected global variables for the internal voltage model signals, calculations, and operations that use the \verb|ivmmod| model.
+The global variables collected into the \verb|g.ivm| field are shown in Listing \ref{lst: ivm g}.
+
+\begin{lstlisting}[caption={IVMMOD Global Field Variables},label={lst: ivm g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -249,7 +273,10 @@ global n_ivm
 %---------------------------------------------------------------------------------------------------
 \subsection{k}  
 To allow for functionalized running, various index values were placed into the global structure in the \verb|g.k| field
+The global variables collected into the \verb|g.k| field are shown in Listing \ref{lst: k g}.
 
+\begin{lstlisting}[caption={Index Related Global Field Variables},label={lst: k g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -264,11 +291,15 @@ global k_inc h ks h_sol k_incdc h_dc
 
 %---------------------------------------------------------------------------------------------------
 \subsection{line}  
-The \verb|g.line| field contains the user supplied \verb|line| array and all altered line arrays associated with faults created in \verb|y_switch|.
+The \verb|g.line| field contains the user supplied \verb|line| array and all altered line arrays associated with fault conditions created in \verb|y_switch|.
 
 %---------------------------------------------------------------------------------------------------
 \subsection{lmod}
 This field contains collected global variables for real load modulation models, calculations, and operations.
+The global variables collected into the \verb|g.lmod| field are shown in Listing \ref{lst: lmod g}.
+
+\begin{lstlisting}[caption={Real Load Modulation Global Field Variables},label={lst: lmod g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -285,12 +316,15 @@ global lmod_pot  % created/initialized in lmod.m
 global lmod_data % added by Trudnowski - doesn't appear to be used
 \end{minted}
 
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{lmon}  
-Line monitoring during simulation is new to PST 4 and like AGC or area fields, is structured  differently from other previously existing global fields.
+Line monitoring during simulation is new to PST 4 and, like AGC or area fields, is structured  differently from other global fields.
 For example:\\ \verb|g.lmon.line(n).sFrom(k)| would return the complex power flow from the \verb|n|th monitored line at index \verb|k|.
-A description of the logged variables contained in every \verb|g.lmon.line| structure are listed below.
+A description of the logged variables contained in every \verb|g.lmon.line| structure are  shown in Listing \ref{lst: lmon g}.
 
+\begin{lstlisting}[caption={Line Monitoring Global Field Variables},label={lst: lmon g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -309,6 +343,10 @@ sTo    % Complex power injection at to bus
 %---------------------------------------------------------------------------------------------------
 \subsection{mac}
 This field contains collected global variables for machine models, calculations, and operations.
+The global variables collected into the \verb|g.mac| field are shown in Listing \ref{lst: mac g}.
+
+\begin{lstlisting}[caption={Machine Global Field Variables},label={lst: mac g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -337,6 +375,10 @@ global mac_trip_states
 %---------------------------------------------------------------------------------------------------
 \subsection{ncl}
 This field contains collected global variables for non-conforming load models, calculations, and operations.
+The global variables collected into the \verb|g.ncl| field are shown in Listing \ref{lst: ncl g}.
+
+\begin{lstlisting}[caption={Non-Conforming Load Global Field Variables},label={lst: ncl g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -353,6 +395,10 @@ global  load_con load_pot nload
 \subsection{pss}
 This field contains collected global variables for power system stabilizer models, calculations, and operations.
 The \verb|pss_noT4_idx| was renamed, but doesn't seem to be used.
+The global variables collected into the \verb|g.pss| field are shown in Listing \ref{lst: pssd g}.
+
+\begin{lstlisting}[caption={PSS Global Field Variables},label={lst: pss g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -374,6 +420,10 @@ global pss_noT4_idx % misspelled in pss_indx as pss_noT4
 %---------------------------------------------------------------------------------------------------
 \subsection{pwr}
 This field contains collected global variables for power or current injection models, calculations, and operations that use the \verb|pwrmod| model.
+The global variables collected into the \verb|g.pwr| field are shown in Listing \ref{lst: pwr g}.
+
+\begin{lstlisting}[caption={PWRMOD Global Field Variables},label={lst: pwr g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -390,10 +440,14 @@ global pwrmod_p_sig pwrmod_q_sig
 global pwrmod_data
 \end{minted}
 
-
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{rlmod}
 This field contains collected global variables for reactive load modulation models, calculations, and operations.
+The global variables collected into the \verb|g.rlmod| field are shown in Listing \ref{lst: rlmod g}.
+
+\begin{lstlisting}[caption={Reactive Load Modulation Global Field Variables},label={lst: rlmod g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -411,6 +465,10 @@ global rlmod_sig
 %---------------------------------------------------------------------------------------------------
 \subsection{svc}
 This field contains collected global variables for static VAR control system models, calculations, and operations.
+The global variables collected into the \verb|g.svc| field are shown in Listing \ref{lst: svc g}.
+
+\begin{lstlisting}[caption={SVC Global Field Variables},label={lst: svc g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -435,10 +493,14 @@ global dB_cv dB_con
 There seems to be code related to user defined damping control of SVC, but it does not seem to be described in any available documentation. 
 This damping functionality was added by Graham Rogers circa 1998/1999.
 
-
+\pagebreak
 %---------------------------------------------------------------------------------------------------
 \subsection{sys}
 This field contains variables that deal with simulation operations.
+The global variables collected into the \verb|g.sys| field are shown in Listing \ref{lst: sys g}.
+
+\begin{lstlisting}[caption={System Global Field Variables},label={lst: sys g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -458,6 +520,10 @@ global ElapsedNonLinearTime clearedVars
 %---------------------------------------------------------------------------------------------------
 \subsection{tcsc}
 This field contains collected global variables for thyristor controlled series reactor models, calculations, and operations.
+The global variables collected into the \verb|g.tcsc| field are shown in Listing \ref{lst: tcsc g}.
+
+\begin{lstlisting}[caption={TCSC Global Field Variables},label={lst: tcsc g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -480,9 +546,14 @@ Similar to the SVC model, there seems to be some added functionality for control
 This damping functionality was added by Graham Rogers circa 1998/1999.
 
 %---------------------------------------------------------------------------------------------------
+
 \pagebreak
 \subsection{tg}
 This field contains collected global variables for turbine governor models, calculations, and operations.
+The global variables collected into the \verb|g.tg| field are shown in Listing \ref{lst: tg g}.
+
+\begin{lstlisting}[caption={Turbine Governor Global Field Variables},label={lst: tg g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -498,13 +569,15 @@ global tg1 tg2 tg3 tg4 tg5 dtg1 dtg2 dtg3 dtg4 dtg5
 global tg_idx  n_tg tg_sig tgh_idx n_tgh
 \end{minted}
 
-It should be noted that the hydro governor model \verb|tgh| has not been modified as no examples could be found that use it.
+\noindent It should be noted that the hydro governor model \verb|tgh| has \textbf{not} been modified as no examples could be found that use it.
 
 %---------------------------------------------------------------------------------------------------
 \subsection{vts}  
 Globals associated with variable time step simulation runs were placed in the \verb|g.vts| field.
-A description of the included variables is shown below.
+The collected variables are shown in Listing \ref{lst: vts g}.
 
+\begin{lstlisting}[caption={VTS Global Field Variables},label={lst: vts g}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -533,9 +606,9 @@ tot_iter    % Total number of solutions
 \end{minted}
 
 %---------------------------------------------------------------------------------------------------
-\pagebreak
+
 \subsection{y}  
-The \verb|g.y| field contains reduced Y matrices, voltage recovery matrcies, and bus order variables created in \verb|y_switch| associated with fault conditions.
+The \verb|g.y| field contains reduced Y matrices, voltage recovery matrices, and bus order variables created in \verb|y_switch| associated with fault conditions.
 These variables are later selected in the \verb|networkSolution| to simulate programmed conditions.
 
 %---------------------------------------------------------------------------------------------------

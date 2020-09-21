@@ -1,19 +1,20 @@
 \section{Variable Time Step Integration}  
 %==============================================================================
-To enable more efficient simulation of extended term events variable time step (VTS) integration routines were added to \mbox{PST 4}.
-The main theme behind VTS is that when the system is moving `slowly', larger time steps could accurately capture system dynamics.
-Obviously, as time step increases, fewer solutions are required to simulate a set period of time.
+To enable more efficient simulation of extended term events, variable time step (VTS) integration routines were added to \mbox{PST 4}.
+The main assumption behind VTS simulation is that when a system is moving `slowly', larger time steps can accurately capture system dynamics.
+Additionally, a viable VTS routine automatically adjusts the time step so that a known error tolerance is always met.
+As the time step increases, fewer solutions are required to simulate a set period of time which leads to reductions in the number of calculations and produces a more efficient solution method.
+VTS simulations were made possible by using standard MATLAB ODE solvers.
+This decision was made to more quickly explore the viability of applying VTS methods to the power system simulation process.
 
-
-VTS simulations are made possible by using standard MATLAB ODE solvers.
-This decision was made to explore the viability of applying VTS methods to a power system.
-As the time step of these solvers is dependent upon analysis of system derivatives, to increase efficiency, models that are no longer connected to the system should have their derivatives set to $0$.
+The MATLAB solvers adjust the simulation time step based upon analysis of system derivatives and error tolerances.
+To increase efficiency, models that are no longer connected to the system should have their derivatives set to $0$.
 Work has been done to zero the derivatives of tripped machines and exciters, but more work can be done to zero derivatives of other attached models (i.e. PSS and governors).
 
+\vspace{3 em}
+\noindent \textbf{NOTE:} Variable time step simulation is experimental and should be used with caution!
 
-\noindent \textbf{NOTE:} Variable time step simulation is still experimental and should be used with caution.
-
-
+\pagebreak
 %------------------------------ from vts explained
 %==============================================================================
 \subsection{Solver Control Array (solver\_con)}  
@@ -22,7 +23,10 @@ If a \verb|solver_con| is not specified, Huen's method is used for all time bloc
 
 Between each \verb|sw_con| entry, a \emph{time block} is created that is then solved using a the defined solution method in the \verb|solver_con|.
 As such, the \verb|solver_con| array has 1 less row than the \verb|sw_con| array.
-An example \verb|solver_con| array is shown below.
+An example \verb|solver_con| array is shown in Listing \ref{lst: solverCon ex}.
+
+\begin{lstlisting}[caption={Solver Control Array Example},label={lst: solverCon ex}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -55,7 +59,7 @@ solver_con ={ ...
     };
 \end{minted}
 
-
+\pagebreak
 %==============================================================================
 \subsection{MATLAB ODE Solvers}
 The VTS implementation in PST revolves around using the built in MATLAB ODE solvers.
@@ -64,14 +68,17 @@ All these methods perform actions depicted in Figure \ref{fig: MATLAB ode block 
 \begin{figure}[!h]
 	\centering
 	\footnotesize
-	\includegraphics[width=.8\linewidth]{./../../one-offs/200804-ODEblockDiagram/200804-ODEblockDiagram}
-	\caption{MATLAB ODE block diagram.}
+	\includegraphics[width=.9\linewidth]{./../../one-offs/200804-ODEblockDiagram/200804-ODEblockDiagram}
+	\caption{MATLAB ODE Flow Chart.}
 	\label{fig: MATLAB ode block diagram}
 \end{figure}%\vspace{-1 em}
 
+\pagebreak
 The input to an ODE solver include, an input function, a time interval (time block), initial conditions, and solver options.
-The current options used for VTS are shown below and deal with error tolerance levels, initial step size, max step size, and an Output function.
+The current options used for VTS  that deal with error tolerance levels, initial step size, max step size, and an optional output function are shown in Listing \ref{lst: ode ex}.
 
+\begin{lstlisting}[caption={MATLAB ODE Solver Option Example},label={lst: ode ex}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -92,16 +99,19 @@ options = odeset('RelTol',1e-4,'AbsTol',1e-7, ...
 
 %==============================================================================
 \subsection{Functions Specific to VTS}  
-A number of new functions were created to enable VTS to be integrated into PST.
-Most functions were created to handle data or perform other tasks specifically related to VTS.
+A number of new functions were created to handle data or perform other tasks so that VTS could be integrated into PST.
 The following sections provide information about such functions.
 % related VTS functions
 
 %==============================================================================
+\pagebreak
 \subsubsection{vtsInputFcn} 
-To use the MATLAB ODE solvers, a function must be passed in that returns a vector of derivatives associated with the states to integrate.
+MATLAB ODE solvers require a passed in function must that returns a vector of derivatives associated with states to integrate.
 The \verb|vtsInputFcn| was created to perform this critical task.
-The slightly abbreviated input function is shown below.
+The slightly abbreviated input function is shown in Listing \ref{lst: vtsInputFcn}.
+
+\begin{lstlisting}[caption={Abbreviated vtsInputFcn},label={lst: vtsInputFcn}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -122,44 +132,38 @@ function [dxVec] = vtsInputFcn(t, y)
 %
 %   Output:
 %   dxVec - requried derivative vector for ODE solver
+
 global g
 
-%% call handleStDx with flag==2 to update global states with newest passed in soln.
-% write slnVec vector of values to associated states at index k
-% i.e. update states at g.vts.dataN with newest solution
-handleStDx(g.vts.dataN, y, 2)
+handleStDx(g.vts.dataN, y, 2)        % update states at g.vts.dataN with y
 
-%% Start initStep action ==================================================
 initStep(g.vts.dataN)
-
-%% Start of Network Solution ==============================================
 networkSolutionVTS(g.vts.dataN, t)
-
-%% Start Dynamic Solution =================================================
 dynamicSolution(g.vts.dataN )
-
-%% Start of DC solution ===================================================
 dcSolution(g.vts.dataN )
 
-%% save first network solution
 if g.vts.iter == 0
-    handleNetworkSln(g.vts.dataN ,1)
+    handleNetworkSln(g.vts.dataN ,1) % save first network solution
 end
 
-g.vts.iter = g.vts.iter + 1; % increment solution iteration number
+g.vts.iter = g.vts.iter + 1;         % increment solution iteration counter
 
-handleStDx(g.vts.dataN , [], 1) % update g.vts.dxVec
-dxVec = g.vts.dxVec; % return updated derivative vector
+handleStDx(g.vts.dataN , [], 1)      % update g.vts.dxVec
+dxVec = g.vts.dxVec;                 % return updated derivative vector
 end % end vtsInputFcn
 \end{minted}
 
 %==============================================================================
 
+\pagebreak
 \subsubsection{vtsOutputFcn} 
-After each acceptable solution, the ODE solver calls a passed in `output function'.
-The \verb|vtsOutputFcn| was created to handle restoring the network solution and performing the monitor solution.
-Additionally, the \verb|vtsOutputFcn| handles required indexing and iteration accumulation and logging.
-The slightly abbreviated output function is shown below.
+After each acceptable solution, the ODE solver calls a passed in \emph{output function}.
+The \verb|vtsOutputFcn| was created to handle restoring the original network solution, performing the monitor solution, indexing, iteration accumulation, and logging after each step.
+The slightly abbreviated VTS output function is shown in Listing \ref{lst: vtsOutputFcn}.
+
+\pagebreak
+\begin{lstlisting}[caption={Abbreviated vtsOutputFcn},label={lst: vtsOutputFcn}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -183,17 +187,15 @@ function status = vtsOutputFcn(t,y,flag)
 global g 
 status = 0; % required for normal operation
 
-if isempty(flag) % normal step completion
-    % restore network to initial solution
-    handleNetworkSln(g.vts.dataN ,2) % may cause issues with DC.    
-    monitorSolution(g.vts.dataN); % Perform Line Monitoring and Area Calculations 
+if isempty(flag)                    % normal step completion
+    handleNetworkSln(g.vts.dataN ,2)% restore network to initial solution   
+    monitorSolution(g.vts.dataN);   % Perform Line Monitoring and Area Calculations 
     
-    %% Live plot call
     if g.sys.livePlotFlag
-        livePlot(g.vts.dataN)
+        livePlot(g.vts.dataN)       % Live plotting
     end
     
-    % after each successful integration step by ODE solver:
+    
     g.vts.dataN = g.vts.dataN+1;    % increment logged data index 'dataN'
     g.sys.t(g.vts.dataN) = t;       % log step time
     g.vts.stVec = y;                % update state vector
@@ -203,13 +205,12 @@ if isempty(flag) % normal step completion
     g.vts.slns(g.vts.dataN) = g.vts.iter;           % log solution step iterations
     g.vts.iter = 0;                                 % reset iteration counter
     
-elseif flag(1) == 'i' 
-    % init solver for new time block
+elseif flag(1) == 'i'               % init solver for new time block
     g.sys.t(g.vts.dataN) = t(1);    % log step time
     handleStDx(g.vts.dataN, y, 2)   % set initial conditions
   
-elseif flag(1) == 'd'
-    % only debug screen output at the moment
+elseif flag(1) == 'd'               % only debug screen output at the moment
+
 end % end if
 end % end function
 \end{minted}
@@ -220,9 +221,11 @@ end % end function
 \subsubsection{handleNetworkSln}  
 The \verb|handleNetworkSln| function was created to store, and restore, calculated values set to globals during a network solution.
 The purpose of this function was to allow for the first network solution performed each step to be carried forward after multiple other network solutions may over-write the calculated values at the same data index.
-This over-writing may occur during the MATLAB ODE solver's repeated calls to the input function.
-As shown below, \verb|handlNetworkSln| takes a data index \verb|k| and an operation \verb|flag| as inputs.
+This over-writing would occur during the MATLAB ODE solver's repeated calls to the input function.
+As shown in Listing \ref{lst: handleNetworkSln}, \verb|handlNetworkSln| takes a data index \verb|k| and an operation \verb|flag| as inputs.
 
+\begin{lstlisting}[caption={Function Header for handleNetworkSln},label={lst: handleNetworkSln}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -241,15 +244,18 @@ function handleNetworkSln(k, flag)
 %   k - data index to log from and restore to
 %   flag - choose funtion operation
 %       0 - initialize globals used to store data
-%       1 - collect newtork solution values from index k into a global vector
-%       2 - write stored network solution vector to network globals data at index k
+%       1 - collect newtork solution values from index k into global vector
+%       2 - write stored network solution to globals at index k
 \end{minted}
 
 %==============================================================================
+\pagebreak
 \subsubsection{handleStDx}  
-The \verb|handleStDx| function was created to perform the required state and derivative handling to enable the use internal MATLAB ODE solvers.
-Its general operation is probably best described via the internal function documentation provided below.
+The \verb|handleStDx| function was created to perform the required state and derivative handling to enable the use of internal MATLAB ODE solvers.
+Its general operation is probably best described via the internal function documentation shown in Listing \ref{lst: handleStDx}.
 
+\begin{lstlisting}[caption={Function Header for handleStDx},label={lst: handleStDx}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -275,19 +281,19 @@ function handleStDx(k, slnVec, flag)
 %   snlVec - Input used to populate states with new values
 \end{minted}
 
-The new global structure created in PST 4 enables this function to complete the stated operations by relying heavily on dynamic field names. 
+The new global structure created in PST 4 enables \verb|handleStDx| to complete the stated operations by relying heavily on dynamic field names. 
 Essentially, all required field names, sub-field names, and states are collected into a cell (flag operation 0) that is then iterated through to collect data from, or write data to the appropriate location (all other flag operations).
 
 The usefulness of \verb|handleStDx| is that the standard MATLAB ODE solvers require a single derivative vector as a returned value from some passed in `input function', and each PST model calculates derivatives and places them into various globals. 
 Thus, a derivative collection algorithm was needed (flag operation 1).
 Once the ODE solver finishes a step, the returned solution vector (of integrated states) must then be parsed into the global state variables associated with the supplied derivatives (flag operation 2).
-At the beginning of time blocks that use the MATLAB ODE solvers, an initial conditions vector of all the states related to the derivative vector is required (flag operation 3).
-
+At the beginning of time blocks that use the MATLAB ODE solvers, an initial conditions vector of all the states related to the derivative vector is a required input (updated via flag operation 3).
 To avoid handling function output, global vectors \verb|g.vts.dxVec| and \verb|g.vts.stVec| are used to hold updated derivative and state vector information.
 
 It should be noted that original PST globals follow the same data structure,
-however, new models (such as AGC and pwrmod/ivmmmod) use a slightly different data structure and must be handled in a slightly different way.
-As of this writing AGC, pwrmod, and ivmmod functionality has been added to \verb|handleStDx| and it seems very possible to add more models that require integration as they arise.
+however, new models (such as AGC, pwrmod, and ivmmmod) use a slightly different data structure and must be handled in a slightly different way.
+As of this writing AGC, pwrmod, and ivmmod functionality has been added to \verb|handleStDx|.
+Additional models that require integration may be added to this function as the need arises.
 
 
 

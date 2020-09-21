@@ -9,7 +9,7 @@ This model works with transient simulation via \verb|s_simu| and linear analysis
 \verb|pwrmod| can be used to model many devices such as wind turbines and solar plants, as well as any controls associated with such a device.
 
 Figure \ref{fig: pwrmod BD} is a block diagram describing how power (or current) is injected into a given bus $i$.
-The user constructs all devices and modeling equations in the \verb|pwrmod_dyn| function which handles the necessary equations to model the device and associated controls to perform the desired power injection.
+The user constructs all devices and modeling equations in the \verb|pwrmod_dyn| function which handles the necessary equations to model the device and associated controls that perform the desired power injection.
 The model must be constructed in state-space form.
 
 \begin{figure}[H]
@@ -22,9 +22,12 @@ The model must be constructed in state-space form.
 
 The insertion of a \verb|pwrmod| model requires the target bus to be type 2 (generator type).
 Additionally, the bus must be defined as constant power (for power injection) or constant current (for current injection) in the \verb|load_con|.
-An example of defining bus 2 for a power injection model and bus 3 for a current injection model using \verb|pwrmod| is shown below.
+An example of defining bus 2 for a power injection model, and bus 3 for a current injection model using \verb|pwrmod| is shown in Listing \ref{lst: pwrmod example}.
 Other examples of \verb|pwrmod| are described in Section \ref{sec: pwrmodExamples}.
 
+
+\begin{lstlisting}[caption={PWRMOD Definition Example},label={lst: pwrmod example}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -57,6 +60,6 @@ pwrmod_con=[...
 
 load_con = [...
 %bus Pcont Qconst P_Icont Q_Iconst
-  2   1     1     0       0;    % Modulation bus
-  3   0     0     1       1;];  % Modulation bus
+  2   1     1     0       0;    % Modulation bus for power injection
+  3   0     0     1       1;];  % Modulation bus for current injection
 \end{minted}

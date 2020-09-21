@@ -1,43 +1,43 @@
 % file to contain information on examples
 %==============================================================================
-\chapter{Examples Explained - WIP}
+\chapter{Examples Explained}
 Examples are located in the \verb|0-examples| folder and are designed to be run in batch mode.
 This means that each example copies any required system, model, or modulation file to the main PST directory before running.
-Typically, each example folder contains a \verb|.m| file that starts with \verb|run| that can be used to run the example.
+Typically, each example folder contains a \verb|.m| file that starts with \verb|run_| that can be used to run the example.
 As example cases are located on a github repository, relative file paths are used so that examples can be run without much difficulty from various different machines.
 While most examples can be run in multiple versions of PST, some functionality can only be found in specific versions.
 
 \noindent The general structure of created examples tend to reflect the following:
 \begin{enumerate}
 \itemsep 0em
-\item Clear all variables, close all figures, and clear the command window
-\item Define which version of PST to use
-\item Create a relative path to the root directory of chosen PST version
-\item Copy any system, model, or modulation file to the PST root directory
-\item Run \verb|s_simu|
-\item Save output data
-\item Restore any model, or modulation file to original state
-\item Create data plots
+\item Clear all variables, close all figures, and clear the command window.
+\item Define which version of PST to use.
+\item Create a relative path to the root directory of chosen PST version.
+\item Copy any system, model, or modulation file to the PST root directory.
+\item Run \verb|s_simu|.
+\item Save output data.
+\item Restore any model, or modulation file to original state.
+\item Create data plots.
 \end{enumerate}
 
 %=================================================================
-\input{examples/hiskens}
+\input{examples/hiskens/hiskens}
 
 
 %=====================================================================
-\section{Modulation Examples - WIP} \label{sec: modExamples}
+\section{Modulation Examples} \label{sec: modExamples}
 PST provides numerous ways to input a defined modulation signal into a variety of models.
 The following list of example folder names work in all versions of PST and typically create linear/non-linear comparison plots.
-While the examples themselves do not reflect any particular scenario, the provided code may be useful in creating particular scenarios.
+While the examples themselves do not reflect any particular scenario, the provided code may be useful to create a particular scenario.
 
 \begin{itemize}
-\item \verb|lmod| - Uses the \verb|ml_sig| file to modulate real load power.
-\item \verb|mexc| - Uses the \verb|mexc_sig| file to modulate the exciter reference signal.
-\item \verb|mtg_sig| - Uses the \verb|mtg_sig| file to modulate the governor $P_{ref}$ reference signal.
-\item \verb|pm_sig| -Uses the \verb|mpm_sig| file to modulate a machines mechanical power.
-\item \verb|rlmod| - Uses the \verb|rml_sig| file to modulate a load's reactive power.
-\item \verb|SVC| - Uses the \verb|msvc_sig| file to modulate an SVC's output value.
-\item \verb|TCSC| - Uses the \verb|mtcsc_sig| file to modulate an TCSC's output value.
+\item \verb|lmod| - Replaces the \verb|ml_sig| file to modulate real load power.
+\item \verb|mexc| - Replaces the \verb|mexc_sig| file to modulate the exciter reference signal.
+\item \verb|mtg_sig| - Replaces the \verb|mtg_sig| file to modulate the governor $P_{ref}$ reference signal.
+\item \verb|pm_sig| - Replaces the \verb|mpm_sig| file to modulate a machines mechanical power.
+\item \verb|rlmod| - Replaces the \verb|rml_sig| file to modulate a load's reactive power.
+\item \verb|SVC| - Replaces the \verb|msvc_sig| file to modulate an SVC's output value.
+\item \verb|TCSC| - Replaces the \verb|mtcsc_sig| file to modulate an TCSC's output value.
 \end{itemize}
 
 \noindent It should be noted that modulation files for PST 2 and 3 assume input to function is ($t, k$), i.e. full time vector and data index, while PST 4 only requires the data index $k$.
@@ -45,7 +45,32 @@ While the examples themselves do not reflect any particular scenario, the provid
 %=====================================================================
 % all current examples
 \pagebreak
-All un-categorized examples from 0-examples folder are listed below - last bit of User manual work will be to `thin the herd', insert previous results, confirm working, and provide minor details about content
+\section{Lightly Introduced Examples}
+These examples exist on github, but don't necessarily require a much more than a casual mention.
+\subsection{DC - WIP}
+All versions - 
+
+non-linear simulation seems to work
+
+linear analysis doesn't seem to work correctly - user error?
+
+\subsection{exciterBatchTests - WIP}
+PST 4 only - used to compare all 4 exciter models linear/non-linear response to load step
+
+Was useful in ensuring exciter models were cast to globals correctly
+
+\subsection{inductive - WIP}
+meant to verify functionality of inductive generators and loads (motors)
+
+Multiple cases run from example script: fault example and load pulse with linear/non-linear comparison.
+Works in all versions.
+
+\subsection{tg - WIP}
+Examples of a load step with and without governor action
+
+%=====================================================================
+\pagebreak
+Examples from 0-examples folder are listed below - last bit of User manual work will be to `thin the herd', insert previous results, confirm working, and provide minor details about content
 
 
 \section{AGC - WIP}
@@ -54,33 +79,18 @@ PST 4 only
 \subsection{run\_AGC - WIP}
 - 2 area kundur with optional integration methods = load step - 120 second recovery.
 
-\subsection{run\_AGC\_mod - WIP}
-  - same system as above - uses Interchange modulation signal as perturbance
+
+\input{examples/agcMod/agcMod}
 
 
-\section{DC - WIP}
-All versions - 
 
-non-linear simulation seems to work
-
-linear analysis doesn't seem to work correctly - user error?
+%=======================================================================
+\pagebreak
+\input{examples/extendedTerm/extendedTerm}
 
 
-\section{exciterBatchTests - WIP}
-PST 4 only - used to compare all 4 exciter models linear/non-linear response to load step
-
-Was useful in ensuring exciter models were cast to globals correctly
-
-\section{extendedTerm - WIP}
-Results written up in 200806-ExtendedVersionComp
-
-
-\section{inductive - WIP}
-meant to verify functionality of inductive generators and loads (motors)
-
-Multiple cases run from example script: fault example and load pulse with linear/non-linear comparison.
-Works in all versions.
-
+%=======================================================================
+\pagebreak
 \section{ivmmod - WIP}
 example modified from Dan - includes a VTS example  -
 requires some minor reworking - 
@@ -89,6 +99,9 @@ shows how angle change `moves' entire system.
 
 VTS method used - clearly shows how variable time steps adjust to capture dynamics
 
+
+%=======================================================================
+\pagebreak
 \section{miniWECC - WIP}
 
 	\subsection{AGC - WIP} 
@@ -98,18 +111,12 @@ multi area agc (VTS?)
 use to show arbitrary tripping
 
 
-
+%=======================================================================
+\pagebreak
 \section{pwrmod -WIP} \label{sec: pwrmodExamples}
 \subsection{P-injection - WIP}
 \subsection{I-injection - WIP}
 
-
-\section{untrip - WIP}
-Documentation created in\\ \verb|MT-Tech-SETO\researchDocs\TEX\one-offs\200901-refinedUntripResults2|
-
-Variables to note in associated examples (where \verb|x| is the internal model number):
-\begin{itemize}
-\item exciter $V_{ref} = $ \verb|g.exc.exc_pot(x,3)|
-\item governor $P_{ref} = $ \verb|g.tg.tg_pot(x,5)|
-\item governor $\omega_{ref} = $ \verb|g.tg.tg_con(x,3)|
-\end{itemize}
+%=======================================================================
+\pagebreak
+\input{examples/untrip/untrip}

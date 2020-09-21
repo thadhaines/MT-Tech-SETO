@@ -11,7 +11,6 @@ Run \verb|s_simu| after issuing the \verb|clear all; close all| commands.
 Ensure at least 1 non-global variable is in the workspace prior to running \verb|s_simu|.
 \end{itemize}
 
-
 %==============================================================================
 \subsection{Functionalization}
 The use of a single global allowed for easier functionalization of code.
@@ -24,9 +23,11 @@ The function is executed near the end of \verb|s_simu|.
 
 %------------------------------------------------------------------------------
 \subsubsection{correctorIntegration}  
-As shown in the code except below, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next accepted value of integrated states.
+As shown in Listing \ref{lst: correrctorInt header}, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next accepted value of integrated states.
 The executed code was taken directly from \verb|s_simu| and modified to work with the new global \verb|g|.
-
+\pagebreak
+\begin{lstlisting}[caption={Function Header for correctorIntegration},label={lst: correrctorInt header}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -61,8 +62,8 @@ While this may defeat the purpose of VTS simulation due to DC models traditional
 
 %------------------------------------------------------------------------------
 \subsubsection{dynamicSolution}  
-As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at data index \verb|k| by calling each required model with the input flag set to 2.
-This functionalized code is again taken directly from \verb|s_simu|.
+As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at  the passed in data index \verb|k| by calling each required model with the input flag set to 2.
+This functionalized code was taken directly from \verb|s_simu|.
 
 %------------------------------------------------------------------------------
 
@@ -71,7 +72,7 @@ The default integration method used by PST is Huen's Method.
 The routine has been collected into the \verb|huensMethod| function from previously existing code in \verb|s_simu|.
 Mathematically speaking, Huen's method is an improved Euler method that could also be described as a two-stage Runge-Kutta method, or as a predictor-corrector method.
 
-The description of a generalized Huen's method is as follows:
+The process of a generalized Huen's method is as follows:
 Suppose the initial conditions of an ODE $f(x,y)$ are given as $x_i$ and $y_i$.
 To calculate $y_{i+1}$ using Huen's method, the derivative at $x_i$, $\dot{x_i}$, is calculated from the initial conditions.
 \begin{equation}{\label{eq: huens1} }
@@ -98,7 +99,7 @@ y_{i+1} = y_i + \frac{h}{2}( \dot{x}_i + \dot{x}_p ).
 
 As a power system solution is not just a set of differential equations, but a system of algebraic and differential equations,
 \verb|huensMethod| performs the network, dynamic, DC, and monitor solutions required for each step of the method.
-A block diagram of these actions is shown in Figure \ref{fig: huens block diagram}.
+A flow chart of these actions is shown in Figure \ref{fig: huens block diagram}.
 
 \begin{figure}[H]
 	\centering
@@ -108,30 +109,33 @@ A block diagram of these actions is shown in Figure \ref{fig: huens block diagra
 	\label{fig: huens block diagram}
 \end{figure}\vspace{-1 em}
 
-An added benefit of functionalizing Huen's method, is that it provides a clear location to insert alternative integration routines and can act as an example as to how to accomplish such a task.
+An added benefit of functionalizing Huen's method is that it provides a clear location to insert alternative integration routines and can act as an example as to how to accomplish such a task.
 
 %------------------------------------------------------------------------------
 \subsubsection{initNLsim}  
 The \verb|initNLsim| function is a collection of code from \verb|s_simu| that performs initialization operations before a non-linear simulation.
-This is essentially the creation of the various Y-matrices used for fault conditions and the calling of the dynamic models with the input flag set to 0.
+This includes the creation of the various Y-matrices used for fault conditions and the calling of the dynamic models with the input flag set to 0.
 
 %------------------------------------------------------------------------------
 \subsubsection{initStep}  
-Code from \verb|s_simu| that was performed at the beginning of each solution step was collected into \verb|initStep|.
-Operations are related to setting values for the next step equal to current values for mechanical powers and DC currents, as well as handling machine trip flags.
+Code from \verb|s_simu| that was executed at the beginning of each solution step was collected into \verb|initStep|.
+Operations are related to setting values for the next step equal to current values for mechanical powers and DC currents and handling machine trip flags.
 
 %------------------------------------------------------------------------------
 \subsubsection{initTblocks}  
 The \verb|initiTblocks| function analyzes the global \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in non-linear simulation.
-Any fixed time vectors associated with time blocks that use Huen's method are also created.
+Fixed time vectors associated with time blocks that use Huen's method are created while VTS time blocks are prepared for use.
 Care was taken to ensure a unique time vector (no duplicate time points).
-With the option to switch between fixed step and variable step  methods, this method may require slight modifications/refinements in the future.
+However, with the experimental option to switch between fixed step and variable step methods, this method may require slight modifications/refinements in the future.
 
 %------------------------------------------------------------------------------
 \subsubsection{initZeros}  
 A large amount of code ($\approx$400 lines) in PST 3's \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
 This code has been collected into the \verb|initZeros| function with inputs defining the desired length of vectors for normally logged data and DC data.
+The function header for \verb|initZeros| is shown in Listing \ref{lst: initZeros header}.
 
+\begin{lstlisting}[caption={Function Header for initZeros},label={lst: initZeros header}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -151,15 +155,15 @@ function initZeros(k, kdc)
 
 %------------------------------------------------------------------------------
 \subsubsection{monitorSolution}  
-The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average system and/or area frequencies, and other interchange values for defined areas.
+The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average frequencies, and other interchange values for defined areas.
 It should be noted that these calculations are mostly based on complex voltages that are calculated during the network solution.
 
 %------------------------------------------------------------------------------
 \subsubsection{networkSolution \& networkSolutionVTS}  
 The \verb|networkSolution| function is a collection of code from \verb|s_simu| dealing with calls to dynamic models with the flag set to $1$ and Y-matrix switching.
-The call to \verb|i_simu| (which updates \verb|g.k.h_sol|) is also located in this function.
+The call to \verb|i_simu| (which updates the current time step length \verb|g.k.h_sol|) is also located in this function.
 
-The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on passed in simulation time.
+The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on a passed in simulation time.
 This was a required change when using VTS as the previous method relied on a known number of steps between switching events, and that is no longer a reality with the experimental VTS methods.
 
 The default behavior of PST 4 is to use \verb|newtowrkSolutionVTS| which requires the input of the current data index \verb|k| and the simulation time.
@@ -168,7 +172,10 @@ The default behavior of PST 4 is to use \verb|newtowrkSolutionVTS| which require
 \subsubsection{predictorIntegration}  
 The \verb|predictorIntegration| function performs the predictor (forward Euler) integration step of the simulation loop.
 The code was taken directly from \verb|s_simu| and uses the same variable names adapted for use with the global \verb|g|.
+The associated function header is shown in Listing \ref{lst: predictorInt header}.
 
+\begin{lstlisting}[caption={Function Header for predictorIntegration},label={lst: predictorInt header}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -191,18 +198,21 @@ function predictorIntegration(k, j, h_sol)
 \subsubsection{standAlonePlot}  
 The \verb|standAlonePlot| function is the updated plotting routine based on user input previously found at the end \verb|s_simu|.
 After a completed simulation, it is called from \verb|s_simu| if stand alone mode is detected.
-Alternatively, it can be run independently from the simulation to analyze a pre-existing global \verb|g| by being invoked as \verb|standAlonePlot(1)|.
+Alternatively, the function can be run independently from a non-linear simulation to analyze a pre-existing global \verb|g| by being invoked as \verb|standAlonePlot(1)|.
 
 %------------------------------------------------------------------------------
 \subsubsection{trimLogs}  
 As there is no way to accurately predict the amount of (length of) data to be logged during a variable time step simulation, extra space is allocated, and then all logged values are trimmed to the proper length post simulation.
-It should be noted that the current size allocation was arbitrary and can be altered as deemed fitting.
+It should be noted that the current size allocation was arbitrary and can be altered as a user deems fit.
 Typically, an extended term simulation using VTS will requires fewer steps than a fixed step method, but that is not always the case.
 It's important to note that if not enough space is allocated, the simulation will crash when the code attempts to access data indices outside of the allocated range.
 
 The \verb|trimLogs| function trims all logged values in the global \verb|g| to a given length \verb|k|.
 It is executed near the end of \verb|s_simu| before \verb|cleanZeros|.
+The associated function header is shown in Listing \ref{lst: trimLogs header}.
 
+\begin{lstlisting}[caption={Function Header for trimLogs},label={lst: trimLogs header}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,

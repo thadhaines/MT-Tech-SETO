@@ -2,7 +2,10 @@
 Default action of PST 3 was to plot the bus voltage magnitude at a faulted bus.
 However, it may be useful to plot other values or turn off the plotting during a simulation.
 The live plotting routine is now functionalized to allow users to more easily define what is displayed (if anything) during simulations.
-The \verb|livePlot| function was designed to be overwritten during batch simulation runs as shown below.
+The \verb|livePlot| function was designed to be overwritten during batch simulation runs as shown in Listing \ref{lst: liveplot example}.
+
+\begin{lstlisting}[caption={Live Plotting Overwrite Example},label={lst: liveplot example}]
+\end{lstlisting}\vspace{-2 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -28,6 +31,6 @@ There are currently 3 live plot functions:
 It should be noted that the live plotting can cause extremely slow simulations and occasional crashes.
 To disable live plotting:
 \begin{itemize}
-\item In stand-alone mode: \\Change the 'live plot?' field from a $1$ to a $0$ in the popup dialog box.
+\item In stand-alone mode: \\Change the `live plot?' field from a $1$ to a $0$ in the popup dialog box.
 \item In batch mode:  \\Create a variable \verb|livePlotFlag| and set as $0$ or \verb|false|.
 \end{itemize}
