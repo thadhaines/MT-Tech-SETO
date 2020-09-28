@@ -7,6 +7,8 @@
 % copied from versioning document 09/03/20, modified as deemed fit
 
 %\section*{Current Versions}
+\hspace{-4.2em}
+\begin{minipage}{.666\linewidth}
 \begin{itemize}
 \raggedright
 \itemsep 0 em
@@ -22,6 +24,7 @@ Addition of multiple DC lines and PSS modifications.
 \item 3.1 - Based on 3.0, incorporates Dr. Trudnowski's pwrmod and ivmmod models in non-linear simulation, machine tripping functionality, and various model patches.
 pwrmod included in linear simulation as well. 
 \item 3.1.1 - Based on 3.1. Version by Ryan Elliott at Sandia National Labs with energy storage and updated linear simulation along with various other fixes and code cleanup alterations. 
+\item 3.1.2 - Based on 3.1.1. Work in progress version by Ryan Elliott to clean up global variables.
 \item SETO - Based on 3.1. Experimental version by Thad Haines using a new global structure, automatic generation control, and variable time step (VTS) integration. 
 %\item 4.0.0-aX - Alpha version of PST 4 based on SETO version. 
 %Includes a refined VTS routine, confirmed multi-generator tripping, and improved AGC action/modulation.
@@ -36,7 +39,59 @@ pwrmod included in linear simulation as well.
 %\begin{itemize}
 \itemsep 0 em
 \item 4.0.0 - Released circa October 2020. Based on SETO version. 
-Includes a refined VTS routine, confirmed multi-generator tripping, improved AGC action/modulation, code cleanup, example library, and documentation.
+Includes a refined VTS routine, confirmed multi-generator tripping, improved AGC action and modulation, code cleanup, example library, and documentation.
 Represents the end result of four months of work by Thad Haines.
 %\item 4.1.0 - Based on 4.0.x - planned to incorporate energy storage models for non-linear simulation and possibly the updated linear simulation based on 3.1.1. Examples of \verb|ess| model use required.
 \end{itemize}
+\end{minipage}%
+\begin{minipage}{.42\linewidth}
+\begin{center}
+{\singlespacing 
+%===============================================================================
+\begin{tikzpicture}[node distance=2cm] 
+%original versions
+\node[shape=circle, draw, inner sep=2pt] (1) {1.0};
+\node[shape=circle, draw, inner sep=2pt, below of=1] (2) {2.0};
+% trudnowski versions
+\node[shape=circle, draw, inner sep=2pt, below right of=2] (21) {2.1};
+\node[shape=circle, draw, inner sep=2pt, below of=21] (22) {2.2};
+\node[shape=circle, draw, inner sep=2pt, below of=22] (23) {2.3};
+%updated chow version
+\node[shape=circle, draw, inner sep=2pt, below left of=23] (3) {3.0};
+% cobmination of 2.3 and 3
+\node[shape=circle, draw, inner sep=2pt, below right of=3] (31) {3.1};
+% start of thad versions
+\node[shape=circle, draw, inner sep=2pt, below of=31] (seto) {SETO};
+\node[shape=circle, draw, inner sep=2pt, below of=seto] (4) {4.0};
+% ryan versions
+\node[shape=circle, draw, inner sep=2pt, below right of=31] (311) {3.1.1};
+\node[shape=circle, draw, inner sep=2pt, below of=311] (312) {3.1.2};
+
+%---- connecting lines
+% OG
+\draw [arrow] (1) -- (2);
+\draw [arrow] (2) -- (3);
+% dan
+\draw [arrow] (2) -- (21);
+\draw [arrow] (21) -- (22);
+\draw [arrow] (22) -- (23);
+% thad
+\draw [arrow] (3) -- (31);
+\draw [arrow] (23) -- (31);
+\draw [arrow] (31) -- (seto);
+\draw [arrow] (seto) -- (4);
+% ryan
+\draw [arrow] (31) -- (311);
+\draw [arrow] (311) -- (312);
+
+%===============================================================================
+\end{tikzpicture}
+}
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\caption{Development of PST.}
+	\label{fig: pst history}
+\end{figure}%\vspace{-1 em}
+\end{center}
+\end{minipage}

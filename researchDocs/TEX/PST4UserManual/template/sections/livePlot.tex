@@ -23,6 +23,7 @@ copyfile([PSTpath 'liveplot_ORIG.m'],[PSTpath 'liveplot.m']); % restore function
 There are currently 3 live plot functions:
 
 \begin{itemize}
+\itemsep 0 em
 \item \verb|liveplot_ORIG| - Original faulted bus voltage plot.
 \item \verb|liveplot_1| - Faulted bus voltage and system machine speeds plus any lmod signals.
 \item \verb|liveplot_2| - AGC signals.
@@ -31,6 +32,7 @@ There are currently 3 live plot functions:
 It should be noted that the live plotting can cause extremely slow simulations and occasional crashes.
 To disable live plotting:
 \begin{itemize}
+\itemsep 0 em
 \item In stand-alone mode: \\Change the `live plot?' field from a $1$ to a $0$ in the popup dialog box.
 \item In batch mode:  \\Create a variable \verb|livePlotFlag| and set as $0$ or \verb|false|.
 \end{itemize}

@@ -195,7 +195,6 @@ if isempty(flag)                    % normal step completion
         livePlot(g.vts.dataN)       % Live plotting
     end
     
-    
     g.vts.dataN = g.vts.dataN+1;    % increment logged data index 'dataN'
     g.sys.t(g.vts.dataN) = t;       % log step time
     g.vts.stVec = y;                % update state vector
