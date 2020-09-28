@@ -1,23 +1,18 @@
 \section{extendedTerm - WIP}
-% copied from  200806-ExtendedVersionComp
+(sloppily copied from 200806-ExtendedVersionComp)
 
-\textbf{Scenario} (sloppily copied from 200806-ExtendedVersionComp)
+\subsection{Scenario} 
  \begin{center}
-\begin{minipage}{.47\linewidth}
-\centering
-\includegraphics[width=\linewidth]{examples/extendedTerm/sysOneLineAreas}
-\includegraphics[width=.8\linewidth]{examples/extendedTerm/verPmSig}
-\end{minipage} %
-\begin{minipage}{.47\linewidth}
 \begin{itemize}
 \footnotesize
+\raggedright
+\singlespacing
 \itemsep 0em
-\item Kundur  4 machine system packaged with PST
+\item Kundur  4 machine system packaged with PST - Same as used in AGC examples...
 \item Constant Z load model
 \item System has governors, exciters, and PSS.
 \item Governor of generator being perturbed by pm\_sig removed
 \item Perturbance was meant to mimic a solar ramp with various situations of cloud cover:\\
-(larger plot of pm\_sig on Page 6)
 \begin{Verbatim}[fontsize=\scriptsize]
 % time [seconds]
 % 0-30      - no action
@@ -32,15 +27,19 @@
 % 180-190 - 15% cover (generation reduction to 85%)
 \end{Verbatim}
 \end{itemize}
-\end{minipage}
 
+Modulation signal:
+\includegraphics[width=.8\linewidth]{examples/extendedTerm/verPmSig}
 \end{center}
 
-\textbf{Summary} 
+
+\pagebreak
+\subsection{Result Summary} 
 \begin{enumerate}
 \itemsep 0 em
-\item The PST 4 is 3.65 times faster than PST 3.1
-\item Using variable time steps allows for a speed up of 14.84 over PST 3.1.
+\item PST 3.1.1 performs approximately the same as PST 3.1
+\item The PST 4 is 3.65 times faster than PST 3.1.1
+\item Using variable time steps allows for a speed up of 14.84 over PST 3.1.1.
 \item Results from all simulations are very similar.
 \item Without creating an explicit time block at the beginning of an event, VTS events may not occur at the exact time they are programmed.
 \item VTS reduces logged data size by $\approx$4 times.
@@ -58,9 +57,9 @@
 
 	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{Solutions Per Step}			&		&		&		\\	
 \shortstack{PST\\Version}	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. Time	&	Speed Up	\\ \midrule	
-3.1	&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	916.24	&	1.00	\\	
-4.0	&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	250.82	&	3.65	\\	
-VTS	&	2.32E+01	&	2.68E-04	&	2.58E-02	&	9,315	&	2	&	97	&	17,006	&	61.73	&	14.84	\\	
+3.1.1	&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	916.24	&	1.00	\\	
+4.0	- FTS&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	250.82	&	3.65	\\	
+4.0 - VTS	&	2.32E+01	&	2.68E-04	&	2.58E-02	&	9,315	&	2	&	97	&	17,006	&	61.73	&	14.84	\\	
 																				\bottomrule
 	\end{tabular}
 	}%end resize box
@@ -88,19 +87,19 @@ NOTE: Initial time steps before t=30 are much larger than the other time steps (
 \textbf{Plotted Results - Various Comparisons} \ \\
 \includegraphics[width=\linewidth]{examples/extendedTerm/verComp}
 
-NOTE: 3.1 does not calculate average system frequency.
+NOTE: 3.1.1 does not calculate average system frequency.
 
 \pagebreak
 \textbf{Plotted Results - Various Comparisons - Detail 1} \ \\
 \includegraphics[width=\linewidth]{examples/extendedTerm/verCompDetail1}
 
-NOTE: 3.1 does not calculate average system frequency.
+NOTE: 3.1.1 does not calculate average system frequency.
 
 \pagebreak
 \textbf{Plotted Results - Various Comparisons - Detail 2} \ \\
 \includegraphics[width=\linewidth]{examples/extendedTerm/verCompDetail2}
 
-NOTE: 3.1 does not calculate average system frequency.
+NOTE: 3.1.1 does not calculate average system frequency.
 
 VTS events may not occur at exact specified time due to the nature of variable time steps.
 
@@ -108,11 +107,11 @@ Breaks in the \verb|sw_con| can be created to account for this, however, the var
 
 
 \pagebreak
-\textbf{Plotted Results - Modulation Signal} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verPmSig}
 \textbf{Plotted Results - Mechanical Power} \ \\
 \includegraphics[width=\linewidth]{examples/extendedTerm/verPmech}
 Note that the modulated mechanical power signal is not added to the recorded mechanical power.
+
+
 \textbf{Plotted Results - Electric Power} \ \\
 \includegraphics[width=\linewidth]{examples/extendedTerm/verPelect}
 

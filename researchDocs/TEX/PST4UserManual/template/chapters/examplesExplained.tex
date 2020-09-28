@@ -8,7 +8,7 @@ As example cases are located on a github repository, relative file paths are use
 While most examples can be run in multiple versions of PST, some functionality can only be found in specific versions.
 
 
-\section{Example Operation Overview}
+\section{Example Operation Overview - WIP}
 
 \noindent The general structure of created examples tend to reflect the following:
 \begin{enumerate}
@@ -48,10 +48,116 @@ While the examples themselves do not reflect any particular scenario, the provid
 
 \noindent It should be noted that modulation files for PST 2 and 3 assume input to function is ($t, k$), i.e. full time vector and data index, while PST 4 only requires the data index $k$.
 
+
 %=====================================================================
-% all current examples
 \pagebreak
-\section{Lightly Introduced Examples}
+\section{AGC - WIP}
+PST 4 only
+
+\subsection{run\_AGC - WIP}
+\begin{itemize}
+\itemsep 0 em
+\item 2 area Kundur-esq system with selectable integration methods via a string entered as \verb|FTS| in example file.
+\item 0.5 PU load step on Bus 4. 
+\item 120 second recovery with unrealistic AGC settings.
+\end{itemize}
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/agc/sysOneLineAreas}
+	\caption{One-Line used in run\_AGC.}
+	\label{fig: runAGC one line}
+\end{figure}%\vspace{-1 em}
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/agc/run-AGC-1}
+	\caption{Live Plot output from run\_AGC.}
+	\label{fig: runAGC liveplot}
+\end{figure}%\vspace{-1 em}
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/agc/run-AGC-2}
+	\caption{Governor signlas sent in run\_AGC.}
+	\label{fig: runAGC tg}
+\end{figure}%\vspace{-1 em}
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/agc/run-AGC-3}
+	\caption{Change in area generation in run\_AGC.}
+	\label{fig: runAGC area gen}
+\end{figure}%\vspace{-1 em}
+
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/agc/run-AGC-4}
+	\caption{Power absorbed by loads during run\_AGC.}
+	\label{fig: runAGC power}
+\end{figure}%\vspace{-1 em}
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/agc/run-AGC-5}
+	\caption{Load bus voltage during run\_AGC.}
+	\label{fig: runAGC bus v}
+\end{figure}%\vspace{-1 em}
+
+
+
+%-----------------------------------------------------------------------
+% split into seperate doc due to pre existing results
+\input{examples/agcMod/agcMod}
+
+%=======================================================================
+
+\input{examples/extendedTerm/extendedTerm}
+
+
+%=======================================================================
+\pagebreak
+\section{ivmmod - WIP} \label{sec: ivmmod ex}
+example modified from Dan - includes a VTS example  -
+requires some minor reworking - 
+
+shows how angle change `moves' entire system.
+
+VTS method used - clearly shows how variable time steps adjust to capture dynamics
+
+
+%=======================================================================
+\pagebreak
+\section{miniWECC - WIP}
+
+\subsection{AGC - WIP} 
+multi area agc (VTS?)
+
+\subsection{genTrip - WIP} 
+use to show arbitrary tripping
+
+
+%=======================================================================
+\pagebreak
+\section{pwrmod -WIP} \label{sec: pwrmodExamples}
+\subsection{P-injection - WIP}
+\subsection{I-injection - WIP}
+
+%=======================================================================
+\pagebreak
+\input{examples/untrip/untrip}
+
+%=====================================================================
+% Working examples that are not really worth describing in great detail
+\pagebreak
+\section{Lightly Introduced Examples - WIP}
 These examples exist on github, but don't necessarily require a much more than a casual mention.
 \subsection{DC - WIP}
 All versions - 
@@ -74,55 +180,3 @@ Works in all versions.
 \subsection{tg - WIP}
 Examples of a load step with and without governor action
 
-%=====================================================================
-\pagebreak
-Examples from 0-examples folder are listed below - last bit of User manual work will be to `thin the herd', insert previous results, confirm working, and provide minor details about content
-
-
-\section{AGC - WIP}
-PST 4 only
-
-\subsection{run\_AGC - WIP}
-- 2 area kundur with optional integration methods = load step - 120 second recovery.
-
-
-\input{examples/agcMod/agcMod}
-
-
-
-%=======================================================================
-\pagebreak
-\input{examples/extendedTerm/extendedTerm}
-
-
-%=======================================================================
-\pagebreak
-\section{ivmmod - WIP} \label{sec: ivmmod ex}
-example modified from Dan - includes a VTS example  -
-requires some minor reworking - 
-
-shows how angle change `moves' entire system.
-
-VTS method used - clearly shows how variable time steps adjust to capture dynamics
-
-
-%=======================================================================
-\pagebreak
-\section{miniWECC - WIP}
-
-	\subsection{AGC - WIP} 
-multi area agc (VTS?)
-
-	\subsection{genTrip - WIP} 
-use to show arbitrary tripping
-
-
-%=======================================================================
-\pagebreak
-\section{pwrmod -WIP} \label{sec: pwrmodExamples}
-\subsection{P-injection - WIP}
-\subsection{I-injection - WIP}
-
-%=======================================================================
-\pagebreak
-\input{examples/untrip/untrip}
