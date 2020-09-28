@@ -4,14 +4,12 @@
 clear; close all
 printFigs = 0;
 
-% load varible data
-% load('AGCtestVTS.mat')
 load('ivmVTS.mat')
 gv = g;
 clear g;
 
 % load fixed data
-load('ivmF.mat') % fixed
+load('ivmFTS.mat') % fixed
 
 %% fig 1
 % bus v, bus angle

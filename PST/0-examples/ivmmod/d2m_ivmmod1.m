@@ -84,9 +84,8 @@ load_con = [...
 % row 5 col1  time to change step length (s)
 %     col7  time step (s)
 sw_con = [...
-0        0    0    0    0    0    1/120;%sets intitial time step
-9.0      3    2    0    0    5    1/120; %no fault, trip load at bus 3
-9+1/60   0    0    0    0    0    1/120; %clear near end of fault
-9+2/60   0    0    0    0    0    1/120; %clear far end of fault
-9.1      0    0    0    0    0    1/120; % increase time step
-10       0    0    0    0    0    1/120]; % end simulation
+0     	0    0    0    0    0    1/120;%sets intitial time step
+1       3    2    0    0    6    1/120; % do nothing
+2       0    0    0    0    0    1/120; %clear near end of fault
+10      0    0    0    0    0    1/120; % increase time step
+40    	0    0    0    0    0    1/120]; % end simulation

@@ -6,9 +6,10 @@ As software development is never actually `done', this chapter is meant to conta
 
 \begin{enumerate}
 \singlespacing
+\itemsep 0 em
 	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
 	\item \verb|tgh| model was not converted for use with global g. (no examples of tgh gov)
-	\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\It probably shouldn't be.
+	\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\Ryan Elliot has found that this \verb|tap| variable is locally re-created before every use. Thus, it has no real need to be global.
 	\item Constant Power or Current loads seem to require a portion of constant Impedance.
 	\item PSS design functionality not explored.
 	\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
