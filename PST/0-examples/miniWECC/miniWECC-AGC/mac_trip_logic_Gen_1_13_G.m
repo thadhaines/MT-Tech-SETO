@@ -19,6 +19,8 @@ function [tripOut,mac_trip_states] = mac_trip_logic(tripStatus,mac_trip_states,t
 % Author:   Dan Trudnowski
 % Date:   Jan 2017
 
+% Modified 09/30/20 to use global g - Thad Haines
+
 %% define global variables
 global g
 persistent t1 t2 % used to only display trip notifications once.
@@ -30,7 +32,7 @@ if kT<2
     t2 = 0;
 else
     tripOut = tripStatus;
-    if abs(t(kT)-5)<1e-5
+    if abs(t(kT)-5)<1e-6
         tripOut(1) = true; %trip gen 1 at t=5 sec.
         mac_trip_states(1,:) = [1; t(kT)]; %keep track of when things trip
         if ~t1
@@ -38,7 +40,7 @@ else
             t1 = 1;
         end
     end
-    if abs(t(kT)-8)<1e-5
+    if abs(t(kT)-8)<1e-6
         tripOut(13) = true; %trip gen 13 at t=8 sec.
         mac_trip_states(2,:) = [13; t(kT)]; %keep track of when things trip
         if ~t2

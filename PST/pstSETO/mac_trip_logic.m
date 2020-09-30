@@ -1,7 +1,7 @@
 function [tripOut,mac_trip_states] = mac_trip_logic(tripStatus,mac_trip_states,t,kT)
 % Purpose: trip generators.
 %
-% Inputs: 
+% Inputs:
 %   tripStatus = n_mac x 1 bool vector of current trip status.  If
 %       tripStatus(n) is true, then the generator corresponding to the nth
 %       row of mac_con is already tripped.  Else, it is false.

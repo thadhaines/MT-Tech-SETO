@@ -1,102 +1,97 @@
 % compare 10 miute AGC miniWECC recovery
 clear; close all
 
-%load('VTSagcPstep') % relative tolerance to 1e-4
-%load('VTSrel-5') % decreased relative tolerance to 1e-5
-load('test') % decreased relative tolerance to 1e-5, decreased number of time blocks...
+% Load variable time step
+load('mwPSLTDSim_trip_VTS')
 gv = g;
 clearvars -except gv
 
-load('FTSagcPstep')
+% load fixed time step
+load('mwPSLTDSim_trip_FTS')
 
 clearvars -except gv g
 %%
-fprintf('Elapsed Time (Huens):\t %s\n', g.sys.ElapsedNonLinearTime)
-fprintf('Elapsed Time (ode23):\t %s\n', gv.sys.ElapsedNonLinearTime)
+fprintf('Elapsed Time (FTS):\t %s\n', g.sys.ElapsedNonLinearTime)
+fprintf('Elapsed Time (VTS):\t %s\n', gv.sys.ElapsedNonLinearTime)
 fprintf('VTS speed up: %4.4f\n', ...
     str2double(g.sys.ElapsedNonLinearTime)/str2double(gv.sys.ElapsedNonLinearTime))
-fprintf('VTS logged data reduction: %4.4f\n', ...
-    1172615366/32419352) % collected from whos('varName')
-
 
 %% copied time step plot
-   %% time step size calculation
-    vts = zeros(gv.vts.dataN-1,1);
-    for n=2:gv.vts.dataN
-        vts(n-1)= gv.sys.t(n)-gv.sys.t(n-1);
-    end
-    
-    fts = zeros(size(g.sys.t,2)-1,1);
-    for n=2:size(g.sys.t,2)
-        fts(n-1) = g.sys.t(n) - g.sys.t(n-1);
-    end
-    
-    % time step plottings
-    figure
-    subplot(3,1,1)
-    stairs(gv.sys.t(1:end-1),vts,'k','linewidth',1.25)
-    hold on
-    grid on
-    stairs(g.sys.t(1:end-1), fts, 'm--','linewidth',1)
-    
-    
-    aveSln = mean(vts);
-    maxSln = max(vts);
-    
-    minSln = aveSln;
-    for i=1:length(vts)
-        if vts(i) ~= 0
-            if vts(i) < minSln
-                minSln = vts(i);
-            end
+%% time step size calculation
+vts = zeros(gv.vts.dataN-1,1);
+for n=2:gv.vts.dataN
+    vts(n-1)= gv.sys.t(n)-gv.sys.t(n-1);
+end
+
+fts = zeros(size(g.sys.t,2)-1,1);
+for n=2:size(g.sys.t,2)
+    fts(n-1) = g.sys.t(n) - g.sys.t(n-1);
+end
+
+% time step plottings
+figure
+subplot(3,1,1)
+stairs(gv.sys.t(1:end-1),vts,'k','linewidth',1.25)
+hold on
+grid on
+stairs(g.sys.t(1:end-1), fts, 'm--','linewidth',1)
+
+aveSln = mean(vts);
+maxSln = max(vts);
+
+minSln = aveSln;
+for i=1:length(vts)
+    if vts(i) ~= 0
+        if vts(i) < minSln
+            minSln = vts(i);
         end
     end
-    
-    
-    txtBlk = {['Average Time Step:  ', num2str(aveSln,3)]; ...
-        ['Maximum Time Step: ', num2str(maxSln,3)];  ...
-        ['Minimum Time Step: ', num2str(minSln,3)]   };
-    grid on
-    text(100, maxSln*.7,txtBlk)
-    
-    legend({'Variable TS', ['Fixed TS (', num2str(fts(10)), ' sec)'] }, 'location', 'north')
-    title({'Time Step Comparison'})
-    ylabel('Time Step Size [seconds]')
-    xlabel('Time [seconds]')
-    
-    % plot number of solutions
-    subplot(3,1,2)
-    stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
-    hold on
-    bar(gv.sys.t, gv.vts.slns,'k')
-    
-    aveSln = round(mean(gv.vts.slns));
-    maxSln = max(gv.vts.slns);
-    txtBlk = {['Average Solutions per step: ', int2str(aveSln)]; ...
-        ['Maximum Solutions per step: ', int2str(maxSln)]; ...
-        ['Total Solutions: ', int2str(gv.vts.tot_iter)]; ...
-        ['Total Steps: ', int2str(gv.vts.dataN)]         };
-    grid on
-    text(100, maxSln*.7,txtBlk)
-    title('Number of Network and Dynamic Solutions')
-    %xlabel('Time [seconds]')
-    %ylim([aveSln*10, maxSln*1.2])
-    ylabel('Number of Solutions')
-    
-    xlim([min(gv.sys.t), max(gv.sys.t)])
-    
-    % plot number of solutions detail
-    subplot(3,1,3)
-    stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
-    hold on
-    bar(gv.sys.t, gv.vts.slns,'k')
-    ylim([0,aveSln+0.5])
-    xlim([min(gv.sys.t), max(gv.sys.t)])
-    grid on
-    title('Number of Network and Dynamic Solutions (Detail)')
-    xlabel('Time [seconds]')
-    ylabel('Number of Solutions')
-    
+end
+
+txtBlk = {['Average Time Step:  ', num2str(aveSln,3)]; ...
+    ['Maximum Time Step: ', num2str(maxSln,3)];  ...
+    ['Minimum Time Step: ', num2str(minSln,3)]   };
+grid on
+text(100, maxSln*.7,txtBlk)
+
+legend({'Variable TS', ['Fixed TS (', num2str(fts(10)), ' sec)'] }, 'location', 'north')
+title({'Time Step Comparison'})
+ylabel('Time Step Size [seconds]')
+xlabel('Time [seconds]')
+
+% plot number of solutions
+subplot(3,1,2)
+stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
+hold on
+bar(gv.sys.t, gv.vts.slns,'k')
+
+aveSln = round(mean(gv.vts.slns));
+maxSln = max(gv.vts.slns);
+txtBlk = {['Average Solutions per step: ', int2str(aveSln)]; ...
+    ['Maximum Solutions per step: ', int2str(maxSln)]; ...
+    ['Total Solutions: ', int2str(gv.vts.tot_iter)]; ...
+    ['Total Steps: ', int2str(gv.vts.dataN)]         };
+grid on
+text(100, maxSln*.7,txtBlk)
+title('Number of Network and Dynamic Solutions')
+%xlabel('Time [seconds]')
+%ylim([aveSln*10, maxSln*1.2])
+ylabel('Number of Solutions')
+
+xlim([min(gv.sys.t), max(gv.sys.t)])
+
+% plot number of solutions detail
+subplot(3,1,3)
+stairs(gv.sys.t, gv.vts.slns,'k','linewidth',1.25)
+hold on
+bar(gv.sys.t, gv.vts.slns,'k')
+ylim([0,aveSln+0.5])
+xlim([min(gv.sys.t), max(gv.sys.t)])
+grid on
+title('Number of Network and Dynamic Solutions (Detail)')
+xlabel('Time [seconds]')
+ylabel('Number of Solutions')
+
 %% multiple comparison figure
 plotLims = [0,600];
 figure
@@ -168,7 +163,6 @@ title({ ['Exciter Efd comparison of Exciter ',int2str(exc)];})
 xlim(plotLims)
 grid on
 
-
 % pss dynamic
 subplot(3,2,6)
 pss = 1;
@@ -211,9 +205,11 @@ xlabel('Time [sec]')
 subplot(3,1,3)
 for n = 1:g.agc.n_agc
     for cg=1:g.agc.agc(n).n_ctrlGen
-        plot(g.sys.t, g.agc.agc(n).ctrlGen(cg).input)
-        hold on
-        plot(gv.sys.t, gv.agc.agc(n).ctrlGen(cg).input, '--')
+        if ~isempty(g.agc.agc(n).ctrlGen(cg).input) % account for no action
+            plot(g.sys.t, g.agc.agc(n).ctrlGen(cg).input)
+            hold on
+            plot(gv.sys.t, gv.agc.agc(n).ctrlGen(cg).input, '--')
+        end
     end
 end
 title('Controlled Machine Comparisons')
