@@ -52,7 +52,7 @@ txtBlk = {['Average Time Step:  ', num2str(aveSln,3)]; ...
     ['Maximum Time Step: ', num2str(maxSln,3)];  ...
     ['Minimum Time Step: ', num2str(minSln,3)]   };
 grid on
-text(100, maxSln*.7,txtBlk)
+text(400, maxSln*.7,txtBlk)
 
 legend({'Variable TS', ['Fixed TS (', num2str(fts(10)), ' sec)'] }, 'location', 'north')
 title({'Time Step Comparison'})
@@ -72,7 +72,7 @@ txtBlk = {['Average Solutions per step: ', int2str(aveSln)]; ...
     ['Total Solutions: ', int2str(gv.vts.tot_iter)]; ...
     ['Total Steps: ', int2str(gv.vts.dataN)]         };
 grid on
-text(100, maxSln*.7,txtBlk)
+text(400, maxSln*.7,txtBlk)
 title('Number of Network and Dynamic Solutions')
 %xlabel('Time [seconds]')
 %ylim([aveSln*10, maxSln*1.2])
@@ -126,7 +126,7 @@ grid on
 
 % Machine dynamic
 subplot(3,2,3)
-mac = 1;
+mac = 3;
 
 plot(g.sys.t, g.mac.mac_spd(mac,:),'k','linewidth',1.25)
 hold on

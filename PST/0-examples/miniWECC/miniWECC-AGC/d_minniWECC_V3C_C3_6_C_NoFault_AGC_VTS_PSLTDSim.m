@@ -1097,7 +1097,7 @@ sw_con = [...
     %280    0    0    0    0    0    1/120; % following AGC
     %400    0    0    0    0    0    1/120; % following AGC
     %520    0    0    0    0    0    1/120; % following AGC
-    60    0    0    0    0    0    0]; %end simulation
+    600    0    0    0    0    0    0]; %end simulation
 
 %% solver_con format
 % A cell with a solver method in each row corresponding to the specified

@@ -6,7 +6,7 @@ clear all; close all; clc
 %% Add pst path to MATLAB
 % generate relative path generically
 folderDepth = 3; % depth of current directory from main PST directory
-pstVer = 'pstSETO';
+pstVer = 'PSTv4';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -34,7 +34,7 @@ copyfile([PSTpath 'pss2.m'],[PSTpath 'pss.m']); % use specific pss model
 
 copyfile('pwrmod_dyn_Example2.m',[PSTpath 'pwrmod_dyn.m']); %Modulation file
 
-s_simu_Batch %Run PST
+s_simu %Run PST
 save('Example2_NonlinearSim','g'); %Save g
 
 %% Build Linear model, simulate, and store results

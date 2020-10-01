@@ -108,7 +108,7 @@ xx/xx/19    xx:xx   Dan Trudnowski  Version 1.9 - Added ivmmod code
 %
 
 format compact;
-disp('***    PST v4.0.0-b.2    ***')
+disp('***    PST v4.0.0-rc.1    ***')
 disp('***')
 disp('*** s_simu Start')
 disp('*** Declaring Global Variables')

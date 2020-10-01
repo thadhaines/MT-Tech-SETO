@@ -111,46 +111,28 @@ PST 4 only
 	\label{fig: runAGC bus v}
 \end{figure}%\vspace{-1 em}
 
-
-
 %-----------------------------------------------------------------------
 % split into seperate doc due to pre existing results
 \input{examples/agcMod/agcMod}
 
 %=======================================================================
-
 \input{examples/extendedTerm/extendedTerm}
-
 
 %=======================================================================
 \pagebreak
-\section{ivmmod - WIP} \label{sec: ivmmod ex}
-example modified from Dan - includes a VTS example  -
-requires some minor reworking - 
-
-shows how angle change `moves' entire system.
-
-VTS method used - clearly shows how variable time steps adjust to capture dynamics
-
+\input{examples/ivmmod/ivmExample}
 
 %=======================================================================
 \pagebreak
 \section{miniWECC - WIP}
-
-\subsection{miniWECC-genTrip - WIP} 
-Shows multi generator tripping, use of miniWECC in all versions
-
-\subsection{miniWECC-AGC - WIP} 
-multi area agc using optional VTS in PSTv4
-
-
-
+\input{examples/miniWECC/genTrip}
+%=======================================================================
+\pagebreak
+\input{examples/miniWECC/AGC-VTS}
 
 %=======================================================================
 \pagebreak
-\section{pwrmod -WIP} \label{sec: pwrmodExamples}
-\subsection{P-injection - WIP}
-\subsection{I-injection - WIP}
+\input{examples/pwrmod/pwrmodExamples}
 
 %=======================================================================
 \pagebreak
@@ -162,23 +144,20 @@ multi area agc using optional VTS in PSTv4
 \section{Lightly Introduced Examples - WIP}
 These examples exist on github, but don't necessarily require a much more than a casual mention.
 \subsection{DC - WIP}
-All versions - 
-
-non-linear simulation seems to work
-
-linear analysis doesn't seem to work correctly - user error?
+Non-linear simulation seems to work in all versions.
+Linear analysis doesn't seem to work correctly - possibly due to user error
 
 \subsection{exciterBatchTests - WIP}
-PST 4 only - used to compare all 4 exciter models linear/non-linear response to load step
-
-Was useful in ensuring exciter models were cast to globals correctly
+PST 4 only script.
+Used to compare all 4 exciter models linear/non-linear response to load step.
+Was useful in ensuring exciter models were cast to globals correctly.
 
 \subsection{inductive - WIP}
-meant to verify functionality of inductive generators and loads (motors)
-
+Meant to verify functionality of inductive generators and loads (motors) using a global g.
 Multiple cases run from example script: fault example and load pulse with linear/non-linear comparison.
-Works in all versions.
+Works in all PST versions.
 
 \subsection{tg - WIP}
-Examples of a load step with and without governor action
+Examples of a load step with and without governor action.
+Meant to clearly show how governors act to arrest frequency change.
 

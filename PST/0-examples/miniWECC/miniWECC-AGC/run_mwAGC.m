@@ -33,7 +33,7 @@ else
 end
 
 % select which data file
-if areaSetting
+if areaSetting == 1
     copyfile('d_minniWECC_V3C_C3_6_C_NoFault_AGC_VTS_PSLTDSim.m',[PSTpath 'DataFile.m']); % PSLTDSim 3 Area
     areaConfig = 'PSLTDSim';
 else
