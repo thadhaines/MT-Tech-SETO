@@ -1,6 +1,6 @@
 % file to contain information on loose ends or things generaly unfinished
 %==============================================================================
-\chapter{Loose Ends - WIP}
+\chapter{Loose Ends}
 As software development is never actually `done', this chapter is meant to contain any loose ends that felt relevant.
 %The below is copied from the most recent weekly (09/02/20) and some minor additions
 
@@ -9,12 +9,12 @@ As software development is never actually `done', this chapter is meant to conta
 \itemsep 0 em
 	\item As infinite buses don't seem to be used in dynamic simulation, they were not converted to use the golbal g.
 	\item \verb|tgh| model was not converted for use with global g. (no examples of tgh gov)
-	\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\Ryan Elliot has found that this \verb|tap| variable is locally re-created before every use. Thus, it has no real need to be global.
-	\item Constant Power or Current loads seem to require a portion of constant Impedance.
+	\item In original (and current) \verb|s_simu|, the global \verb|tap| value associated with HVDC is over-written with  a value used to compute line current multiple times. \\Ryan Elliot has reported that this \verb|tap| variable is locally re-created before every use. Thus, it has no real need to be global.
+	\item Constant Power or Current loads seemed to require a portion of constant Impedance - possibly user error.
 	\item PSS design functionality not explored.
-	\item No examples of of delta P omega filter or user defined damping controls for SVC and TCSC models
-	\item Differences in \verb|mac_ind| between PST 2 and 3 seem backward compatible, but this is untested.
-	\item DC is not implemented in VTS. It seems like DC models should be combined into the main routine if so desired. Seems counter intuitive / (not very possible) to do multi-rate variable time step integration...
+	\item No examples of the delta P omega filter or user defined damping controls for SVC and TCSC models appear to exist.
+	\item Differences in \verb|mac_ind| between PST 2 and 3 seem backward compatible, but this are untested.
+	\item DC is not implemented in VTS. If desired, DC models should be combined into the main routine for VTS as it seems counter intuitive/ confusing / inefficient to do \emph{multi-rate variable time step integration}.
 	\item AGC capacity should consider defined machine limits instead of assuming 1 PU max.
 	\item AGC should allow for a `center of inertia' frequency option instead of the weighted average frequency.
 	\item A method to initialize the power system with tripped generators should be devised and occur before the first power flow solution.
@@ -23,4 +23,5 @@ As software development is never actually `done', this chapter is meant to conta
 	\item miniWECC DC lines (modeled as power injection) are not included in AGC calculations as the power does not travel over any simulated lines.
 	\item If a machine has been tripped, the Y matrix is adjusted and reduced every time step. This repeated action could be made more efficient.
 	\item Odd IVM behavior may have to do with how PST doesn't really use the synchronous reference frame (\verb|g.sys.syn_ref|) or assumes \verb|g.sys.sys_freq| is always 1.
+	\item Variables passed into the generator trip function may be cleaned up as they are globals.
 \end{enumerate}

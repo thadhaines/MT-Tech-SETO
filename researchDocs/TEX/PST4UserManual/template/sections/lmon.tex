@@ -2,6 +2,7 @@
 \section{Line Monitoring Functionality (lmon)}  
 Previous versions of PST had line monitoring functionality, but the calculation was performed after the simulation was completed.
 \mbox{PST 4} now calculates line current and power flow of monitored lines during non-linear simulation.
+The updated line monitoring routine allows for controls dealing with line flow monitoring (such as AGC).
 The definition of the \verb|lmon_con| is the same as previous PST versions and an example is shown in Listing \ref{lst: lmon example}.
 
 \begin{lstlisting}[caption={Line Monitoring Definition Example},label={lst: lmon example}]

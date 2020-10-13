@@ -1,6 +1,6 @@
 % file to contain information on examples
 %==============================================================================
-\chapter{Examples - WIP}
+\chapter{Examples}
 Examples are located in the \verb|0-examples| folder and are designed to be run in batch mode.
 This means that each example copies any required system, model, or modulation file to the main PST directory before running.
 Typically, each example folder contains a \verb|.m| file that starts with \verb|run_| that can be used to run the example.
@@ -8,7 +8,7 @@ As example cases are located on a github repository, relative file paths are use
 While most examples can be run in multiple versions of PST, some functionality can only be found in specific versions.
 
 
-\section{Example Operation Overview - WIP}
+\section{Example Operation Overview }
 
 \noindent The general structure of created examples tend to reflect the following:
 \begin{enumerate}
@@ -17,10 +17,9 @@ While most examples can be run in multiple versions of PST, some functionality c
 \item Define which version of PST to use.
 \item Create a relative path to the root directory of chosen PST version.
 \item Copy any system, model, or modulation file to the PST root directory.
-\item Set live plotting flag.
 \item Run \verb|s_simu|.
 \item Save output data.
-\item Restore any model, or modulation file to original state.
+\item Restore any model or modulation file to original state.
 \item Create data plots.
 \end{enumerate}
 
@@ -41,7 +40,7 @@ While the examples themselves do not reflect any particular scenario, the provid
 \item \verb|mexc| - Replaces the \verb|mexc_sig| file to modulate the exciter reference signal.
 \item \verb|mtg_sig| - Replaces the \verb|mtg_sig| file to modulate the governor $P_{ref}$ reference signal.
 \item \verb|pm_sig| - Replaces the \verb|mpm_sig| file to modulate a machines mechanical power.
-\item \verb|rlmod| - Replaces the \verb|rml_sig| file to modulate a load's reactive power.
+\item \verb|rlmod| - Replaces the \verb|rml_sig| file to modulate reactive load power.
 \item \verb|SVC| - Replaces the \verb|msvc_sig| file to modulate an SVC's output value.
 \item \verb|TCSC| - Replaces the \verb|mtcsc_sig| file to modulate an TCSC's output value.
 \end{itemize}
@@ -52,64 +51,20 @@ While the examples themselves do not reflect any particular scenario, the provid
 %=====================================================================
 \pagebreak
 \section{AGC - WIP}
-PST 4 only
-
-\subsection{run\_AGC - WIP}
-\begin{itemize}
-\itemsep 0 em
-\item 2 area Kundur-esq system with selectable integration methods via a string entered as \verb|FTS| in example file.
-\item 0.5 PU load step on Bus 4. 
-\item 120 second recovery with unrealistic AGC settings.
-\end{itemize}
+Automatic generation control (AGC) has been added only to PST 4.
+As such, only PST 4 can run the AGC examples.
+Both AGC examples use the modified Kundur 4 machine model shown in Figure \ref{fig: runAGC one line}.
 
 \begin{figure}[H]
 	\centering
 	\footnotesize
-	\includegraphics[width=\linewidth]{examples/agc/sysOneLineAreas}
+	\includegraphics[width=.85\linewidth]{examples/agc/sysOneLineAreas}
 	\caption{One-Line used in run\_AGC.}
 	\label{fig: runAGC one line}
 \end{figure}%\vspace{-1 em}
 
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/agc/run-AGC-1}
-	\caption{Live Plot output from run\_AGC.}
-	\label{fig: runAGC liveplot}
-\end{figure}%\vspace{-1 em}
-
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/agc/run-AGC-2}
-	\caption{Governor signlas sent in run\_AGC.}
-	\label{fig: runAGC tg}
-\end{figure}%\vspace{-1 em}
-
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/agc/run-AGC-3}
-	\caption{Change in area generation in run\_AGC.}
-	\label{fig: runAGC area gen}
-\end{figure}%\vspace{-1 em}
-
-
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/agc/run-AGC-4}
-	\caption{Power absorbed by loads during run\_AGC.}
-	\label{fig: runAGC power}
-\end{figure}%\vspace{-1 em}
-
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/agc/run-AGC-5}
-	\caption{Load bus voltage during run\_AGC.}
-	\label{fig: runAGC bus v}
-\end{figure}%\vspace{-1 em}
+%-----------------------------------------------------------------------
+\input{examples/runAGC/runAGC}
 
 %-----------------------------------------------------------------------
 % split into seperate doc due to pre existing results
@@ -125,6 +80,12 @@ PST 4 only
 %=======================================================================
 \pagebreak
 \section{miniWECC - WIP}
+The miniWECC is a 120 bus 34 generator system designed to simulate the western US interconnect.
+The original miniWECC was created without areas however, two slightly different multi-area models have been created.
+One mirrors the divisions used by \cite{haines2020}, while the other attempts to recreate the EIA area boundaries.
+One-line diagrams of both configurations are presented in Appendix \ref{sec: mw Sys}.
+
+%=======================================================================
 \input{examples/miniWECC/genTrip}
 %=======================================================================
 \pagebreak

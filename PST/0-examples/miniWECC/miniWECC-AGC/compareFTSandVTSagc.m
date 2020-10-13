@@ -2,12 +2,12 @@
 clear; close all
 
 % Load variable time step
-load('mwPSLTDSim_trip_VTS')
+load('mwEIA_trip_VTS')
 gv = g;
 clearvars -except gv
 
 % load fixed time step
-load('mwPSLTDSim_trip_FTS')
+load('mwEIA_trip_FTS')
 
 clearvars -except gv g
 %%

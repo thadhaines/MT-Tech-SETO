@@ -1,4 +1,4 @@
-PST Version 4 - current version: 4.0.0-b.2
+PST Version 4 - current version: 4.0.0
 
 (c) Montana Technological University / Thad Haines 2020
 
@@ -31,3 +31,4 @@ and code already in place to accommodate for user specified solution methods.
 %	09/08/20	09:03	Thad Haines		4.0.0-b.1 - Beta release - included optional first power flow bypass, minor s_simu clean up   
 %   09/12/20    12:26   Thad Haines     4.0.0-b.2 - Code cleanup, addition of g.sys.DEBUG, line_pq2 function name corrected   
 %   09/30/20    20:09   Thad Haines     4.0.0-rc.1 - Examples tested as working.  
+%   10/13/20    11:26   Thad Haines     4.0.0 - Release

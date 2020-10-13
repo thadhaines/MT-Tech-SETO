@@ -1,12 +1,15 @@
-\subsection{miniWECC-genTrip - WIP} 
-Shows multi generator tripping, use of miniWECC in all versions.
+\subsection{miniWECC-genTrip - WIP} \label{ex: mw gentrips}
+Example shows multiple generator trips in one simulation and the use of the miniWECC system in all versions.
+Main differences between 3.1 and 4 is overall simulation speed (PST 4 is $\approx$2x faster), the zeroing of tripped machine derivative, and system inertia calculations.\\
 
-Difference between 3.1 and 4: speed, zeroing of tripped machine derivative, system inertia calculation.\\
-3.1: 110.0729 seconds\\
-4.0: 46.3361 seconds\\
-2.37 x Speed up in PST 4
 
-Version 3 does not zero derivatives of tripped machine speeds.
+\input{tables/genTripTable}
+
+\pagebreak
+
+PST 3 does not zero derivatives of tripped machine speeds.
+As a result, tripped machine speeds increase greatly despite not having any effect on the rest of the connected system.
+
 \begin{figure}[H]
 	\centering
 	\footnotesize
@@ -15,8 +18,9 @@ Version 3 does not zero derivatives of tripped machine speeds.
 	\label{fig: mwGenTrip 3 speed}
 \end{figure}%\vspace{-1 em}
 
-\pagebreak
-PST 4 zeros derivatives of tripped machine speed and calculates system inertia accounting for tripped machines.
+PST 4 zeros derivatives of tripped machine speeds so that the machine will stay at whatever speed it was tripped at.
+This zeroing of derivatives is helpful when using VTS as time step size is determined by all derivatives in a system.
+
 \begin{figure}[H]
 	\centering
 	\footnotesize
@@ -24,7 +28,8 @@ PST 4 zeros derivatives of tripped machine speed and calculates system inertia a
 	\caption{Select generator speed during PST 4.0 run\_mwGenTrip.}
 	\label{fig: mwGenTrip 4 speed}
 \end{figure}%\vspace{-1 em}
-
+\pagebreak
+PST 4 calculates system total inertia and accounts for tripped generators.
 \begin{figure}[H]
 	\centering
 	\footnotesize

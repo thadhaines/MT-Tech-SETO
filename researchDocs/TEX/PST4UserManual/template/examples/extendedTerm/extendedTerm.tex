@@ -1,8 +1,7 @@
 \section{extendedTerm - WIP}
 (sloppily copied from 200806-ExtendedVersionComp)
 
-\subsection{Scenario} 
- \begin{center}
+\subsection{Scenario - WIP} 
 \begin{itemize}
 \footnotesize
 \raggedright
@@ -28,46 +27,39 @@
 \end{Verbatim}
 \end{itemize}
 
-Modulation signal:
-\includegraphics[width=.8\linewidth]{examples/extendedTerm/verPmSig}
-\end{center}
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-1}
+	\caption{Modulation signal extended example.}
+	\label{fig: extended 1}
+\end{figure}%\vspace{-1 em}
+
+
 
 
 \pagebreak
-\subsection{Result Summary} 
+\subsection{Result Summary - WIP} 
 \begin{enumerate}
 \itemsep 0 em
-\item PST 3.1.1 performs approximately the same as PST 3.1
-\item The PST 4 is 3.65 times faster than PST 3.1.1
-\item Using variable time steps allows for a speed up of 14.84 over PST 3.1.1.
+\item PST 4 is 2.6 times faster than PST 3.1.
+\item Using variable time steps allows for a speed up of 5.9 over PST 3.1.
 \item Results from all simulations are very similar.
 \item Without creating an explicit time block at the beginning of an event, VTS events may not occur at the exact time they are programmed.
-\item VTS reduces logged data size by $\approx$4 times.
+\item VTS reduces logged data size by $\approx$3 times.
 \end{enumerate}
 
 
-\begin{table}[!ht]
-\resizebox{\linewidth}{!}{
+\input{tables/extendedTable}
 
-	\begin{tabular}{@{} L{1.75cm} 
-	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{0.75cm} R{1.5cm} R{2cm} R{2cm}@{}} 	
-		\toprule % @ signs to remove extra L R space
-		\footnotesize % this will affect the table font (makse it 10pt)
-		\raggedright % for non justified table text
-
-	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{Solutions Per Step}			&		&		&		\\	
-\shortstack{PST\\Version}	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. Time	&	Speed Up	\\ \midrule	
-3.1.1	&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	916.24	&	1.00	\\	
-4.0	- FTS&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	250.82	&	3.65	\\	
-4.0 - VTS	&	2.32E+01	&	2.68E-04	&	2.58E-02	&	9,315	&	2	&	97	&	17,006	&	61.73	&	14.84	\\	
-																				\bottomrule
-	\end{tabular}
-	}%end resize box
-	
-
-
-
-\end{table}
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-7}
+	\caption{Electric Power from extended example.}
+	\label{fig: extended 7}
+\end{figure}%\vspace{-1 em}
 
 
 \pagebreak
@@ -76,45 +68,67 @@ Modulation signal:
 %>> compareVTSandFTS
 %VTS time: 15.8579
 %fixed time: 57.4479
- 
-
-\textbf{Plotted Results - Step Size / Number of Solutions Comparison} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verSteps}
-
 NOTE: Initial time steps before t=30 are much larger than the other time steps (multiple seconds) and are plotted off the axis.
 
-\pagebreak
-\textbf{Plotted Results - Various Comparisons} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verComp}
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-2}
+	\caption{Step Size / Number of Solutions Comparison extended.}
+	\label{fig: extended 2}
+\end{figure}%\vspace{-1 em}
 
-NOTE: 3.1.1 does not calculate average system frequency.
 
-\pagebreak
-\textbf{Plotted Results - Various Comparisons - Detail 1} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verCompDetail1}
-
-NOTE: 3.1.1 does not calculate average system frequency.
-
-\pagebreak
-\textbf{Plotted Results - Various Comparisons - Detail 2} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verCompDetail2}
-
-NOTE: 3.1.1 does not calculate average system frequency.
-
-VTS events may not occur at exact specified time due to the nature of variable time steps.
-
-Breaks in the \verb|sw_con| can be created to account for this, however, the variance in time is often relatively small.
 
 
 \pagebreak
-\textbf{Plotted Results - Mechanical Power} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verPmech}
-Note that the modulated mechanical power signal is not added to the recorded mechanical power.
+NOTE: 3.1 does not calculate average system frequency.
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-3}
+	\caption{Various Comparisons extended.}
+	\label{fig: extended 3}
+\end{figure}%\vspace{-1 em}
+
+\pagebreak
+
+NOTE: PST 3.1 uses the \verb|pss3| model while other PST versions use \verb|pss2|
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-4}
+	\caption{Various Comparisons - Detail 1 extended.}
+	\label{fig: extended 4}
+\end{figure}%\vspace{-1 em}
+
+\pagebreak
+
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-5}
+	\caption{Various Comparisons - Detail 2 extended.}
+	\label{fig: extended 5}
+\end{figure}%\vspace{-1 em}
+
+Figure \ref{fig: extended 5} NOTE: VTS events may not occur at exact specified time due to the nature of variable time steps.
+Additional entries in the \verb|sw_con| can be created to account for this.
+For example, creating an entry for every known perturbance can ensure the exact execution time.
 
 
-\textbf{Plotted Results - Electric Power} \ \\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verPelect}
+\pagebreak
 
-\textbf{Plotted Results - Electric Power - Detail} \ \\
-Detail of generators 1, 2, and 5 from t= 140 to 150:\\
-\includegraphics[width=\linewidth]{examples/extendedTerm/verPelectDetail}
+\begin{figure}[H]
+	\centering
+	\footnotesize
+	\includegraphics[width=\linewidth]{examples/extendedTerm/extended-6}
+	\caption{Mechanical Power extended.}
+	\label{fig: extended 6}
+\end{figure}%\vspace{-1 em}
+
+PST does not add the modulated mechanical power signal the recorded mechanical power.
+Instead, the modulation signal is added to the derivative of machine speed.
+
+
+

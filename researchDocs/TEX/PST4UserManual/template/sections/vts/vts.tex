@@ -4,6 +4,7 @@ To enable more efficient simulation of extended term events, variable time step 
 The main assumption behind VTS simulation is that when a system is moving `slowly', larger time steps can accurately capture system dynamics.
 Additionally, a viable VTS routine automatically adjusts the time step so that a known error tolerance is always met.
 As the time step increases, fewer solutions are required to simulate a set period of time which leads to reductions in the number of calculations and produces a more efficient solution method.
+Initial results show these assumptions to be valid (see Tables \ref{tab: extended} and \ref{tab: mw AGC})
 VTS simulations were made possible by using standard MATLAB ODE solvers.
 This decision was made to more quickly explore the viability of applying VTS methods to the power system simulation process.
 
@@ -12,13 +13,16 @@ To increase efficiency, models that are no longer connected to the system should
 Work has been done to zero the derivatives of tripped machines and exciters, but more work can be done to zero derivatives of other attached models (i.e. PSS and governors).
 
 \vspace{3 em}
+\begin{center}
 \noindent \textbf{NOTE:} Variable time step simulation is experimental and should be used with caution!
+\end{center}
+
 
 \pagebreak
 %------------------------------ from vts explained
 %==============================================================================
 \subsection{Solver Control Array (solver\_con)}  
-To use VTS integration methods, a user will have to add a \verb|solver_con| to a valid data file.
+To use VTS integration methods, a user will add a \verb|solver_con| to a valid data file.
 If a \verb|solver_con| is not specified, Huen's method is used for all time blocks (i.e. default PST 3 behavior).
 
 Between each \verb|sw_con| entry, a \emph{time block} is created that is then solved using a the defined solution method in the \verb|solver_con|.
@@ -50,12 +54,12 @@ An example \verb|solver_con| array is shown in Listing \ref{lst: solverCon ex}.
 % ode23tb - similar to 23t, sometimes more large solution counts
 
 solver_con ={ ...
-    'huens'; % pre fault - fault
-    'huens'; % fault - post fault 1
-    'huens'; % post fault 1 - post fault 2
-    'huens'; % post fault 2 - sw_con row 5
-    'ode113'; % sw_con row 5 - sw_con row 6 
-    'ode23t'; % sw_con row 6  - sw_con row 7  (end)
+    'huens';   % pre fault - fault
+    'huens';   % fault - post fault 1
+    'huens';   % post fault 1 - post fault 2
+    'huens';   % post fault 2 - sw_con row 5
+    'ode113';  % sw_con row 5 - sw_con row 6 
+    'ode23t';  % sw_con row 6  - sw_con row 7  (end)
     };
 \end{minted}
 
@@ -106,7 +110,7 @@ The following sections provide information about such functions.
 %==============================================================================
 \pagebreak
 \subsubsection{vtsInputFcn} 
-MATLAB ODE solvers require a passed in function must that returns a vector of derivatives associated with states to integrate.
+MATLAB ODE solvers require a passed in function that returns a vector of derivatives associated with states to integrate.
 The \verb|vtsInputFcn| was created to perform this critical task.
 The slightly abbreviated input function is shown in Listing \ref{lst: vtsInputFcn}.
 
@@ -218,7 +222,7 @@ end % end function
 
 %==============================================================================
 \subsubsection{handleNetworkSln}  
-The \verb|handleNetworkSln| function was created to store, and restore, calculated values set to globals during a network solution.
+The \verb|handleNetworkSln| function was created to store, and restore, calculated values set to global variables during a network solution.
 The purpose of this function was to allow for the first network solution performed each step to be carried forward after multiple other network solutions may over-write the calculated values at the same data index.
 This over-writing would occur during the MATLAB ODE solver's repeated calls to the input function.
 As shown in Listing \ref{lst: handleNetworkSln}, \verb|handlNetworkSln| takes a data index \verb|k| and an operation \verb|flag| as inputs.
@@ -283,7 +287,7 @@ function handleStDx(k, slnVec, flag)
 The new global structure created in PST 4 enables \verb|handleStDx| to complete the stated operations by relying heavily on dynamic field names. 
 Essentially, all required field names, sub-field names, and states are collected into a cell (flag operation 0) that is then iterated through to collect data from, or write data to the appropriate location (all other flag operations).
 
-The usefulness of \verb|handleStDx| is that the standard MATLAB ODE solvers require a single derivative vector as a returned value from some passed in `input function', and each PST model calculates derivatives and places them into various globals. 
+The usefulness of \verb|handleStDx| is that the standard MATLAB ODE solvers require a single derivative vector as a returned value from some passed in `input function', and each PST model calculates derivatives and places them into various global variables. 
 Thus, a derivative collection algorithm was needed (flag operation 1).
 Once the ODE solver finishes a step, the returned solution vector (of integrated states) must then be parsed into the global state variables associated with the supplied derivatives (flag operation 2).
 At the beginning of time blocks that use the MATLAB ODE solvers, an initial conditions vector of all the states related to the derivative vector is a required input (updated via flag operation 3).

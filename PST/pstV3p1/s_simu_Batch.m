@@ -1287,56 +1287,60 @@ while (kt<=ktmax)
   %% fancier live plotting ~~ (1x = no plot) (1.17x if % 50) (1.37x if & 10) SLOWER -thad
   % should really be a seperate optional, user defined function... 06/01/20
         livePlot = 1; % for possible fugure sim flags
-        if (mod(k,10)==0) && livePlot
-            if ~isempty(g.lmod.lmod_con) || ~isempty(pwrmod_con)
-                nPlt = 3;
-            else
-                nPlt = 2;
-            end
+        if (mod(k,50)==0) && livePlot
+            
+            
+            % removed additional plotting 10/20 - thad
+%             if ~isempty(g.lmod.lmod_con) || ~isempty(pwrmod_con)
+%                 nPlt = 3;
+%             else
+%                 nPlt = 2;
+%             end
             
             % format bus voltage for plot
             v_p(1:k)=abs(bus_v(bus_idx(1),1:k));
             % plot the voltage of the faulted bus
-            subplot(nPlt,1,1)
+%             subplot(nPlt,1,1)
+            cla
             plot(t(1:k),v_p(1:k),'r')
             title('Voltage Magnitude at Fault Bus');
             xlabel('Time [sec]');
             ylabel('Volatge [PU]');
             
-            % plot generator info 
-            subplot(nPlt,1,2)  
-            Lcolor = lines(size(mac_spd,1));
-            for pltGen = 1:size(mac_spd,1)
-                plot(t(1:k),mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
-                hold on
-            end
-            title('System Generator Speed');
-            xlabel('Time [sec]');
-            ylabel('Speed [PU]');
-            
-            % plot load moduation (if present)
-            if ~isempty(lmod_con) %~isempty(g.lmod.lmod_con)
-                subplot(nPlt,1,3)
-                %plot(t(1:k),g.lmod.lmod_st(1:k))
-                plot(t(1:k),lmod_st(1:k))
-                title('System Real Load Modulation');
-                xlabel('Time [sec]');
-                ylabel('MW [PU]');
-            end
-            
-            % Plot Powermod injection if present
-            if ~isempty(pwrmod_con)
-                subplot(nPlt,1,3)
-                Lcolor = lines(size(pwrmod_p_st,1));
-                for pltData = 1:size(pwrmod_p_st,1)
-                    plot(t(1:k),pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
-                    hold on
-                end
-                title('Power Modulation');
-                xlabel('Time [sec]');
-                ylabel('MW [PU]');
-            end
-            
+%             % plot generator info 
+%             subplot(nPlt,1,2)  
+%             Lcolor = lines(size(mac_spd,1));
+%             for pltGen = 1:size(mac_spd,1)
+%                 plot(t(1:k),mac_spd(pltGen, 1:k), 'color',Lcolor(pltGen,:))
+%                 hold on
+%             end
+%             title('System Generator Speed');
+%             xlabel('Time [sec]');
+%             ylabel('Speed [PU]');
+%             
+%             % plot load moduation (if present)
+%             if ~isempty(lmod_con) %~isempty(g.lmod.lmod_con)
+%                 subplot(nPlt,1,3)
+%                 %plot(t(1:k),g.lmod.lmod_st(1:k))
+%                 plot(t(1:k),lmod_st(1:k))
+%                 title('System Real Load Modulation');
+%                 xlabel('Time [sec]');
+%                 ylabel('MW [PU]');
+%             end
+%             
+%             % Plot Powermod injection if present
+%             if ~isempty(pwrmod_con)
+%                 subplot(nPlt,1,3)
+%                 Lcolor = lines(size(pwrmod_p_st,1));
+%                 for pltData = 1:size(pwrmod_p_st,1)
+%                     plot(t(1:k),pwrmod_p_st(pltData, 1:k), 'color',Lcolor(pltData,:))
+%                     hold on
+%                 end
+%                 title('Power Modulation');
+%                 xlabel('Time [sec]');
+%                 ylabel('MW [PU]');
+%             end
+%             
             drawnow     
         end
         
@@ -1996,7 +2000,7 @@ clear dc_idx dc_noTB_idx dc_noTE_idx dc_noTR_idx dc_pot dcc_con
 clear dcc_pot dci_dc dciud_idx dcl_con  dcli_idx dcr_dc dcr_states dcrud_idx
 clear dcsp_con dcud_idx dfile dpw_Td_idx dpw_con dpw_idx dpw_mb_idx
 %clear dpw_pot dpw_pss_idx dtcscud_idx  dummy et ets exc_con exc_pot
-clear dpw_pot dpw_pss_idx dtcscud_idx  dummy et ets
+clear dpw_pot dpw_pss_idx dtcscud_idx  dummy et %ets
 % JHC 1/19/2017 keep exc_pot for Vref and exc_con for K_E
 clear f f_nearbus f_type flag h h_sol i i_aci i_acr i_dcinj
 clear i_idx i_plot ibus_con idig idmot igbus igen_con igen_int igen_pot ind_con

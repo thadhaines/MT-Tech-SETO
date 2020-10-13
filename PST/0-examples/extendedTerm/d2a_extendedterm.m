@@ -14,7 +14,7 @@ enableSVC = false;
 enableAGC = false;
 conditionalAGC = 0; % 1 or 0
 
-disp('Two area, 4 machine, AGC test')
+disp('Two area, 4 machine, extended test')
 %% bus data format
 %{
 % bus: 
@@ -346,7 +346,7 @@ sw_con = [...
 .1    0    0    0    0    0    ts;   % sets intitial time step
 0.2  101  3    0    0    6    ts;   % Do Nothing
 0.3  0  0      0    0    0    ts;   % Do Nothing
-0.4  0      0    0    0    0    ts;   % Do Nothing
+30.0  0      0    0    0    0    ts;   % Do Nothing
 240.0 0    0    0    0    0    0];   % end simulation
 
 clear ts enableExciters enableGov enablePSS enableSVC conditionalAGC

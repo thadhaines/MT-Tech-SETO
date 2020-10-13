@@ -4,7 +4,7 @@
 Previous versions of PST rely on the use of over 340 global variables.
 It was decided to create a global structure that contains all exiting globals to enable easier development and use of PST.
 %While this may or may not have been a good idea - it happened.
-After global restructuring, initial simulation results showed a speed up of over 2 times (See Section \ref{ex: hiskens}).
+After global restructuring, initial simulation results showed a speed up of over 2 times (See Tables \ref{tab: hiskens}, \ref{tab: extended}, and \ref{tab: genTrip}).
 %In other words, it could be assumed previous versions of PST spent half of their computation time handling globals.
 
 
@@ -148,7 +148,9 @@ global rec_par inv_par line_par
 Some DC related functions reused global variable names for local values but avoided conflict by not importing the specific globals.
 During global conversion, this coding approach caused some issues with accidental casting to global and overwriting issues.
 While the non-linear and linear simulations run, there may be issues with this problem yet to be discovered.
-More specifically, the \verb|tap| variable is re-written numerous times during a simulation when calculating line flows.
+
+For example, the \verb|tap| variable is re-written numerous times during a simulation when calculating line flows.
+However this variable is only used after being re-written and does not need to be global.
 
 
 \pagebreak
@@ -309,11 +311,11 @@ The global variables collected into the \verb|g.lmod| field are shown in Listing
 		%linenos,
 		breaklines
 		]{MATLAB}
-global lmod_con % defined by user
-global n_lmod lmod_idx % initialized and created in lm_indx
-global lmod_sig lmod_st dlmod_st % initialized in s_simu
-global lmod_pot  % created/initialized in lmod.m 
-global lmod_data % added by Trudnowski - doesn't appear to be used
+global lmod_con                   % defined by user
+global n_lmod lmod_idx            % initialized and created in lm_indx
+global lmod_sig lmod_st dlmod_st  % initialized in s_simu
+global lmod_pot                   % created/initialized in lmod.m 
+global lmod_data                  % added by Trudnowski - doesn't appear to be used
 \end{minted}
 
 \pagebreak
@@ -490,7 +492,7 @@ global B_cv B_con
 global dB_cv dB_con
 \end{minted}
 
-There seems to be code related to user defined damping control of SVC, but it does not seem to be described in any available documentation. 
+There appears to be code related to user defined damping control of SVC, but it does not seem to be described in any available documentation. 
 This damping functionality was added by Graham Rogers circa 1998/1999.
 
 \pagebreak

@@ -1,5 +1,5 @@
 \pagebreak
-\section{s\_simu Changes}
+\section{s\_simu Changes and Functionalization}
 The \verb|s_simu| script used to run non-linear simulations from PST 3 was relatively long and objectively messy.
 Work has been done to clean up the pre-existing code and functionalize sections for easier readability and process understanding.
 Additionally, `stand alone mode' and 'batch mode' capabilities have been condensed into one file.
@@ -13,17 +13,16 @@ Ensure at least 1 non-global variable is in the workspace prior to running \verb
 \end{itemize}
 
 %==============================================================================
-\subsection{Functionalization}
 The use of a single global allowed for easier functionalization of code.
-Below are some of the functions that were created from code originally found in \verb|s_simu|.
+The following subsections describe some of the functions that were created from code originally found in \verb|s_simu|.
 
 %------------------------------------------------------------------------------
-\subsubsection{cleanZeros}  
+\subsection{cleanZeros}  
 The \verb|cleanZeros| function cleans all entirely zero variables from the global \verb|g| and places the names of cleared variables into the \verb|clearedVars| cell that is stored in \verb|g.sys|.
 The function is executed near the end of \verb|s_simu|.
 
 %------------------------------------------------------------------------------
-\subsubsection{correctorIntegration}  
+\subsection{correctorIntegration}  
 As shown in Listing \ref{lst: correrctorInt header}, the \verb|correctorIntegration| function performs the corrector integration step of the simulation loop to calculate the next accepted value of integrated states.
 The executed code was taken directly from \verb|s_simu| and modified to work with the new global \verb|g|.
 \pagebreak
@@ -52,7 +51,7 @@ Additionally, the \verb|h_sol| value is updated in \verb|i_simu| (called during 
 While this process seemed unnecessarily confusing and sort of  round-about, it has not been changed as of this writing.
 
 %------------------------------------------------------------------------------
-\subsubsection{dcSolution}  
+\subsection{dcSolution}  
 The portion of \verb|s_simu| that integrates DC values at 10 times the rate of the normal time step was moved into the \verb|dcSolution| function.
 This has not been tested with VTS, but was functionalized to enable future development.
 It appears to work as normal when using Huen's method (FTS), but a thorough testing has yet to be performed as of this writing.
@@ -62,13 +61,13 @@ If DC is to be integrated into VTS, the models should be handled as all other mo
 While this may defeat the purpose of VTS simulation due to DC models traditionally having very fast time constants, it is an avenue to explore should future development be desired.
 
 %------------------------------------------------------------------------------
-\subsubsection{dynamicSolution}  
+\subsection{dynamicSolution}  
 As the name implies, the \verb|dynamicSolution| function performs the dynamic model calculations at  the passed in data index \verb|k| by calling each required model with the input flag set to 2.
 This functionalized code was taken directly from \verb|s_simu|.
 
 %------------------------------------------------------------------------------
 
-\subsubsection{huensMethod}  
+\subsection{huensMethod}  
 The default integration method used by PST is Huen's Method.
 The routine has been collected into the \verb|huensMethod| function from previously existing code in \verb|s_simu|.
 Mathematically speaking, Huen's method is an improved Euler method that could also be described as a two-stage Runge-Kutta method, or as a predictor-corrector method.
@@ -112,29 +111,31 @@ A flow chart of these actions is shown in Figure \ref{fig: huens block diagram}.
 
 An added benefit of functionalizing Huen's method is that it provides a clear location to insert alternative integration routines and can act as an example as to how to accomplish such a task.
 
+\pagebreak
 %------------------------------------------------------------------------------
-\subsubsection{initNLsim}  
+\subsection{initNLsim}  
 The \verb|initNLsim| function is a collection of code from \verb|s_simu| that performs initialization operations before a non-linear simulation.
 This includes the creation of the various Y-matrices used for fault conditions and the calling of the dynamic models with the input flag set to 0.
 
 %------------------------------------------------------------------------------
-\subsubsection{initStep}  
+\subsection{initStep}  
 Code from \verb|s_simu| that was executed at the beginning of each solution step was collected into \verb|initStep|.
 Operations are related to setting values for the next step equal to current values for mechanical powers and DC currents and handling machine trip flags.
 
 %------------------------------------------------------------------------------
-\subsubsection{initTblocks}  
+\subsection{initTblocks}  
 The \verb|initiTblocks| function analyzes the global \verb|sw_con| and \verb|solver_con| to create appropriate \emph{time blocks} that are used in non-linear simulation.
 Fixed time vectors associated with time blocks that use Huen's method are created while VTS time blocks are prepared for use.
 Care was taken to ensure a unique time vector (no duplicate time points).
 However, with the experimental option to switch between fixed step and variable step methods, this method may require slight modifications/refinements in the future.
 
 %------------------------------------------------------------------------------
-\subsubsection{initZeros}  
+\subsection{initZeros}  
 A large amount of code ($\approx$400 lines) in PST 3's \verb|s_simu| was dedicated to initializing zeros for data to be written to during non-linear simulation.
 This code has been collected into the \verb|initZeros| function with inputs defining the desired length of vectors for normally logged data and DC data.
 The function header for \verb|initZeros| is shown in Listing \ref{lst: initZeros header}.
 
+\vspace{-.5 em}
 \begin{lstlisting}[caption={Function Header for initZeros},label={lst: initZeros header}]
 \end{lstlisting}\vspace{-2 em}
 \begin{minted}[
@@ -155,28 +156,28 @@ function initZeros(k, kdc)
 \end{minted}
 
 %------------------------------------------------------------------------------
-\subsubsection{monitorSolution}  
+\subsection{monitorSolution}  
 The \verb|monitorSolution| function takes a single input that defines the data index used to calculate any user defined line monitoring values, average frequencies, and other interchange values for defined areas.
 It should be noted that these calculations are mostly based on complex voltages that are calculated during the network solution.
 
 %------------------------------------------------------------------------------
-\subsubsection{networkSolution \& networkSolutionVTS}  
+\subsection{networkSolution \& networkSolutionVTS}  
 The \verb|networkSolution| function is a collection of code from \verb|s_simu| dealing with calls to dynamic models with the flag set to $1$ and Y-matrix switching.
 The call to \verb|i_simu| (which updates the current time step length \verb|g.k.h_sol|) is also located in this function.
 
 The \verb|networkSolutionVTS| function is essentially the same as the \verb|networkSolution| function, except instead of relying on index number to switch Y-matricies, the switching is done based on a passed in simulation time.
 This was a required change when using VTS as the previous method relied on a known number of steps between switching events, and that is no longer a reality with the experimental VTS methods.
-
 The default behavior of PST 4 is to use \verb|newtowrkSolutionVTS| which requires the input of the current data index \verb|k| and the simulation time.
 
 %------------------------------------------------------------------------------
-\subsubsection{predictorIntegration}  
+\subsection{predictorIntegration}  
 The \verb|predictorIntegration| function performs the predictor (forward Euler) integration step of the simulation loop.
 The code was taken directly from \verb|s_simu| and uses the same variable names adapted for use with the global \verb|g|.
 The associated function header is shown in Listing \ref{lst: predictorInt header}.
 
+\vspace{-1.2 em}
 \begin{lstlisting}[caption={Function Header for predictorIntegration},label={lst: predictorInt header}]
-\end{lstlisting}\vspace{-2 em}
+\end{lstlisting}\vspace{-2.1 em}
 \begin{minted}[
 		frame=lines,
 		framesep=2mm,
@@ -196,14 +197,15 @@ function predictorIntegration(k, j, h_sol)
 \end{minted}
 
 %------------------------------------------------------------------------------
-\subsubsection{standAlonePlot}  
+\subsection{standAlonePlot}  
 The \verb|standAlonePlot| function is the updated plotting routine based on user input previously found at the end \verb|s_simu|.
 After a completed simulation, it is called from \verb|s_simu| if stand alone mode is detected.
 Alternatively, the function can be run independently from a non-linear simulation to analyze a pre-existing global \verb|g| by being invoked as \verb|standAlonePlot(1)|.
 
 %------------------------------------------------------------------------------
-\subsubsection{trimLogs}  
-As there is no way to accurately predict the amount of (length of) data to be logged during a variable time step simulation, extra space is allocated, and then all logged values are trimmed to the proper length post simulation.
+\subsection{trimLogs}  
+As there is no way to accurately predict the amount of (length of) data to be logged during a variable time step simulation, 
+extra space is initially allocated and then all logged values are trimmed to the proper length post simulation.
 It should be noted that the current size allocation was arbitrary and can be altered as a user deems fit.
 Typically, an extended term simulation using VTS will requires fewer steps than a fixed step method, but that is not always the case.
 It's important to note that if not enough space is allocated, the simulation will crash when the code attempts to access data indices outside of the allocated range.

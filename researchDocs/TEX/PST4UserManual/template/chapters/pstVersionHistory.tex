@@ -23,9 +23,10 @@ Includes fixes, alterations, and MIT license.
 Addition of multiple DC lines and PSS modifications.
 \item 3.1 - Based on 3.0, incorporates Dr. Trudnowski's pwrmod and ivmmod models in non-linear simulation, machine tripping functionality, and various model patches.
 pwrmod included in linear simulation as well. 
+\item SETO - Based on 3.1. Experimental version by Thad Haines using a new global structure, automatic generation control, and variable time step (VTS) integration. 
 \item 3.1.1 - Based on 3.1. Version by Ryan Elliott at Sandia National Labs with energy storage and updated linear simulation along with various other fixes and code cleanup alterations. 
 \item 3.1.2 - Based on 3.1.1. Work in progress version by Ryan Elliott to clean up global variables.
-\item SETO - Based on 3.1. Experimental version by Thad Haines using a new global structure, automatic generation control, and variable time step (VTS) integration. 
+
 %\item 4.0.0-aX - Alpha version of PST 4 based on SETO version. 
 %Includes a refined VTS routine, confirmed multi-generator tripping, and improved AGC action/modulation.
 
@@ -62,7 +63,7 @@ Represents the end result of four months of work by Thad Haines.
 \node[shape=circle, draw, inner sep=2pt, below right of=3] (31) {3.1};
 % start of thad versions
 \node[shape=circle, draw, inner sep=2pt, below of=31] (seto) {SETO};
-\node[shape=circle, draw, inner sep=2pt, below of=seto] (4) {4.0};
+\node[shape=circle, draw, inner sep=2pt, below of=seto] (4) {4.0.0};
 % ryan versions
 \node[shape=circle, draw, inner sep=2pt, below right of=31] (311) {3.1.1};
 \node[shape=circle, draw, inner sep=2pt, below of=311] (312) {3.1.2};

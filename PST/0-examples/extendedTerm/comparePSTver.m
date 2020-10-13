@@ -3,14 +3,14 @@
 
 clear; close all
 printFigs = 0;
-detailPlots = true;
+detailPlots = 1;
 detailX = [54,64]; % detail 1
 detailX = [119,129]; % detail 2
 
 % load varible data
 % load('AGCtestVTS.mat')
-load('pmRampVTS0.mat') % original tolerances Of 'RelTol',1e-4,'AbsTol',1e-7 -61 seconds
-load('pmRampVTS1.mat') % increased 'RelTol',1e-5,'AbsTol',1e-7, - 106 sec
+load('pmRampVTS.mat') % original tolerances Of 'RelTol',1e-4,'AbsTol',1e-7 -61 seconds
+%load('pmRampFTS.mat') % increased 'RelTol',1e-5,'AbsTol',1e-7, - 106 sec
 % load('pmRampVTS2.mat') % altered time blocks
 gv = g;
 
@@ -19,7 +19,7 @@ load('pmRampSETO.mat') % fixed
 clearvars -except gv g printFigs detailPlots detailX
 
 % load 311 data
-load pmRamp3.mat bus_v mac_spd Efd pss_out t pmech pm_sig pelect
+load pmRamp3FTS.mat bus_v mac_spd Efd pss_out t pmech pm_sig pelect ets
 
 %% fig 1
 % bus v, bus angle
@@ -36,7 +36,7 @@ hold on
 plot(gv.sys.t,abs(gv.bus.bus_v(busV,:)) , 'm--','linewidth',1)
 plot(t,abs(bus_v(busV,:)) , 'c-.','linewidth',1)
 
-legend('SETO','VTS','3.1.1','location','best')
+legend('SETO','VTS','3.1','location','best')
 title({ ['Bus Voltage Comparison of Bus ',int2str(busV)]})
 ylabel('Voltage [PU]')
 xlabel('Time [seconds]')
@@ -54,7 +54,7 @@ plot(g.sys.t, rad2deg( unwrap(angle(g.bus.bus_v(busV,:))) - unwrap(angle(g.bus.b
 hold on
 plot(gv.sys.t,rad2deg( unwrap(angle(gv.bus.bus_v(busV,:))) - unwrap(angle(gv.bus.bus_v(sbAng,:)))) , 'm--','linewidth',1)
 plot(t,rad2deg( unwrap(angle(bus_v(busV,:))) - unwrap(angle(bus_v(sbAng,:)))) , 'c-.','linewidth',1)
-legend('SETO','VTS','3.1.1','location','best')
+legend('SETO','VTS','3.1','location','best')
 title({ ['Bus Voltage Angle Comparison of Bus ',int2str(busV)]})
 ylabel('Angle [degree]')
 xlabel('Time [seconds]')
@@ -71,7 +71,7 @@ plot(g.sys.t, g.mac.mac_spd(mac,:),'k','linewidth',1.25)
 hold on
 plot(gv.sys.t, gv.mac.mac_spd(mac,:), 'm--','linewidth',1)
 plot(t, mac_spd(mac,:), 'c-.','linewidth',1)
-legend('SETO','VTS','3.1.1','location','best')
+legend('SETO','VTS','3.1','location','best')
 title({ ['Machine Speed comparison of Machine ',int2str(mac)]})
 ylabel('Speed [PU]')
 xlabel('Time [seconds]')
@@ -103,7 +103,7 @@ hold on
 plot(gv.sys.t, gv.exc.Efd(exc,:), 'm--','linewidth',1)
 plot(t, Efd(exc,:), 'c-.','linewidth',1)
 
-legend('SETO','VTS','3.1.1','location','best')
+legend('SETO','VTS','3.1','location','best')
 ylabel('Voltage [PU]')
 xlabel('Time [seconds]')
 title({ ['Exciter Efd comparison of Exciter ',int2str(exc)];})
@@ -120,7 +120,7 @@ hold on
 plot(gv.sys.t, gv.pss.pss_out(pss,:), 'm--','linewidth',1)
 plot(t, pss_out(pss,:), 'c-.', 'linewidth', 1)
 
-legend('SETO','VTS', '3.1.1', 'location','best')
+legend('SETO','VTS', '3.1', 'location','best')
 title({ ['PSS Output comparison of PSS ',int2str(mac)];})
 ylabel('Pss Out [PU]')
 xlabel('Time [seconds]')
@@ -174,14 +174,14 @@ txtBlk = {['Average Time Step:  ', num2str(aveSln,3)]; ...
     ['Maximum Time Step: ', num2str(maxSln,3)];  ...
     ['Minimum Time Step: ', num2str(minSln,3)]   };
 grid on
-text( 150, 0.2, txtBlk)
+text( 150, 0.15, txtBlk)
 xlim([0, 240])
 
 legend({'Variable TS', ['Fixed TS (', num2str(fts(10)), ' sec)'] }, 'location', 'northwest')
 title({'Time Step Comparison'})
 ylabel('Time Step Size [seconds]')
 xlabel('Time [seconds]')
-ylim([0, aveSln*12])
+ylim([0, .3])
 xlim([0, 240])
 
 % plot number of solutions
@@ -225,9 +225,10 @@ if printFigs
     set(gcf,'color','w'); % to remove border of figure
     export_fig(['PWRsteps'],'-pdf'); % to print fig
 end
+%%
 fprintf('VTS time: %s\n', gv.sys.ElapsedNonLinearTime)
 fprintf('SETO time: %s\n', g.sys.ElapsedNonLinearTime)
-fprintf('3.1.1 time: 916.24\n')
+fprintf('3.1 time: %s\n', ets)
 
 %% mechanical power
 figure

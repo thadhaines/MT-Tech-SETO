@@ -25,13 +25,13 @@ load PSTpath.mat
 copyfile('d_minniWECC_V3C_C3_6_C_NoFault.m',[PSTpath 'DataFile.m']);
 
 if strcmp(pstVer, 'pstSETO') || strcmp(pstVer, 'PSTv4')
-    copyfile([PSTpath 'livePlot_1.m'],[PSTpath 'livePlot.m']);
+    copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']);
     copyfile('mac_trip_logic_Gen_1_13_G.m', [PSTpath 'mac_trip_logic.m']);
 else
     copyfile('mac_trip_logic_Gen_1_13.m', [PSTpath 'mac_trip_logic.m']);
 end
 
-livePlotFlag = 1;
+livePlotFlag = 0;
 
 if strcmp(pstVer , 'PSTv4')
     s_simu

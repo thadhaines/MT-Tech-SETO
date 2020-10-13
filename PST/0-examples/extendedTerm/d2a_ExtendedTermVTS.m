@@ -14,7 +14,7 @@ enableSVC = false;
 enableAGC = false;
 conditionalAGC = 0; % 1 or 0
 
-disp('Two area, 4 machine, AGC test')
+disp('Two area, 4 machine, extended test with VTS')
 %% bus data format
 %{
 % bus: 

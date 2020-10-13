@@ -10,17 +10,7 @@
 %           Accomodates for batch mode runs automatically if a non-global
 %           variable is detected.
 %
-%   Runs scripts:
-%   octaveComp      - Checks if running in Octave, takes compatibility steps
-%   DataFile        - Contains simulation system information
-%   handleNewGlobals - assigns system variables to global structure g
-%   livePlot        - Plot data during simulation
-%
-%   Function calls to:
-%   loadflow        - solve AC load flow
-%   lfdcs           - solve load flow with DC lines
-%   y_switch        - creates reduced Y matracies for fault scenarios
-%   ...
+%   See user manual for details and flow chart of code operation
 %
 %   Input:
 %   N/A
@@ -81,6 +71,8 @@ xx/xx/19    xx:xx   Dan Trudnowski  Version 1.9 - Added ivmmod code
                                     power flow - to stand alone mode
 09/12/20    10:13   Thad Haines     V 2.8.7 - code clean up, addition of
                                     g.sys.DEBUG flag
+10/01/20    09:43   Thad Haines     4.0.0 recheck - dub
+10/13/20    11:25   Thad Haines     4.0.0 release
 %}
 
 % (c) Montana Technological University / Thad Haines 2020
@@ -108,7 +100,7 @@ xx/xx/19    xx:xx   Dan Trudnowski  Version 1.9 - Added ivmmod code
 %
 
 format compact;
-disp('***    PST v4.0.0-rc.1    ***')
+disp('***    PST v4.0.0    ***')
 disp('***')
 disp('*** s_simu Start')
 disp('*** Declaring Global Variables')

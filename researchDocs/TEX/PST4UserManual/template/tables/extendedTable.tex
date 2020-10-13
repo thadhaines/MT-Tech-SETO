@@ -1,0 +1,25 @@
+\begin{table}[!ht]
+\resizebox{\linewidth}{!}{
+
+	\begin{tabular}{@{} L{1.75cm} 
+	R{2cm} R{2cm}  R{2cm} R{1.5cm} R{0.75cm} R{0.75cm} R{1.5cm} R{2cm} R{2cm}@{}} 	
+		\toprule % @ signs to remove extra L R space
+		\footnotesize % this will affect the table font (makse it 10pt)
+		\raggedright % for non justified table text
+
+	&	\multicolumn{3}{c}{Step Size [seconds]}					&		&	\multicolumn{2}{c}{Solutions Per Step}			&		&		&		\\	
+\shortstack{PST\\Version}	&	Max.	&	Min.	&	Ave.	&	Total Steps	&	Ave.	&	Max.	&	Total Slns.	&	Sim. Time	&	Speed Up	\\ \midrule	
+
+3.1	&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	740.35	&	1.00	\\
+SETO	&	4.00E-03	&	4.00E-03	&	4.00E-03	&	59,975	&	2	&	2	&	119,950	&	284.37	&	2.60	\\
+4.0 - VTS	&	23.2	&	1.36E-04	&	1.38E-02	&	17,353	&	2	&	96	&	27,243	&	125.53	&	5.90	\\
+
+
+																				\bottomrule
+	\end{tabular}
+	}%end resize box
+		\caption{PST Version Comparisons of Extended Term Example.}
+		\label{tab: extended}
+
+
+\end{table}

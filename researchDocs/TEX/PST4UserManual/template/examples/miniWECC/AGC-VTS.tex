@@ -1,19 +1,20 @@
 \subsection{miniWECC-AGC - WIP} 
-Multi area agc using optional VTS in PSTv4.
-Two different area configurations: One is the same as used PSLTDSim examples, and one made to mimic EIA regions.
+Ten minute multi-area AGC recovery using optional VTS in PSTv4.
+Two different area configurations: One is the same as in \cite{haines2020}, and one made to mimic EIA regions (see Appendix \ref{sec: mw Sys}).
 Example allows for comparing VTS to FTS simulation methods.
-
-\noindent Elapsed Time (FTS):	 1027.2399\\
-Elapsed Time (VTS):	 189.9163\\
-VTS speed up: 5.4089\\
-
 DC lines are modeled as power injection via load settings.
 This power import/export is \textbf{not} included in AGC calculations.
+%% MAKE TABLE
+
+
+\input{tables/mwAGCtable}
+
+\noindent VTS is $\approx$5 times faster than FTS and saves $\approx$13x less data.
 
 \begin{figure}[H]
 	\centering
 	\footnotesize
-	\includegraphics[width=\linewidth]{examples/miniWECC/mwAGC-timestep}
+	\includegraphics[width=\linewidth]{examples/miniWECC/maAGC-1}
 	\caption{MiniWECC AGC recovery FTS vs VTS time step size and solution count.}
 	\label{fig: mwAGC steps}
 \end{figure}%\vspace{-1 em}
@@ -22,24 +23,7 @@ This power import/export is \textbf{not} included in AGC calculations.
 \begin{figure}[H]
 	\centering
 	\footnotesize
-	\includegraphics[width=\linewidth]{examples/miniWECC/miniWECC-split03-PSLTDSim}
-	\caption{MiniWECC using PSLTDSim Areas.}
-	\label{fig: mw area option 1}
-\end{figure}%\vspace{-1 em}
-
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/miniWECC/miniWECC-split03-EIA}
-	\caption{MiniWECC using EIA Area Approximation.}
-	\label{fig: mw area option 2}
-\end{figure}%\vspace{-1 em}
-
-
-\begin{figure}[H]
-	\centering
-	\footnotesize
-	\includegraphics[width=\linewidth]{examples/miniWECC/mwAGC-comparisons}
+	\includegraphics[width=\linewidth]{examples/miniWECC/maAGC-2}
 	\caption{MiniWECC AGC recovery FTS vs VTS select comparisons.}
 	\label{fig: mwAGC comp}
 \end{figure}%\vspace{-1 em}
@@ -47,7 +31,7 @@ This power import/export is \textbf{not} included in AGC calculations.
 \begin{figure}[H]
 	\centering
 	\footnotesize
-	\includegraphics[width=\linewidth]{examples/miniWECC/mwAGC-AGCcalcs}
+	\includegraphics[width=\linewidth]{examples/miniWECC/maAGC-3}
 	\caption{MiniWECC AGC recovery FTS vs VTS AGC values.}
 	\label{fig: mwAGC agc values}
 \end{figure}%\vspace{-1 em}

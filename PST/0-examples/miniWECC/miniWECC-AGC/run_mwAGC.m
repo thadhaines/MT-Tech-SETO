@@ -23,7 +23,7 @@ load PSTpath.mat
 
 areaSetting = 2;    % 1 for PSLTDSim Areas, 2 for EIA Areas
 tripGen = 1;        % 1 for gen trip scenario, else load step
-enableVTS = 1;      % 1 for VTS integration
+enableVTS = 0;      % 1 for VTS integration
 
 % ensure file name accuracy
 if enableVTS

@@ -34,15 +34,15 @@ if n_pm~=0
     % Handle basic generation curve    
     maxGen = 0.5;
     
-    if t >= 30 && t < 90
+    if t(k) >= 30 && t(k) < 90
         % up ramp
         % use first 1/4 cycle of a sin to ramp up
-        pm_sig(3,k) = maxGen*sin( (t-30) * 2*pi/240);
-    elseif t >= 150 && t < 210
+        pm_sig(3,k) = maxGen*sin( (t(k)-30) * 2*pi/240);
+    elseif t(k) >= 150 && t(k) < 210
         % down ramp
         % use second 1/4 cycle of a sin to ramp down
-        pm_sig(3,k) = maxGen*sin( (t-150) * 2*pi/240 + pi/2);
-    elseif t >= 90 && t < 150
+        pm_sig(3,k) = maxGen*sin( (t(k)-150) * 2*pi/240 + pi/2);
+    elseif t(k) >= 90 && t(k) < 150
         % held peak
         pm_sig(3,k) = maxGen;
     else
@@ -51,11 +51,11 @@ if n_pm~=0
     end
     
     % Handle Cloud cover generation reductions
-    if t >= 45 && t < 55
+    if t(k) >= 45 && t(k) < 55
         pm_sig(3,k) = maxGen*.2;
-    elseif t >= 120 && t < 140
+    elseif t(k) >= 120 && t(k) < 140
         pm_sig(3,k) = pm_sig(3,k)*0.7;
-    elseif t >= 180 && t < 190
+    elseif t(k) >= 180 && t(k) < 190
         pm_sig(3,k) = pm_sig(3,k)*0.85;
     end
     
