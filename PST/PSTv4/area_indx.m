@@ -20,12 +20,14 @@ function area_indx
 %   07/20/20    19:42   Thad Haines     Version 1.1 - added max capacity to area init
 %   08/21/20    10:47   Thad Haines     Version 1.2 - Added icAdj
 %   08/25/20    11:23   Thad Haines     Version 1.3 - added initial PQGB calcs
+%   10/19/20    15:47   Thad Haines     Version 1.4 - removed length calls - fixed indexing issues
 
+%%
 global g
 
 if ~isempty(g.area.area_def)
     areaNums = unique(g.area.area_def(:,2)); % collect unique area numbesr
-    g.area.n_area = length(areaNums);
+    g.area.n_area = max(size(areaNums));
     macBus = g.mac.mac_con(:,2); % used for indexing machine_con
     
     % used for indexing the bus array
@@ -41,7 +43,7 @@ if ~isempty(g.area.area_def)
         % collect area bus numbers
         g.area.area(areaN).areaBuses = g.area.area_def((g.area.area_def(:,2) == areaNums(areaN)),1);
         g.area.area(areaN).areaBusNdx = [];
-        for mNdx=1:length(g.area.area(areaN).areaBuses)
+        for mNdx=1:size(g.area.area(areaN).areaBuses,1)
             % add index to global
             g.area.area(areaN).areaBusNdx = [ g.area.area(areaN).areaBusNdx ...
                 , find(g.bus.bus(:,1) == g.area.area(areaN).areaBuses(mNdx))]; % for references to machine array values
@@ -54,7 +56,7 @@ if ~isempty(g.area.area_def)
         
         % collect area mac_con index numbers
         g.area.area(areaN).macBusNdx = [];
-        for mNdx=1:length(g.area.area(areaN).macBus)
+        for mNdx=1:size(g.area.area(areaN).macBus,1)
             % add index to global
             g.area.area(areaN).macBusNdx = [ g.area.area(areaN).macBusNdx ...
                 , find(g.mac.mac_con(:,2) == g.area.area(areaN).macBus(mNdx))]; % for references to machine array values
@@ -62,8 +64,8 @@ if ~isempty(g.area.area_def)
         % calculate area max capacity
         g.area.area(areaN).maxCapacity = sum(g.mac.mac_con(g.area.area(areaN).macBusNdx, 3));
         % calculate initial P and Q gen
-        g.area.area(areaN).Pgen0 = sum(g.bus.bus(g.area.area(areaN).macBus, 4));
-        g.area.area(areaN).Qgen0 = sum(g.bus.bus(g.area.area(areaN).macBus, 5));
+        g.area.area(areaN).Pgen0 = sum(g.bus.bus(g.area.area(areaN).macBusNdx, 4));
+        g.area.area(areaN).Qgen0 = sum(g.bus.bus(g.area.area(areaN).macBusNdx, 5));
         
         % collect area load bus numbers
         g.area.area(areaN).loadBus = intersect(loadBus, g.area.area(areaN).areaBuses);
@@ -109,7 +111,7 @@ if ~isempty(g.area.area_def)
         g.area.area(areaN).importLineNdx = [];
         
         % Find Interchange line indices
-        for line=1:length(g.line.line)
+        for line=1:size(g.line.line,1)
             % From end in area
             if ~isempty(intersect(g.area.area(areaN).areaBuses, g.line.line(line,1)))
                 % To End out of area
