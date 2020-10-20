@@ -5,7 +5,7 @@ clear; close all; clc
 
 %% Add correct PST verstion path to MATLAB in a generic way
 folderDepth = 2; % depth of current directory from main PST directory
-pstVer =   'PSTv4'; % 'pstV3p1'; % 'pstV2P3'; % 'pstSETO';%
+pstVer =   'PSTv4';
 pathParts = strsplit(pwd, filesep);
 PSTpath = pathParts(1);
 
@@ -24,19 +24,16 @@ load PSTpath.mat
 
 copyfile('3AreaTest.m',[PSTpath 'DataFile.m']); % system data file
 copyfile([PSTpath 'livePlot_2.m'],[PSTpath 'livePlot.m']); % set live plot
-copyfile('ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % load step
+%copyfile('ml_sig_smallStepG.m',[PSTpath 'ml_sig.m']); % load step
+copyfile('ml_sig_smallStep_fdepG.m',[PSTpath 'ml_sig.m']); % frequency dependent loads and load step
 
 %livePlotFlag = 1; % not ideal for extended term sim - may cause crashes/freezing
 
-if strcmp(pstVer , 'PSTv4')
-    s_simu
-else
-    s_simu_Batch %Run PST
-end
+s_simu
 
 %% Clean up modulation file alterations.
 copyfile([PSTpath 'ml_sig_ORIG.m'],[PSTpath 'ml_sig.m']); % load step
-copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % set live plot
+copyfile([PSTpath 'livePlot_ORIG.m'],[PSTpath 'livePlot.m']); % live plot
 
 %% Save cleaned output data
 save('xxx.mat'); %Save simulation outputs
@@ -68,13 +65,14 @@ plotCell = { ...
 % nE = nE(1);
 
 axLim = [24,28];
-
 lnClr=[0,0,0; 0.66, 0.66, 0.66; 1, 0, 1]; % for custom colors
 
+figure % to plot all in one plot
 for n = 1:size(plotCell,1)
     f1 = plotCell{n,1};
     f2 = plotCell{n,2};
-    figure
+    %figure
+    subplot(size(plotCell,1),1, n)
     
     for m = 1:size(g.(f1).(f2),1)
         if m<=3
@@ -117,18 +115,24 @@ xlabel('Time [seconds]')
 ylabel('IC Error [MW]')
 grid on
 
+%% frequency dependant load mod
+figure
+subplot(2, 1, 1)
+plot(g.sys.t, g.lmod.lmod_sig(1,:))
+legend('Area 1')
+title('Load Modulation')
+xlabel('Time [seconds]')
+ylabel('Load Mod. [PU]')
+grid on
 
-%
-% %% tripped gen xfmr bus voltages
-% figure
-% plot(g.sys.t, abs(g.bus.bus_v(6,:)))
-% hold on
-% plot(g.sys.t, abs(g.bus.bus_v(7,:)), '--')
-% title('Generator and XFMR Bus Voltages')
-% ylabel('Bus Voltage [PU]')
-% xlabel('Time [seconds]')
-% legend({'High Side XFRMR','Gen Side XFRMR'},'location','best')
-% grid on
+subplot(2, 1, 2)
+plot(g.sys.t, g.lmod.lmod_sig(2,:))
+hold on
+plot(g.sys.t, g.lmod.lmod_sig(3,:))
+legend('Area 2','Area 3')
+xlabel('Time [seconds]')
+ylabel('Load Mod. [PU]')
+grid on
 
 %% System Bus voltages
 % figure

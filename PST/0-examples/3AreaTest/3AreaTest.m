@@ -3,6 +3,7 @@
 
 enableGov = true;
 enableAGC = false;
+enableVTS = true;
 conditionalAGC = 0; % 1 or 0
 
 disp('Three areas, each with one gen bus and one load bus')
@@ -157,8 +158,9 @@ load_con = [...
 %}
 lmod_con = [ ...
   % 1   2   3       4       5       6       7
-    1   12   100     10.0     0.0     1.0     0.004;
-   % 1   14   100    1.0     0.0     1.0     0.004 ;
+    1   12   100    1.0     0.0     1.0     0.004;
+    1   22   100    1.0     0.0     1.0     0.004 ;
+    1   32   100    1.0     0.0     1.0     0.004 ;
    ];
 
 %% AGC definition
@@ -254,10 +256,31 @@ end
 
 ts = 0.004;
 sw_con = [...
-0    0    0    0    0    0    ts;   % sets intitial time step
-0.5  12  21    0    0    6    ts;   % Do Nothing
-0.75  0  0      0    0    0    ts;   % Do Nothing
-30.0  0      0    0    0    0    ts;   % Do Nothing
+0    0   0    0    0    0    ts;   % sets intitial time step
+1.0  12  21   0    0    6    ts;   % Do Nothing
+2.0  0   0    0    0    6    ts;   % Do Nothing
+45   0   0    0    0    0    ts;   % Do Nothing
 ];   % end simulation
 
-clear ts enableExciters enableGov enablePSS enableSVC conditionalAGC
+if enableVTS
+disp('Using Variable Time Step Integration')
+%% solver_con format
+% A cell with a solver method in each row corresponding to the specified
+% 'time blocks' defined in sw_con
+%
+% Valid solver names:
+% huens - Fixed time step default to PST
+% ode113 - works well during transients, consistent # of slns, time step stays relatively small
+% ode15s - large number of slns during init, time step increases to reasonable size
+% ode23 - realtively consistent # of required slns, timstep doesn't get very large
+% ode23s - many iterations per step - not efficient...
+% ode23t - occasionally hundereds of iterations, sometimes not... decent
+% ode23tb - similar to 23t, sometimes more large sln counts
+
+solver_con ={ ...
+    'huens'; % pre fault - fault
+    'huens'; % fault - post fault 1
+    'ode23t'; % post fault 1 - post fault 2
+    };
+end
+clear ts enableExciters enableGov enablePSS enableSVC conditionalAGC enableVTS
